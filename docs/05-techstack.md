@@ -74,3 +74,39 @@ verschillen per apparaat, dus niet in productie.
 - 60 fps zetanimaties; audio start ≤ 100 ms na een actie.
 - Volledig speelbaar offline na eerste bezoek (service worker: lessen + audio van de
   huidige en volgende wereld voorgeladen).
+
+---
+
+## 5.5 Wat er in fase 1 anders is gelopen dan hier stond
+
+Vier bewuste afwijkingen van het plan, gemaakt tijdens het bouwen:
+
+1. **Geen monorepo, wel dezelfde grenzen.** Eén Next.js-app met mappen per laag
+   (`src/engine`, `src/content`, `src/lesson`, `src/board`, `src/audio`, `src/progress`,
+   `src/play`). Een monorepo verdient zichzelf terug zodra er een tweede app is
+   (de contenttool); nu kostte hij alleen maar tijd.
+2. **Eigen bordcomponent in plaats van react-chessboard.** Het bord moet tik-tik-invoer
+   doen, velden laten gloeien, stippen en ringen tonen, en straks dierenstukken laten
+   zien. Dat is precies de laag die je bij een kant-en-klaar bord weer moet omzeilen.
+   Het eigen bord is ongeveer 130 regels en heeft geen afhankelijkheden.
+3. **Twee zetmotoren, met opzet.** `engine/board.ts` rekent meetkundig uit waar een los
+   stuk heen kan (voor de lessen: één paard op een leeg bord is volgens de officiële
+   regels een ongeldige stelling). `engine/game.ts` draait op chess.js en kent alle
+   regels; die wordt gebruikt voor de echte partijen en straks voor schaak en mat.
+4. **localStorage in plaats van Dexie.** De voortgang van één kind is een paar kilobyte.
+   IndexedDB is pas nodig als er partijgeschiedenis en puzzelstatistiek bij komen.
+
+Nog niet gebouwd (staat op de roadmap voor fase 2): Stockfish, Rive-animaties,
+de werelden 7 tot en met 14, en de ingesproken audio (zie hieronder).
+
+## 5.6 Stand van de audio
+
+De pijplijn is er: `npm run audio:render` spreekt alle zinnen in met ElevenLabs
+(stem-id `W53kY7bMM00QTmJradZg`, model `eleven_multilingual_v2`), schrijft ze naar
+`public/audio/<sleutel>.mp3` en houdt een manifest bij. De sleutel is een hash van de
+zin zelf, dus een gewijzigde zin wordt vanzelf opnieuw ingesproken en een ontbrekend
+bestand kan niet stilletjes blijven bestaan.
+
+Zolang een zin nog niet gerenderd is, spreekt de app hem uit met de Nederlandse stem
+van het apparaat (Web Speech API). Daarmee praat de app vanaf dag één, maar de kwaliteit
+verschilt per toestel — voor de oplevering moeten de mp3's erin.

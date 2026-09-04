@@ -1,0 +1,121 @@
+/* Ontwerpsysteem van Schaakmaatje.
+   Alle kleuren als tokens; componenten gebruiken nooit een losse hex.
+   Donker thema is bewust rustig: kinderen spelen ook 's avonds. */
+:root {
+  color-scheme: light;
+  --ground: #f6f1e6;
+  --surface: #fffdf8;
+  --surface-2: #efe7d7;
+  --ink: #22201b;
+  --muted: #6b6357;
+  --line: #ded3bf;
+  --accent: #c2661a;      /* hoefijzer-oker: knoppen, sterren */
+  --accent-ink: #ffffff;
+  --accent-soft: #fbead7;
+  --grass: #4e7a54;       /* wereldkaart, goed */
+  --grass-soft: #dfeadd;
+  --sky: #3d6c9a;
+  --berry: #a63f5b;       /* fout, maar nooit hard */
+  --light-sq: #f0e2c3;
+  --dark-sq: #9db373;
+  --sel: #f0b429;
+  --hint: #4e7a54;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 2px 0 rgba(34, 32, 27, 0.08), 0 10px 26px -18px rgba(34, 32, 27, 0.6);
+  --tap: 64px;            /* minimale grootte van een raakvlak */
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --ground: #14161a;
+    --surface: #1c2026;
+    --surface-2: #262b33;
+    --ink: #eceef2;
+    --muted: #9aa3b0;
+    --line: #333a44;
+    --accent: #e2903f;
+    --accent-ink: #1a1207;
+    --accent-soft: #2c2318;
+    --grass: #6fa377;
+    --grass-soft: #1e2a21;
+    --sky: #6f9dc8;
+    --berry: #d1748c;
+    --light-sq: #cbb992;
+    --dark-sq: #6d8452;
+    --shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 10px 26px -18px #000;
+  }
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ground: #14161a;
+  --surface: #1c2026;
+  --surface-2: #262b33;
+  --ink: #eceef2;
+  --muted: #9aa3b0;
+  --line: #333a44;
+  --accent: #e2903f;
+  --accent-ink: #1a1207;
+  --accent-soft: #2c2318;
+  --grass: #6fa377;
+  --grass-soft: #1e2a21;
+  --sky: #6f9dc8;
+  --berry: #d1748c;
+  --light-sq: #cbb992;
+  --dark-sq: #6d8452;
+  --shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 10px 26px -18px #000;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: ui-rounded, 'SF Pro Rounded', 'Segoe UI Rounded', 'Nunito',
+    system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
+h1 { font-size: clamp(1.7rem, 5vw, 2.4rem); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.25rem, 3.4vw, 1.6rem); font-weight: 800; letter-spacing: -0.01em; }
+h3 { font-size: 1.05rem; font-weight: 700; }
+p { margin: 0; }
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+
+/* Knoppen zijn groot: kleine kinderen mikken slecht. */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 56px; padding: 0 22px; border-radius: var(--radius);
+  border: 2px solid var(--line); background: var(--surface); color: var(--ink);
+  font-weight: 700; cursor: pointer; box-shadow: var(--shadow);
+  transition: transform 0.12s ease, background 0.12s ease;
+  text-decoration: none; text-align: center;
+}
+.btn:active { transform: translateY(2px); }
+.btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.btn--primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn--big { min-height: var(--tap); font-size: 1.15rem; padding: 0 28px; }
+.btn--ghost { background: transparent; box-shadow: none; }
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+.card {
+  background: var(--surface); border: 2px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px;
+}
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.muted { color: var(--muted); }
+.center { text-align: center; }
+.page { max-width: 940px; margin: 0 auto; padding: 18px 18px 96px; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
