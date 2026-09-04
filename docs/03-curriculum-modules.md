@@ -59,6 +59,22 @@ speelbaar zonder te kunnen lezen; vanaf 7 mag lichte tekst.
 - **Les 4.4 — "Parcours"**: bereik het doelveld in exact N sprongen (mini knight's tour).
 - **Toets**: 8 gemengde opgaven → hoefijzer-diploma "Paardenmeester".
 
+## 3.4b Wat er nu gebouwd is
+
+Werelden 0 t/m 8 staan in de app (`src/content/werelden/`), samen 31 lessen.
+
+Wereld 7 en 8 zijn didactisch een breuk met de eerste zeven: daar paste een kind een
+regel toe, hier moet het **kiezen**. Twee zetten mogen allebei, maar eentje is beter.
+Daarom zijn de antwoorden in die werelden niet met de hand ingetypt maar door de engine
+berekend — `veiligeVelden`, `bedreigdeStukken` en `aanvallersVan` in `src/engine/board.ts`
+zeggen precies welke velden veilig zijn en wie er aanvalt. `tests/wereld78.test.ts`
+rekent het bij elke testronde opnieuw na, dus een gewijzigde stelling met een verouderd
+antwoord valt meteen om.
+
+Wereld 8 leert drie manieren om een aangevallen stuk te redden: weglopen, de aanvaller
+slaan, en dekken. Dat zijn dezelfde drie die straks bij schaak terugkomen — dat is precies
+waarom deze wereld vóór wereld 9 staat.
+
 ## 3.5 Diploma's
 Drie interne diploma's, met een printbaar/deelbaar certificaat met de naam van het kind:
 - **Hoefijzer Brons** — werelden 0–6 (alle stukken en regels behalve mat).

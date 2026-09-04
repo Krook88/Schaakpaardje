@@ -6,12 +6,16 @@ import { wereld3 } from './werelden/w3-dame'
 import { wereld4 } from './werelden/w4-paard'
 import { wereld5 } from './werelden/w5-koning'
 import { wereld6 } from './werelden/w6-pion'
+import { wereld7 } from './werelden/w7-waarde'
+import { wereld8 } from './werelden/w8-aanval'
 
 /**
  * Het pad. De volgorde is de Nederlandse stappen-volgorde: van makkelijk naar moeilijk
  * stuk, mat pas veel later (wereld 10, fase 2 van de roadmap).
  */
-export const WERELDEN: World[] = [wereld0, wereld1, wereld2, wereld3, wereld4, wereld5, wereld6]
+export const WERELDEN: World[] = [
+  wereld0, wereld1, wereld2, wereld3, wereld4, wereld5, wereld6, wereld7, wereld8,
+]
 
 export const ALLE_LESSEN: Lesson[] = WERELDEN.flatMap((w) => w.lessen)
 

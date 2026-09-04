@@ -7,11 +7,15 @@
  * eerst door de oplosser gehaald — een spel dat niet uit te spelen is, komt er niet uit.
  */
 import {
+  aanvallersVan,
   allSquares,
+  controleVelden,
   parseBoard,
   pieceMoves,
+  PIECE_VALUE,
   square,
   toPlacement,
+  veiligeVelden,
   type BoardMap,
   type PieceType,
   type Square,
@@ -243,6 +247,105 @@ export const MINISPELLEN: Minispel[] = [
         from: square(lijn, 2),
         doel: square(lijn, 8),
         vraag: 'Breng deze pion naar de overkant. Dan wordt hij dame!',
+      }
+    },
+  },
+  {
+    id: 'weegschaal',
+    naam: 'Weegschaal',
+    emoji: '⚖️',
+    uitleg: 'Er valt iets te kiezen. Pak het duurste.',
+    maakOpgave(niveau, random = Math.random) {
+      const soorten: PieceType[] = ['r', 'b', 'q', 'n']
+      const buit: PieceType[] = ['p', 'n', 'b', 'r', 'q']
+      for (let poging = 0; poging < 300; poging++) {
+        const mijn = soorten[Math.floor(random() * soorten.length)]
+        const start = willekeurigVeld(random)
+        let board = zet({}, start, mijn, 'w')
+        const aantal = Math.min(2 + Math.floor(niveau / 2), 4)
+        for (let i = 0; i < aantal; i++) {
+          // Steeds opnieuw kijken waar het stuk heen kan: een neergezet stuk blokkeert.
+          const vrij = pieceMoves(board, start).quiet
+          if (!vrij.length) break
+          const veld = vrij[Math.floor(random() * vrij.length)]
+          board = zet(board, veld, buit[Math.floor(random() * buit.length)], 'b')
+        }
+        const slag = pieceMoves(board, start).captures
+        if (slag.length < 2) continue
+        const waardes = slag.map((sq) => PIECE_VALUE[board[sq].type])
+        const hoogste = Math.max(...waardes)
+        // Alleen bruikbaar als er echt iets te kiezen valt.
+        if (waardes.every((w) => w === hoogste)) continue
+        return {
+          kind: 'move',
+          fen: bordNaarFen(board),
+          from: start,
+          goed: slag.filter((sq) => PIECE_VALUE[board[sq].type] === hoogste),
+          vraag: 'Pak het duurste stuk dat je kunt pakken.',
+          foutTip: 'Tel even mee: pion 1, paard en loper 3, toren 5, dame 9.',
+        }
+      }
+      return {
+        kind: 'move',
+        fen: '8/8/3p4/8/r2Q4/8/8/8',
+        from: 'd4',
+        goed: ['a4'],
+        vraag: 'Pak het duurste stuk dat je kunt pakken.',
+      }
+    },
+  },
+  {
+    id: 'red-je-stuk',
+    naam: 'Red je stuk',
+    emoji: '🛟',
+    uitleg: 'Je stuk staat te pakken. Breng het in veiligheid.',
+    maakOpgave(niveau, random = Math.random) {
+      const mijne: PieceType[] = ['r', 'b', 'n', 'q']
+      const vijand: PieceType[] = ['p', 'n', 'b', 'r', 'q']
+      for (let poging = 0; poging < 400; poging++) {
+        const mijn = mijne[Math.floor(random() * mijne.length)]
+        const mijnVeld = willekeurigVeld(random)
+        let board = zet({}, mijnVeld, mijn, 'w')
+
+        // Zoek een veld vanwaar een zwart stuk mijn stuk aanvalt.
+        const type = vijand[Math.floor(random() * vijand.length)]
+        const kandidaten = allSquares().filter((sq) => {
+          if (sq === mijnVeld) return false
+          const proef = zet(board, sq, type, 'b')
+          return controleVelden(proef, sq).includes(mijnVeld)
+        })
+        if (!kandidaten.length) continue
+        board = zet(board, kandidaten[Math.floor(random() * kandidaten.length)], type, 'b')
+
+        // Bij een hoger niveau staat er nog een stuk in de weg.
+        if (niveau >= 4) {
+          const vrij = pieceMoves(board, mijnVeld).quiet
+          if (vrij.length > 3) board = zet(board, vrij[Math.floor(random() * vrij.length)], 'p', 'w')
+        }
+
+        // De blokkade kan de aanvalslijn dichtzetten; dan is er niets meer te redden.
+        if (!aanvallersVan(board, mijnVeld, 'b').length) continue
+
+        const veilig = veiligeVelden(board, mijnVeld)
+        if (!veilig.length) continue
+        // Te makkelijk als bijna alles goed is; te moeilijk als er maar één veld is.
+        const alles = pieceMoves(board, mijnVeld).all.length
+        if (veilig.length === alles) continue
+        return {
+          kind: 'move',
+          fen: bordNaarFen(board),
+          from: mijnVeld,
+          goed: veilig,
+          vraag: 'Je stuk staat te pakken. Breng het in veiligheid.',
+          foutTip: 'Kijk eerst welke velden de aanvaller bestrijkt, en ga daar niet heen.',
+        }
+      }
+      return {
+        kind: 'move',
+        fen: '8/8/8/5b2/8/3R4/8/8',
+        from: 'd3',
+        goed: ['d8', 'd6', 'd5', 'd4', 'a3', 'b3', 'c3', 'e3', 'f3', 'g3', 'd2', 'd1'],
+        vraag: 'Je toren staat te pakken. Breng hem in veiligheid.',
       }
     },
   },

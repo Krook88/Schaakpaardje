@@ -18,9 +18,10 @@ describe('de content', () => {
     expect(leeftijden).toEqual([...leeftijden].sort((a, b) => a - b))
   })
 
-  it('heeft genoeg lesstof voor de MVP', () => {
-    expect(WERELDEN).toHaveLength(7)
-    expect(ALLE_LESSEN.length).toBeGreaterThanOrEqual(20)
+  it('heeft genoeg lesstof', () => {
+    // Werelden 0 t/m 8: alle stukken, de waarde ervan, en aanval en verdediging.
+    expect(WERELDEN).toHaveLength(9)
+    expect(ALLE_LESSEN.length).toBeGreaterThanOrEqual(30)
   })
 
   it('levert een lijst zinnen op om in te spreken', () => {
