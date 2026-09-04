@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
-import { Sterren } from '@/ui/Sterren'
 import { setVoiceConfig, speak } from '@/audio/voice'
 import { setSfxEnabled } from '@/audio/sfx'
 import { lesMet, WERELDEN } from '@/content'
@@ -71,7 +70,10 @@ export default function Thuis() {
             <div>
               <h1 style={{ fontSize: '1.5rem' }}>Hoi {profiel.naam}!</h1>
               <p className="muted" style={{ fontSize: '0.9rem' }}>
-                <Sterren aantal={Math.min(3, totaal)} van={3} /> {totaal} van de {maxSterren} sterren
+                {/* Geen sterrenrij hier: die stond na drie sterren al vol, terwijl de tekst
+                    ernaast "5 van de 141" zei. Voor een kind dat nog niet leest is dat
+                    beeld het enige wat het ziet. */}
+                ⭐ {totaal} van de {maxSterren} sterren
               </p>
             </div>
           </div>

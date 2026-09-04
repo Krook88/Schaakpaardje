@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyMove, controleVelden, parseBoard, pieceMoves } from '@/engine/board'
+import { aanvallersVan, applyMove, controleVelden, parseBoard, pieceMoves } from '@/engine/board'
 import { Game } from '@/engine/game'
 import { goedeZetten } from '@/lesson/runner'
 import { ALLE_LESSEN, WERELDEN, lesMet } from '@/content'
@@ -74,13 +74,42 @@ describe('wereld 13 — tactiek', () => {
     for (const o of opgavenVan('tactiek-2')) {
       if (o.kind !== 'move' || !o.from) continue
       const board = parseBoard(o.fen)
-      const zwartStuk = Object.entries(board).find(([, p]) => p.color === 'b' && p.type !== 'k')
-      expect(zwartStuk, `geen zwart stuk om te pennen in ${o.fen}`).toBeDefined()
+      const zwarteStukken = Object.entries(board)
+        .filter(([, p]) => p.color === 'b' && p.type !== 'k')
+        .map(([sq]) => sq)
+      const beweegbaarVooraf = (veld: string) =>
+        new Game(`${o.fen} b - - 0 1`).legalMoves().filter((z) => z.from === veld).length
+
       for (const naar of o.goed) {
         const game = new Game(`${o.fen} w - - 0 1`)
         expect(game.move(o.from, naar), `${o.from}-${naar} mag niet`).not.toBeNull()
-        const vrij = game.legalMoves().filter((z) => z.from === zwartStuk![0])
-        expect(vrij.length, `${zwartStuk![0]} zit niet vast`).toBe(0)
+
+        // Er moet minstens één zwart stuk zijn dat vóór de zet kon bewegen en daarna
+        // niet meer. Zonder die eerste eis keurt de test ook een stelling goed waarin
+        // het stuk al vaststond, en dan valt er niets te leren — precies de fout die
+        // hier in de eerste versie stond.
+        const gepend = zwarteStukken.filter(
+          (veld) =>
+            beweegbaarVooraf(veld) > 0 &&
+            game.legalMoves().filter((z) => z.from === veld).length === 0,
+        )
+        expect(gepend.length, `${o.from}-${naar} in ${o.fen} pent niets vast`).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('de penningopgaven geven geen stuk gratis weg', () => {
+    // Wereld 7 leert "pak wat gratis staat". Als het te pennen stuk ongedekt is, is
+    // slaan de betere zet en rekent de opgave die als fout af.
+    for (const o of opgavenVan('tactiek-2')) {
+      if (o.kind !== 'move' || !o.from) continue
+      const board = parseBoard(o.fen)
+      const slagzetten = pieceMoves(board, o.from).captures
+      for (const doel of slagzetten) {
+        expect(
+          aanvallersVan(board, doel, 'b').length,
+          `${o.from} kan ${doel} gratis slaan in ${o.fen}`,
+        ).toBeGreaterThan(0)
       }
     }
   })

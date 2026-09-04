@@ -154,7 +154,11 @@ export const wereld3: World = {
           kind: 'move',
           fen: '8/8/8/3Q4/8/2n5/8/8',
           from: 'd5',
-          goed: ['a5', 'b5', 'c5', 'd8', 'd7', 'd6', 'd4', 'd3', 'd2', 'd1', 'a8', 'b7', 'c6', 'e6', 'f7', 'g8', 'e4', 'f3', 'g2', 'h1', 'c4'],
+          goed: [
+            'a5', 'a8', 'b3', 'b7', 'c4', 'c5', 'c6', 'd2', 'd3', 'd4', 'd6', 'd7', 'd8',
+            'e5', 'e6', 'f3', 'f5', 'f7', 'g2', 'g5', 'g8', 'h1', 'h5',
+          ],
+          bedoeling: 'veilig',
           vraag: 'Zet je dame ergens neer waar het paard haar niet kan pakken.',
           foutTip: 'Het paard springt in een L. Tel even na waar hij bij kan.',
         },

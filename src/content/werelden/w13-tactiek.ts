@@ -6,8 +6,9 @@ import { type World } from '../types'
  * tegelijk aanvallen, of een stuk vastzetten omdat er iets duurders achter staat.
  *
  * De stellingen zijn niet verzonnen maar gezocht: een script heeft het bord afgezocht
- * naar posities waar precies één zet de vork of de penning oplevert. tests/tactiek
- * rekent dat na.
+ * naar posities waar precies één zet de vork of de penning oplevert.
+ * tests/wereld10-14.test.ts rekent dat na — inclusief de eis dat het gepende stuk vóór
+ * de zet nog wél kon bewegen, want anders zet je iets vast wat al vaststond.
  */
 export const wereld13: World = {
   id: 'tactiek',
@@ -125,11 +126,11 @@ export const wereld13: World = {
       toets: [
         {
           kind: 'move',
-          fen: '4k3/8/2n5/1B6/8/8/8/7K',
-          from: 'b5',
-          goed: ['a4'],
+          fen: '4k3/1p6/2n5/8/8/3B4/8/7K',
+          from: 'd3',
+          goed: ['b5'],
           vraag: 'Zet het paard vast met je loper.',
-          foutTip: 'Ga op de diagonaal staan waar het paard en de koning op liggen.',
+          foutTip: 'Ga op de diagonaal staan waar het paard en de koning allebei op liggen.',
         },
         {
           kind: 'quiz',

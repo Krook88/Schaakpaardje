@@ -56,9 +56,9 @@ export const wereld6: World = {
       toets: [
         {
           kind: 'tapMoves',
-          fen: '8/8/8/8/8/3n4/4P3/8',
-          from: 'e2',
-          vraag: 'Er staat een paard schuin voor hem. Waar kan de pion allemaal heen?',
+          fen: '8/8/8/8/2P5/8/8/8',
+          from: 'c4',
+          vraag: 'Deze pion is al onderweg. Waar kan hij heen?',
         },
         {
           kind: 'quiz',
@@ -102,9 +102,9 @@ export const wereld6: World = {
         },
         {
           kind: 'tapMoves',
-          fen: '8/8/8/8/8/3p4/2P5/8',
+          fen: '8/8/8/8/2n5/8/2P5/8',
           from: 'c2',
-          vraag: 'Er staat een zwarte pion schuin voor hem. Waar kan hij allemaal heen?',
+          vraag: 'Er staat iets op zijn tweede veld. Waar kan hij nu heen?',
         },
       ],
       toets: [

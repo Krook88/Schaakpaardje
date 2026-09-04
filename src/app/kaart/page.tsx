@@ -70,7 +70,13 @@ export default function Kaart() {
                         <span
                           className="btn"
                           aria-disabled="true"
-                          style={{ width: '100%', justifyContent: 'space-between', opacity: 0.5 }}
+                          style={{
+                            width: '100%',
+                            justifyContent: 'space-between',
+                            // Gedempte kleur in plaats van doorzichtigheid: op 0,5 haalde
+                            // deze tekst het contrast van 4,5:1 in het lichte thema niet.
+                            color: 'var(--muted)',
+                          }}
                         >
                           {inhoud}
                         </span>

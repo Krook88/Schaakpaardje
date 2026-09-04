@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { controleerContent, alleZinnen } from '@/content/validate'
+import { alleZinnen, controleerContent, controleerOpgave } from '@/content/validate'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
 
 describe('de content', () => {
@@ -29,5 +29,74 @@ describe('de content', () => {
     const zinnen = alleZinnen()
     expect(zinnen.length).toBeGreaterThan(100)
     expect(zinnen.every((z) => z.trim().length > 0)).toBe(true)
+  })
+})
+
+/**
+ * De vangrail zelf testen. De eerste review vond drie opgaven waarin het opgeschreven
+ * antwoord niet klopte met de stelling, en alle drie kwamen ze ongehinderd door de
+ * contentcontrole heen. Sinds die uitbreiding rekent de controle het antwoord na — en
+ * deze tests bewaken dat die controle blijft werken.
+ */
+describe('de contentcontrole vangt verkeerde antwoorden', () => {
+  it('ziet een aangewezen veld waar geen bedreigd stuk staat', () => {
+    const bevindingen = controleerOpgave('test', {
+      kind: 'tapSquares',
+      fen: '8/8/8/3r4/8/3R4/8/6N1',
+      correct: ['d5'], // dit is het zwarte stuk, niet het bedreigde witte
+      bedoeling: { soort: 'bedreigd', kleur: 'w' },
+      vraag: 'test',
+    })
+    expect(bevindingen).toHaveLength(1)
+    expect(bevindingen[0].probleem).toContain('d3')
+  })
+
+  it('ziet dat een aangewezen koning helemaal geen koning is', () => {
+    const bevindingen = controleerOpgave('test', {
+      kind: 'tapSquares',
+      fen: '4k3/8/8/8/8/8/8/4R1K1',
+      correct: ['e1'], // daar staat de toren; de koning staat op g1
+      bedoeling: { soort: 'geenSchaak' },
+      vraag: 'test',
+    })
+    expect(bevindingen).toHaveLength(1)
+    expect(bevindingen[0].probleem).toContain('g1')
+  })
+
+  it('ziet een "veilig" veld dat juist wordt aangevallen', () => {
+    const bevindingen = controleerOpgave('test', {
+      kind: 'move',
+      fen: '8/8/8/3Q4/8/2n5/8/8',
+      from: 'd5',
+      goed: ['b5', 'd1', 'e4'], // precies de velden die het paard bestrijkt
+      bedoeling: 'veilig',
+      vraag: 'test',
+    })
+    expect(bevindingen).toHaveLength(1)
+    expect(bevindingen[0].probleem).toContain('hoort er niet bij')
+  })
+
+  it('ziet dat er niet het duurste stuk gepakt wordt', () => {
+    const bevindingen = controleerOpgave('test', {
+      kind: 'move',
+      fen: '8/8/3p4/8/r2Q4/8/8/8',
+      from: 'd4',
+      goed: ['d6'], // de pion, terwijl de toren op a4 meer waard is
+      bedoeling: 'duurste',
+      vraag: 'test',
+    })
+    expect(bevindingen).toHaveLength(1)
+  })
+
+  it('laat een kloppend antwoord met rust', () => {
+    expect(
+      controleerOpgave('test', {
+        kind: 'tapSquares',
+        fen: '8/8/8/3r4/8/3R4/8/6N1',
+        correct: ['d3'],
+        bedoeling: { soort: 'bedreigd', kleur: 'w' },
+        vraag: 'test',
+      }),
+    ).toEqual([])
   })
 })

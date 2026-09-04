@@ -328,7 +328,10 @@ export function hint(stand: OpgaveStand): { stand: OpgaveStand; velden: Square[]
     return { stand: nieuw, velden: rest.slice(0, 1) }
   }
   if (o.kind === 'move') {
-    return { stand: nieuw, velden: o.goed.slice(0, 1) }
+    // Het stuk aanwijzen, niet het doelveld: bij een zetopgave ís dat ene doelveld het
+    // hele antwoord, en dan is de hint geen tip meer maar de oplossing.
+    const van = o.from ?? Object.keys(stand.board).find((sq) => stand.board[sq].color === 'w')
+    return { stand: nieuw, velden: van ? [van] : [] }
   }
   if (o.kind === 'reach') {
     const van = stand.actiefStuk ?? o.from

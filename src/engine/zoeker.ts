@@ -185,9 +185,23 @@ export function zoek(game: Game, diepte: number, maxKnopen = 20000): ZoekResulta
   return { zet: besteZet, score: besteScore, knopen }
 }
 
-/** Slagzetten eerst, en dan de duurste buit: dat snoeit de boom het snelst. */
+/**
+ * Slagzetten eerst, en dan de duurste buit: dat snoeit de boom het snelst.
+ *
+ * Dubbele van-naar-paren gaan eruit. chess.js geeft per promotie vier zetten (dame,
+ * toren, loper, paard) terwijl Game.move altijd naar dame promoveert — zonder deze
+ * filter doorzoekt de motor in een pionneneindspel vier keer dezelfde zet, uit een
+ * knopenbudget dat juist daar krap is.
+ */
 function ordenZetten(game: Game) {
-  return [...game.legalMoves()].sort((a, b) => score(b) - score(a))
+  const gezien = new Set<string>()
+  const uniek = game.legalMoves().filter((zet) => {
+    const sleutel = `${zet.from}${zet.to}`
+    if (gezien.has(sleutel)) return false
+    gezien.add(sleutel)
+    return true
+  })
+  return uniek.sort((a, b) => score(b) - score(a))
 
   function score(zet: { captured?: PieceType; promotion?: PieceType; isCheck: boolean }) {
     let n = 0

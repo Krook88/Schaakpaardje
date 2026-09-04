@@ -40,7 +40,13 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return
 
   // Bestanden met een hash in hun naam veranderen nooit: cache eerst, dat is direct.
-  const isBlijvend = url.pathname.includes('/_next/static/') || url.pathname.startsWith('/audio/')
+  // Het audiomanifest hoort daar NIET bij: dat heet altijd manifest.json en wijst naar
+  // de opnames. Cache-first zou betekenen dat een kind na een nieuwe opname op het oude
+  // manifest blijft hangen, en dat Pip stilletjes terugvalt op de stem van het apparaat.
+  const isAudioManifest = url.pathname.endsWith('/audio/manifest.json')
+  const isBlijvend =
+    !isAudioManifest &&
+    (url.pathname.includes('/_next/static/') || url.pathname.startsWith('/audio/'))
 
   if (isBlijvend) {
     event.respondWith(

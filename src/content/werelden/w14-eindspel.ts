@@ -88,23 +88,23 @@ export const wereld14: World = {
         'Het idee is altijd hetzelfde: je duwt zijn koning naar de rand, en dan naar de hoek.',
         'Je eigen koning bewaakt de velden waar hij heen zou willen.',
       ],
-      vertelFen: 'k7/8/1K6/8/8/8/8/7Q',
+      vertelFen: '5K2/7k/8/Q7/8/8/8/8',
       meedoen: [
         {
           kind: 'regelZet',
-          fen: 'k7/8/1K6/8/8/8/8/7Q w - - 0 1',
+          fen: '5K2/7k/8/Q7/8/8/8/8 w - - 0 1',
           eis: 'matIn1',
-          vraag: 'Zet mat met je dame. Je koning dekt al mee.',
-          foutTip: 'Zet je dame vlak naast zijn koning, op een veld dat jouw koning bewaakt.',
+          vraag: 'Zet mat met je dame. Je koning dekt de vluchtvelden al.',
+          foutTip: 'Zijn koning kan alleen nog opzij. Geef schaak op de rij waar hij staat.',
         },
       ],
       zelf: [
         {
           kind: 'regelZet',
-          fen: '6k1/8/6K1/8/8/8/8/R7 w - - 0 1',
+          fen: '5R2/8/8/8/8/8/8/k1K5 w - - 0 1',
           eis: 'matIn1',
           vraag: 'En nu met de toren. Zet mat in één.',
-          foutTip: 'Jouw koning bewaakt f7, g7 en h7. Geef schaak op de achterste rij.',
+          foutTip: 'Jouw koning bewaakt b1 en b2. Geef schaak op de lijn waar zijn koning staat.',
         },
         {
           kind: 'quiz',
@@ -119,10 +119,10 @@ export const wereld14: World = {
       toets: [
         {
           kind: 'regelZet',
-          fen: '7k/5KP1/8/8/8/8/8/8 w - - 0 1',
+          fen: '2Q5/8/8/8/8/6K1/8/6k1 w - - 0 1',
           eis: 'matIn1',
           vraag: 'Maak het af: mat in één.',
-          foutTip: 'Promoveer je pion. Als dame geeft ze meteen mat.',
+          foutTip: 'Jouw koning dekt de velden erboven al. Geef schaak op de onderste rij.',
         },
         {
           kind: 'quiz',

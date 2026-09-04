@@ -5,7 +5,17 @@
  * verkeerd overgetypte stelling is precies het soort fout dat je pas ontdekt als een
  * kind vastloopt. Geen enkele opgave komt in main als hij hier niet doorheen komt.
  */
-import { parseBoard, pieceMoves, type Square } from '@/engine/board'
+import {
+  aanvallersVan,
+  bedreigdeStukken,
+  parseBoard,
+  pieceMoves,
+  veiligeVelden,
+  PIECE_VALUE,
+  type BoardMap,
+  type Color,
+  type Square,
+} from '@/engine/board'
 import { Game } from '@/engine/game'
 import { goedeZetten } from '@/lesson/runner'
 import { geldigVeld, korstePad, slaAllesOp } from '@/engine/puzzels'
@@ -14,7 +24,7 @@ import type { Exercise, Lesson, World } from './types'
 
 export type Bevinding = { waar: string; probleem: string }
 
-function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
+export function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
   const uit: Bevinding[] = []
   const fout = (probleem: string) => uit.push({ waar, probleem })
 
@@ -38,6 +48,11 @@ function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
     case 'tapSquares': {
       if (!o.correct.length) fout('geen goede velden opgegeven')
       for (const sq of o.correct) if (!geldigVeld(sq)) fout(`onbekend veld ${sq}`)
+      if (o.bedoeling) {
+        const verwacht = tapAntwoord(parseBoard(o.fen), o.bedoeling)
+        const verschil = vergelijk(o.correct, verwacht)
+        if (verschil) fout(`het antwoord klopt niet met de stelling: ${verschil}`)
+      }
       break
     }
     case 'move': {
@@ -50,6 +65,11 @@ function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
       for (const doel of o.goed) {
         if (!geldigVeld(doel)) fout(`onbekend veld ${doel}`)
         else if (!mogelijk.includes(doel)) fout(`${from} kan niet naar ${doel}`)
+      }
+      if (o.bedoeling) {
+        const verwacht = zetAntwoord(board, from, o.bedoeling)
+        const verschil = vergelijk(o.goed, verwacht)
+        if (verschil) fout(`het antwoord klopt niet met de stelling: ${verschil}`)
       }
       break
     }
@@ -111,6 +131,61 @@ function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
     }
   }
   return uit
+}
+
+/** Wat het antwoord op een tik-opgave hoort te zijn, uitgerekend uit de stelling zelf. */
+function tapAntwoord(board: BoardMap, bedoeling: NonNullable<Extract<Exercise, { kind: 'tapSquares' }>['bedoeling']>): Square[] {
+  const stukken = Object.entries(board)
+  switch (bedoeling.soort) {
+    case 'stuk':
+      return stukken
+        .filter(([, p]) => p.type === bedoeling.type && (!bedoeling.kleur || p.color === bedoeling.kleur))
+        .map(([sq]) => sq)
+    case 'waarde':
+      return stukken
+        .filter(([, p]) => PIECE_VALUE[p.type] === bedoeling.waarde && (!bedoeling.kleur || p.color === bedoeling.kleur))
+        .map(([sq]) => sq)
+    case 'bedreigd':
+      return bedreigdeStukken(board, bedoeling.kleur)
+    case 'schaak':
+    case 'geenSchaak': {
+      const koningen = stukken.filter(([, p]) => p.type === 'k')
+      return koningen
+        .filter(([sq, p]) => {
+          const onderVuur = aanvallersVan(board, sq, p.color === 'w' ? 'b' : 'w').length > 0
+          return bedoeling.soort === 'schaak' ? onderVuur : !onderVuur
+        })
+        .map(([sq]) => sq)
+    }
+  }
+}
+
+/** Wat de goede zet(ten) horen te zijn, uitgerekend uit de stelling zelf. */
+function zetAntwoord(board: BoardMap, from: Square, bedoeling: 'veilig' | 'duurste' | 'aanvaller'): Square[] {
+  const kleur: Color = board[from]?.color ?? 'w'
+  const vijand: Color = kleur === 'w' ? 'b' : 'w'
+  if (bedoeling === 'veilig') return veiligeVelden(board, from)
+  if (bedoeling === 'aanvaller') {
+    const aanvallers = aanvallersVan(board, from, vijand)
+    return aanvallers.filter((sq) => pieceMoves(board, from).captures.includes(sq))
+  }
+  const slag = pieceMoves(board, from).captures
+  if (!slag.length) return []
+  const hoogste = Math.max(...slag.map((sq) => PIECE_VALUE[board[sq].type]))
+  return slag.filter((sq) => PIECE_VALUE[board[sq].type] === hoogste)
+}
+
+/** Beschrijft het verschil tussen twee verzamelingen velden, of niets als ze gelijk zijn. */
+function vergelijk(gegeven: Square[], verwacht: Square[]): string | null {
+  const a = [...new Set(gegeven)].sort()
+  const b = [...new Set(verwacht)].sort()
+  if (a.join(' ') === b.join(' ')) return null
+  const teveel = a.filter((sq) => !b.includes(sq))
+  const tekort = b.filter((sq) => !a.includes(sq))
+  const delen = []
+  if (teveel.length) delen.push(`hoort er niet bij: ${teveel.join(' ')}`)
+  if (tekort.length) delen.push(`ontbreekt: ${tekort.join(' ')}`)
+  return delen.join('; ')
 }
 
 function controleerLes(les: Lesson, wereld: World): Bevinding[] {

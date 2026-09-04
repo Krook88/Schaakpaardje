@@ -23,10 +23,13 @@ export default function Ouders() {
   const [open, setOpen] = useState(false)
   // De som wordt pas in de browser gekozen: willekeur tijdens het prerenderen geeft
   // een hydratieverschil.
+  //
+  // Twee cijfers maal één, en geen tafeltjessom: 6 × 7 lost een kind van negen zo op,
+  // en dan is de drempel er niet meer. Voor een volwassene is 27 × 8 net zo snel.
   const [som, setSom] = useState<{ a: number; b: number; antwoord: number } | null>(null)
   useEffect(() => {
-    const a = 3 + Math.floor(Math.random() * 6)
-    const b = 2 + Math.floor(Math.random() * 7)
+    const a = 12 + Math.floor(Math.random() * 28)
+    const b = 3 + Math.floor(Math.random() * 7)
     setSom({ a, b, antwoord: a * b })
   }, [])
   const [invoer, setInvoer] = useState('')
