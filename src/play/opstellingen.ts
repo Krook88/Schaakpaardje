@@ -25,6 +25,10 @@ export const OPSTELLING: Record<string, Opstelling> = {
     fen: 'r3k3/3ppp2/8/8/8/8/3PPP2/R3K3 w - - 0 1',
     uitleg: 'Nu ook een toren erbij. Let op je stukken!',
   },
+  bas: { uitleg: 'Een gewone partij met alle stukken. Bas kijkt een zetje vooruit.' },
+  fien: { uitleg: 'Volledig bord. Fien geeft niet zomaar iets weg.' },
+  oscar: { uitleg: 'Volledig bord. Oscar denkt drie zetten vooruit.' },
+  bram: { uitleg: 'Volledig bord, en Bram speelt altijd zijn beste zet.' },
   samen: {
     uitleg: 'Een gewone partij, samen op één tablet.',
   },

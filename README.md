@@ -6,8 +6,8 @@ verschillende niveaus.
 
 > **Status:** het hele curriculum is speelbaar — alle 15 werelden, van het bord tot het
 > eindspel. 47 lessen, 15 minispellen, drie tegenstanders, profielen en een ouderscherm.
-> Wat nog moet: Pip inspreken (de pijplijn staat klaar), de sterkere bots met Stockfish,
-> en de release-review.
+> Zeven tegenstanders, van willekeurig tot een zoekende motor op ongeveer 1500.
+> Wat nog moet: Pip inspreken (de pijplijn staat klaar) en de release-review.
 
 ## Aan de slag
 

@@ -35,6 +35,10 @@ export class Game {
   get history(): string[] {
     return this.chess.history()
   }
+  /** Staat de speler die aan zet is schaak? Goedkoper dan de volledige status(). */
+  get inCheck(): boolean {
+    return this.chess.inCheck()
+  }
 
   /** Alle legale zetten, eventueel alleen die van één veld af. */
   legalMoves(from?: Square): GameMove[] {

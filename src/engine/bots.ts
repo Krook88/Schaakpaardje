@@ -10,6 +10,7 @@
  * is er al op voorbereid: een bot is niets meer dan (fen) => zet.
  */
 import { Game, materialBalance } from './game'
+import { kiesMetSlordigheid } from './zoeker'
 import type { Square } from './board'
 
 export type BotMove = { from: Square; to: Square }
@@ -105,6 +106,47 @@ export const BOTS: Bot[] = [
     kies: (game, random = Math.random) => greedyChoice(game, random, true),
   },
 ]
+
+/* ---- de sterkere tegenstanders: dezelfde motor, andere diepte en slordigheid ---- */
+
+BOTS.push(
+  {
+    id: 'bas',
+    naam: 'Bas de Hond',
+    emoji: '🐶',
+    tagline: 'Bas kijkt al een zetje vooruit. Pas op je stukken!',
+    elo: 600,
+    denktijd: 700,
+    kies: (game, random = Math.random) => kiesMetSlordigheid(game, 1, 0.45, random),
+  },
+  {
+    id: 'fien',
+    naam: 'Fien de Vos',
+    emoji: '🦊',
+    tagline: 'Fien is slim en let goed op. Zij geeft niet zomaar iets weg.',
+    elo: 900,
+    denktijd: 900,
+    kies: (game, random = Math.random) => kiesMetSlordigheid(game, 2, 0.25, random),
+  },
+  {
+    id: 'oscar',
+    naam: 'Oscar de Uil',
+    emoji: '🦉',
+    tagline: 'Oscar denkt drie zetten vooruit. Neem er rustig de tijd voor.',
+    elo: 1200,
+    denktijd: 1100,
+    kies: (game, random = Math.random) => kiesMetSlordigheid(game, 2, 0.05, random),
+  },
+  {
+    id: 'bram',
+    naam: 'Bram de Beer',
+    emoji: '🐻',
+    tagline: 'Bram speelt zijn beste zet. Altijd.',
+    elo: 1500,
+    denktijd: 1300,
+    kies: (game, random = Math.random) => kiesMetSlordigheid(game, 3, 0, random, 6000),
+  },
+)
 
 export function getBot(id: string): Bot | undefined {
   return BOTS.find((b) => b.id === id)
