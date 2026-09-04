@@ -130,7 +130,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
             onSquare={opVeld}
             disabled={stand.klaar}
             shake={shake}
-            showCoordinates={instellingen.coordinaten}
+            showCoordinates={instellingen.coordinaten || Boolean(spel.toonCoordinaten)}
             label={spel.naam}
           />
         </div>

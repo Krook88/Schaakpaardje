@@ -246,7 +246,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
               <Board
                 position={les.vertelFen}
                 marks={{ glow: les.vertelWijs }}
-                showCoordinates={instellingen.coordinaten}
+                showCoordinates={instellingen.coordinaten || Boolean(les.toonCoordinaten)}
                 label={`Uitleg bij ${les.titel}`}
               />
             </div>
@@ -350,7 +350,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
               onSquare={opVeld}
               disabled={stand.klaar}
               shake={shake}
-              showCoordinates={instellingen.coordinaten}
+              showCoordinates={instellingen.coordinaten || Boolean(les.toonCoordinaten)}
               label={'vraag' in opgave ? opgave.vraag : les.titel}
             />
           </div>

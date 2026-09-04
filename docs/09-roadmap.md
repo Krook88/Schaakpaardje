@@ -22,7 +22,7 @@ een stem en een schaakdidactisch meelezer. Doorlooptijden zijn "kalenderweken bi
 - Ouderpoort + ouderscherm "wat kan je kind nu?".
 - **Levering: bruikbare app voor 3–7 jaar; eerste test met 5–8 echte kinderen.**
 
-## Fase 2 — Compleet schaken (week 11–18)
+## Fase 2 — Compleet schaken (week 11–18) — *content af*
 - Werelden 7 t/m 12 (waarde, aanval/verdediging, schaak, mat, rokade, notatie).
 - Stockfish-worker + botniveaus 4–8, blunderwaarschuwing, nabespreking.
 - Puzzelmotor + thema-beheersing + spaced repetition + dagelijkse puzzel.

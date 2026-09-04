@@ -61,7 +61,7 @@ speelbaar zonder te kunnen lezen; vanaf 7 mag lichte tekst.
 
 ## 3.4b Wat er nu gebouwd is
 
-Werelden 0 t/m 8 staan in de app (`src/content/werelden/`), samen 31 lessen.
+Alle 15 werelden staan in de app (`src/content/werelden/`), samen 47 lessen en 15 minispellen.
 
 Wereld 7 en 8 zijn didactisch een breuk met de eerste zeven: daar paste een kind een
 regel toe, hier moet het **kiezen**. Twee zetten mogen allebei, maar eentje is beter.
@@ -89,6 +89,24 @@ die zijn alle drie goed. Een opgave met één "juist" veld zou hier fout onderwi
 Mooie bijvangst: het bord toont bij een regelZet alleen de zetten die écht mogen. Een
 kind dat zijn koning naar een aangevallen veld wil zetten, ziet dat veld niet oplichten —
 de regel legt zichzelf uit.
+
+### Wereld 10 tot en met 14
+
+- **10 Matklif** — mat, mat in 1, pat en remise. Mat komt hier pas, na tien werelden. Dat
+  uitstel is de kern van de methode: een kind dat hier aankomt weet al dat een aangevallen
+  stuk drie uitwegen heeft, en snapt mat daardoor als "alle drie zitten dicht" in plaats
+  van als een truc.
+- **11 Rokadehaven** — de enige zet met twee stukken tegelijk, en vier voorwaarden. Het
+  bord doet hier het uitleggen: mag de rokade niet, dan licht hij niet op.
+- **12 Notatie-eiland** — veldnamen, zetten opschrijven, openingsprincipes. Deze lessen
+  zetten de coördinaten altijd aan (`toonCoordinaten`), ook als de ouder ze uit heeft staan.
+- **13 Tactiekgrot** — dubbele aanval en penning. De stellingen zijn niet verzonnen maar
+  gezocht: een script heeft het bord afgezocht naar posities waar precies één zet werkt.
+- **14 Eindspelduinen** — de koning als sterk stuk, mat met dame en toren, en de laatste
+  pion naar de overkant.
+
+Alle stellingen met schaak, mat of rokade zijn met chess.js nagerekend, en
+`tests/wereld10-14.test.ts` doet dat bij elke testronde opnieuw.
 
 ## 3.5 Diploma's
 Drie interne diploma's, met een printbaar/deelbaar certificaat met de naam van het kind:

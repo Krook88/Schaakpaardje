@@ -261,9 +261,11 @@ function tikRegelZet(
   const gelukt =
     o.eis === 'uitSchaak'
       ? true // elke legale zet haalt je koning uit schaak; dat is precies het punt
-      : o.eis === 'geefSchaak'
-        ? gedaan.isCheck || (status.over && status.reason === 'mat')
-        : status.over && status.reason === 'mat'
+      : o.eis === 'rokeer'
+        ? gedaan.san.startsWith('O-O')
+        : o.eis === 'geefSchaak'
+          ? gedaan.isCheck || (status.over && status.reason === 'mat')
+          : status.over && status.reason === 'mat'
 
   if (!gelukt) {
     return {
@@ -287,9 +289,13 @@ function tikRegelZet(
 }
 
 /** Alle zetten die aan de eis voldoen. Ook gebruikt door de contentcontrole. */
-export function goedeZetten(game: Game, eis: 'geefSchaak' | 'uitSchaak' | 'matIn1') {
+export function goedeZetten(
+  game: Game,
+  eis: 'geefSchaak' | 'uitSchaak' | 'matIn1' | 'rokeer',
+) {
   return game.legalMoves().filter((zet) => {
     if (eis === 'uitSchaak') return true
+    if (eis === 'rokeer') return zet.san.startsWith('O-O')
     const na = game.clone()
     na.move(zet.from, zet.to)
     const status = na.status()

@@ -90,6 +90,9 @@ function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
       if (o.eis === 'uitSchaak' && !status.check) {
         fout('de eis is uit schaak gaan, maar er staat helemaal geen schaak')
       }
+      if (o.eis === 'rokeer' && !game.legalMoves().some((z) => z.san.startsWith('O-O'))) {
+        fout('rokeren kan hier helemaal niet')
+      }
       if (o.eis !== 'uitSchaak' && status.check) {
         fout('de speler staat zelf schaak; dan gaat de opgave over iets anders')
       }

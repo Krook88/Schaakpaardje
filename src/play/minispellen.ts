@@ -9,6 +9,7 @@
 import {
   aanvallersVan,
   allSquares,
+  applyMove,
   controleVelden,
   parseBoard,
   pieceMoves,
@@ -32,6 +33,8 @@ export type Minispel = {
   uitleg: string
   /** Zes niveaus, oplopend. */
   maakOpgave: (niveau: number, random?: () => number) => Exercise
+  /** Toon altijd de veldnamen, ongeacht de instelling. */
+  toonCoordinaten?: boolean
 }
 
 /**
@@ -403,7 +406,198 @@ export const MINISPELLEN: Minispel[] = [
       }
     },
   },
+  {
+    id: 'mat-in-1-regen',
+    naam: 'Mat in 1-regen',
+    emoji: '🏁',
+    uitleg: 'Zet mat in één zet.',
+    maakOpgave(niveau, random = Math.random) {
+      const hulp: PieceType[] = niveau <= 3 ? ['q'] : ['q', 'r']
+      for (let poging = 0; poging < 600; poging++) {
+        const zwarteKoning = willekeurigVeld(random)
+        const witteKoning = willekeurigVeld(random, [zwarteKoning])
+        if (controleVelden(zet({}, witteKoning, 'k', 'w'), witteKoning).includes(zwarteKoning)) continue
+        const soort = hulp[Math.floor(random() * hulp.length)]
+        const veld = willekeurigVeld(random, [zwarteKoning, witteKoning])
+        let board = zet({}, zwarteKoning, 'k', 'b')
+        board = zet(board, witteKoning, 'k', 'w')
+        board = zet(board, veld, soort, 'w')
+        const fen = `${bordNaarFen(board)} w - - 0 1`
+        try {
+          const game = new Game(fen)
+          const status = game.status()
+          if (status.over || status.check) continue
+          const matten = goedeZetten(game, 'matIn1')
+          // Eén oplossing is een echte puzzel; bij vijf is het niet meer zoeken.
+          if (!matten.length || matten.length > 2) continue
+          return {
+            kind: 'regelZet',
+            fen,
+            eis: 'matIn1',
+            vraag: 'Zet mat in één zet.',
+            foutTip: 'Geef schaak én zorg dat hij nergens meer heen kan. Kijk naar zijn vluchtvelden.',
+          }
+        } catch {
+          continue
+        }
+      }
+      return {
+        kind: 'regelZet',
+        fen: 'k7/8/1K6/8/8/8/8/7Q w - - 0 1',
+        eis: 'matIn1',
+        vraag: 'Zet mat in één zet.',
+      }
+    },
+  },
+  {
+    id: 'breng-de-koning-veilig',
+    naam: 'Breng de koning veilig',
+    emoji: '🏯',
+    uitleg: 'Rokeer, als het mag tenminste.',
+    maakOpgave(niveau, random = Math.random) {
+      const tussenvelden = ['b1', 'c1', 'd1', 'f1', 'g1']
+      const stoorzenders: PieceType[] = ['n', 'b', 'q']
+      for (let poging = 0; poging < 300; poging++) {
+        let board = parseBoard('4k3/8/8/8/8/8/8/R3K2R')
+        // Eén of twee eigen stukken in de weg; welke rokade overblijft, wisselt.
+        const hoeveel = niveau <= 2 ? 1 : 2
+        for (let i = 0; i < hoeveel; i++) {
+          const veld = tussenvelden[Math.floor(random() * tussenvelden.length)]
+          if (!board[veld]) board = zet(board, veld, stoorzenders[Math.floor(random() * 3)], 'w')
+        }
+        const fen = `${bordNaarFen(board)} w KQ - 0 1`
+        try {
+          const game = new Game(fen)
+          if (game.status().over) continue
+          const rokades = goedeZetten(game, 'rokeer')
+          if (rokades.length !== 1) continue
+          return {
+            kind: 'regelZet',
+            fen,
+            eis: 'rokeer',
+            vraag: 'Breng je koning in veiligheid. Rokeer!',
+            foutTip: 'Tussen de koning en de toren moet alles leeg zijn. Kijk welke kant dat is.',
+          }
+        } catch {
+          continue
+        }
+      }
+      return {
+        kind: 'regelZet',
+        fen: '4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1',
+        eis: 'rokeer',
+        vraag: 'Breng je koning in veiligheid. Rokeer!',
+      }
+    },
+  },
+  {
+    id: 'schrijf-de-zet',
+    naam: 'Zoek het veld',
+    emoji: '✏️',
+    uitleg: 'Pip noemt een veld, jij tikt het aan.',
+    toonCoordinaten: true,
+    maakOpgave(niveau, random = Math.random) {
+      const aantal = niveau <= 2 ? 1 : niveau <= 4 ? 2 : 3
+      const velden: Square[] = []
+      for (let i = 0; i < aantal; i++) velden.push(willekeurigVeld(random, velden))
+      return {
+        kind: 'tapSquares',
+        fen: LEEG_BORD,
+        correct: velden,
+        vraag:
+          velden.length === 1
+            ? `Tik veld ${velden[0]} aan.`
+            : `Tik deze velden aan: ${velden.join(', ')}.`,
+        foutTip: 'Eerst de letter onderaan zoeken, dan omhoog tellen tot het cijfer.',
+      }
+    },
+  },
+  {
+    id: 'tactiekduel',
+    naam: 'Tactiekduel',
+    emoji: '🔱',
+    uitleg: 'Val met één zet twee stukken tegelijk aan.',
+    maakOpgave(niveau, random = Math.random) {
+      const buit: PieceType[] = niveau <= 2 ? ['r', 'q'] : ['r', 'q', 'b', 'n']
+      for (let poging = 0; poging < 500; poging++) {
+        const zwarteKoning = willekeurigVeld(random)
+        const witteKoning = willekeurigVeld(random, [zwarteKoning])
+        const doel1 = willekeurigVeld(random, [zwarteKoning, witteKoning])
+        const doel2 = willekeurigVeld(random, [zwarteKoning, witteKoning, doel1])
+        const paard = willekeurigVeld(random, [zwarteKoning, witteKoning, doel1, doel2])
+
+        let board = zet({}, zwarteKoning, 'k', 'b')
+        board = zet(board, witteKoning, 'k', 'w')
+        board = zet(board, doel1, buit[Math.floor(random() * buit.length)], 'b')
+        board = zet(board, doel2, buit[Math.floor(random() * buit.length)], 'b')
+        board = zet(board, paard, 'n', 'w')
+
+        const vork = pieceMoves(board, paard).all.filter((naar) => {
+          if (board[naar]) return false
+          const na = applyMove(board, paard, naar)
+          // Twee zwarte stukken tegelijk raken, en zelf niet meteen te pakken staan.
+          const raak = controleVelden(na, naar).filter((sq) => na[sq]?.color === 'b')
+          return raak.length >= 2 && !aanvallersVan(na, naar, 'b').length
+        })
+        if (vork.length !== 1) continue
+        return {
+          kind: 'move',
+          fen: bordNaarFen(board),
+          from: paard,
+          goed: vork,
+          vraag: 'Val met je paard twee stukken tegelijk aan.',
+          foutTip: 'Zoek een veld van waaruit je allebei kunt raken. En kijk of je er zelf veilig staat.',
+        }
+      }
+      return {
+        kind: 'move',
+        fen: 'r3k3/8/N7/8/8/8/8/7K',
+        from: 'a6',
+        goed: ['c7'],
+        vraag: 'Val met je paard twee stukken tegelijk aan.',
+      }
+    },
+  },
+  {
+    id: 'laatste-pion',
+    naam: 'Laatste pion',
+    emoji: '♟️',
+    uitleg: 'Breng je pion naar de overkant.',
+    maakOpgave(niveau, random = Math.random) {
+      for (let poging = 0; poging < 200; poging++) {
+        const lijn = Math.floor(random() * 8)
+        const start = square(lijn, 2)
+        let board = zet({}, start, 'p', 'w')
+        const verboden = [start]
+        for (let r = 3; r <= 8; r++) verboden.push(square(lijn, r))
+        for (let i = 0; i < niveau; i++) {
+          const sq = willekeurigVeld(random, verboden)
+          board = zet(board, sq, 'p', i % 2 === 0 ? 'b' : 'w')
+          verboden.push(sq)
+        }
+        const doel = square(lijn, 8)
+        if (!korstePad(parseBoard(bordNaarFen(board)), start, doel, 8)) continue
+        return {
+          kind: 'reach',
+          fen: bordNaarFen(board),
+          from: start,
+          doel,
+          vraag: 'Breng je pion naar de overkant. Dan wordt hij dame!',
+          foutTip: 'Recht vooruit, stap voor stap. De eerste keer mag je er twee.',
+        }
+      }
+      return {
+        kind: 'reach',
+        fen: '8/8/8/8/8/8/1P6/8',
+        from: 'b2',
+        doel: 'b8',
+        vraag: 'Breng je pion naar de overkant. Dan wordt hij dame!',
+      }
+    },
+  },
 ]
+
+const LEEG_BORD = '8/8/8/8/8/8/8/8'
 
 export function minispelMet(id: string): Minispel | undefined {
   return MINISPELLEN.find((s) => s.id === id)

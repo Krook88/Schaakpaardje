@@ -29,7 +29,7 @@ export type Exercise =
       kind: 'regelZet'
       /** Volledige FEN, inclusief wie er aan zet is. */
       fen: Fen
-      eis: 'geefSchaak' | 'uitSchaak' | 'matIn1'
+      eis: 'geefSchaak' | 'uitSchaak' | 'matIn1' | 'rokeer'
       vraag: string
       foutTip?: string
     }
@@ -59,6 +59,8 @@ export type Lesson = {
   zelf: Exercise[]
   toets: Exercise[]
   themas: string[]
+  /** Toon altijd de veldnamen, ook als de ouder ze uit heeft staan (wereld 12). */
+  toonCoordinaten?: boolean
 }
 
 export type World = {
