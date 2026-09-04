@@ -1,8 +1,16 @@
-name: Publiceren naar de productietak
+name: Publiceren naar TransIP
 
-# TransIP AutoGit publiceert de inhoud van een tak zoals die is — het bouwt niet.
-# Daarom bouwt deze workflow de app en zet hij alleen het resultaat (out/) in de tak
-# 'productie'. Zet AutoGit dus op 'productie', niet op 'main'.
+# TransIP AutoGit is geen GitHub-koppeling: het is een git-repository op het
+# hostingpakket zelf. Wat je naar de tak 'productie' van die repository pusht, komt op
+# schaakmaatje.nl te staan — precies zoals het is, want AutoGit bouwt niet.
+#
+# Deze workflow bouwt de app en pusht alleen het resultaat (out/):
+#   1. naar de tak 'productie' hier op GitHub, zodat je kunt zien en teruglezen wat er
+#      live staat;
+#   2. naar de repository op TransIP, zodat de site daadwerkelijk bijwerkt.
+#
+# Stap 2 gebeurt alleen als het geheim TRANSIP_SSH_KEY bestaat. Zonder dat geheim
+# slaat de workflow het netjes over in plaats van te falen.
 
 on:
   push:
@@ -15,6 +23,10 @@ permissions:
 concurrency:
   group: publiceren
   cancel-in-progress: true
+
+env:
+  TRANSIP_HOST: schabr.ssh.transip.me
+  TRANSIP_REPO: schaakmaatjenl@schabr.ssh.transip.me:auto.git
 
 jobs:
   bouwen-en-publiceren:
@@ -37,7 +49,7 @@ jobs:
       - name: Bouwen
         run: npm run build
 
-      - name: Naar de productietak zetten
+      - name: Er een git-repository van maken
         run: |
           cd out
           git init -q -b productie
@@ -45,6 +57,27 @@ jobs:
           git config user.email "noreply@schaakmaatje.nl"
           git add -A
           git commit -q -m "Build van ${GITHUB_SHA::7}"
+
+      - name: Bewaren op GitHub (tak productie)
+        run: |
+          cd out
           git push -q --force \
             "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" \
             productie
+
+      - name: Publiceren naar TransIP
+        env:
+          SSH_KEY: ${{ secrets.TRANSIP_SSH_KEY }}
+        run: |
+          if [ -z "$SSH_KEY" ]; then
+            echo "Geen TRANSIP_SSH_KEY ingesteld — publiceren naar TransIP overgeslagen."
+            echo "De gebouwde site staat wel klaar in de tak 'productie'."
+            exit 0
+          fi
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$TRANSIP_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          cd out
+          git push --force "$TRANSIP_REPO" productie
+          echo "Gepubliceerd naar schaakmaatje.nl"
