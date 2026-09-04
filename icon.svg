@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Schaakmaatje">
+  <rect width="512" height="512" rx="96" fill="#4e7a54"/>
+  <g fill="#f6f1e6">
+    <path d="M170 392h172c0-34-20-46-40-56-14-7-20-16-20-30 34-20 58-56 58-98 0-30-12-56-34-72l10-30-38 12-24-22-10 34c-46 6-82 44-82 92 0 26 10 48 26 64-22 12-38 34-38 62 0 20 8 34 20 44z"/>
+  </g>
+  <circle cx="214" cy="196" r="10" fill="#4e7a54"/>
+</svg>

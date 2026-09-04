@@ -1,0 +1,33 @@
+# Schaakmaatje draait als statische export: geen server nodig, alleen bestanden.
+# Deze regels zijn voor Apache (TransIP webhosting).
+
+# Nette 404 in plaats van de standaardpagina van de server.
+ErrorDocument 404 /404.html
+
+# De app-bestanden krijgen een hash in hun naam en mogen dus lang blijven hangen.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType audio/mpeg "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|mp3|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+# Zonder dit serveren sommige hosts het webmanifest als platte tekst.
+AddType application/manifest+json .webmanifest
+AddType audio/mpeg .mp3
+
+# Comprimeren scheelt op een schooltablet echt iets.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
