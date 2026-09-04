@@ -34,14 +34,54 @@ type Props = {
   orientation?: 'w' | 'b'
   selected?: Square | null
   marks?: BoardMarks
-  /** Wordt aangeroepen bij elke tik. Geef false terug om te laten schudden. */
   onSquare?: (sq: Square) => void
   disabled?: boolean
-  /** Coördinaten a-h en 1-8 eromheen. Uit voor de jongste kinderen. */
+  /** Coördinaten a-h en 1-8 in de randvelden. Uit voor de jongste kinderen. */
   showCoordinates?: boolean
   /** Veld dat net fout was; schudt één keer. */
   shake?: Square | null
   label?: string
+}
+
+/** Vinkje en kruisje zijn getekend, niet als emoji: die zien er op elk toestel anders uit. */
+function Vinkje() {
+  return (
+    <svg viewBox="0 0 24 24" className={`${styles.merk} ${styles.merkGoed}`} aria-hidden="true">
+      <path
+        d="M4 13l5.2 5.2L20 6.6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function Kruisje() {
+  return (
+    <svg viewBox="0 0 24 24" className={`${styles.merk} ${styles.merkFout}`} aria-hidden="true">
+      <path
+        d="M6 6l12 12M18 6L6 18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+function Ster() {
+  return (
+    <svg viewBox="0 0 24 24" className={styles.ster} aria-hidden="true">
+      <path
+        d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3-5.8 3 1.1-6.5L2.6 9.4l6.5-.9z"
+        fill="currentColor"
+      />
+    </svg>
+  )
 }
 
 export function Board({
@@ -74,6 +114,8 @@ export function Board({
 
   const ranks = orientation === 'w' ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8]
   const files = orientation === 'w' ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0]
+  const onderste = ranks[ranks.length - 1]
+  const linkse = files[0]
 
   const has = (list: Square[] | undefined, sq: Square) => Boolean(list?.includes(sq))
 
@@ -87,17 +129,22 @@ export function Board({
               const piece = board[sq]
               const light = isLightSquare(sq)
               const isTarget = has(marks.targets, sq)
+              const goed = has(marks.good, sq)
+              const fout = has(marks.bad, sq)
+
               const classes = [styles.square]
               if (!light) classes.push(styles.dark)
+              if (goed) classes.push(styles.goedVeld)
+              if (fout) classes.push(styles.foutVeld)
               if (selected === sq) classes.push(styles.selected)
               if (has(marks.glow, sq)) classes.push(styles.glow)
-              if (has(marks.goals, sq)) classes.push(styles.goal)
               if (marks.last?.includes(sq)) classes.push(styles.last)
               if (shaking === sq) classes.push(styles.wrong)
 
               const naam = piece
                 ? `${piece.color === 'w' ? 'witte' : 'zwarte'} ${PIECE_NAME[piece.type]}`
                 : 'leeg'
+              const kleurKlasse = light ? styles.opLicht : styles.opDonker
 
               return (
                 <button
@@ -110,6 +157,7 @@ export function Board({
                   aria-pressed={selected === sq}
                   data-square={sq}
                 >
+                  {has(marks.goals, sq) && <Ster />}
                   {piece && (
                     <span
                       className={`${styles.piece} ${piece.color === 'w' ? styles.white : styles.black}`}
@@ -120,14 +168,16 @@ export function Board({
                   )}
                   {isTarget && !piece && <span className={styles.dot} aria-hidden="true" />}
                   {isTarget && piece && <span className={styles.ring} aria-hidden="true" />}
-                  {has(marks.good, sq) && (
-                    <span className={styles.tick} aria-hidden="true">
-                      ✅
+                  {goed && <Vinkje />}
+                  {fout && <Kruisje />}
+                  {showCoordinates && rank === onderste && (
+                    <span className={`${styles.coordLijn} ${kleurKlasse}`} aria-hidden="true">
+                      {FILES[file]}
                     </span>
                   )}
-                  {has(marks.bad, sq) && (
-                    <span className={styles.cross} aria-hidden="true">
-                      🚫
+                  {showCoordinates && file === linkse && (
+                    <span className={`${styles.coordRij} ${kleurKlasse}`} aria-hidden="true">
+                      {rank}
                     </span>
                   )}
                 </button>
@@ -136,16 +186,6 @@ export function Board({
           )}
         </div>
       </div>
-
-      {showCoordinates && (
-        <div className={styles.coords} aria-hidden="true">
-          {files.map((f) => (
-            <span key={f} className={styles.coord}>
-              {FILES[f]}
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   )
 }

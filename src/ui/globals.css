@@ -16,8 +16,8 @@
   --grass-soft: #dfeadd;
   --sky: #3d6c9a;
   --berry: #a63f5b;       /* fout, maar nooit hard */
-  --light-sq: #f0e2c3;
-  --dark-sq: #9db373;
+  --light-sq: #f2ebdd;
+  --dark-sq: #8fa98a;
   --sel: #f0b429;
   --hint: #4e7a54;
   --radius: 16px;
@@ -41,8 +41,8 @@
     --grass-soft: #1e2a21;
     --sky: #6f9dc8;
     --berry: #d1748c;
-    --light-sq: #cbb992;
-    --dark-sq: #6d8452;
+    --light-sq: #c4bcaa;
+    --dark-sq: #5f7a5e;
     --shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 10px 26px -18px #000;
   }
 }
@@ -61,8 +61,8 @@
   --grass-soft: #1e2a21;
   --sky: #6f9dc8;
   --berry: #d1748c;
-  --light-sq: #cbb992;
-  --dark-sq: #6d8452;
+  --light-sq: #c4bcaa;
+  --dark-sq: #5f7a5e;
   --shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 10px 26px -18px #000;
 }
 

@@ -1,69 +1,109 @@
-.wrap { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.wrap { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+
+/* Het bord staat in een rustig randje, niet in een dikke lijst: het bord zelf is de
+   ster, de omlijsting mag je nauwelijks opvallen. */
 .frame {
   position: relative; width: 100%; aspect-ratio: 1;
-  border: 4px solid var(--line); border-radius: 12px; overflow: hidden;
-  background: var(--light-sq); box-shadow: var(--shadow); touch-action: manipulation;
+  border-radius: 10px; overflow: hidden;
+  background: var(--light-sq);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ink) 14%, transparent),
+    var(--shadow);
+  touch-action: manipulation;
 }
-.grid { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; height: 100%; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  /* Expliciete rijen: zonder dit groeien rijen mee met hun inhoud en worden de
+     velden met een stuk erop hoger dan de lege. */
+  grid-template-rows: repeat(8, 1fr);
+  width: 100%; height: 100%;
+}
 
 .square {
   position: relative; border: 0; padding: 0; margin: 0; cursor: pointer;
   display: grid; place-items: center; background: var(--light-sq);
-  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: transparent; outline-offset: -3px;
 }
 .square.dark { background: var(--dark-sq); }
 .square:disabled { cursor: default; }
-.square:focus-visible { outline: 3px solid var(--accent); outline-offset: -4px; z-index: 3; }
+.square:focus-visible { outline: 3px solid var(--accent); z-index: 4; }
 
+/* Stukken: wit is licht met een donkere rand, zwart is donker met een lichte rand.
+   Zo blijven ze op beide veldkleuren leesbaar. */
 .piece {
-  font-size: min(9vw, 46px); line-height: 1; user-select: none;
-  transition: transform 0.12s ease;
-  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.25));
+  font-size: min(9.5vw, 44px); line-height: 1; user-select: none;
+  transition: transform 0.14s ease;
+  filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.28));
+  position: relative; z-index: 2;
 }
-.white { color: #fffdf6; -webkit-text-stroke: 1.6px #2b2a25; text-shadow: 0 1px 0 #2b2a25; }
-.black { color: #2f2b26; -webkit-text-stroke: 1.2px #f4eddc; }
-.square.selected .piece { transform: scale(1.12); }
+.white { color: #fcf8ef; -webkit-text-stroke: 1.5px #33302a; paint-order: stroke fill; }
+.black { color: #2b2823; -webkit-text-stroke: 1.2px #efe7d6; paint-order: stroke fill; }
+.square.selected .piece { transform: scale(1.1); }
 
-/* Waar mag het naartoe? Een stip voor een leeg veld, een ring om een stuk. */
+/* Waar mag het heen: een stip op een leeg veld, een ring om een stuk dat je kunt pakken. */
 .dot {
-  position: absolute; width: 26%; aspect-ratio: 1; border-radius: 50%;
-  background: var(--hint); opacity: 0.55; pointer-events: none;
+  position: absolute; width: 24%; aspect-ratio: 1; border-radius: 50%;
+  background: color-mix(in srgb, var(--ink) 42%, transparent);
+  pointer-events: none; z-index: 1;
 }
 .ring {
-  position: absolute; inset: 8%; border-radius: 50%;
-  border: 5px solid var(--hint); opacity: 0.75; pointer-events: none;
-}
-.selected::after {
-  content: ''; position: absolute; inset: 0;
-  box-shadow: inset 0 0 0 5px var(--sel); pointer-events: none;
-}
-.glow::after {
-  content: ''; position: absolute; inset: 0;
-  box-shadow: inset 0 0 0 5px var(--accent);
-  animation: pulse 1.4s ease-in-out infinite; pointer-events: none;
-}
-.last { box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--sel) 55%, transparent); }
-.goal::before {
-  content: '★'; position: absolute; font-size: min(6vw, 30px); color: var(--accent);
-  opacity: 0.9; pointer-events: none;
-}
-.wrong { animation: shake 0.4s ease; }
-.tick, .cross {
-  position: absolute; top: 4%; right: 6%; font-size: min(4.5vw, 22px);
-  pointer-events: none; line-height: 1;
+  position: absolute; inset: 6%; border-radius: 50%;
+  border: 4px solid color-mix(in srgb, var(--ink) 38%, transparent);
+  pointer-events: none; z-index: 1;
 }
 
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+/* Markeringen zijn een waas over het veld in plaats van een plaatje erop: rustiger,
+   en je blijft het stuk eronder gewoon zien. */
+.selected::after,
+.glow::after,
+.goedVeld::after,
+.foutVeld::after,
+.last::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+}
+.selected::after { box-shadow: inset 0 0 0 4px var(--sel); }
+.glow::after {
+  box-shadow: inset 0 0 0 4px var(--accent);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.goedVeld::after { background: color-mix(in srgb, var(--grass) 40%, transparent); }
+.foutVeld::after { background: color-mix(in srgb, var(--berry) 34%, transparent); }
+.last::after { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--sel) 45%, transparent); }
+
+.merk {
+  position: absolute; top: 6%; right: 6%; width: 26%; height: 26%;
+  pointer-events: none; z-index: 3;
+}
+.merkGoed { color: #ffffff; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35)); }
+.merkFout { color: #ffffff; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35)); }
+
+.ster {
+  position: absolute; width: 44%; height: 44%; color: var(--accent);
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+  pointer-events: none; z-index: 1;
+  animation: wiegen 2.4s ease-in-out infinite;
+}
+
+.wrong { animation: shake 0.4s ease; z-index: 5; }
+
+/* Coördinaten staan in het veld zelf, klein en zacht — zoals op een echt bord. */
+.coordLijn, .coordRij {
+  position: absolute; font-size: min(2.4vw, 11px); font-weight: 700;
+  opacity: 0.55; pointer-events: none; z-index: 1;
+}
+.coordLijn { bottom: 2px; right: 4px; }
+.coordRij { top: 2px; left: 4px; }
+.opLicht { color: #6d7a5f; }
+.opDonker { color: #f2ecdd; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+@keyframes wiegen {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-}
-
-.coords { display: flex; justify-content: space-between; padding: 0 10px; }
-.coord { font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-.ranks {
-  position: absolute; left: 3px; top: 0; height: 100%;
-  display: flex; flex-direction: column; justify-content: space-around;
-  pointer-events: none; font-size: 0.7rem; color: rgba(0, 0, 0, 0.45); font-weight: 700;
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }

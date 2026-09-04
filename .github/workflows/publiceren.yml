@@ -1,0 +1,50 @@
+name: Publiceren naar de productietak
+
+# TransIP AutoGit publiceert de inhoud van een tak zoals die is — het bouwt niet.
+# Daarom bouwt deze workflow de app en zet hij alleen het resultaat (out/) in de tak
+# 'productie'. Zet AutoGit dus op 'productie', niet op 'main'.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publiceren
+  cancel-in-progress: true
+
+jobs:
+  bouwen-en-publiceren:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Controles
+        run: |
+          npm run typecheck
+          npm test
+          npm run validate:content
+
+      - name: Bouwen
+        run: npm run build
+
+      - name: Naar de productietak zetten
+        run: |
+          cd out
+          git init -q -b productie
+          git config user.name "Schaakmaatje bouwrobot"
+          git config user.email "noreply@schaakmaatje.nl"
+          git add -A
+          git commit -q -m "Build van ${GITHUB_SHA::7}"
+          git push -q --force \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" \
+            productie
