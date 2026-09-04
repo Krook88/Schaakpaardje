@@ -1,0 +1,40 @@
+.oorkonde {
+  background: var(--surface);
+  border: 6px double var(--line);
+  border-radius: 14px;
+  padding: 30px 26px 26px;
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.brons { border-color: #b08154; }
+.zilver { border-color: #9aa3ad; }
+.goud { border-color: #c9a227; }
+
+.klein {
+  font-size: 0.78rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+}
+.medaille { font-size: 58px; line-height: 1; margin: 4px 0; }
+.titel { font-size: clamp(1.5rem, 5vw, 2.1rem); }
+.uitgereikt { color: var(--muted); }
+.naam {
+  font-size: clamp(1.7rem, 7vw, 2.6rem); font-weight: 800; letter-spacing: -0.02em;
+  padding: 4px 0 6px; border-bottom: 2px solid var(--line); margin: 0 auto; min-width: 60%;
+}
+.wat { color: var(--muted); font-size: 0.95rem; }
+.werelden { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 6px; }
+.wereld {
+  font-size: 0.78rem; border: 1px solid var(--line); border-radius: 999px;
+  padding: 3px 10px; color: var(--muted);
+}
+.datum { margin-top: 12px; font-size: 0.85rem; color: var(--muted); }
+.handtekening { font-size: 1.05rem; font-weight: 700; }
+
+@media print {
+  .verbergBijPrinten { display: none !important; }
+  .oorkonde { box-shadow: none; border-color: #333; }
+}

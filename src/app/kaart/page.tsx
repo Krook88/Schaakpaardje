@@ -87,9 +87,9 @@ export default function Kaart() {
               )}
 
               {wereld.diploma && af && (
-                <p style={{ margin: 0 }}>
-                  🥉 Hoefijzer {wereld.diploma} verdiend!
-                </p>
+                <Link href={`/diploma/${wereld.diploma}/`} className="btn btn--primary">
+                  🏅 Bekijk je hoefijzer {wereld.diploma}
+                </Link>
               )}
             </section>
           )

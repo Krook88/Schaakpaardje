@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import '@/ui/globals.css'
+import { ServiceWorker } from '@/ui/ServiceWorker'
 
 export const metadata: Metadata = {
   title: 'Schaakmaatje — leer schaken met Pip',
@@ -20,7 +21,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="nl">
-      <body>{children}</body>
+      <body>
+        {children}
+        <ServiceWorker />
+      </body>
     </html>
   )
 }

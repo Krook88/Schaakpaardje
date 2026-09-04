@@ -10,6 +10,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
+import { DIPLOMAS, type DiplomaSoort } from '@/content/diplomas'
 
 export type Modus = 'pip' | 'ontdekker' | 'schaker'
 
@@ -249,6 +250,16 @@ export function wereldIsAf(wereldId: string, voortgang: Record<string, LesResult
   const wereld = WERELDEN.find((w) => w.id === wereldId)
   if (!wereld) return false
   return wereld.lessen.every((l) => (voortgang[l.id]?.sterren ?? 0) >= 2)
+}
+
+/** Is dit diploma verdiend? Dat is zo zodra alle werelden tot en met `tot` af zijn. */
+export function diplomaBehaald(
+  soort: DiplomaSoort,
+  voortgang: Record<string, LesResultaat>,
+): boolean {
+  const diploma = DIPLOMAS.find((d) => d.soort === soort)
+  if (!diploma) return false
+  return WERELDEN.filter((w) => w.nummer <= diploma.tot).every((w) => wereldIsAf(w.id, voortgang))
 }
 
 export function sterrenTotaal(voortgang: Record<string, LesResultaat>): number {

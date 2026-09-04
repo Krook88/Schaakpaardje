@@ -1,0 +1,83 @@
+/*
+ * Service worker van Schaakmaatje.
+ *
+ * Doel: na het eerste bezoek werkt de app zonder internet. Dat is geen extraatje maar
+ * een belofte uit het plan — kinderen spelen in de auto, op school met matige wifi, en
+ * op een tablet die maar af en toe verbinding heeft.
+ *
+ * Aanpak: alles wat de app ophaalt en goed terugkomt, gaat in de cache. Daarna wordt
+ * eerst de cache geprobeerd voor bestanden die toch nooit veranderen (die hebben een
+ * hash in hun naam), en voor pagina's het netwerk met de cache als vangnet.
+ */
+const CACHE = 'schaakmaatje-v1'
+
+// Wat er sowieso in moet, ook als het kind alleen de voorpagina heeft gezien.
+const KERN = ['./', './manifest.webmanifest', './icon.svg']
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches
+      .open(CACHE)
+      .then((cache) => cache.addAll(KERN))
+      .then(() => self.skipWaiting()),
+  )
+})
+
+self.addEventListener('activate', (event) => {
+  // Oude versies opruimen, anders blijft een kind op een verouderde app hangen.
+  event.waitUntil(
+    caches
+      .keys()
+      .then((namen) => Promise.all(namen.filter((n) => n !== CACHE).map((n) => caches.delete(n))))
+      .then(() => self.clients.claim()),
+  )
+})
+
+self.addEventListener('fetch', (event) => {
+  const verzoek = event.request
+  if (verzoek.method !== 'GET') return
+  const url = new URL(verzoek.url)
+  if (url.origin !== self.location.origin) return
+
+  // Bestanden met een hash in hun naam veranderen nooit: cache eerst, dat is direct.
+  const isBlijvend = url.pathname.includes('/_next/static/') || url.pathname.startsWith('/audio/')
+
+  if (isBlijvend) {
+    event.respondWith(
+      caches.match(verzoek).then(
+        (gevonden) =>
+          gevonden ||
+          fetch(verzoek).then((antwoord) => {
+            bewaar(verzoek, antwoord.clone())
+            return antwoord
+          }),
+      ),
+    )
+    return
+  }
+
+  // Pagina's: netwerk eerst zodat een nieuwe versie meteen zichtbaar is, met de cache
+  // als vangnet zodra er geen verbinding is.
+  event.respondWith(
+    fetch(verzoek)
+      .then((antwoord) => {
+        bewaar(verzoek, antwoord.clone())
+        return antwoord
+      })
+      .catch(async () => {
+        const gevonden = await caches.match(verzoek)
+        if (gevonden) return gevonden
+        // Onbekende pagina zonder verbinding: geef de stal, daar kan het kind verder.
+        if (verzoek.mode === 'navigate') {
+          const start = await caches.match('./')
+          if (start) return start
+        }
+        return new Response('Geen verbinding', { status: 503, statusText: 'offline' })
+      }),
+  )
+})
+
+function bewaar(verzoek, antwoord) {
+  if (!antwoord || antwoord.status !== 200 || antwoord.type === 'opaque') return
+  caches.open(CACHE).then((cache) => cache.put(verzoek, antwoord))
+}
