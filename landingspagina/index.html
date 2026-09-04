@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schaakmaatje — leer schaken met Pip</title>
+<meta name="description" content="Schaakmaatje leert kinderen van 3 tot 10 jaar schaken, op z'n Nederlands, met Pip het schaakpaardje die alles voorleest. Binnenkort.">
+<meta name="theme-color" content="#4e7a54">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐴</text></svg>">
+<meta property="og:title" content="Schaakmaatje — leer schaken met Pip">
+<meta property="og:description" content="Leer schaken op z'n Nederlands. Voor kinderen van 3 tot 10 jaar, met een paardje dat alles voorleest.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="nl_NL">
+<style>
+  :root{
+    --ground:#f6f1e6; --surface:#fffdf8; --ink:#22201b; --muted:#6b6357;
+    --line:#ded3bf; --accent:#c2661a; --grass:#4e7a54; --grass-soft:#dfeadd;
+    --licht:#f2ebdd; --donker:#8fa98a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--ground); color:var(--ink);
+    font-family:ui-rounded,'SF Pro Rounded','Segoe UI Rounded',Nunito,system-ui,-apple-system,'Segoe UI',sans-serif;
+    font-size:18px; line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:32px 22px 64px}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:38px}
+  .logo{
+    width:56px;height:56px;border-radius:50%;background:var(--grass-soft);
+    border:3px solid var(--line);display:grid;place-items:center;font-size:30px;flex:0 0 auto;
+  }
+  .naam{font-size:1.35rem;font-weight:800;letter-spacing:-.02em}
+  .naam small{display:block;font-size:.78rem;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+
+  .hero{display:grid;gap:30px;grid-template-columns:minmax(0,1fr) auto;align-items:center;margin-bottom:46px}
+  h1{margin:0 0 14px;font-size:clamp(1.9rem,6vw,2.9rem);line-height:1.08;letter-spacing:-.025em;text-wrap:balance}
+  .lead{margin:0;color:var(--muted);font-size:1.08rem;max-width:34ch}
+  .badge{
+    display:inline-block;margin-bottom:16px;padding:5px 14px;border-radius:999px;
+    background:var(--grass-soft);color:var(--grass);border:1px solid rgba(78,122,84,.3);
+    font-size:.8rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  }
+
+  .bord{
+    display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);
+    width:min(230px,38vw);aspect-ratio:1;border-radius:10px;overflow:hidden;
+    box-shadow:0 0 0 1px rgba(34,32,27,.14),0 2px 0 rgba(34,32,27,.08),0 16px 34px -22px rgba(34,32,27,.7);
+  }
+  .v{background:var(--licht)} .v.d{background:var(--donker)}
+  .v span{display:grid;place-items:center;width:100%;height:100%;font-size:min(4.6vw,26px);
+    color:#fcf8ef;-webkit-text-stroke:1.4px #33302a;filter:drop-shadow(0 1px 1px rgba(0,0,0,.28))}
+  .stip{width:24%;aspect-ratio:1;border-radius:50%;background:rgba(34,32,27,.42);margin:auto}
+
+  ul.punten{list-style:none;margin:0 0 42px;padding:0;display:grid;gap:14px}
+  ul.punten li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:start}
+  ul.punten b{display:block}
+  .icoon{
+    width:42px;height:42px;border-radius:12px;background:var(--surface);border:2px solid var(--line);
+    display:grid;place-items:center;font-size:20px;flex:0 0 auto;
+  }
+  ul.punten span.uitleg{color:var(--muted);font-size:.96rem}
+
+  .kaart{
+    background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:24px;
+    box-shadow:0 2px 0 rgba(34,32,27,.06),0 14px 30px -24px rgba(34,32,27,.7);
+  }
+  .kaart h2{margin:0 0 8px;font-size:1.2rem;letter-spacing:-.01em}
+  .kaart p{margin:0 0 18px;color:var(--muted);font-size:.98rem}
+  .knop{
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:54px;
+    padding:0 24px;border-radius:14px;background:var(--accent);color:#fff;text-decoration:none;
+    font-weight:700;border:2px solid transparent;
+  }
+  .knop:hover{filter:brightness(1.06)}
+  .knop:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+
+  footer{margin-top:42px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;
+    display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+
+  @media (max-width:640px){
+    .hero{grid-template-columns:1fr;gap:24px}
+    .bord{width:min(220px,58vw)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo" aria-hidden="true">🐴</div>
+    <div class="naam">Schaakmaatje<small>schaakmaatje.nl</small></div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <span class="badge">Binnenkort</span>
+      <h1>Leer schaken met Pip het schaakpaardje</h1>
+      <p class="lead">
+        Een Nederlandse leer-app voor kinderen van 3 tot 10 jaar. Pip leest alles voor,
+        dus je hoeft nog niet te kunnen lezen om te beginnen.
+      </p>
+    </div>
+
+    <!-- Wereld 4, les 1: waar kan het paard heen? -->
+    <div class="bord" role="img" aria-label="Schaakbord met een wit paard op e5 en stippen op de acht velden waar het naartoe kan springen.">
+      <script>
+        (function () {
+          var lijnen = ['a','b','c','d','e','f','g','h']
+          var paard = 'e5'
+          var doelen = ['d7','f7','c6','g6','c4','g4','d3','f3']
+          var html = ''
+          for (var r = 8; r >= 1; r--) {
+            for (var f = 0; f < 8; f++) {
+              var veld = lijnen[f] + r
+              // a1 is donker: (kolom + rij) even betekent licht
+              var licht = (f + r) % 2 === 0
+              var inhoud = veld === paard
+                ? '<span>&#9822;</span>'
+                : (doelen.indexOf(veld) !== -1 ? '<div class="stip"></div>' : '')
+              html += '<div class="v' + (licht ? '' : ' d') + '">' + inhoud + '</div>'
+            }
+          }
+          document.currentScript.parentElement.innerHTML = html
+        })()
+      </script>
+    </div>
+  </section>
+
+  <ul class="punten">
+    <li>
+      <div class="icoon" aria-hidden="true">🔊</div>
+      <div>
+        <b>Alles wordt voorgelezen</b>
+        <span class="uitleg">Geen letter nodig. Pip vertelt de uitleg, stelt de vraag en moedigt aan.</span>
+      </div>
+    </li>
+    <li>
+      <div class="icoon" aria-hidden="true">🇳🇱</div>
+      <div>
+        <b>Op z'n Nederlands opgebouwd</b>
+        <span class="uitleg">Eerst de makkelijke stukken, dan de moeilijke, en schaakmat pas veel later — precies zoals op de club.</span>
+      </div>
+    </li>
+    <li>
+      <div class="icoon" aria-hidden="true">🎲</div>
+      <div>
+        <b>Leren door te spelen</b>
+        <span class="uitleg">Korte lessen met sterren, minispellen en echte partijtjes tegen dieren die net zo goed zijn als jij.</span>
+      </div>
+    </li>
+    <li>
+      <div class="icoon" aria-hidden="true">🔒</div>
+      <div>
+        <b>Veilig en zonder gedoe</b>
+        <span class="uitleg">Geen account, geen advertenties, geen chat. Alles blijft op het apparaat van je kind.</span>
+      </div>
+    </li>
+  </ul>
+
+  <section class="kaart">
+    <h2>Bericht krijgen als het klaar is?</h2>
+    <p>Stuur een mailtje, dan laten we het weten zodra Schaakmaatje open gaat. Verder krijg je niets van ons.</p>
+    <a class="knop" href="mailto:hallo@schaakmaatje.nl?subject=Houd%20me%20op%20de%20hoogte%20van%20Schaakmaatje&amp;body=Ja%2C%20laat%20maar%20weten%20wanneer%20Schaakmaatje%20klaar%20is.">
+      ✉️ Houd me op de hoogte
+    </a>
+  </section>
+
+  <footer>
+    <span>Schaakmaatje — leer schaken met Pip 🐴</span>
+    <span>In aanbouw</span>
+  </footer>
+
+</div>
+</body>
+</html>
