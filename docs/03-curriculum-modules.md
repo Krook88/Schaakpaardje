@@ -75,6 +75,21 @@ Wereld 8 leert drie manieren om een aangevallen stuk te redden: weglopen, de aan
 slaan, en dekken. Dat zijn dezelfde drie die straks bij schaak terugkomen — dat is precies
 waarom deze wereld vóór wereld 9 staat.
 
+### Wereld 9 en het punt waarop de regels erbij komen
+
+Tot en met wereld 8 rekende de app meetkundig: waar mag dit stuk heen. Bij schaak kan
+dat niet meer — dan telt ook wat er ná de zet gebeurt, en bestaat een zet die je koning
+in het schaak laat staan simpelweg niet. Daarvoor is het opgavetype `regelZet`
+toegevoegd, dat op chess.js draait.
+
+Het beoordeelt een zet op **wat hij bereikt**, niet op welk veld het is. Dat moest wel:
+uit schaak gaan kan op drie manieren (weglopen, de aanvaller slaan, ertussen zetten) en
+die zijn alle drie goed. Een opgave met één "juist" veld zou hier fout onderwijs zijn.
+
+Mooie bijvangst: het bord toont bij een regelZet alleen de zetten die écht mogen. Een
+kind dat zijn koning naar een aangevallen veld wil zetten, ziet dat veld niet oplichten —
+de regel legt zichzelf uit.
+
 ## 3.5 Diploma's
 Drie interne diploma's, met een printbaar/deelbaar certificaat met de naam van het kind:
 - **Hoefijzer Brons** — werelden 0–6 (alle stukken en regels behalve mat).

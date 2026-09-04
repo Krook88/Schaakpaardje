@@ -9,8 +9,15 @@ import { Sterren } from '@/ui/Sterren'
 import { sfx } from '@/audio/sfx'
 import { kies } from '@/audio/voice'
 import { BIJNA, PRIJS, PRIJS_LAATSTE } from '@/content/voice'
-import { pieceMoves, type Square } from '@/engine/board'
-import { doelVelden, hint as geefHint, startOpgave, tik, type OpgaveStand } from '@/lesson/runner'
+import { type Square } from '@/engine/board'
+import {
+  doelVelden,
+  hint as geefHint,
+  mogelijkeVelden,
+  startOpgave,
+  tik,
+  type OpgaveStand,
+} from '@/lesson/runner'
 import { useInstellingen } from '@/progress/store'
 import { minispelMet, zaad, type Minispel } from './minispellen'
 
@@ -93,7 +100,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
   const marks: BoardMarks = useMemo(() => {
     const m: BoardMarks = { good: stand.gevonden, glow: hintVelden, last: stand.laatsteZet ?? undefined }
     if (stand.misser) m.bad = [stand.misser]
-    if (stand.geselecteerd) m.targets = pieceMoves(stand.board, stand.geselecteerd).all
+    if (stand.geselecteerd) m.targets = mogelijkeVelden(stand, stand.geselecteerd)
     if (stand.opgave.kind === 'reach') m.goals = [stand.opgave.doel]
     return m
   }, [stand, hintVelden])

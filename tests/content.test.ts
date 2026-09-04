@@ -19,8 +19,9 @@ describe('de content', () => {
   })
 
   it('heeft genoeg lesstof', () => {
-    // Werelden 0 t/m 8: alle stukken, de waarde ervan, en aanval en verdediging.
-    expect(WERELDEN).toHaveLength(9)
+    // Werelden 0 t/m 9: alle stukken, hun waarde, aanval en verdediging, en schaak.
+    expect(WERELDEN).toHaveLength(10)
+    // Ondergrens, geen exacte telling: dan hoeft deze test niet mee te groeien.
     expect(ALLE_LESSEN.length).toBeGreaterThanOrEqual(30)
   })
 

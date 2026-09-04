@@ -6,6 +6,8 @@
  * kind vastloopt. Geen enkele opgave komt in main als hij hier niet doorheen komt.
  */
 import { parseBoard, pieceMoves, type Square } from '@/engine/board'
+import { Game } from '@/engine/game'
+import { goedeZetten } from '@/lesson/runner'
 import { geldigVeld, korstePad, slaAllesOp } from '@/engine/puzzels'
 import { WERELDEN } from './index'
 import type { Exercise, Lesson, World } from './types'
@@ -71,6 +73,31 @@ function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
       if (!vijanden) fout('er valt niets te slaan')
       const oplossing = slaAllesOp(board, o.from, o.elkeZetRaak)
       if (!oplossing) fout('deze opgave is niet op te lossen')
+      break
+    }
+    case 'regelZet': {
+      let game: Game
+      try {
+        game = new Game(o.fen)
+      } catch (e) {
+        return [{ waar, probleem: `chess.js weigert deze stelling: ${(e as Error).message}` }]
+      }
+      const status = game.status()
+      if (status.over) {
+        fout(`de partij is hier al afgelopen (${status.reason}), dus er valt niets te zetten`)
+        break
+      }
+      if (o.eis === 'uitSchaak' && !status.check) {
+        fout('de eis is uit schaak gaan, maar er staat helemaal geen schaak')
+      }
+      if (o.eis !== 'uitSchaak' && status.check) {
+        fout('de speler staat zelf schaak; dan gaat de opgave over iets anders')
+      }
+      const opties = goedeZetten(game, o.eis)
+      if (!opties.length) fout(`geen enkele zet voldoet aan de eis '${o.eis}'`)
+      if (o.eis === 'geefSchaak' && opties.length === game.legalMoves().length) {
+        fout('elke zet geeft schaak; dan valt er niets te zoeken')
+      }
       break
     }
     case 'quiz': {

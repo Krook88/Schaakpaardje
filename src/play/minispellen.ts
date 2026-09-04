@@ -21,6 +21,8 @@ import {
   type Square,
 } from '@/engine/board'
 import { korstePad, slaAllesOp } from '@/engine/puzzels'
+import { Game } from '@/engine/game'
+import { goedeZetten } from '@/lesson/runner'
 import type { Exercise } from '@/content/types'
 
 export type Minispel = {
@@ -346,6 +348,58 @@ export const MINISPELLEN: Minispel[] = [
         from: 'd3',
         goed: ['d8', 'd6', 'd5', 'd4', 'a3', 'b3', 'c3', 'e3', 'f3', 'g3', 'd2', 'd1'],
         vraag: 'Je toren staat te pakken. Breng hem in veiligheid.',
+      }
+    },
+  },
+  {
+    id: 'schaak-alarm',
+    naam: 'Schaak-alarm',
+    emoji: '⚡',
+    uitleg: 'Geef schaak aan de zwarte koning.',
+    maakOpgave(niveau, random = Math.random) {
+      const stukken: PieceType[] = niveau <= 2 ? ['r', 'q'] : ['r', 'b', 'n', 'q']
+      for (let poging = 0; poging < 400; poging++) {
+        const zwarteKoning = willekeurigVeld(random)
+        const witteKoning = willekeurigVeld(random, [zwarteKoning])
+        // Koningen mogen nooit naast elkaar staan.
+        if (controleVelden(zet({}, witteKoning, 'k', 'w'), witteKoning).includes(zwarteKoning)) continue
+
+        const soort = stukken[Math.floor(random() * stukken.length)]
+        const veld = willekeurigVeld(random, [zwarteKoning, witteKoning])
+        let board = zet({}, zwarteKoning, 'k', 'b')
+        board = zet(board, witteKoning, 'k', 'w')
+        board = zet(board, veld, soort, 'w')
+        // Een pion erbij, anders ziet chess.js koning+paard als remise wegens
+        // onvoldoende materiaal en is er niets meer te spelen.
+        const pionVeld = allSquares().filter(
+          (sq) => !board[sq] && Number(sq[1]) > 1 && Number(sq[1]) < 8,
+        )[Math.floor(random() * 40)]
+        if (pionVeld) board = zet(board, pionVeld, 'p', 'w')
+
+        const fen = `${bordNaarFen(board)} w - - 0 1`
+        try {
+          const game = new Game(fen)
+          const status = game.status()
+          if (status.over || status.check) continue
+          const goed = goedeZetten(game, 'geefSchaak')
+          // Minstens één schaak, maar niet zó veel dat het vanzelf goed gaat.
+          if (!goed.length || goed.length > 4) continue
+          return {
+            kind: 'regelZet',
+            fen,
+            eis: 'geefSchaak',
+            vraag: 'Geef schaak aan de zwarte koning.',
+            foutTip: 'Zoek een zet waarmee je stuk de koning kan aanvallen.',
+          }
+        } catch {
+          continue
+        }
+      }
+      return {
+        kind: 'regelZet',
+        fen: '4k3/8/8/8/8/8/8/R5K1 w - - 0 1',
+        eis: 'geefSchaak',
+        vraag: 'Geef schaak aan de zwarte koning.',
       }
     },
   },

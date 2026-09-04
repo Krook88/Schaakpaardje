@@ -8,6 +8,8 @@ import {
   PIECE_VALUE,
   veiligeVelden,
 } from '@/engine/board'
+import { Game } from '@/engine/game'
+import { goedeZetten } from '@/lesson/runner'
 import { lesMet } from '@/content'
 import type { Exercise } from '@/content/types'
 import { minispelMet, zaad } from '@/play/minispellen'
@@ -116,6 +118,57 @@ describe('de nieuwe minispellen', () => {
         expect(aanvallersVan(board, o.from, 'b').length).toBeGreaterThan(0)
         expect(o.goed.length).toBeGreaterThan(0)
         expect(sorteer(o.goed)).toEqual(sorteer(veiligeVelden(board, o.from)))
+      }
+    }
+  })
+})
+
+describe('wereld 9 — schaak', () => {
+  it('elke regelZet-opgave is oplosbaar en klopt met zijn eis', () => {
+    for (const les of ['schaak-1', 'schaak-2', 'schaak-3']) {
+      for (const o of zetOpgaven(les)) {
+        if (o.kind !== 'regelZet') continue
+        const game = new Game(o.fen)
+        const status = game.status()
+        expect(status.over, `${o.fen} is al afgelopen`).toBe(false)
+        if (!status.over && o.eis === 'uitSchaak') {
+          expect(status.check, `${o.fen} zou schaak moeten staan`).toBe(true)
+        }
+        if (!status.over && o.eis === 'geefSchaak') {
+          expect(status.check, `${o.fen} staat zelf schaak`).toBe(false)
+        }
+        const goed = goedeZetten(game, o.eis)
+        expect(goed.length, `geen oplossing voor ${o.fen}`).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('de opgave met drie manieren biedt ook echt alle drie', () => {
+    const game = new Game('R3r3/8/8/7k/8/2B5/8/4K3 w - - 0 1')
+    const zetten = game.legalMoves()
+    expect(zetten.some((z) => z.isCapture), 'de aanvaller slaan moet kunnen').toBe(true)
+    expect(zetten.some((z) => z.from === 'c3'), 'ertussen zetten moet kunnen').toBe(true)
+    expect(zetten.some((z) => z.from === 'e1'), 'weglopen moet kunnen').toBe(true)
+  })
+
+  it('een zet die het schaak niet oplost, bestaat niet', () => {
+    // Dit is precies wat een kind hier leert: chess.js laat zo'n zet niet toe.
+    const game = new Game('7k/8/8/8/8/8/4r3/4K3 w - - 0 1')
+    expect(game.move('e1', 'e2')).not.toBeNull() // de toren slaan mag wel
+    const anders = new Game('7k/8/8/8/8/8/4r3/4K3 w - - 0 1')
+    expect(anders.move('e1', 'f2')).toBeNull() // f2 blijft door de toren bestreken
+  })
+
+  it('schaak-alarm geeft altijd een stelling waarin schaak te geven is', () => {
+    const spel = minispelMet('schaak-alarm')!
+    for (let niveau = 1; niveau <= 6; niveau++) {
+      for (let n = 0; n < 10; n++) {
+        const o = spel.maakOpgave(niveau, zaad(niveau * 31 + n))
+        expect(o.kind).toBe('regelZet')
+        if (o.kind !== 'regelZet') continue
+        const game = new Game(o.fen)
+        expect(game.status().over).toBe(false)
+        expect(goedeZetten(game, 'geefSchaak').length).toBeGreaterThan(0)
       }
     }
   })

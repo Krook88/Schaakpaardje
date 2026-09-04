@@ -11,6 +11,7 @@ import {
   type Square,
 } from '@/engine/board'
 import { korstePad, slaAllesOp } from '@/engine/puzzels'
+import { Game } from '@/engine/game'
 import type { Exercise } from '@/content/types'
 
 export type OpgaveStand = {
@@ -28,6 +29,8 @@ export type OpgaveStand = {
   hints: number
   klaar: boolean
   laatsteZet: [Square, Square] | null
+  /** Alleen bij 'regelZet': de partij met alle echte schaakregels erin. */
+  game?: Game
 }
 
 export type TikUitkomst =
@@ -52,6 +55,7 @@ export function doelVelden(opgave: Exercise): Square[] {
 
 export function startOpgave(opgave: Exercise): OpgaveStand {
   const board = opgave.kind === 'quiz' ? {} : parseBoard(opgave.fen)
+  const game = opgave.kind === 'regelZet' ? new Game(opgave.fen) : undefined
   const actiefStuk =
     opgave.kind === 'reach' || opgave.kind === 'captureAll'
       ? opgave.from
@@ -70,7 +74,18 @@ export function startOpgave(opgave: Exercise): OpgaveStand {
     hints: 0,
     klaar: false,
     laatsteZet: null,
+    game,
   }
+}
+
+/**
+ * De velden waar het aangetikte stuk heen mag. Bij de gewone opgaven is dat meetkundig,
+ * bij een regelZet vraagt hij het aan chess.js — die weet ook dat je je koning niet in
+ * schaak mag laten staan.
+ */
+export function mogelijkeVelden(stand: OpgaveStand, veld: Square): Square[] {
+  if (stand.opgave.kind === 'regelZet') return stand.game?.destinations(veld) ?? []
+  return pieceMoves(stand.board, veld).all
 }
 
 function vijandenOver(board: BoardMap, kleur: 'w' | 'b'): number {
@@ -84,6 +99,9 @@ function vijandenOver(board: BoardMap, kleur: 'w' | 'b'): number {
 export function tik(stand: OpgaveStand, veld: Square): { stand: OpgaveStand; uit: TikUitkomst } {
   const o = stand.opgave
   if (stand.klaar || o.kind === 'quiz') return { stand, uit: 'genegeerd' }
+
+  /* ---- zet volgens de echte regels ---- */
+  if (o.kind === 'regelZet') return tikRegelZet(stand, veld, o)
 
   /* ---- tik-opgaven: velden aanwijzen ---- */
   if (o.kind === 'tapSquares' || o.kind === 'tapMoves') {
@@ -203,6 +221,83 @@ export function tik(stand: OpgaveStand, veld: Square): { stand: OpgaveStand; uit
   return { stand, uit: 'genegeerd' }
 }
 
+/**
+ * Eén tik in een regelZet-opgave. Wat "goed" is, hangt af van wat de zet bereikt,
+ * niet van welk veld het is: uit schaak gaan mag op drie manieren.
+ */
+function tikRegelZet(
+  stand: OpgaveStand,
+  veld: Square,
+  o: Extract<Exercise, { kind: 'regelZet' }>,
+): { stand: OpgaveStand; uit: TikUitkomst } {
+  const game = stand.game
+  if (!game) return { stand, uit: 'genegeerd' }
+
+  if (!stand.geselecteerd) {
+    const stuk = stand.board[veld]
+    if (!stuk || stuk.color !== game.turn) return { stand, uit: 'genegeerd' }
+    if (!game.destinations(veld).length) {
+      // Dit stuk kan geen enkele legale zet doen — meestal omdat de koning schaak staat.
+      return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1 }, uit: 'fout' }
+    }
+    return { stand: { ...stand, geselecteerd: veld, misser: null }, uit: 'geselecteerd' }
+  }
+
+  const van = stand.geselecteerd
+  if (veld === van) return { stand: { ...stand, geselecteerd: null }, uit: 'genegeerd' }
+
+  const proef = game.clone()
+  const gedaan = proef.move(van, veld)
+  if (!gedaan) {
+    // chess.js weigert alles wat niet mag. Precies daar zit de les: een zet die je
+    // koning schaak laat staan, bestaat niet.
+    return {
+      stand: { ...stand, misser: veld, fouten: stand.fouten + 1, geselecteerd: null },
+      uit: 'fout',
+    }
+  }
+
+  const status = proef.status()
+  const gelukt =
+    o.eis === 'uitSchaak'
+      ? true // elke legale zet haalt je koning uit schaak; dat is precies het punt
+      : o.eis === 'geefSchaak'
+        ? gedaan.isCheck || (status.over && status.reason === 'mat')
+        : status.over && status.reason === 'mat'
+
+  if (!gelukt) {
+    return {
+      stand: { ...stand, misser: veld, fouten: stand.fouten + 1, geselecteerd: null },
+      uit: 'fout',
+    }
+  }
+
+  return {
+    stand: {
+      ...stand,
+      game: proef,
+      board: parseBoard(proef.fen),
+      geselecteerd: null,
+      zetten: stand.zetten + 1,
+      laatsteZet: [van, veld],
+      klaar: true,
+    },
+    uit: 'klaar',
+  }
+}
+
+/** Alle zetten die aan de eis voldoen. Ook gebruikt door de contentcontrole. */
+export function goedeZetten(game: Game, eis: 'geefSchaak' | 'uitSchaak' | 'matIn1') {
+  return game.legalMoves().filter((zet) => {
+    if (eis === 'uitSchaak') return true
+    const na = game.clone()
+    na.move(zet.from, zet.to)
+    const status = na.status()
+    const mat = status.over && status.reason === 'mat'
+    return eis === 'matIn1' ? mat : zet.isCheck || mat
+  })
+}
+
 /** Antwoord op een meerkeuzevraag. */
 export function antwoordQuiz(stand: OpgaveStand, index: number): { stand: OpgaveStand; goed: boolean } {
   const o = stand.opgave
@@ -238,6 +333,11 @@ export function hint(stand: OpgaveStand): { stand: OpgaveStand; velden: Square[]
     const van = stand.actiefStuk ?? o.from
     const pad = slaAllesOp(stand.board, van, o.elkeZetRaak)
     return { stand: nieuw, velden: pad?.slice(0, 1) ?? [] }
+  }
+  if (o.kind === 'regelZet' && stand.game) {
+    // Wijs het stuk aan waarmee het kan, niet het veld: dan blijft er iets te denken over.
+    const zet = goedeZetten(stand.game, o.eis)[0]
+    return { stand: nieuw, velden: zet ? [zet.from] : [] }
   }
   return { stand: nieuw, velden: [] }
 }

@@ -19,6 +19,20 @@ export type Exercise =
   | { kind: 'reach'; fen: Fen; from: Square; doel: Square; maxZetten?: number; vraag: string }
   /** Sla alle vijandelijke stukken; eventueel moet elke zet raak zijn. */
   | { kind: 'captureAll'; fen: Fen; from: Square; elkeZetRaak?: boolean; vraag: string }
+  /**
+   * Een zet volgens de échte schaakregels (chess.js), beoordeeld op wat hij bereikt
+   * in plaats van op één goed veld. Vanaf wereld 9 kan dat niet anders: uit schaak
+   * gaan kan op drie manieren, en die zijn alle drie goed. Een lijstje met "het" goede
+   * veld zou hier dus fout onderwijs zijn.
+   */
+  | {
+      kind: 'regelZet'
+      /** Volledige FEN, inclusief wie er aan zet is. */
+      fen: Fen
+      eis: 'geefSchaak' | 'uitSchaak' | 'matIn1'
+      vraag: string
+      foutTip?: string
+    }
   /** Meerkeuze met grote knoppen, voor begrip in plaats van uitvoering. */
   | {
       kind: 'quiz'

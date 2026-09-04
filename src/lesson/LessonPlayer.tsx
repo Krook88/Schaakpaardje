@@ -19,11 +19,12 @@ import {
   WERELD_AF,
 } from '@/content/voice'
 import { volgendeLes, type Lesson, type World } from '@/content'
-import { pieceMoves, type Square } from '@/engine/board'
+import { type Square } from '@/engine/board'
 import {
   antwoordQuiz,
   doelVelden,
   hint as geefHint,
+  mogelijkeVelden,
   startOpgave,
   sterrenVoor,
   tik,
@@ -223,7 +224,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
     const m: BoardMarks = { good: stand.gevonden, glow: hintVelden, last: stand.laatsteZet ?? undefined }
     if (stand.misser) m.bad = [stand.misser]
     if (stand.geselecteerd) {
-      m.targets = pieceMoves(stand.board, stand.geselecteerd).all
+      m.targets = mogelijkeVelden(stand, stand.geselecteerd)
     }
     if (stand.opgave.kind === 'reach') m.goals = [stand.opgave.doel]
     return m
