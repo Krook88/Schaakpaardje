@@ -2,8 +2,10 @@
  * Spreekt alle zinnen van Pip in met ElevenLabs.
  *
  *   ELEVENLABS_API_KEY=... npm run audio:render
- *   npm run audio:render -- --dry     # alleen laten zien wat er zou gebeuren
- *   npm run audio:render -- --force   # alles opnieuw, ook wat er al staat
+ *   npm run audio:render -- --dry       # alleen laten zien wat er zou gebeuren
+ *   npm run audio:render -- --proef     # een handvol zinnen, om de stem te keuren
+ *   npm run audio:render -- --limit 20  # hoogstens twintig zinnen
+ *   npm run audio:render -- --force     # alles opnieuw, ook wat er al staat
  *
  * Alleen nieuwe of gewijzigde zinnen worden gerenderd: de bestandsnaam is een hash van
  * de zin zelf, dus wie een zin aanpast krijgt automatisch een nieuw bestand en de oude
@@ -28,6 +30,32 @@ const args = process.argv.slice(2)
 const dry = args.includes('--dry')
 const force = args.includes('--force')
 const prune = args.includes('--prune')
+const proef = args.includes('--proef')
+const limiet = (() => {
+  const i = args.indexOf('--limit')
+  const n = i >= 0 ? Number(args[i + 1]) : NaN
+  return Number.isFinite(n) && n > 0 ? n : null
+})()
+
+/**
+ * De proefzinnen: een dwarsdoorsnede van wat Pip de hele dag zegt.
+ *
+ * Alles inspreken kost ruim dertigduizend credits, en dat wil je niet uitgeven aan een
+ * stem die pas bij de vijftigste "bijna!" blijkt te irriteren. Deze zes dekken het
+ * bereik: begroeten, uitleggen, opdracht geven, prijzen, corrigeren, belonen. Het zijn
+ * echte zinnen uit de app, dus wat je hier rendert hoef je straks niet nog eens te doen.
+ *
+ * De corrigerende zin is de belangrijkste van de zes. Klinkt die teleurgesteld, dan
+ * deugt de stem niet — hoe mooi de rest ook is.
+ */
+const PROEFZINNEN = [
+  'Hoi! Ik ben Pip. Dit is een schaakbord.',
+  'Kijk eens: een licht veld, een donker veld, een licht veld. Steeds om en om.',
+  'Tik de vier donkere velden op de onderste rij aan.',
+  'Hoppa! Precies goed.',
+  'Bijna. Kijk nog eens goed.',
+  'Drie sterren! Je krijgt er een sticker bij.',
+]
 
 /** Alles wat Pip kan zeggen: de lescontent plus de losse feedbackzinnen. */
 function alleTeksten(): string[] {
@@ -73,15 +101,31 @@ async function main() {
   const manifest: Record<string, { tekst: string; bytes: number }> =
     existsSync(MANIFEST) && !force ? JSON.parse(readFileSync(MANIFEST, 'utf8')) : {}
 
-  const teDoen = teksten.filter((tekst) => {
+  let teDoen = teksten.filter((tekst) => {
     const sleutel = zinSleutel(tekst)
     if (force) return true
     return !manifest[sleutel] || !existsSync(join(UITVOER, `${sleutel}.mp3`))
   })
 
+  if (proef) {
+    const ontbreekt = PROEFZINNEN.filter((z) => !teksten.includes(z))
+    if (ontbreekt.length) {
+      console.error('Deze proefzinnen staan niet meer in de content:')
+      ontbreekt.forEach((z) => console.error(`  · ${z}`))
+      console.error('Pas PROEFZINNEN in dit script aan, anders spreek je iets in dat de app nooit opvraagt.')
+      process.exit(1)
+    }
+    teDoen = PROEFZINNEN.filter((z) => force || teDoen.includes(z))
+  }
+  if (limiet !== null) teDoen = teDoen.slice(0, limiet)
+
   const tekens = teDoen.reduce((n, t) => n + t.length, 0)
-  console.log(`${teksten.length} zinnen in de content, ${teDoen.length} nog in te spreken.`)
-  console.log(`Dat is ${tekens} tekens — bij ElevenLabs ongeveer ${tekens} credits.`)
+  const alles = teksten.reduce((n, t) => n + t.length, 0)
+  console.log(`${teksten.length} zinnen in de content (${alles} tekens in totaal).`)
+  console.log(`Nu aan de beurt: ${teDoen.length} zinnen, ${tekens} tekens.`)
+  console.log(`Dat kost ongeveer ${tekens} credits bij ElevenLabs.`)
+  if (proef) console.log('Proefmodus: alleen de zes keurzinnen.')
+  if (limiet !== null) console.log(`Begrensd op ${limiet} zinnen.`)
   if (dry) {
     teDoen.slice(0, 10).forEach((t) => console.log(`  · ${t}`))
     if (teDoen.length > 10) console.log(`  … en nog ${teDoen.length - 10}`)
@@ -109,7 +153,7 @@ async function main() {
     writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2))
   }
 
-  if (prune) {
+  if (prune && !proef && limiet === null) {
     const geldig = new Set(teksten.map(zinSleutel))
     for (const bestand of readdirSync(UITVOER)) {
       if (!bestand.endsWith('.mp3')) continue
