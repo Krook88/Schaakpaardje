@@ -131,6 +131,15 @@ export type World = {
   emoji: string
   /** Ondertitel op de kaart, wordt ingesproken. */
   belofte: string
+  /**
+   * De kleurtoon van deze wereld, als graden op de kleurencirkel (0-360).
+   *
+   * Vijftien werelden met namen als Torenburcht en Loperbos zagen er alle vijftien
+   * identiek uit: een witte kaart op een beige achtergrond. Eén getal per wereld maakt
+   * er vijftien plekken van. Alleen de toon, geen kant-en-klare kleur: de app rekent er
+   * per thema een lichte en een donkere variant uit, zodat het contrast blijft kloppen.
+   */
+  toon: number
   minLeeftijd: 3 | 5 | 6 | 7 | 8 | 9
   lessen: Lesson[]
   /** Minispel dat bij deze wereld hoort. */

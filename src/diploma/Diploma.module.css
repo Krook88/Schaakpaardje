@@ -42,6 +42,8 @@
    .brons/.zilver/.goud en maakte alle drie de hoefijzers even grijs. */
 @media print {
   .verbergBijPrinten { display: none !important; }
+  /* De confettiwolk hoort niet op papier. */
+  .oorkonde > span[class*='wolk'] { display: none !important; }
   .oorkonde {
     box-shadow: none;
     background: #ffffff;

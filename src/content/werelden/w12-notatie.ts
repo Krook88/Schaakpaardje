@@ -11,6 +11,7 @@ export const wereld12: World = {
   nummer: 12,
   naam: 'Notatie-eiland',
   emoji: '✏️',
+  toon: 220,
   belofte: 'Hier leer je zetten opschrijven en teruglezen.',
   minLeeftijd: 8,
   minispel: 'schrijf-de-zet',

@@ -17,6 +17,7 @@ export const wereld9: World = {
   nummer: 9,
   naam: 'Schaakmeer',
   emoji: '⚡',
+  toon: 55,
   belofte: 'Pas op de koning! Hier leer je schaak.',
   minLeeftijd: 7,
   minispel: 'schaak-alarm',

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Kop } from '@/ui/Kop'
 import { Pip, type PipStemming } from '@/ui/Pip'
+import { Confetti } from '@/ui/Confetti'
 import { Sterren } from '@/ui/Sterren'
 import { sfx } from '@/audio/sfx'
 import { kies, speak, stopSpeaking } from '@/audio/voice'
@@ -319,6 +320,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
     return (
       <div className="page">
         <Kop titel={les.titel} terug="/kaart/" />
+        <WereldBand wereld={wereld} />
         <FaseBalk nu="kijken" />
         <div className="stack">
           <Pip zegt={les.vertel[vertelIndex]} stemming={vertelIndex === 0 ? 'blij' : 'denkt'} />
@@ -363,8 +365,13 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
         <Kop titel="Klaar!" terug="/kaart/" />
         <div className="stack center">
           <Pip zegt={zin} stemming="trots" />
-          <div className="card stack center">
-            <Sterren aantal={sterren} groot />
+          {/* Het moment waar een kind een hele les voor heeft gewerkt. Dat mag je niet
+              stilzwijgend voorbij laten gaan: de sterren vliegen één voor één binnen,
+              er valt confetti en Pip springt. Wie beweging heeft uitgezet krijgt
+              gewoon het eindbeeld. */}
+          <div className="card stack center" style={{ position: 'relative', overflow: 'hidden' }}>
+            <Confetti />
+            <Sterren aantal={sterren} groot vier />
             <h2>{les.titel}</h2>
             {/* Niet les.doel: dat is de zin voor de ouder ("Je kind ziet dat...") en
                 die stond hier letterlijk, over het kind gepraat tegen het kind. */}
@@ -397,6 +404,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   return (
     <div className="page">
       <Kop titel={`${les.titel} · ${FASE_NAAM[fase]}`} terug="/kaart/" />
+      <WereldBand wereld={wereld} />
       <FaseBalk nu={fase} />
 
       <div className="stack">
@@ -541,6 +549,19 @@ function FaseBalk({ nu }: { nu: Fase }) {
           {FASE_BEELD[f]}
         </span>
       ))}
+    </div>
+  )
+}
+
+
+/** Waar ben ik? Het wapen en de kleur van de wereld, boven elke les. */
+function WereldBand({ wereld }: { wereld: World }) {
+  return (
+    <div className={styles.wereldband} style={{ '--toon': wereld.toon } as React.CSSProperties}>
+      <span aria-hidden="true" style={{ fontSize: 22 }}>
+        {wereld.emoji}
+      </span>
+      {wereld.naam}
     </div>
   )
 }

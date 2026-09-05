@@ -14,6 +14,7 @@ export const wereld7: World = {
   nummer: 7,
   naam: 'Waardevallei',
   emoji: '⚖️',
+  toon: 200,
   belofte: 'Hier leer je wat de stukken waard zijn.',
   minLeeftijd: 6,
   minispel: 'weegschaal',

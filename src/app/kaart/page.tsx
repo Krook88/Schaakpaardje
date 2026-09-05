@@ -5,6 +5,7 @@ import { Kop } from '@/ui/Kop'
 import { Sterren } from '@/ui/Sterren'
 import { WERELDEN } from '@/content'
 import { isOntgrendeld, useToestandGeladen, useVoortgang, wereldIsAf } from '@/progress/store'
+import styles from './Kaart.module.css'
 
 /**
  * Het pad. Bewust één lijn van boven naar beneden: een vertakte kaart is voor een
@@ -31,28 +32,31 @@ export default function Kaart() {
         {WERELDEN.map((wereld) => {
           const af = wereldIsAf(wereld.id, voortgang)
           return (
-            <section key={wereld.id} className="card stack" style={{ gap: 12 }}>
-              <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
-                <div className="row" style={{ minWidth: 0, flexWrap: 'nowrap' }}>
-                  <span style={{ fontSize: 30, flexShrink: 0 }} aria-hidden="true">
-                    {wereld.emoji}
-                  </span>
-                  <div style={{ minWidth: 0 }}>
-                    <h2 style={{ fontSize: '1.15rem' }}>
-                      {wereld.nummer}. {wereld.naam}
-                    </h2>
-                    <p className="muted" style={{ fontSize: '0.9rem' }}>
-                      {wereld.belofte}
-                    </p>
-                  </div>
+            <section
+              key={wereld.id}
+              className={`card ${styles.wereld}`}
+              style={{ '--toon': wereld.toon } as React.CSSProperties}
+            >
+              <div className={styles.band}>
+                <span className={styles.wapen} aria-hidden="true">
+                  {wereld.emoji}
+                </span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <h2 style={{ fontSize: '1.15rem' }}>
+                    {wereld.nummer}. {wereld.naam}
+                  </h2>
+                  <p className="muted" style={{ fontSize: '0.9rem' }}>
+                    {wereld.belofte}
+                  </p>
                 </div>
                 {af && (
-                  <span title="Deze wereld is uit" style={{ fontSize: 26 }}>
+                  <span title="Deze wereld is uit" style={{ fontSize: 28, flexShrink: 0 }}>
                     🏆
                   </span>
                 )}
               </div>
 
+              <div className={styles.binnen}>
               <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
                 {wereld.lessen.map((les) => {
                   const resultaat = voortgang[les.id]
@@ -138,6 +142,7 @@ export default function Kaart() {
                   🏅 Bekijk je hoefijzer {wereld.diploma}
                 </Link>
               )}
+              </div>
             </section>
           )
         })}

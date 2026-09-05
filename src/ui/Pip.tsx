@@ -61,7 +61,7 @@ export function Pip({
     <div className={`${styles.wrap} ${klein ? styles.klein : ''}`}>
       <button
         type="button"
-        className={styles.pip}
+        className={`${styles.pip} ${stemming === 'trots' ? styles.trots : ''}`}
         onClick={() => {
           if (zegt) void speak(zegt, true)
           onKlaar?.()

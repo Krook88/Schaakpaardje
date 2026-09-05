@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { Confetti } from '@/ui/Confetti'
 import { Kop } from '@/ui/Kop'
 import { WERELDEN } from '@/content'
 import { DIPLOMAS, type DiplomaSoort } from '@/content/diplomas'
@@ -79,7 +80,10 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
         <Kop titel={diploma.naam} terug="/kaart/" />
       </div>
 
-      <article className={`${styles.oorkonde} ${styles[soort]}`}>
+      <article className={`${styles.oorkonde} ${styles[soort]}`} style={{ position: 'relative' }}>
+        {/* Alleen op het scherm: @media print laat de wolk vallen, dus op papier
+            blijft de oorkonde een oorkonde. */}
+        <Confetti />
         <p className={styles.klein}>Schaakmaatje</p>
         <p className={styles.medaille} aria-hidden="true">
           {KLEUR[soort]}

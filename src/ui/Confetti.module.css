@@ -1,0 +1,31 @@
+.wolk {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 5;
+  border-radius: inherit;
+}
+
+.snipper {
+  position: absolute;
+  top: -14px;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  animation: vallen 2.2s ease-in forwards;
+}
+
+@keyframes vallen {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(560px) rotate(540deg); opacity: 0; }
+}
+
+/* Wie beweging heeft uitgezet, krijgt niets. Geen halve confetti die blijft hangen:
+   het scherm hoort daarna gewoon leeg te zijn. */
+@media (prefers-reduced-motion: reduce) {
+  .wolk {
+    display: none;
+  }
+}

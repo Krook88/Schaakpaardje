@@ -15,6 +15,7 @@ export const wereld13: World = {
   nummer: 13,
   naam: 'Tactiekgrot',
   emoji: '🔱',
+  toon: 320,
   belofte: 'Twee vliegen in één klap.',
   minLeeftijd: 9,
   minispel: 'tactiekduel',

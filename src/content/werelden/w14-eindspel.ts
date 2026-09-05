@@ -11,6 +11,7 @@ export const wereld14: World = {
   nummer: 14,
   naam: 'Eindspelduinen',
   emoji: '🏜️',
+  toon: 38,
   belofte: 'Bijna niets meer op het bord. Nu moet je het afmaken.',
   minLeeftijd: 9,
   minispel: 'laatste-pion',

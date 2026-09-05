@@ -10,6 +10,7 @@ export const wereld0: World = {
   nummer: 0,
   naam: 'De Weide',
   emoji: '🌾',
+  toon: 80,
   belofte: 'Hier leer je het bord kennen.',
   minLeeftijd: 3,
   minispel: 'vind-het-veld',

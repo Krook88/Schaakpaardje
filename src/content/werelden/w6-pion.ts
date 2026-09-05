@@ -11,6 +11,7 @@ export const wereld6: World = {
   nummer: 6,
   naam: 'Pionnenveld',
   emoji: '🌱',
+  toon: 105,
   belofte: 'Klein maar dapper. En hij kan dame worden!',
   minLeeftijd: 6,
   minispel: 'pionnenspel',

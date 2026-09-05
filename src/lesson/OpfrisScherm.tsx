@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
+import { Confetti } from '@/ui/Confetti'
 import { Kop } from '@/ui/Kop'
 import { Pip, type PipStemming } from '@/ui/Pip'
 import { sfx } from '@/audio/sfx'
@@ -168,7 +169,8 @@ export function OpfrisScherm() {
         <Kop titel="Opfrissen" terug="/" />
         <div className="stack center">
           <Pip zegt={ronde.length ? zin : 'Er is nog niets om op te frissen. Ga eerst maar lekker verder.'} stemming="trots" />
-          <div className="card stack center">
+          <div className="card stack center" style={{ position: 'relative', overflow: 'hidden' }}>
+            {ronde.length > 0 && <Confetti />}
             <span style={{ fontSize: 64 }} aria-hidden="true">
               {ronde.length ? '🎉' : '🌱'}
             </span>

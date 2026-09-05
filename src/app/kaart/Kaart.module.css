@@ -1,0 +1,70 @@
+/*
+ * Elke wereld zijn eigen kleur.
+ *
+ * De kleurtoon komt uit de content (`toon`, 0-360) en wordt als `--toon` op de kaart
+ * gezet. Hier maken we er per thema een variant van, zodat het contrast blijft kloppen:
+ * een zachte band in het licht, een gedempte in het donker.
+ *
+ * De kleur zit expres alléén in de band en de rand, nooit achter lopende tekst. Zo kan
+ * geen enkele wereld per ongeluk onleesbaar worden — dat is de reden dat dit met tonen
+ * werkt en niet met vijftien losse hexcodes die iemand met de hand moet nakijken.
+ */
+.wereld {
+  border-left: 6px solid hsl(var(--toon) 45% 42%);
+  overflow: hidden;
+  padding: 0;
+}
+
+.band {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: hsl(var(--toon) 58% 92%);
+  border-bottom: 1px solid hsl(var(--toon) 35% 80%);
+}
+
+.binnen {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Het wereld-emoji in een eigen rondje: dan is het een wapen, geen los plaatje. */
+.wapen {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  background: hsl(var(--toon) 62% 86%);
+  border: 2px solid hsl(var(--toon) 40% 62%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .band {
+    background: hsl(var(--toon) 26% 20%);
+    border-bottom-color: hsl(var(--toon) 22% 30%);
+  }
+  :root:not([data-theme='light']) .wereld {
+    border-left-color: hsl(var(--toon) 40% 52%);
+  }
+  :root:not([data-theme='light']) .wapen {
+    background: hsl(var(--toon) 24% 26%);
+    border-color: hsl(var(--toon) 32% 46%);
+  }
+}
+:root[data-theme='dark'] .band {
+  background: hsl(var(--toon) 26% 20%);
+  border-bottom-color: hsl(var(--toon) 22% 30%);
+}
+:root[data-theme='dark'] .wereld {
+  border-left-color: hsl(var(--toon) 40% 52%);
+}
+:root[data-theme='dark'] .wapen {
+  background: hsl(var(--toon) 24% 26%);
+  border-color: hsl(var(--toon) 32% 46%);
+}

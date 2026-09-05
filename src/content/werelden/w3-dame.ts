@@ -10,6 +10,7 @@ export const wereld3: World = {
   nummer: 3,
   naam: 'Damepaleis',
   emoji: '👑',
+  toon: 285,
   belofte: 'De dame kan alles. Bijna.',
   minLeeftijd: 5,
   minispel: 'dame-doolhof',

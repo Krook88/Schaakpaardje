@@ -43,6 +43,18 @@
 .klein .pip { width: 52px; height: 52px; }
 .klein .gezicht { font-size: 27px; }
 .klein .ballon { font-size: 0.92rem; padding: 9px 60px 9px 12px; }
+/* Trots is het enige moment waarop Pip echt iets doet. Drie keer springen en dan
+   weer rustig ademen: genoeg om te vieren, niet genoeg om af te leiden. */
+.trots { animation: springen 0.55s ease-in-out 3; }
+@keyframes springen {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  30% { transform: translateY(-14px) rotate(-8deg); }
+  60% { transform: translateY(0) rotate(6deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .trots { animation: none; }
+}
+
 @keyframes adem {
   0%, 100% { transform: translateY(0) rotate(-2deg); }
   50% { transform: translateY(-4px) rotate(2deg); }

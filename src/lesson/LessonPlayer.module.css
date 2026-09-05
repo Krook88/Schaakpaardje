@@ -1,3 +1,30 @@
+/* De kleur van de wereld waarin deze les hoort. Een band bovenaan, meer niet: genoeg
+   om te zien dat je in Torenburcht bent en niet in Loperbos, zonder dat het de opgave
+   zelf in de weg zit. */
+.wereldband {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 14px;
+  margin-bottom: 4px;
+  border-radius: var(--radius-sm);
+  background: hsl(var(--toon) 58% 92%);
+  border: 1px solid hsl(var(--toon) 35% 80%);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .wereldband {
+    background: hsl(var(--toon) 26% 20%);
+    border-color: hsl(var(--toon) 22% 32%);
+  }
+}
+:root[data-theme='dark'] .wereldband {
+  background: hsl(var(--toon) 26% 20%);
+  border-color: hsl(var(--toon) 22% 32%);
+}
+
 /* Layoutbevinding 8: op 460px bleven de velden op tablet 57px terwijl er 450px
    verticale ruimte onbenut was, en op een chromebook 400px links en rechts. Nu groeit
    het bord mee tot wat er in beeld past — de hoogte is daar de krappe kant, niet de
