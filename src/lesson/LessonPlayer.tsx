@@ -32,6 +32,7 @@ import {
 } from './runner'
 import {
   useInstellingen,
+  useHervatpunt,
   useProfielStore,
   useToestandGeladen,
   useVoortgang,
@@ -77,6 +78,8 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   const [sterren, setSterren] = useState<0 | 1 | 2 | 3>(0)
 
   const bewaarLes = useProfielStore((s) => s.bewaarLes)
+  const bewaarHervatpunt = useProfielStore((s) => s.bewaarHervatpunt)
+  const hervat = useHervatpunt(les.id)
   const geefSticker = useProfielStore((s) => s.geefSticker)
   const instellingen = useInstellingen()
   const voortgang = useVoortgang()
@@ -120,6 +123,10 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   const startFase = useCallback(
     (nieuw: Fase) => {
       setFase(nieuw)
+      // Onthouden waar we zijn, zodat een kind dat halverwege stopt niet helemaal
+      // vooraan hoeft te beginnen. Alleen de fase, niet de losse opgave: dan pak je
+      // de draad op bij iets wat je herkent in plaats van midden in een vraag.
+      bewaarHervatpunt(les.id, nieuw === 'kijken' ? null : nieuw)
       setOpgaveIndex(0)
       setHintVelden([])
       const lijst =
@@ -131,8 +138,16 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
         setStemming('denkt')
       }
     },
-    [les],
+    [les, bewaarHervatpunt],
   )
+  // Verder waar het kind gebleven was. Pas na het inlezen van localStorage, en één
+  // keer: daarna bepaalt het kind zelf waar het is.
+  const hervatGedaan = useRef(false)
+  useEffect(() => {
+    if (!geladen || hervatGedaan.current) return
+    hervatGedaan.current = true
+    if (hervat && VOLGORDE.includes(hervat as Fase)) startFase(hervat as Fase)
+  }, [geladen, hervat, startFase])
 
   const volgendeFase = useCallback(() => {
     const i = VOLGORDE.indexOf(fase)
@@ -142,6 +157,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
       setSterren(behaald)
       setFase('beloning')
       bewaarLes(les.id, { sterren: behaald, fouten: toetsFouten, hints: toetsHints })
+      bewaarHervatpunt(les.id, null)
       if (behaald === 3) geefSticker(`${les.id}`)
       sfx.diploma()
       setStemming('trots')
@@ -159,7 +175,10 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
       return
     }
     startFase(volgende)
-  }, [fase, toetsFouten, toetsHints, bewaarLes, geefSticker, les.id, startFase, voortgang, wereld.id])
+  }, [
+    fase, toetsFouten, toetsHints, bewaarLes, bewaarHervatpunt, geefSticker, les.id,
+    startFase, voortgang, wereld.id,
+  ])
 
   const volgendeOpgave = useCallback(() => {
     setHintVelden([])

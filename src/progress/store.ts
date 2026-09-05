@@ -64,6 +64,14 @@ type State = {
   voortgang: Record<string, Record<string, LesResultaat>>
   instellingen: Record<string, Instellingen>
   stickers: Record<string, string[]>
+  /**
+   * Waar het kind in een les gebleven is, per les.
+   *
+   * Een les is acht à tien stappen. Wie er bij stap zeven mee ophoudt — omdat het eten
+   * is, of omdat de knop linksboven verleidelijk dichtbij zit — begon daarna weer
+   * helemaal vooraan. Voor een vijfjarige is dat precies één keer, en daarna nooit meer.
+   */
+  hervatpunt: Record<string, Record<string, string>>
   gespeeld: Record<string, { gewonnen: number; verloren: number; remise: number }>
 
   maakProfiel: (naam: string, leeftijd: number, avatar: string) => string
@@ -71,6 +79,7 @@ type State = {
   verwijderProfiel: (id: string) => void
   zetInstelling: <K extends keyof Instellingen>(sleutel: K, waarde: Instellingen[K]) => void
   bewaarLes: (lesId: string, resultaat: Omit<LesResultaat, 'laatst'>) => void
+  bewaarHervatpunt: (lesId: string, fase: string | null) => void
   bewaarPartij: (uitslag: 'gewonnen' | 'verloren' | 'remise') => void
   geefSticker: (sticker: string) => void
 }
@@ -85,6 +94,7 @@ export const useProfielStore = create<State>()(
       voortgang: {},
       instellingen: {},
       stickers: {},
+      hervatpunt: {},
       gespeeld: {},
 
       maakProfiel(naam, leeftijd, avatar) {
@@ -166,6 +176,17 @@ export const useProfielStore = create<State>()(
         })
       },
 
+      bewaarHervatpunt(lesId, fase) {
+        const id = get().actiefId
+        if (!id) return
+        set((s) => {
+          const vanProfiel = { ...(s.hervatpunt[id] ?? {}) }
+          if (fase) vanProfiel[lesId] = fase
+          else delete vanProfiel[lesId]
+          return { hervatpunt: { ...s.hervatpunt, [id]: vanProfiel } }
+        })
+      },
+
       bewaarPartij(uitslag) {
         const id = get().actiefId
         if (!id) return
@@ -242,6 +263,11 @@ const LEGE_LIJST: string[] = []
 
 export function useStickers(): string[] {
   return useProfielStore(useShallow((s) => (s.actiefId ? (s.stickers[s.actiefId] ?? LEGE_LIJST) : LEGE_LIJST)))
+}
+
+/** Waar was dit kind gebleven in deze les? Leeg als het nog niet begonnen is. */
+export function useHervatpunt(lesId: string): string | null {
+  return useProfielStore((s) => (s.actiefId ? (s.hervatpunt[s.actiefId]?.[lesId] ?? null) : null))
 }
 
 export function useGespeeld() {

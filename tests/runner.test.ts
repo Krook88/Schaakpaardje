@@ -226,3 +226,62 @@ describe('van gedachten veranderen', () => {
     expect(tik(stand, 'd1').uit).toBe('klaar')
   })
 })
+
+/**
+ * Bevindingen uit de kinder-app-review.
+ *
+ * Allebei gaan ze over hetzelfde: een kind van vijf mag nooit klem komen te zitten.
+ * Wie vastloopt en niet verder kan, legt de tablet weg en komt niet terug — en dat is
+ * een ernstiger fout dan een verkeerd getekend vakje.
+ */
+describe('een kind kan nooit vastlopen', () => {
+  it('wijst bij een zetopgave na de tweede hint het doelveld aan', () => {
+    const opgave: Exercise = {
+      kind: 'move',
+      fen: '8/8/8/8/3R4/8/8/8',
+      from: 'd4',
+      goed: ['d8'],
+      vraag: 'Zet de toren naar boven.',
+    }
+    let stand = startOpgave(opgave)
+    const eerste = hint(stand)
+    expect(eerste.velden).toEqual(['d4']) // eerst het stuk
+    stand = eerste.stand
+    const tweede = hint(stand)
+    expect(tweede.velden).toEqual(['d8']) // daarna waar het heen moet
+  })
+
+  it('wijst bij een regelZet na de tweede hint ook het doelveld aan', () => {
+    const opgave: Exercise = {
+      kind: 'regelZet',
+      fen: '4k3/8/8/8/8/8/8/R5K1 w - - 0 1',
+      eis: 'geefSchaak',
+      vraag: 'Geef schaak.',
+    }
+    let stand = startOpgave(opgave)
+    const eerste = hint(stand)
+    expect(eerste.velden).toHaveLength(1)
+    stand = eerste.stand
+    const tweede = hint(stand)
+    expect(tweede.velden).toHaveLength(2)
+    expect(tweede.velden[0]).toBe(eerste.velden[0])
+  })
+
+  it('geeft bij een tik-opgave elke hint een nieuw veld, tot ze op zijn', () => {
+    const opgave: Exercise = {
+      kind: 'tapSquares',
+      fen: '8/8/8/8/8/8/8/8',
+      correct: ['a1', 'b2', 'c3'],
+      vraag: 'Tik de diagonaal aan.',
+    }
+    let stand = startOpgave(opgave)
+    const gezien: string[] = []
+    for (let i = 0; i < 3; i++) {
+      const r = hint(stand)
+      gezien.push(...r.velden)
+      // het kind tikt het aangewezen veld ook echt aan
+      stand = tik(r.stand, r.velden[0]).stand
+    }
+    expect(gezien).toEqual(['a1', 'b2', 'c3'])
+  })
+})

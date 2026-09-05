@@ -401,8 +401,15 @@ export function antwoordQuiz(stand: OpgaveStand, index: number): { stand: Opgave
 }
 
 /**
- * De hint van Pip: één veld, nooit het hele antwoord. Bij zetopgaven wijst hij het
- * volgende veld van de route aan, bij tik-opgaven een veld dat nog niet gevonden is.
+ * De hint van Pip. Vraag je er nog eens om, dan wordt hij concreter.
+ *
+ * Dat laatste ontbrak: bij een zetopgave wees hij altijd hetzelfde stuk aan, hoe vaak
+ * je ook drukte. Een kind dat de matzet niet ziet, kwam er dus nooit uit — de enige
+ * uitweg was de les verlaten. Voor deze doelgroep is dat het moment waarop de tablet
+ * dichtgaat.
+ *
+ * De regel is nu: eerst een duwtje, daarna het antwoord. Liever een kind dat het met
+ * hulp goed doet dan een kind dat vastloopt; de sterren regelen de rest al.
  */
 export function hint(stand: OpgaveStand): { stand: OpgaveStand; velden: Square[] } {
   const o = stand.opgave
@@ -413,10 +420,10 @@ export function hint(stand: OpgaveStand): { stand: OpgaveStand; velden: Square[]
     return { stand: nieuw, velden: rest.slice(0, 1) }
   }
   if (o.kind === 'move') {
-    // Het stuk aanwijzen, niet het doelveld: bij een zetopgave ís dat ene doelveld het
-    // hele antwoord, en dan is de hint geen tip meer maar de oplossing.
     const van = o.from ?? Object.keys(stand.board).find((sq) => stand.board[sq].color === 'w')
-    return { stand: nieuw, velden: van ? [van] : [] }
+    // Eerste keer het stuk, daarna waar het heen moet.
+    if (stand.hints === 0) return { stand: nieuw, velden: van ? [van] : [] }
+    return { stand: nieuw, velden: o.goed.slice(0, 1) }
   }
   if (o.kind === 'reach') {
     const van = stand.actiefStuk ?? o.from
@@ -429,9 +436,11 @@ export function hint(stand: OpgaveStand): { stand: OpgaveStand; velden: Square[]
     return { stand: nieuw, velden: pad?.slice(0, 1) ?? [] }
   }
   if (o.kind === 'regelZet' && stand.game) {
-    // Wijs het stuk aan waarmee het kan, niet het veld: dan blijft er iets te denken over.
     const zet = goedeZetten(stand.game, o.eis)[0]
-    return { stand: nieuw, velden: zet ? [zet.from] : [] }
+    if (!zet) return { stand: nieuw, velden: [] }
+    // Eerste keer het stuk, daarna ook het veld waar het heen moet.
+    if (stand.hints === 0) return { stand: nieuw, velden: [zet.from] }
+    return { stand: nieuw, velden: [zet.from, zet.to] }
   }
   return { stand: nieuw, velden: [] }
 }
