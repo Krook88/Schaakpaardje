@@ -29,6 +29,7 @@ export function PartijScherm({ botId }: { botId: string }) {
   const opzet = OPSTELLING[bot?.id ?? 'samen']
   const instellingen = useInstellingen()
   const bewaarPartij = useProfielStore((s) => s.bewaarPartij)
+  const bewaarOverwinning = useProfielStore((s) => s.bewaarOverwinning)
 
   const gameRef = useRef(new Game(opzet?.fen))
   const [fen, setFen] = useState(gameRef.current.fen)
@@ -63,9 +64,13 @@ export function PartijScherm({ botId }: { botId: string }) {
       setZin(tekst)
       setStemming(nieuw === 'gewonnen' ? 'trots' : 'moedigt')
       if (nieuw) bewaarPartij(nieuw)
+      // Winnen van een tegenstander levert zijn maatje op voor de stal. Eén keer is
+      // genoeg: het is een verzameling, geen scorebord, dus je kunt hem niet kwijtraken
+      // door daarna te verliezen.
+      if (nieuw === 'gewonnen' && bot) bewaarOverwinning(bot.id)
       if (instellingen.effecten) sfx.diploma()
     },
-    [bewaarPartij, instellingen.effecten],
+    [bewaarPartij, bewaarOverwinning, bot, instellingen.effecten],
   )
 
   /** Kijkt of de partij voorbij is en vertelt dat. */

@@ -72,6 +72,14 @@ type State = {
    * helemaal vooraan. Voor een vijfjarige is dat precies één keer, en daarna nooit meer.
    */
   hervatpunt: Record<string, Record<string, string>>
+  /**
+   * Van welke tegenstanders dit kind ooit gewonnen heeft.
+   *
+   * `gespeeld` telde alleen op hoeveel partijen er gewonnen waren, niet van wie. Voor
+   * de stal moeten we het per tegenstander weten: elk maatje komt één keer bij je
+   * wonen, en dan blijft hij.
+   */
+  verslagen: Record<string, string[]>
   gespeeld: Record<string, { gewonnen: number; verloren: number; remise: number }>
 
   maakProfiel: (naam: string, leeftijd: number, avatar: string) => string
@@ -81,6 +89,7 @@ type State = {
   bewaarLes: (lesId: string, resultaat: Omit<LesResultaat, 'laatst'>) => void
   bewaarHervatpunt: (lesId: string, fase: string | null) => void
   bewaarOpfrissing: (lesId: string) => void
+  bewaarOverwinning: (botId: string) => void
   bewaarPartij: (uitslag: 'gewonnen' | 'verloren' | 'remise') => void
   geefSticker: (sticker: string) => void
 }
@@ -96,6 +105,7 @@ export const useProfielStore = create<State>()(
       instellingen: {},
       stickers: {},
       hervatpunt: {},
+      verslagen: {},
       gespeeld: {},
 
       maakProfiel(naam, leeftijd, avatar) {
@@ -201,6 +211,16 @@ export const useProfielStore = create<State>()(
         })
       },
 
+      bewaarOverwinning(botId) {
+        const id = get().actiefId
+        if (!id) return
+        set((s) => {
+          const lijst = s.verslagen[id] ?? []
+          if (lijst.includes(botId)) return {}
+          return { verslagen: { ...s.verslagen, [id]: [...lijst, botId] } }
+        })
+      },
+
       bewaarHervatpunt(lesId, fase) {
         const id = get().actiefId
         if (!id) return
@@ -293,6 +313,15 @@ export function useStickers(): string[] {
 /** Waar was dit kind gebleven in deze les? Leeg als het nog niet begonnen is. */
 export function useHervatpunt(lesId: string): string | null {
   return useProfielStore((s) => (s.actiefId ? (s.hervatpunt[s.actiefId]?.[lesId] ?? null) : null))
+}
+
+const LEGE_VERSLAGEN: string[] = []
+
+/** Van wie heeft dit kind al eens gewonnen? */
+export function useVerslagen(): string[] {
+  return useProfielStore(
+    useShallow((s) => (s.actiefId ? (s.verslagen[s.actiefId] ?? LEGE_VERSLAGEN) : LEGE_VERSLAGEN)),
+  )
 }
 
 export function useGespeeld() {

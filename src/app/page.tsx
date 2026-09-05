@@ -6,6 +6,7 @@ import { Pip } from '@/ui/Pip'
 import { speak } from '@/audio/voice'
 import { lesMet, WERELDEN } from '@/content'
 import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
+import { aantalBezit, verzameling } from '@/progress/verzameling'
 import {
   AVATARS,
   sterrenTotaal,
@@ -13,6 +14,7 @@ import {
   useProfielStore,
   useStickers,
   useToestandGeladen,
+  useVerslagen,
   useVoortgang,
   volgendeOpenLes,
   wereldIsAf,
@@ -26,6 +28,7 @@ export default function Thuis() {
   const maakProfiel = useProfielStore((s) => s.maakProfiel)
   const voortgang = useVoortgang()
   const stickers = useStickers()
+  const verslagen = useVerslagen()
 
   if (!geladen) return <main className="page" />
 
@@ -49,6 +52,8 @@ export default function Thuis() {
   // Alleen tonen als er echt iets ligt te verstoffen. Een knop die "niets te doen"
   // oplevert leert een kind de knop te negeren.
   const opfrissen = kiesOpfrisopgaven(voortgang).length
+  const stalVakken = verzameling(voortgang, verslagen)
+  const inStal = aantalBezit(stalVakken)
 
   return (
     <main className="page">
@@ -156,22 +161,36 @@ export default function Thuis() {
           </div>
         </div>
 
-        <section className="card stack">
-          <h2 style={{ fontSize: '1.1rem' }}>Mijn stickers</h2>
-          {stickers.length === 0 ? (
-            <p className="muted">
-              Nog geen stickers. Haal drie sterren bij een les, dan krijg je er eentje.
+        {/* De stal: wat er te verzamelen valt. Hier stond een raster van 48 identieke
+            medailles — je zag dus niet wát je verdiend had, alleen hoevéél. */}
+        <Link href="/stal/" className="card stack" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="row" style={{ justifyContent: 'space-between' }}>
+            <h2 style={{ fontSize: '1.1rem' }}>Mijn stal</h2>
+            <span className="muted">
+              {inStal} van de {stalVakken.length}
+            </span>
+          </div>
+          <div className="row" style={{ gap: 8 }} aria-hidden="true">
+            {stalVakken.map((v) => (
+              <span
+                key={v.id}
+                title={v.bezit ? v.naam : `${v.naam} — ${v.hoe}`}
+                style={{
+                  fontSize: 24,
+                  filter: v.bezit ? 'none' : 'grayscale(1)',
+                  opacity: v.bezit ? 1 : 0.28,
+                }}
+              >
+                {v.teken}
+              </span>
+            ))}
+          </div>
+          {stickers.length > 0 && (
+            <p className="muted" style={{ fontSize: '0.85rem', margin: 0 }}>
+              Plus {stickers.length} {stickers.length === 1 ? 'sticker' : 'stickers'} van perfecte lessen.
             </p>
-          ) : (
-            <div className="row" aria-label={`${stickers.length} stickers`}>
-              {stickers.map((s) => (
-                <span key={s} title={lesMet(s)?.titel ?? s} style={{ fontSize: 28 }}>
-                  🏅
-                </span>
-              ))}
-            </div>
           )}
-        </section>
+        </Link>
 
         {profielen.length > 1 && (
           <section className="card stack">
