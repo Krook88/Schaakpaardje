@@ -20,6 +20,7 @@ import { Game } from '@/engine/game'
 import { goedeZetten } from '@/lesson/runner'
 import { geldigVeld, korstePad, slaAllesOp } from '@/engine/puzzels'
 import { WERELDEN } from './index'
+import { vertelTekst, vertelWijzers } from './types'
 import type { Exercise, Lesson, World } from './types'
 
 export type Bevinding = { waar: string; probleem: string }
@@ -54,6 +55,46 @@ export function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
       // dan dat een groen veld licht is. Beschrijf waar het naar op zoek moet.
       if (o.foutTip && /\b(die|dat|deze)\s+(is|zijn)\s+\w/i.test(o.foutTip)) {
         fout(`de foutTip beweert iets over het aangetikte veld: "${o.foutTip}"`)
+      }
+      // Een hele lijn of rij op een leeg bord: welke wordt bedoeld?
+      //
+      // Hier zat een echte fout in. "Nu een lijn: tik alles aan van beneden naar boven"
+      // accepteerde alleen de e-lijn, terwijl alle acht goed zijn — een kind dat de
+      // c-lijn koos kreeg acht kruisjes voor een goed antwoord, zonder enige manier om
+      // te weten welke lijn bedoeld was: de vraag zegt het niet en het kind leest niet.
+      // Dus: of elke lijn is goed (varianten), of er licht er eentje op (wijs), of er
+      // staat een stuk op het bord dat hem aanwijst.
+      if (!o.varianten && !o.wijs?.length && o.correct.length === 8) {
+        const eenLijn = new Set(o.correct.map((sq) => sq[0])).size === 1
+        const eenRij = new Set(o.correct.map((sq) => sq[1])).size === 1
+        if ((eenLijn || eenRij) && !Object.keys(parseBoard(o.fen)).length) {
+          fout('een hele lijn of rij op een leeg bord, zonder varianten of een veld dat oplicht: het kind kan niet weten welke bedoeld wordt')
+        }
+      }
+      for (const sq of o.wijs ?? []) {
+        if (!geldigVeld(sq)) fout(`onbekend veld in wijs: ${sq}`)
+        else if (!o.correct.includes(sq) && !(o.varianten ?? []).some((v) => v.includes(sq))) {
+          // Een gegeven dat niet in het antwoord zit wijst het kind de verkeerde kant op.
+          fout(`het veld ${sq} licht op maar hoort niet bij het antwoord`)
+        }
+      }
+      if (o.varianten) {
+        if (o.varianten.length < 2) fout('varianten met minder dan twee antwoorden is geen keuze')
+        const eerste = [...o.correct].sort().join(' ')
+        const gezien = new Set<string>()
+        o.varianten.forEach((variant, i) => {
+          for (const sq of variant) if (!geldigVeld(sq)) fout(`onbekend veld ${sq} in variant ${i + 1}`)
+          // Even groot, anders klopt "3 van de 8 gevonden" niet meer zodra het kind
+          // een ander antwoord kiest dan het eerste.
+          if (variant.length !== o.correct.length) {
+            fout(`variant ${i + 1} heeft ${variant.length} velden, het antwoord ${o.correct.length}`)
+          }
+          const sleutel = [...variant].sort().join(' ')
+          if (gezien.has(sleutel)) fout(`variant ${i + 1} staat er twee keer in`)
+          gezien.add(sleutel)
+        })
+        if (!gezien.has(eerste)) fout('het antwoord in correct staat niet tussen de varianten')
+        if (o.bedoeling) fout('varianten en een bedoeling gaan niet samen: de bedoeling rekent één antwoord uit')
       }
       if (o.bedoeling) {
         const verwacht = tapAntwoord(parseBoard(o.fen), o.bedoeling)
@@ -147,9 +188,10 @@ export function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
       // Een kind van vier leest de labels niet: het kiest op het plaatje. Dus moet
       // elke optie er eentje hebben, en moeten ze binnen één vraag van elkaar
       // verschillen — drie keer 🔢 naast elkaar is voor een niet-lezer geen keuze.
-      const zonder = o.opties.filter((op) => !op.emoji).length
+      const beeldVan = (op: (typeof o.opties)[number]) => op.emoji ?? (op.veld ? `veld:${op.veld}` : undefined)
+      const zonder = o.opties.filter((op) => !beeldVan(op)).length
       if (zonder) fout(`${zonder} van de ${o.opties.length} opties hebben geen plaatje`)
-      const beelden = o.opties.map((op) => op.emoji).filter(Boolean)
+      const beelden = o.opties.map(beeldVan).filter(Boolean)
       const dubbel = beelden.filter((e, i) => beelden.indexOf(e) !== i)
       if (dubbel.length) fout(`opties delen hetzelfde plaatje: ${[...new Set(dubbel)].join(' ')}`)
       break
@@ -261,6 +303,16 @@ function controleerLes(les: Lesson, wereld: World): Bevinding[] {
   const waar = `${wereld.naam} / ${les.titel}`
   if (les.wereldId !== wereld.id) uit.push({ waar, probleem: 'les hoort bij een andere wereld' })
   if (!les.vertel.length) uit.push({ waar, probleem: 'Pip vertelt niets in de kijkfase' })
+  les.vertel.forEach((z, i) => {
+    if (!vertelTekst(z).trim()) uit.push({ waar, probleem: `vertelzin ${i + 1} is leeg` })
+    const wijzers = vertelWijzers(z)
+    for (const sq of wijzers) {
+      if (!geldigVeld(sq)) uit.push({ waar, probleem: `onbekend veld in vertelzin ${i + 1}: ${sq}` })
+    }
+    if (new Set(wijzers).size !== wijzers.length) {
+      uit.push({ waar, probleem: `vertelzin ${i + 1} wijst een veld twee keer aan` })
+    }
+  })
   if (!les.doel.trim()) uit.push({ waar, probleem: 'geen leerdoel voor het ouderscherm' })
   for (const [fase, opgaven] of [
     ['meedoen', les.meedoen],
@@ -347,7 +399,7 @@ export function alleZinnen(): string[] {
   for (const wereld of WERELDEN) {
     zinnen.add(wereld.belofte)
     for (const les of wereld.lessen) {
-      les.vertel.forEach((z) => zinnen.add(z))
+      les.vertel.forEach((z) => zinnen.add(vertelTekst(z)))
       for (const o of [...les.meedoen, ...les.zelf, ...les.toets]) {
         if ('vraag' in o) zinnen.add(o.vraag)
         if ('foutTip' in o && o.foutTip) zinnen.add(o.foutTip)

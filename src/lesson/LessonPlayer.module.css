@@ -47,6 +47,19 @@
 .quizBeeld { font-size: 40px; line-height: 1; flex: 0 0 auto; width: 48px; text-align: center; }
 .quizTekst { flex: 1; }
 
+/* Een veldkleur laat je niet zien met een emoji.
+   ⬜ en 🟩 leken te kloppen, maar emoji worden per toestel getekend: op Windows is ⬜
+   lichtpaars. Een kind kreeg bij "een licht veld" dus een paars vlakje te zien terwijl
+   het bord ernaast crème en groen is — en dat is precies de verwarring die deze les
+   moet wegnemen. Dit vakje pakt dezelfde variabelen als het bord zelf, dus het klopt
+   altijd, ook als de veldkleuren ooit veranderen. */
+.quizVeld {
+  flex: 0 0 auto; width: 44px; height: 44px; border-radius: 8px;
+  background: var(--light-sq);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ink) 22%, transparent);
+}
+.quizVeldDonker { background: var(--dark-sq); }
+
 /* Een fout antwoord veranderde eerst niets op het scherm — alleen Pips tekst, en die
    kan een kind van drie niet lezen. Nu schudt de knop en kleurt hij, net als het bord. */
 .quizJuist {

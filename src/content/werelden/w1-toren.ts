@@ -1,4 +1,5 @@
 import { LEEG, type World } from '../types'
+import { pad, wegen } from '../velden'
 
 /**
  * Wereld 1 — Torenburcht.
@@ -23,12 +24,20 @@ export const wereld1: World = {
       doel: 'Je kind weet dat de toren recht loopt, zo ver hij wil.',
       geleerd: 'Nu weet je precies hoe de toren loopt: kaarsrecht, zo ver hij wil.',
       vertel: [
-        'Dit is de toren. Hij loopt kaarsrecht.',
-        'Vooruit, achteruit, naar links en naar rechts. Zo ver als hij wil.',
+        // Vier oplichtende hoekpunten lieten zien wáár de toren kan komen, maar niet
+        // hóe hij daar komt — en dat is nu juist wat "kaarsrecht" betekent. De velden
+        // lichten nu één voor één op, dus het kind ziet de toren de lijn af rijden
+        // terwijl Pip het zegt.
+        { tekst: 'Dit is de toren. Hij loopt kaarsrecht.', wijs: pad('e4', 'e8') },
+        {
+          tekst: 'Vooruit, achteruit, naar links en naar rechts. Zo ver als hij wil.',
+          wijs: wegen(pad('e4', 'e8'), pad('e4', 'e1'), pad('e4', 'a4'), pad('e4', 'h4')),
+        },
+        // Bij "nooit schuin" wijzen we niets aan: een oplichtende diagonaal is precies
+        // het beeld dat een kind onthoudt, ook al zegt de zin erbij dat het niet mag.
         'Maar nooit schuin. Schuin kan de toren echt niet.',
       ],
       vertelFen: '8/8/8/8/4R3/8/8/8',
-      vertelWijs: ['e8', 'e1', 'a4', 'h4'],
       meedoen: [
         {
           kind: 'tapMoves',
@@ -88,11 +97,15 @@ export const wereld1: World = {
       geleerd: 'Nu zie je waar de toren moet stoppen.',
       vertel: [
         'De toren is sterk, maar hij kan niet toveren.',
-        'Staat er een eigen stuk in de weg? Dan stopt hij ervoor.',
+        // Het spoor loopt tot vlák voor de eigen pion en houdt daar op. Dat is de hele
+        // les, en je ziet hem stoppen in plaats van dat je het hoort.
+        {
+          tekst: 'Staat er een eigen stuk in de weg? Dan stopt hij ervoor.',
+          wijs: wegen(pad('e4', 'e5'), pad('e4', 'd4')),
+        },
         'Hij springt nergens overheen. Dat kan alleen ik!',
       ],
       vertelFen: '8/8/4P3/8/2P1R3/8/8/8',
-      vertelWijs: ['e6', 'c4'],
       meedoen: [
         {
           kind: 'tapMoves',
@@ -145,12 +158,19 @@ export const wereld1: World = {
       doel: 'Je kind slaat een vijandelijk stuk met de toren.',
       geleerd: 'Nu pak jij een stuk met je toren.',
       vertel: [
-        'Staat er een stuk van de tegenstander in de weg? Dan mag je hem pakken!',
-        'Je zet je toren op zijn veld, en zijn stuk gaat van het bord af.',
-        'Slaan doe je op het veld waar hij staat. Niet erlangs.',
+        {
+          tekst: 'Staat er een stuk van de tegenstander in de weg? Dan mag je hem pakken!',
+          wijs: pad('e4', 'e7'),
+        },
+        // Het spoor eindigt op het veld van de pion zelf, want dáár komt de toren te
+        // staan. Bij het slaan is dat het enige wat je goed moet zien.
+        {
+          tekst: 'Je zet je toren op zijn veld, en zijn stuk gaat van het bord af.',
+          wijs: ['e7'],
+        },
+        { tekst: 'Slaan doe je op het veld waar hij staat. Niet erlangs.', wijs: pad('e4', 'b4') },
       ],
       vertelFen: '8/4p3/8/8/1p2R3/8/8/8',
-      vertelWijs: ['e7', 'b4'],
       meedoen: [
         {
           kind: 'move',

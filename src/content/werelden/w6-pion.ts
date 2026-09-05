@@ -26,8 +26,9 @@ export const wereld6: World = {
       geleerd: 'Nu weet je dat een pion alleen vooruit gaat en nooit terug.',
       vertel: [
         'Dit is de pion. Het kleinste stukje, maar wel dapper.',
-        'Hij loopt één veld vooruit. Nooit opzij, nooit achteruit.',
-        'Een pion gaat altijd door. Terug kan hij niet meer.',
+        { tekst: 'Hij loopt één veld vooruit. Nooit opzij, nooit achteruit.', wijs: ['e6'] },
+        // Het spoor loopt door naar boven: die kant op, en alleen die kant op.
+        { tekst: 'Een pion gaat altijd door. Terug kan hij niet meer.', wijs: ['e6', 'e7', 'e8'] },
       ],
       vertelFen: '8/8/8/4P3/8/8/8/8',
       meedoen: [
@@ -85,8 +86,11 @@ export const wereld6: World = {
       geleerd: 'Nu ken je de dubbele stap van de pion.',
       vertel: [
         'Eén ding mag een pion maar één keer in zijn leven.',
-        'Vanaf zijn startplek mag hij twee velden vooruit. Een lekkere sprint.',
-        'Daarna is het weer één stapje per keer.',
+        {
+          tekst: 'Vanaf zijn startplek mag hij twee velden vooruit. Een lekkere sprint.',
+          wijs: ['e3', 'e4'],
+        },
+        { tekst: 'Daarna is het weer één stapje per keer.', wijs: ['e5'] },
       ],
       vertelFen: '8/8/8/8/8/8/4P3/8',
       meedoen: [
@@ -140,11 +144,12 @@ export const wereld6: World = {
       geleerd: 'Nu weet je het gekste van de pion: recht lopen, schuin slaan.',
       vertel: [
         'Nu het gekste van de pion. Let goed op.',
-        'Hij loopt recht vooruit. Maar hij slaat schuin!',
+        // Eerst het veld waar hij naartoe loopt, dan de twee waar hij slaat. Dat
+        // onderscheid is het hele punt van deze les, en in die volgorde zie je het.
+        { tekst: 'Hij loopt recht vooruit. Maar hij slaat schuin!', wijs: ['e5', 'd5', 'f5'] },
         'Dus: recht is lopen, schuin is pakken. Bij alle andere stukken is dat hetzelfde.',
       ],
       vertelFen: '8/8/8/3p1p2/4P3/8/8/8',
-      vertelWijs: ['d5', 'f5'],
       meedoen: [
         {
           kind: 'tapMoves',
@@ -211,7 +216,10 @@ export const wereld6: World = {
       geleerd: 'Nu maak jij van een pion een dame!',
       vertel: [
         'En nu het mooiste van de pion.',
-        'Haalt hij de overkant? Dan wordt hij een dame! Zomaar, midden in de partij.',
+        {
+          tekst: 'Haalt hij de overkant? Dan wordt hij een dame! Zomaar, midden in de partij.',
+          wijs: ['e8'],
+        },
         "Daarom is zo'n klein pionnetje toch heel gevaarlijk.",
       ],
       vertelFen: '8/4P3/8/8/8/8/8/8',
@@ -275,11 +283,20 @@ export const wereld6: World = {
       geleerd: 'Nu ken je en passant, de laatste rare regel van de pion.',
       vertel: [
         'Nog één rare regel van de pion. Deze heet en passant, dat is Frans voor "in het voorbijgaan".',
-        'Staat jouw pion al ver vooruit, en springt zijn pion er met een dubbelstap langs? Dan mag je hem toch pakken.',
-        'Je slaat schuin, naar het lege veld waar hij overheen sprong. En dat mag alleen meteen, anders is de kans weg.',
+        {
+          tekst:
+            'Staat jouw pion al ver vooruit, en springt zijn pion er met een dubbelstap langs? Dan mag je hem toch pakken.',
+          // De sprong die net gemaakt is, van d7 over d6 naar d5.
+          wijs: ['d7', 'd6', 'd5'],
+        },
+        // En dan de zet zelf: schuin, naar het lege veld waar hij overheen sprong.
+        {
+          tekst:
+            'Je slaat schuin, naar het lege veld waar hij overheen sprong. En dat mag alleen meteen, anders is de kans weg.',
+          wijs: ['d6'],
+        },
       ],
       vertelFen: '4k3/8/8/3pP3/8/8/8/4K3',
-      vertelWijs: ['d6'],
       meedoen: [
         {
           kind: 'regelZet',

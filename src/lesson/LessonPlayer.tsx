@@ -21,6 +21,7 @@ import {
   WERELD_AF,
 } from '@/content/voice'
 import { volgendeLes, type Lesson, type World } from '@/content'
+import { vertelTekst, vertelWijzers } from '@/content/types'
 import { type Square } from '@/engine/board'
 import {
   antwoordQuiz,
@@ -68,7 +69,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   const [vertelIndex, setVertelIndex] = useState(0)
   const [opgaveIndex, setOpgaveIndex] = useState(0)
   const [stand, setStand] = useState<OpgaveStand | null>(null)
-  const [zin, setZin] = useState<string>(les.vertel[0] ?? '')
+  const [zin, setZin] = useState<string>(les.vertel[0] ? vertelTekst(les.vertel[0]) : '')
   const [stemming, setStemming] = useState<PipStemming>('blij')
   const [hintVelden, setHintVelden] = useState<Square[]>([])
   const [shake, setShake] = useState<Square | null>(null)
@@ -314,7 +315,14 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
 
   const marks: BoardMarks = useMemo(() => {
     if (!stand) return { glow: les.vertelWijs }
-    const m: BoardMarks = { good: stand.gevonden, glow: hintVelden, last: stand.laatsteZet ?? undefined }
+    // De hint gaat vóór het gegeven: wie om hulp vraagt moet zien wat de hint aanwijst,
+    // niet het veld dat er toch al oplichtte.
+    const gegeven = stand.opgave.kind === 'tapSquares' ? (stand.opgave.wijs ?? []) : []
+    const m: BoardMarks = {
+      good: stand.gevonden,
+      glow: hintVelden.length ? hintVelden : gegeven,
+      last: stand.laatsteZet ?? undefined,
+    }
     if (stand.misser) m.bad = [stand.misser]
     if (stand.geselecteerd) {
       m.targets = mogelijkeVelden(stand, stand.geselecteerd)
@@ -339,18 +347,26 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
 
   if (fase === 'kijken') {
     const laatste = vertelIndex >= les.vertel.length - 1
+    const dezeZin = les.vertel[vertelIndex]
+    const spoor = dezeZin ? vertelWijzers(dezeZin) : []
     return (
       <div className="page">
         <Kop titel={les.titel} terug="/kaart/" />
         <WereldBand wereld={wereld} />
         <FaseBalk nu="kijken" />
         <div className="stack">
-          <Pip zegt={les.vertel[vertelIndex]} stemming={vertelIndex === 0 ? 'blij' : 'denkt'} />
+          <Pip
+            zegt={dezeZin ? vertelTekst(dezeZin) : ''}
+            stemming={vertelIndex === 0 ? 'blij' : 'denkt'}
+          />
           {les.vertelFen && (
             <div className={styles.bord}>
+              {/* De sleutel is de zin, niet het bord: bij elke nieuwe zin begint het
+                  spoor opnieuw te lopen in plaats van te blijven staan waar het stond. */}
               <Board
+                key={vertelIndex}
                 position={les.vertelFen}
-                marks={{ glow: les.vertelWijs }}
+                marks={{ glow: les.vertelWijs, spoor }}
                 showCoordinates={instellingen.coordinaten || Boolean(les.toonCoordinaten)}
                 label={`Uitleg bij ${les.titel}`}
               />
@@ -462,10 +478,17 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
                 {/* Het plaatje is het antwoord, niet de versiering ernaast: een kind
                     van vier leest het label niet. Vandaar groot, en links, waar het
                     oog begint. */}
-                {optie.emoji && (
-                  <span className={styles.quizBeeld} aria-hidden="true">
-                    {optie.emoji}
-                  </span>
+                {optie.veld ? (
+                  <span
+                    className={`${styles.quizVeld} ${optie.veld === 'donker' ? styles.quizVeldDonker : ''}`}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  optie.emoji && (
+                    <span className={styles.quizBeeld} aria-hidden="true">
+                      {optie.emoji}
+                    </span>
+                  )
                 )}
                 <span className={styles.quizTekst}>{optie.label}</span>
               </button>

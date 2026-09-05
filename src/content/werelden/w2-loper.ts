@@ -1,4 +1,5 @@
 import { type World } from '../types'
+import { pad, wegen } from '../velden'
 
 /**
  * Wereld 2 — Loperbos.
@@ -23,12 +24,14 @@ export const wereld2: World = {
       doel: 'Je kind weet dat de loper alleen schuin loopt.',
       geleerd: 'Nu weet je hoe de loper loopt: altijd schuin.',
       vertel: [
-        'Dit is de loper. Hij loopt alleen schuin.',
-        'Naar voren schuin, naar achteren schuin. Zo ver als hij wil.',
+        { tekst: 'Dit is de loper. Hij loopt alleen schuin.', wijs: pad('e4', 'h7') },
+        {
+          tekst: 'Naar voren schuin, naar achteren schuin. Zo ver als hij wil.',
+          wijs: wegen(pad('e4', 'h7'), pad('e4', 'a8'), pad('e4', 'b1'), pad('e4', 'h1')),
+        },
         'Recht vooruit? Nee. Dat is voor de toren.',
       ],
       vertelFen: '8/8/8/8/4B3/8/8/8',
-      vertelWijs: ['h7', 'a8', 'b1', 'h1'],
       meedoen: [
         {
           kind: 'tapMoves',
@@ -81,7 +84,12 @@ export const wereld2: World = {
       geleerd: 'Nu weet je dat een loper zijn kleur nooit kwijtraakt.',
       vertel: [
         'Let eens op iets grappigs.',
-        'Een loper die op een donker veld staat, komt nooit op een licht veld.',
+        // Alle velden waar deze loper ooit kan komen, één voor één. Ze zijn allemaal
+        // donker, en dat zie je pas echt als ze er samen liggen.
+        {
+          tekst: 'Een loper die op een donker veld staat, komt nooit op een licht veld.',
+          wijs: pad('c1', 'h6'),
+        },
         'Daarom heb je er twee: eentje voor de lichte velden en eentje voor de donkere.',
       ],
       vertelFen: '8/8/8/8/8/8/1P6/2B5',
@@ -104,9 +112,9 @@ export const wereld2: World = {
           kind: 'quiz',
           vraag: 'Een loper op een donker veld komt op...',
           opties: [
-            { label: 'alleen donkere velden', emoji: '🟩', goed: true },
+            { label: 'alleen donkere velden', veld: 'donker', goed: true },
             { label: 'alle velden', emoji: '🌈' },
-            { label: 'alleen lichte velden', emoji: '⬜' },
+            { label: 'alleen lichte velden', veld: 'licht' },
           ],
           foutTip: 'Schuin lopen betekent: altijd dezelfde kleur.',
         },
@@ -139,11 +147,12 @@ export const wereld2: World = {
       geleerd: 'Nu sla jij een stuk met je loper.',
       vertel: [
         'Slaan doet de loper ook schuin. Hoe kan het ook anders.',
-        'Hij glijdt over de diagonaal tot hij bij het stuk is, en pakt het.',
-        'Let op: hij stopt bij het eerste stuk. Wat erachter staat blijft staan.',
+        { tekst: 'Hij glijdt over de diagonaal tot hij bij het stuk is, en pakt het.', wijs: pad('f1', 'c4') },
+        // Het spoor stopt op het paard; de pion op a6 licht niet op. Dat is precies
+        // het verschil tussen "erachter" en "erop".
+        { tekst: 'Let op: hij stopt bij het eerste stuk. Wat erachter staat blijft staan.', wijs: ['c4'] },
       ],
       vertelFen: '8/8/p7/8/2n5/8/8/5B2',
-      vertelWijs: ['c4', 'a6'],
       meedoen: [
         {
           kind: 'move',

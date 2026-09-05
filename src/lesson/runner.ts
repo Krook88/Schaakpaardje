@@ -22,6 +22,15 @@ export type OpgaveStand = {
   gevonden: Square[]
   /** Velden die het kind fout heeft aangetikt (blijven kort staan). */
   misser: Square | null
+  /**
+   * De antwoorden die nog open staan bij een opgave met meerdere goede antwoorden.
+   *
+   * Bij "tik een hele lijn aan" staan hier eerst alle acht de lijnen in. De eerste tik
+   * bepaalt welke het wordt: alle verzamelingen zonder dat veld vallen af. Zo is elk
+   * goed antwoord goed, en blijft het na de eerste tik één opgave in plaats van een
+   * wolk van goede velden.
+   */
+  varianten: Square[][] | null
   geselecteerd: Square | null
   /** Waar staat het stuk waarmee we bezig zijn (verandert bij reach/captureAll). */
   actiefStuk: Square | null
@@ -52,6 +61,20 @@ export function doelVelden(opgave: Exercise): Square[] {
     return pieceMoves(board, opgave.from, { ignoreOwnPieces: opgave.negeerEigen }).all
   }
   return []
+}
+
+/**
+ * De velden die nu nog goed zijn, gegeven wat het kind al aangetikt heeft.
+ *
+ * Zonder varianten is dat gewoon het antwoord. Met varianten is het de vereniging van
+ * alle antwoorden die nog open staan — vóór de eerste tik dus alle acht de lijnen,
+ * daarna alleen die ene.
+ */
+export function doelVeldenNu(stand: OpgaveStand): Square[] {
+  if (!stand.varianten) return doelVelden(stand.opgave)
+  const uit = new Set<Square>()
+  for (const variant of stand.varianten) variant.forEach((v) => uit.add(v))
+  return [...uit]
 }
 
 /**
@@ -97,6 +120,8 @@ export function startOpgave(ruwe: Exercise): OpgaveStand {
     board,
     gevonden: [],
     misser: null,
+    varianten:
+      opgave.kind === 'tapSquares' && opgave.varianten?.length ? opgave.varianten : null,
     geselecteerd: null,
     actiefStuk,
     zetten: 0,
@@ -135,8 +160,24 @@ export function tik(stand: OpgaveStand, veld: Square): { stand: OpgaveStand; uit
 
   /* ---- tik-opgaven: velden aanwijzen ---- */
   if (o.kind === 'tapSquares' || o.kind === 'tapMoves') {
-    const doelen = doelVelden(o)
     if (stand.gevonden.includes(veld)) return { stand, uit: 'genegeerd' }
+
+    // Met varianten kiest de tik welk antwoord het wordt: alles waar dit veld niet in
+    // zit valt af. Blijft er niets over, dan was de tik fout.
+    if (stand.varianten) {
+      const nog = stand.varianten.filter((v) => v.includes(veld))
+      if (nog.length) {
+        const gevonden = [...stand.gevonden, veld]
+        const klaar = gevonden.length === nog[0].length
+        return {
+          stand: { ...stand, gevonden, varianten: nog, misser: null, klaar },
+          uit: klaar ? 'klaar' : 'goed',
+        }
+      }
+      return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1 }, uit: 'fout' }
+    }
+
+    const doelen = doelVelden(o)
     if (doelen.includes(veld)) {
       const gevonden = [...stand.gevonden, veld]
       const klaar = gevonden.length === doelen.length
@@ -416,7 +457,11 @@ export function hint(stand: OpgaveStand): { stand: OpgaveStand; velden: Square[]
   const nieuw = { ...stand, hints: stand.hints + 1 }
 
   if (o.kind === 'tapSquares' || o.kind === 'tapMoves') {
-    const rest = doelVelden(o).filter((sq) => !stand.gevonden.includes(sq))
+    // Bij varianten wijst de hint een veld aan dat nog open staat. Vóór de eerste tik
+    // is dat er één uit de eerste variant: hij kiest dus een antwoord, en dat is
+    // precies wat een kind dat vastloopt nodig heeft.
+    const open = stand.varianten ? stand.varianten[0] : doelVelden(o)
+    const rest = open.filter((sq) => !stand.gevonden.includes(sq))
     return { stand: nieuw, velden: rest.slice(0, 1) }
   }
   if (o.kind === 'move') {

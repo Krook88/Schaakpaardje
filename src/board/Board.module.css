@@ -69,6 +69,47 @@
   box-shadow: inset 0 0 0 4px var(--accent);
   animation: pulse 1.5s ease-in-out infinite;
 }
+/* Het spoor van de uitleg: de velden lichten één voor één op, in de volgorde waarin
+   ze in `spoor` staan. Zo klimt een lijn echt omhoog en loopt een rij echt opzij,
+   gelijk op met wat Pip zegt. Elk veld blijft daarna staan, zodat aan het eind van de
+   zin het hele patroon te zien is en niet alleen het laatste vakje.
+
+   De vertraging staat op 150 ms: acht velden duren dan 1,2 seconde, ongeveer even lang
+   als de zin erboven. */
+.spoor::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  /* Een ring, en maar een vleugje vulling. In de allereerste les gaat het juist
+     óver de veldkleur ("een licht veld, een donker veld"); een dekkende waas zou daar
+     precies het verschil wegpoetsen dat het kind moet zien. */
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: inset 0 0 0 4px var(--accent);
+  opacity: 0;
+  animation: spoorAan 0.32s ease-out forwards;
+  animation-delay: calc(var(--stap, 0) * 150ms);
+}
+/* Het voorste veld krijgt een duwtje mee, zodat het oog het spoor volgt. */
+.spoor::before {
+  content: ''; position: absolute; inset: 14%; border-radius: 50%;
+  background: var(--accent); opacity: 0; pointer-events: none; z-index: 1;
+  animation: spoorStip 0.5s ease-out forwards;
+  animation-delay: calc(var(--stap, 0) * 150ms);
+}
+@keyframes spoorAan {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes spoorStip {
+  0% { opacity: 0; transform: scale(0.2); }
+  40% { opacity: 0.75; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.6); }
+}
+/* Wie beweging uit heeft staan krijgt het eindbeeld, zonder de reis ernaartoe. */
+@media (prefers-reduced-motion: reduce) {
+  .spoor::after { animation: none; opacity: 1; }
+  .spoor::before { display: none; }
+  .glow::after { animation: none; }
+}
+
 .goedVeld::after { background: color-mix(in srgb, var(--grass) 66%, transparent); }
 .foutVeld::after { background: color-mix(in srgb, var(--berry) 62%, transparent); }
 .last::after { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--sel) 45%, transparent); }

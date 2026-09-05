@@ -20,6 +20,26 @@ export type Exercise =
       foutTip?: string
       /** Zie TapBedoeling: laat de contentcontrole het antwoord narekenen. */
       bedoeling?: TapBedoeling
+      /**
+       * Andere antwoorden die net zo goed zijn.
+       *
+       * "Tik een hele lijn aan" heeft acht goede antwoorden, niet één. Stond er dan
+       * alleen de e-lijn in `correct`, dan kreeg een kind dat keurig de c-lijn koos
+       * acht keer een kruisje voor een goed antwoord — precies wat deze app niet mag
+       * doen. Met varianten kiest de eerste tik welk antwoord het wordt: alle
+       * verzamelingen waar dat veld niet in zit vallen af, de rest blijft open.
+       *
+       * `correct` is de eerste variant; alle varianten zijn even groot, zodat "3 van
+       * de 8 gevonden" blijft kloppen welke je ook kiest.
+       */
+      varianten?: Square[][]
+      /**
+       * Velden die vanaf het begin oplichten: een gegeven, geen antwoord.
+       *
+       * Voor een kind dat niet leest is "de vierde rij van onderen" geen aanwijzing
+       * maar een raadsel. Eén veld dat oplicht is dat wel: begin hier.
+       */
+      wijs?: Square[]
     }
   /** Verplaats een stuk naar een van de goede velden. */
   | {
@@ -54,7 +74,20 @@ export type Exercise =
   | {
       kind: 'quiz'
       vraag: string
-      opties: { label: string; emoji?: string; goed?: boolean }[]
+      opties: {
+        label: string
+        emoji?: string
+        /**
+         * Een echt veldje in de kleur van het bord, in plaats van een emoji.
+         *
+         * ⬜ en 🟩 leken de veldkleuren goed te vangen, maar een emoji ziet er op elk
+         * toestel anders uit: op Windows is ⬜ lichtpaars. Een kind kreeg dus een
+         * paars vlakje te zien bij "een licht veld" terwijl het bord ernaast crème
+         * en groen is. Dit vakje krijgt letterlijk dezelfde kleur als het bord.
+         */
+        veld?: 'licht' | 'donker'
+        goed?: boolean
+      }[]
       foutTip?: string
     }
 
@@ -95,6 +128,26 @@ export type ZetBedoeling =
   /** Het stuk dat jou aanvalt, slaan. */
   | 'aanvaller'
 
+/**
+ * Eén zin uit de kijkfase, met wat er ondertussen op het bord gebeurt.
+ *
+ * "Een lijn loopt van beneden naar boven" bij een leeg bord is voor een kind van vier
+ * geen uitleg maar een raadsel: het hoort woorden en ziet niets. Met `wijs` lichten de
+ * velden één voor één op in de volgorde die erin staat, dus klimt de lijn echt omhoog
+ * terwijl Pip het zegt. Wie beweging uit heeft staan, ziet ze allemaal tegelijk.
+ */
+export type VertelZin = { tekst: string; wijs?: Square[] }
+
+/** De tekst van een vertelzin, of hij nu kaal is opgeschreven of met aanwijzing. */
+export function vertelTekst(zin: string | VertelZin): string {
+  return typeof zin === 'string' ? zin : zin.tekst
+}
+
+/** De velden die bij deze zin horen; leeg als er niets aangewezen wordt. */
+export function vertelWijzers(zin: string | VertelZin): Square[] {
+  return typeof zin === 'string' ? [] : (zin.wijs ?? [])
+}
+
 export type Fase = 'kijken' | 'meedoen' | 'zelf' | 'toets'
 
 export type Lesson = {
@@ -110,11 +163,11 @@ export type Lesson = {
   doel: string
   /** Dezelfde les, maar tegen het kind zelf. Staat op het beloningsscherm. */
   geleerd: string
-  /** Wat Pip vertelt in de kijkfase. */
-  vertel: string[]
+  /** Wat Pip vertelt in de kijkfase. Een zin, of een zin met een aanwijzing erbij. */
+  vertel: (string | VertelZin)[]
   /** Stelling die tijdens het vertellen op het bord staat. */
   vertelFen?: Fen
-  /** Velden die tijdens het vertellen oplichten. */
+  /** Velden die tijdens het hele vertellen oplichten, ongeacht welke zin er klinkt. */
   vertelWijs?: Square[]
   meedoen: Exercise[]
   zelf: Exercise[]

@@ -25,8 +25,14 @@ export const wereld5: World = {
       geleerd: 'Nu weet je hoe de koning loopt: één stapje, alle kanten op.',
       vertel: [
         'Dit is de koning. Hij is de belangrijkste van allemaal.',
-        'Maar hij is ook een beetje traag: één stapje per zet.',
-        'Wel alle kanten op: recht, schuin, vooruit en achteruit.',
+        // Eerst één enkel veld, dan de hele kring eromheen. Het verschil met de dame —
+        // die dezelfde richtingen heeft maar zo ver als ze wil — zit precies in dat
+        // ene stapje, en dat is hier het enige wat oplicht.
+        { tekst: 'Maar hij is ook een beetje traag: één stapje per zet.', wijs: ['e5'] },
+        {
+          tekst: 'Wel alle kanten op: recht, schuin, vooruit en achteruit.',
+          wijs: ['e5', 'f5', 'f4', 'f3', 'e3', 'd3', 'd4', 'd5'],
+        },
       ],
       vertelFen: '8/8/8/8/4K3/8/8/8',
       meedoen: [
@@ -93,12 +99,19 @@ export const wereld5: World = {
       doel: 'Je kind slaat met de koning een stuk dat ernaast staat.',
       geleerd: 'Nu pakt jouw koning zelf een stuk.',
       vertel: [
-        'De koning is niet bang. Staat er een stuk vlak naast hem? Dan pakt hij het.',
-        'Wel alleen op de velden waar hij bij kan. Dus vlak ernaast.',
+        {
+          tekst: 'De koning is niet bang. Staat er een stuk vlak naast hem? Dan pakt hij het.',
+          wijs: ['d5'],
+        },
+        // De hele kring om de koning heen, zodat "vlak ernaast" een vorm krijgt.
+        {
+          tekst: 'Wel alleen op de velden waar hij bij kan. Dus vlak ernaast.',
+          wijs: ['d5', 'e5', 'e4', 'e3', 'd3', 'c3'],
+        },
+        // De eigen pion licht níet op. Dat is de zin, zonder woorden.
         'En zijn eigen stukken laat hij natuurlijk staan.',
       ],
       vertelFen: '8/8/8/3p4/2PK4/8/8/8',
-      vertelWijs: ['d5'],
       meedoen: [
         {
           kind: 'move',
@@ -150,7 +163,11 @@ export const wereld5: World = {
       geleerd: 'Nu weet je dat twee koningen altijd een veld tussen zich houden.',
       vertel: [
         'Nog één regel over de koning. Een grappige.',
-        'Twee koningen mogen nooit naast elkaar staan. Er blijft altijd een veld tussen.',
+        // Het veld tússen de twee koningen licht op: dat is waar het om gaat.
+        {
+          tekst: 'Twee koningen mogen nooit naast elkaar staan. Er blijft altijd een veld tussen.',
+          wijs: ['d4'],
+        },
         'Ze kunnen elkaar dus nooit pakken. Handig om te weten.',
       ],
       vertelFen: '8/8/8/3k4/8/3K4/8/8',

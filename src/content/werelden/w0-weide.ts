@@ -1,4 +1,5 @@
 import { LEEG, type World } from '../types'
+import { lijn, rij } from '../velden'
 
 /**
  * Wereld 0 — De Weide.
@@ -24,7 +25,13 @@ export const wereld0: World = {
       geleerd: 'Nu zie je meteen welk veld licht is en welk veld donker.',
       vertel: [
         'Hoi! Ik ben Pip. Dit is een schaakbord.',
-        'Kijk eens: een licht veld, een donker veld, een licht veld. Steeds om en om.',
+        {
+          tekst: 'Kijk eens: een licht veld, een donker veld, een licht veld. Steeds om en om.',
+          // Precies drie velden, in de volgorde die de zin noemt: licht, donker, licht.
+          // Ze lichten één voor één op, dus een kind dat de woorden niet kent ziet het
+          // om-en-om vanzelf gebeuren.
+          wijs: ['b1', 'c1', 'd1'],
+        },
         'Zullen we samen wat velden aantikken?',
       ],
       vertelFen: LEEG,
@@ -81,37 +88,63 @@ export const wereld0: World = {
       geleerd: 'Nu weet je wat een rij is, wat een lijn is en wat een diagonaal is.',
       vertel: [
         'Het bord heeft acht rijen van acht velden. Samen vierenzestig.',
-        'Een rij loopt van links naar rechts. Zo, opzij.',
-        'Een lijn loopt van beneden naar boven. Zo, omhoog.',
-        'Rijen liggen plat, lijnen staan rechtop.',
+        // Het woord "rij" en het woord "lijn" klinken voor een kind van vier hetzelfde.
+        // Het verschil zit in de beweging, niet in de klank: hier loopt de rij écht
+        // opzij en klimt de lijn écht omhoog, veld voor veld, terwijl Pip het zegt.
+        { tekst: 'Een rij loopt van links naar rechts. Zo, opzij.', wijs: rij(4) },
+        { tekst: 'Een lijn loopt van beneden naar boven. Zo, omhoog.', wijs: lijn('d') },
+        // Eerst de rij plat over de bodem, dan de lijn die daar rechtop uit omhoog
+        // klimt. Samen vormen ze de L die het verschil laat zien.
+        {
+          tekst: 'Rijen liggen plat, lijnen staan rechtop.',
+          wijs: [...rij(1), ...lijn('d').slice(1)],
+        },
       ],
       vertelFen: LEEG,
       meedoen: [
         {
           kind: 'tapSquares',
           fen: LEEG,
-          correct: ['a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1'],
+          correct: rij(1),
+          // De onderste rij is voor wie leest meteen duidelijk. Voor een kind van vier
+          // niet: het hoort acht woorden en ziet een leeg bord. Linksonder licht op,
+          // dan weet het waar het beginnen moet.
+          wijs: ['a1'],
           vraag: 'Tik de hele onderste rij aan. Acht velden opzij.',
         },
       ],
       zelf: [
         {
+          // "Tik een lijn aan" heeft acht goede antwoorden. Hier stond alleen de
+          // e-lijn, dus een kind dat netjes onderaan de c-lijn begon kreeg acht keer
+          // een kruisje voor een goed antwoord — en had geen enkele manier om te weten
+          // wélke lijn bedoeld werd, want de vraag zegt het niet en het kind leest niet.
+          // Nu kiest de eerste tik de lijn en is elke lijn goed.
           kind: 'tapSquares',
           fen: LEEG,
-          correct: ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8'],
+          correct: lijn('e'),
+          varianten: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map(lijn),
           vraag: 'Nu een lijn: tik alles aan van beneden naar boven.',
           foutTip: 'Een lijn gaat recht omhoog, niet opzij.',
         },
         {
           kind: 'tapSquares',
           fen: LEEG,
-          correct: ['a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4'],
+          correct: rij(4),
+          // "De vierde van onderen" moet je kunnen tellen én lezen. Eén veld dat
+          // oplicht zegt hetzelfde tegen een kind van vier: begin hier.
+          wijs: ['a4'],
           vraag: 'Tik de rij in het midden aan, de vierde van onderen.',
         },
         {
+          // Van hoek tot hoek zijn er twee diagonalen, en allebei zijn ze goed.
           kind: 'tapSquares',
           fen: LEEG,
           correct: ['a1', 'b2', 'c3', 'd4', 'e5', 'f6', 'g7', 'h8'],
+          varianten: [
+            ['a1', 'b2', 'c3', 'd4', 'e5', 'f6', 'g7', 'h8'],
+            ['h1', 'g2', 'f3', 'e4', 'd5', 'c6', 'b7', 'a8'],
+          ],
           vraag: 'En dit is een diagonaal: schuin van hoek tot hoek. Tik hem aan.',
           foutTip: 'Schuin! Steeds eentje opzij en eentje omhoog.',
         },
@@ -134,7 +167,11 @@ export const wereld0: World = {
           // vertelt; de toets vraagt iets wat je kunt aanwijzen.
           kind: 'tapSquares',
           fen: LEEG,
-          correct: ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8'],
+          correct: lijn('c'),
+          // Het derde vakje licht op. Anders is dit een telopdracht in plaats van een
+          // lijnopdracht, en tellen tot drie in een rij van acht is voor een kind van
+          // vier een andere les dan deze.
+          wijs: ['c1'],
           vraag: 'Nog één lijn. Tik alles aan wat recht boven het derde vakje ligt.',
           foutTip: 'Een lijn gaat recht omhoog. Begin onderaan en klim naar boven.',
         },
@@ -182,8 +219,8 @@ export const wereld0: World = {
           kind: 'quiz',
           vraag: 'Welk veld is rechtsonder?',
           opties: [
-            { label: 'een licht veld', emoji: '⬜', goed: true },
-            { label: 'een donker veld', emoji: '🟩' },
+            { label: 'een licht veld', veld: 'licht', goed: true },
+            { label: 'een donker veld', veld: 'donker' },
           ],
           foutTip: 'Wit rechts! Rechtsonder is licht.',
         },

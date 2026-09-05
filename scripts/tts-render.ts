@@ -27,6 +27,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, unlinkSync } from 'node:fs'
 import { join } from 'node:path'
 import { alleZinnen } from '../src/content/validate'
+import { vertelTekst } from '../src/content/types'
 import { WERELDEN } from '../src/content'
 import { zinSleutel } from '../src/audio/voice'
 import * as pip from '../src/content/voice'
@@ -108,7 +109,7 @@ function blokken(): Blok[] {
   for (const wereld of WERELDEN) {
     const zinnen = new Set<string>([wereld.belofte])
     for (const les of wereld.lessen) {
-      les.vertel.forEach((z) => zinnen.add(z))
+      les.vertel.forEach((z) => zinnen.add(vertelTekst(z)))
       for (const o of [...les.meedoen, ...les.zelf, ...les.toets]) {
         if ('vraag' in o) zinnen.add(o.vraag)
         if ('foutTip' in o && o.foutTip) zinnen.add(o.foutTip)

@@ -25,11 +25,19 @@ export const wereld4: World = {
       geleerd: 'Nu ken je de L-sprong van het paard.',
       vertel: [
         'Dit ben ik! Het paard. Ik loop niet, ik spring.',
-        'Kijk mee: twee velden rechtdoor, en dan één opzij. Dat is een L.',
-        'Zo kan ik naar acht velden tegelijk. Als ik in het midden sta tenminste.',
+        // Acht eindpunten tegelijk lieten zien waar het paard uitkomt, maar niet
+        // waaróm het een L heet. Nu wordt de L eerst één keer voorgedaan — twee
+        // omhoog, één opzij — en pas daarna komen alle acht de velden, één voor één.
+        {
+          tekst: 'Kijk mee: twee velden rechtdoor, en dan één opzij. Dat is een L.',
+          wijs: ['e6', 'e7', 'd7'],
+        },
+        {
+          tekst: 'Zo kan ik naar acht velden tegelijk. Als ik in het midden sta tenminste.',
+          wijs: ['d7', 'f7', 'g6', 'g4', 'f3', 'd3', 'c4', 'c6'],
+        },
       ],
       vertelFen: '8/8/8/4N3/8/8/8/8',
-      vertelWijs: ['d7', 'f7', 'c6', 'g6', 'c4', 'g4', 'd3', 'f3'],
       meedoen: [
         {
           kind: 'tapMoves',
@@ -88,7 +96,12 @@ export const wereld4: World = {
       geleerd: 'Nu weet je dat alleen het paard over stukken heen springt.',
       vertel: [
         'Nu iets wat alleen ik kan.',
-        'Staan er stukken in de weg? Ik spring er gewoon overheen!',
+        // Het paard staat volledig ingesloten en toch lichten er acht velden op, aan
+        // de andere kant van de heg. Dat plaatje zegt meer dan het woord "overheen".
+        {
+          tekst: 'Staan er stukken in de weg? Ik spring er gewoon overheen!',
+          wijs: ['d6', 'f6', 'g5', 'g3', 'f2', 'd2', 'c3', 'c5'],
+        },
         'De toren, de loper en de dame moeten er allemaal omheen. Ik niet.',
       ],
       vertelFen: '8/8/8/3PPP2/3PNP2/3PPP2/8/8',
@@ -145,7 +158,9 @@ export const wereld4: World = {
       geleerd: 'Nu spring jij met het paard van hapje naar hapje.',
       vertel: [
         'Ik heb honger! Er liggen wortels op het bord. Nou ja, pionnen dan.',
-        'Spring van pion naar pion. Elke sprong moet raak zijn.',
+        // De route wordt letterlijk voorgedaan: b3, c5, d7. Wie het ziet gebeuren
+        // begrijpt "elke sprong moet raak zijn" zonder dat het uitgelegd hoeft.
+        { tekst: 'Spring van pion naar pion. Elke sprong moet raak zijn.', wijs: ['b3', 'c5', 'd7'] },
         'Kijk eerst even welke volgorde werkt. Anders sta je vast.',
       ],
       vertelFen: '8/3p4/8/2p5/8/1p6/8/N7',

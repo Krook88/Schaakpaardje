@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { antwoordQuiz, doelVelden, hint, startOpgave, sterrenVoor, tik } from '@/lesson/runner'
 import type { Exercise } from '@/content/types'
+import { lijn } from '@/content/velden'
 
 const paardOpE5: Exercise = {
   kind: 'tapMoves',
@@ -283,5 +284,66 @@ describe('een kind kan nooit vastlopen', () => {
       stand = tik(r.stand, r.velden[0]).stand
     }
     expect(gezien).toEqual(['a1', 'b2', 'c3'])
+  })
+})
+
+describe('opgaven met meer dan één goed antwoord', () => {
+  const eenLijn: Exercise = {
+    kind: 'tapSquares',
+    fen: '8/8/8/8/8/8/8/8',
+    correct: lijn('e'),
+    varianten: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map(lijn),
+    vraag: 'Tik een lijn aan, van beneden naar boven.',
+  }
+
+  it('laat het kind zelf kiezen welke lijn het wordt', () => {
+    // De c-lijn staat niet in `correct`, en was daarvoor dus acht keer fout.
+    let stand = startOpgave(eenLijn)
+    for (const veld of lijn('c')) {
+      const r = tik(stand, veld)
+      expect(r.uit).not.toBe('fout')
+      stand = r.stand
+    }
+    expect(stand.klaar).toBe(true)
+    expect(stand.fouten).toBe(0)
+  })
+
+  it('legt na de eerste tik vast welke lijn het is', () => {
+    let stand = startOpgave(eenLijn)
+    stand = tik(stand, 'c1').stand
+    // b2 hoort bij geen enkele lijn die nog open staat.
+    const r = tik(stand, 'b2')
+    expect(r.uit).toBe('fout')
+    expect(r.stand.fouten).toBe(1)
+  })
+
+  it('is pas klaar als de hele lijn er is, niet eerder', () => {
+    let stand = startOpgave(eenLijn)
+    for (const veld of lijn('h').slice(0, 7)) stand = tik(stand, veld).stand
+    expect(stand.klaar).toBe(false)
+    stand = tik(stand, 'h8').stand
+    expect(stand.klaar).toBe(true)
+  })
+
+  it('wijst met een hint een veld aan dat nog open staat', () => {
+    let stand = startOpgave(eenLijn)
+    stand = tik(stand, 'g1').stand
+    const r = hint(stand)
+    expect(lijn('g')).toContain(r.velden[0])
+    expect(r.velden[0]).not.toBe('g1')
+  })
+
+  it('houdt het aantal te vinden velden gelijk, welk antwoord je ook kiest', () => {
+    // Anders klopt "3 van de 8 gevonden" niet meer zodra een kind de c-lijn pakt.
+    for (const variant of eenLijn.kind === 'tapSquares' ? (eenLijn.varianten ?? []) : []) {
+      expect(variant).toHaveLength(doelVelden(eenLijn).length)
+    }
+  })
+
+  it('werkt gewoon als een opgave één antwoord heeft', () => {
+    let stand = startOpgave(paardOpE5)
+    expect(stand.varianten).toBeNull()
+    const r = tik(stand, 'a1')
+    expect(r.uit).toBe('fout')
   })
 })

@@ -27,6 +27,14 @@ export type BoardMarks = {
   bad?: Square[]
   /** Laatste zet, blijft even staan. */
   last?: [Square, Square]
+  /**
+   * Een spoor: velden die één voor één oplichten, in deze volgorde.
+   *
+   * Voor de uitleg. Pip zegt "een lijn loopt van beneden naar boven" en het bord laat
+   * hem intussen omhoog klimmen, veld voor veld. Dat is het verschil tussen een kind
+   * dat woorden hoort en een kind dat ziet wat er bedoeld wordt.
+   */
+  spoor?: Square[]
 }
 
 type Props = {
@@ -180,6 +188,8 @@ export function Board({
               if (fout) classes.push(styles.foutVeld)
               if (selected === sq) classes.push(styles.selected)
               if (has(marks.glow, sq)) classes.push(styles.glow)
+              const stap = marks.spoor?.indexOf(sq) ?? -1
+              if (stap >= 0) classes.push(styles.spoor)
               if (marks.last?.includes(sq)) classes.push(styles.last)
               if (shaking === sq) classes.push(styles.wrong)
 
@@ -204,6 +214,7 @@ export function Board({
                   aria-label={`${sq}, ${naam}${isTarget ? ', hier kun je heen' : ''}`}
                   aria-pressed={selected === sq}
                   data-square={sq}
+                  style={stap >= 0 ? ({ '--stap': stap } as React.CSSProperties) : undefined}
                 >
                   {has(marks.goals, sq) && <Ster />}
                   {piece && (

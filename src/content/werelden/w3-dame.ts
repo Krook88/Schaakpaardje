@@ -1,4 +1,5 @@
 import { type World } from '../types'
+import { pad, wegen } from '../velden'
 
 /**
  * Wereld 3 — Damepaleis.
@@ -24,8 +25,16 @@ export const wereld3: World = {
       geleerd: 'Nu weet je waarom de dame het sterkste stuk is.',
       vertel: [
         'Dit is de dame. Zij is het sterkste stuk van het bord.',
-        'Weet je waarom? Ze kan alles wat de toren kan: kaarsrecht.',
-        'En alles wat de loper kan: schuin. Samen dus alle kanten op.',
+        // Eerst de vier rechte richtingen, dan de vier schuine. In die volgorde zie je
+        // dat de dame de toren en de loper bij elkaar is — precies wat de zinnen zeggen.
+        {
+          tekst: 'Weet je waarom? Ze kan alles wat de toren kan: kaarsrecht.',
+          wijs: wegen(pad('d4', 'd8'), pad('d4', 'd1'), pad('d4', 'a4'), pad('d4', 'h4')),
+        },
+        {
+          tekst: 'En alles wat de loper kan: schuin. Samen dus alle kanten op.',
+          wijs: wegen(pad('d4', 'h8'), pad('d4', 'a7'), pad('d4', 'a1'), pad('d4', 'g1')),
+        },
       ],
       vertelFen: '8/8/8/8/3Q4/8/8/8',
       meedoen: [
@@ -80,11 +89,15 @@ export const wereld3: World = {
       geleerd: 'Nu weet je dat ook de dame nergens doorheen kan.',
       vertel: [
         'De dame is sterk, maar toveren kan zij ook niet.',
-        'Voor een eigen stuk stopt ze. Een stuk van de tegenstander mag ze pakken.',
+        // Omhoog stopt het spoor vóór de eigen pion; opzij loopt het door tót op de
+        // zwarte pion. Het verschil tussen stoppen en pakken staat zo naast elkaar.
+        {
+          tekst: 'Voor een eigen stuk stopt ze. Een stuk van de tegenstander mag ze pakken.',
+          wijs: wegen(pad('e4', 'e5'), pad('e4', 'b4')),
+        },
         'En met een knik? Nee. Eerst recht en dan schuin in één zet mag niet.',
       ],
       vertelFen: '8/8/4P3/8/1p2Q3/8/8/8',
-      vertelWijs: ['e6', 'b4'],
       meedoen: [
         {
           kind: 'tapMoves',
@@ -139,12 +152,16 @@ export const wereld3: World = {
       doel: 'Je kind begrijpt dat de dame kostbaar is en niet zomaar te grabbel ligt.',
       geleerd: 'Nu ben jij zuinig op je dame.',
       vertel: [
-        'De dame is je duurste stuk. Wees er zuinig op.',
-        'Als jij haar naast een stuk van de tegenstander zet, kan hij haar zomaar pakken.',
+        { tekst: 'De dame is je duurste stuk. Wees er zuinig op.', wijs: ['d5'] },
+        // De sprong van het paard naar de dame, in twee stappen: dít is de weg waarlangs
+        // ze gepakt wordt. Een kind dat de paardsprong nog niet ziet, ziet hem hier.
+        {
+          tekst: 'Als jij haar naast een stuk van de tegenstander zet, kan hij haar zomaar pakken.',
+          wijs: ['c3', 'd5'],
+        },
         'Kijk dus altijd even: staat ze veilig?',
       ],
       vertelFen: '8/8/8/3Q4/8/2n5/8/8',
-      vertelWijs: ['d5', 'c3'],
       meedoen: [
         {
           kind: 'quiz',
