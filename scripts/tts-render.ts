@@ -20,8 +20,14 @@ import { alleZinnen } from '../src/content/validate'
 import { zinSleutel } from '../src/audio/voice'
 import * as pip from '../src/content/voice'
 
-/** Pips stem. Vervangen? Zet ELEVENLABS_VOICE_ID in de omgeving. */
-const VOICE_ID = process.env.ELEVENLABS_VOICE_ID ?? 'W53kY7bMM00QTmJradZg'
+/**
+ * Pips stem: een vrouwenstem, ontworpen voor deze app — warm, rustig, en enthousiast
+ * zonder schril te worden. Vervangen? Zet ELEVENLABS_VOICE_ID in de omgeving.
+ *
+ * Een stem-ID is geen geheim: zonder de bijbehorende API-sleutel kun je er niets mee.
+ * Hij staat hier zodat het script zonder verdere instellingen het juiste doet.
+ */
+const VOICE_ID = process.env.ELEVENLABS_VOICE_ID ?? 'qU0HFuyMEybbemwxshYP'
 const MODEL = process.env.ELEVENLABS_MODEL ?? 'eleven_multilingual_v2'
 const UITVOER = join(process.cwd(), 'public', 'audio')
 const MANIFEST = join(UITVOER, 'manifest.json')
