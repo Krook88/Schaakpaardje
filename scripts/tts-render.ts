@@ -2,10 +2,20 @@
  * Spreekt alle zinnen van Pip in met ElevenLabs.
  *
  *   ELEVENLABS_API_KEY=... npm run audio:render
- *   npm run audio:render -- --dry       # alleen laten zien wat er zou gebeuren
- *   npm run audio:render -- --proef     # een handvol zinnen, om de stem te keuren
- *   npm run audio:render -- --limit 20  # hoogstens twintig zinnen
- *   npm run audio:render -- --force     # alles opnieuw, ook wat er al staat
+ *   npm run audio:render -- --dry          # alleen laten zien wat er zou gebeuren
+ *   npm run audio:render -- --proef        # een handvol zinnen, om de stem te keuren
+ *   npm run audio:render -- --budget 9500  # stop voor je meer dan 9500 credits uitgeeft
+ *   npm run audio:render -- --limit 20     # hoogstens twintig zinnen
+ *   npm run audio:render -- --force        # alles opnieuw, ook wat er al staat
+ *
+ * De volgorde is niet willekeurig, en dat is de kern van dit script als je budget krap
+ * is. Voorop staan de zinnen die élk kind hoort, hoe ver het ook komt: Pips reacties op
+ * goed en fout, de begroetingen, de knoppen. Drieënvijftig zinnen, geen tweeduizend
+ * tekens, en samen goed voor het overgrote deel van alles wat er op een dag klinkt.
+ * Daarna komen de werelden op volgorde, want een kind begint nu eenmaal bij wereld 0.
+ *
+ * Zo levert de eerste tienduizend credits een app op waarin alles wat een kind het
+ * eerste half jaar tegenkomt is ingesproken, en pas de verre werelden nog niet.
  *
  * Alleen nieuwe of gewijzigde zinnen worden gerenderd: de bestandsnaam is een hash van
  * de zin zelf, dus wie een zin aanpast krijgt automatisch een nieuw bestand en de oude
@@ -17,6 +27,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, unlinkSync } from 'node:fs'
 import { join } from 'node:path'
 import { alleZinnen } from '../src/content/validate'
+import { WERELDEN } from '../src/content'
 import { zinSleutel } from '../src/audio/voice'
 import * as pip from '../src/content/voice'
 
@@ -37,11 +48,14 @@ const dry = args.includes('--dry')
 const force = args.includes('--force')
 const prune = args.includes('--prune')
 const proef = args.includes('--proef')
-const limiet = (() => {
-  const i = args.indexOf('--limit')
+const getal = (vlag: string) => {
+  const i = args.indexOf(vlag)
   const n = i >= 0 ? Number(args[i + 1]) : NaN
   return Number.isFinite(n) && n > 0 ? n : null
-})()
+}
+const limiet = getal('--limit')
+/** Hoogstens zoveel tekens deze ronde. Eén teken is ongeveer één credit. */
+const budget = getal('--budget')
 
 /**
  * De proefzinnen: een dwarsdoorsnede van wat Pip de hele dag zegt.
@@ -63,15 +77,55 @@ const PROEFZINNEN = [
   'Drie sterren! Je krijgt er een sticker bij.',
 ]
 
-/** Alles wat Pip kan zeggen: de lescontent plus de losse feedbackzinnen. */
-function alleTeksten(): string[] {
-  const uit = new Set<string>(alleZinnen())
+type Blok = { naam: string; zinnen: string[] }
+
+/**
+ * Alles wat Pip kan zeggen, gegroepeerd en op volgorde van belang.
+ *
+ * Eerst zijn reacties: die klinken bij elke opgave, in elke wereld, elke dag opnieuw.
+ * Daarna de werelden zoals een kind ze tegenkomt. Een zin die in twee werelden staat
+ * hoort bij de eerste — die komt immers eerder langs.
+ */
+function blokken(): Blok[] {
+  const gezien = new Set<string>()
+  const nieuw = (zinnen: Iterable<string>) =>
+    [...zinnen].filter((z) => {
+      const schoon = z?.trim()
+      if (!schoon || schoon.length < 2 || gezien.has(schoon)) return false
+      gezien.add(schoon)
+      return true
+    })
+
+  const reacties = new Set<string>()
   for (const waarde of Object.values(pip)) {
-    if (typeof waarde === 'string') uit.add(waarde)
-    else if (Array.isArray(waarde)) waarde.forEach((z) => typeof z === 'string' && uit.add(z))
+    if (typeof waarde === 'string') reacties.add(waarde)
+    else if (Array.isArray(waarde)) waarde.forEach((z) => typeof z === 'string' && reacties.add(z))
   }
-  uit.delete('Pip')
-  return [...uit].filter((z) => z.trim().length > 1)
+  reacties.delete('Pip')
+
+  const uit: Blok[] = [{ naam: 'Pips reacties en schermzinnen', zinnen: nieuw(reacties) }]
+
+  for (const wereld of WERELDEN) {
+    const zinnen = new Set<string>([wereld.belofte])
+    for (const les of wereld.lessen) {
+      les.vertel.forEach((z) => zinnen.add(z))
+      for (const o of [...les.meedoen, ...les.zelf, ...les.toets]) {
+        if ('vraag' in o) zinnen.add(o.vraag)
+        if ('foutTip' in o && o.foutTip) zinnen.add(o.foutTip)
+      }
+    }
+    uit.push({ naam: `wereld ${wereld.nummer} — ${wereld.naam}`, zinnen: nieuw(zinnen) })
+  }
+
+  // Vangnet: staat er ergens nog een zin die alleZinnen() wel kent maar wij niet,
+  // dan hoort hij er alsnog bij. Liever achteraan dan vergeten.
+  const rest = nieuw(alleZinnen())
+  if (rest.length) uit.push({ naam: 'overig', zinnen: rest })
+  return uit
+}
+
+function alleTeksten(): string[] {
+  return blokken().flatMap((b) => b.zinnen)
 }
 
 async function rendeer(tekst: string, sleutel: string, apiKey: string): Promise<number> {
@@ -125,6 +179,21 @@ async function main() {
   }
   if (limiet !== null) teDoen = teDoen.slice(0, limiet)
 
+  // Het budget snijdt af op de zinsgrens: liever negenhonderd credits over dan
+  // halverwege stuklopen op een quotum en niet weten wat er wel en niet staat.
+  let afgesneden = 0
+  if (budget !== null) {
+    const past: string[] = []
+    let loop = 0
+    for (const tekst of teDoen) {
+      if (loop + tekst.length > budget) break
+      past.push(tekst)
+      loop += tekst.length
+    }
+    afgesneden = teDoen.length - past.length
+    teDoen = past
+  }
+
   const tekens = teDoen.reduce((n, t) => n + t.length, 0)
   const alles = teksten.reduce((n, t) => n + t.length, 0)
   console.log(`${teksten.length} zinnen in de content (${alles} tekens in totaal).`)
@@ -132,9 +201,28 @@ async function main() {
   console.log(`Dat kost ongeveer ${tekens} credits bij ElevenLabs.`)
   if (proef) console.log('Proefmodus: alleen de zes keurzinnen.')
   if (limiet !== null) console.log(`Begrensd op ${limiet} zinnen.`)
+  if (budget !== null) {
+    console.log(`Budget: ${budget} credits — ${afgesneden} zinnen blijven voor een volgende keer.`)
+  }
+
+  // Waar de grens valt, per blok. Handig als het budget krap is: dan zie je precies
+  // tot welke wereld je komt en wat de volgende ronde kost.
   if (dry) {
-    teDoen.slice(0, 10).forEach((t) => console.log(`  · ${t}`))
-    if (teDoen.length > 10) console.log(`  … en nog ${teDoen.length - 10}`)
+    console.log()
+    let loop = 0
+    const nogTeDoen = new Set(teksten)
+    for (const blok of blokken()) {
+      const open = blok.zinnen.filter((z) => nogTeDoen.has(z))
+      const tekens = open.reduce((n, z) => n + z.length, 0)
+      loop += tekens
+      const merk = budget !== null && loop > budget ? '  ← valt buiten het budget' : ''
+      console.log(`  ${blok.naam.padEnd(32)} ${String(tekens).padStart(5)} tekens, samen ${String(loop).padStart(6)}${merk}`)
+    }
+  }
+  if (dry) {
+    console.log()
+    teDoen.slice(0, 6).forEach((t) => console.log(`  · ${t}`))
+    if (teDoen.length > 6) console.log(`  … en nog ${teDoen.length - 6}`)
     return
   }
 
@@ -173,7 +261,12 @@ async function main() {
     writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2))
   }
 
+  const over = teksten.filter((t) => !manifest[zinSleutel(t)]).length
   console.log(`Klaar. ${klaar} zinnen ingesproken, manifest bijgewerkt.`)
+  if (over) {
+    const tekens = teksten.filter((t) => !manifest[zinSleutel(t)]).reduce((n, t) => n + t.length, 0)
+    console.log(`Nog ${over} zinnen te gaan (${tekens} credits). Draai dit script opnieuw wanneer je wilt.`)
+  }
 }
 
 main().catch((e) => {
