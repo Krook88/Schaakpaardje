@@ -7,7 +7,7 @@ import { Kop } from '@/ui/Kop'
 import { Pip, type PipStemming } from '@/ui/Pip'
 import { sfx } from '@/audio/sfx'
 import { kies } from '@/audio/voice'
-import { BIJNA, PRIJS, PRIJS_LAATSTE } from '@/content/voice'
+import { BIJNA, HINT_GEGEVEN, OPNIEUW_PROBEREN, PRIJS, PRIJS_LAATSTE } from '@/content/voice'
 import { type Square } from '@/engine/board'
 import {
   doelVelden,
@@ -102,7 +102,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
           break
         case 'opnieuw':
           if (instellingen.effecten) sfx.fout()
-          setZin('Net niet binnen de zetten. We proberen het nog een keer.')
+          setZin(kies(OPNIEUW_PROBEREN, 'opnieuw'))
           break
       }
     },
@@ -153,7 +153,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
               const r = geefHint(stand)
               setStand(r.stand)
               setHintVelden(r.velden)
-              setZin('Kijk eens naar het veld dat oplicht.')
+              setZin(HINT_GEGEVEN)
             }}
             disabled={stand.klaar}
           >

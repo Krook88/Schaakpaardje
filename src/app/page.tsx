@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
-import { speak } from '@/audio/voice'
+import { kies, speak } from '@/audio/voice'
+import { KENNISMAKING, WELKOM, WELKOM_TERUG } from '@/content/voice'
 import { lesMet, WERELDEN } from '@/content'
 import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
 import { aantalBezit, verzameling } from '@/progress/verzameling'
@@ -80,10 +81,12 @@ export default function Thuis() {
         </div>
 
         <Pip
-          // Zonder deze afweging staat er "... met Wat is een stuk waard??"
-          zegt={`Hoi ${profiel.naam}! Leuk dat je er bent. Zullen we verder gaan met ${
-            verderLes?.titel ?? 'de eerste les'
-          }${verderLes?.titel.endsWith('?') ? '' : '?'}`}
+          // Geen naam en geen lestitel in de gesproken zin: die verschilt per kind en
+          // per moment, en kan dus nooit ingesproken worden. Zo'n zin valt terug op de
+          // stem van de tablet, precies tussen alle zinnen die Pip zelf zegt in — dat
+          // hoor je meteen. De naam staat toch al groot in de kop hierboven, en welke
+          // les het is staat op de knop eronder.
+          zegt={kies(WELKOM_TERUG, 'welkom')}
           stemming="blij"
         />
 
@@ -232,7 +235,7 @@ function NieuwProfiel({
   return (
     <div className="stack">
       <h1>Schaakmaatje</h1>
-      <Pip zegt="Hoi! Ik ben Pip, het schaakpaardje. Hoe heet jij?" stemming="blij" />
+      <Pip zegt={WELKOM} stemming="blij" />
 
       {bestaand.length > 0 && (
         <section className="card stack">
@@ -314,7 +317,7 @@ function NieuwProfiel({
           className="btn btn--primary btn--big"
           onClick={() => {
             onMaak(naam, leeftijd, avatar)
-            void speak(`Hoi ${naam || 'schaker'}! Leuk je te ontmoeten. We beginnen bij het bord.`)
+            void speak(KENNISMAKING)
           }}
         >
           Beginnen →

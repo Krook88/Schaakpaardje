@@ -8,6 +8,7 @@ import { Pip, type PipStemming } from '@/ui/Pip'
 import { sfx } from '@/audio/sfx'
 import { kies, speak } from '@/audio/voice'
 import {
+  BLUNDER_AFGEWEND,
   BLUNDER_WAARSCHUWING,
   PARTIJ_GEWONNEN,
   PARTIJ_REMISE,
@@ -15,6 +16,7 @@ import {
   PARTIJ_VERLOREN,
   SCHAAK_TEGEN_JOU,
   SCHAAK_VAN_JOU,
+  ZET_TERUGGENOMEN,
 } from '@/content/voice'
 import { PIECE_NAME, type Square } from '@/engine/board'
 import { Game, materialBalance } from '@/engine/game'
@@ -227,7 +229,7 @@ export function PartijScherm({ botId }: { botId: string }) {
     setGeselecteerd(null)
     setUitslag(null)
     setZetten((n) => Math.max(0, n - 1))
-    setZin('Geeft niet, we doen die zet gewoon nog een keer.')
+    setZin(ZET_TERUGGENOMEN)
     setStemming('moedigt')
   }, [samen, stopDenken])
 
@@ -319,7 +321,7 @@ export function PartijScherm({ botId }: { botId: string }) {
                 onClick={() => {
                   setTwijfel(null)
                   setGeselecteerd(null)
-                  setZin('Goed gekeken. Zoek maar een andere zet.')
+                  setZin(BLUNDER_AFGEWEND)
                   setStemming('blij')
                 }}
               >

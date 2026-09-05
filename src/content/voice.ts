@@ -104,3 +104,40 @@ export function foutTipVoorStuk(stuk: string): string {
   }
   return tips[stuk] ?? 'Kijk nog eens hoe dit stuk loopt.'
 }
+
+
+/* ---------------------------------------------------------------------------
+ * Zinnen die in een scherm thuishoorden maar niet in de content stonden.
+ *
+ * Ze werden wél uitgesproken en dus niet ingesproken: precies die zinnen kwamen er
+ * straks in de stem van de tablet uit, tussen alle andere zinnen die Pip zelf zegt.
+ * Dat hoor je meteen. `npm run audio:dekking` vindt ze nu voordat er credits doorheen
+ * gaan, en alles wat hier staat wordt automatisch meegenomen bij het inspreken.
+ * ------------------------------------------------------------------------- */
+
+/** Het allereerste wat een kind ooit hoort. */
+export const WELKOM = 'Hoi! Ik ben Pip, het schaakpaardje. Hoe heet jij?'
+
+/**
+ * Vroeger stond hier de naam van het kind in. Een zin die per kind verschilt kan nooit
+ * ingesproken worden — de tekst staat pas vast op het moment zelf — dus die viel altijd
+ * terug op de apparaatstem. De naam staat toch al groot boven aan het scherm.
+ */
+export const WELKOM_TERUG = [
+  'Leuk dat je er bent! Zullen we verder gaan waar je gebleven was?',
+  'Daar ben je weer. Zullen we verder?',
+] as const
+
+export const KENNISMAKING = 'Leuk je te ontmoeten! We beginnen bij het bord.'
+export const TEGEN_WIE = 'Tegen wie wil je spelen? Begin gerust makkelijk hoor.'
+export const HINT_GEGEVEN = 'Kijk eens naar het veld dat oplicht.'
+export const OPNIEUW_PROBEREN = [
+  'Dat lukte net niet binnen de zetten. We beginnen gewoon opnieuw.',
+  'Net niet binnen de zetten. We proberen het nog een keer.',
+] as const
+export const ZET_TERUGGENOMEN = 'Geeft niet, we doen die zet gewoon nog een keer.'
+export const BLUNDER_AFGEWEND = 'Goed gekeken. Zoek maar een andere zet.'
+export const OPFRISSER_KLAAR = 'Alles nog paraat. Mooi zo!'
+export const OPFRISSER_LEEG = 'Er is nog niets om op te frissen. Ga eerst maar lekker verder.'
+export const OPFRISSER_START = 'Even kijken of je het nog weet.'
+export const WEET_JE_HET_NOG = 'Weet je het nog?'

@@ -8,7 +8,16 @@ import { Kop } from '@/ui/Kop'
 import { Pip, type PipStemming } from '@/ui/Pip'
 import { sfx } from '@/audio/sfx'
 import { kies } from '@/audio/voice'
-import { BIJNA, PRIJS, PRIJS_LAATSTE } from '@/content/voice'
+import {
+  BIJNA,
+  HINT_GEGEVEN,
+  OPFRISSER_KLAAR,
+  OPFRISSER_LEEG,
+  OPFRISSER_START,
+  PRIJS,
+  PRIJS_LAATSTE,
+  WEET_JE_HET_NOG,
+} from '@/content/voice'
 import { type Square } from '@/engine/board'
 import {
   antwoordQuiz,
@@ -47,7 +56,7 @@ export function OpfrisScherm() {
 
   const [index, setIndex] = useState(0)
   const [stand, setStand] = useState<OpgaveStand | null>(null)
-  const [zin, setZin] = useState('Even kijken of je het nog weet.')
+  const [zin, setZin] = useState<string>(OPFRISSER_START)
   const [stemming, setStemming] = useState<PipStemming>('blij')
   const [hintVelden, setHintVelden] = useState<Square[]>([])
   const [shake, setShake] = useState<Square | null>(null)
@@ -61,7 +70,7 @@ export function OpfrisScherm() {
   useEffect(() => {
     if (!huidig) return
     setStand(startOpgave(huidig.opgave))
-    setZin('vraag' in huidig.opgave ? huidig.opgave.vraag : 'Weet je het nog?')
+    setZin('vraag' in huidig.opgave ? huidig.opgave.vraag : WEET_JE_HET_NOG)
     setStemming('denkt')
     setHintVelden([])
     setQuizFout(null)
@@ -79,7 +88,7 @@ export function OpfrisScherm() {
     if (index + 1 < ronde.length) setIndex(index + 1)
     else {
       setKlaar(true)
-      setZin('Alles nog paraat. Mooi zo!')
+      setZin(OPFRISSER_KLAAR)
       setStemming('trots')
       if (instellingen.effecten) sfx.diploma()
     }
@@ -168,7 +177,7 @@ export function OpfrisScherm() {
       <main className="page">
         <Kop titel="Opfrissen" terug="/" />
         <div className="stack center">
-          <Pip zegt={ronde.length ? zin : 'Er is nog niets om op te frissen. Ga eerst maar lekker verder.'} stemming="trots" />
+          <Pip zegt={ronde.length ? zin : OPFRISSER_LEEG} stemming="trots" />
           <div className="card stack center" style={{ position: 'relative', overflow: 'hidden' }}>
             {ronde.length > 0 && <Confetti />}
             <span style={{ fontSize: 64 }} aria-hidden="true">
@@ -265,7 +274,7 @@ export function OpfrisScherm() {
                 setStand(r.stand)
                 setHintVelden(r.velden)
                 setStemming('denkt')
-                setZin('Kijk eens naar het veld dat oplicht.')
+                setZin(HINT_GEGEVEN)
               }}
             >
               <span aria-hidden="true" style={{ fontSize: 28 }}>

@@ -12,8 +12,9 @@
     "test:watch": "vitest",
     "validate:content": "tsx scripts/validate-content.ts",
     "audio:render": "tsx scripts/tts-render.ts",
-    "check": "npm run typecheck && npm run test && npm run build",
-    "sfx:render": "tsx scripts/sfx-render.ts"
+    "check": "npm run typecheck && npm run test && npm run validate:content && npm run audio:dekking && npm run build",
+    "sfx:render": "tsx scripts/sfx-render.ts",
+    "audio:dekking": "tsx scripts/audio-dekking.ts"
   },
   "dependencies": {
     "chess.js": "^1.4.0",

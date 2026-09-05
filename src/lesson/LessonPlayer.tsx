@@ -12,6 +12,7 @@ import { kies, speak, stopSpeaking } from '@/audio/voice'
 import {
   AANMOEDIGING,
   BIJNA,
+  OPNIEUW_PROBEREN,
   PRIJS,
   PRIJS_LAATSTE,
   STER1,
@@ -250,7 +251,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
         case 'opnieuw':
           if (instellingen.effecten) sfx.fout()
           setStemming('moedigt')
-          setZin('Dat lukte net niet binnen de zetten. We beginnen gewoon opnieuw.')
+          setZin(kies(OPNIEUW_PROBEREN, 'opnieuw'))
           if (fase === 'toets') setToetsFouten((n) => n + 1)
           break
       }

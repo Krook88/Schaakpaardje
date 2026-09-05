@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Kop } from '@/ui/Kop'
 import { Pip } from '@/ui/Pip'
+import { TEGEN_WIE } from '@/content/voice'
 import { BOTS } from '@/engine/bots'
 import { OPSTELLING } from '@/play/opstellingen'
 import { useGespeeld } from '@/progress/store'
@@ -19,7 +20,7 @@ export default function Spelen() {
     <main className="page">
       <Kop titel="Een partijtje" terug="/" />
       <div className="stack">
-        <Pip zegt="Tegen wie wil je spelen? Begin gerust makkelijk hoor." stemming="blij" />
+        <Pip zegt={TEGEN_WIE} stemming="blij" />
 
         {gespeeld && (
           <p className="muted">
