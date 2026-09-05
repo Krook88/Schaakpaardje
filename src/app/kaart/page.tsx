@@ -61,15 +61,28 @@ export default function Kaart() {
                     <>
                       {/* Het beeld eerst: dat is waar een kind van vier de les aan
                           herkent. De titel staat ernaast voor wie al leest. */}
-                      <span aria-hidden="true" style={{ fontSize: 30, width: 40, textAlign: 'center', flexShrink: 0 }}>
-                        {open ? les.icoon : '🔒'}
+                      {/* Ook een gesloten les toont haar eigen beeld — grijs, met het
+                          slotje ernaast. Een kind ziet dan wat er nog komt, en de
+                          gestippelde rand en de vlakke achtergrond zeggen nog steeds
+                          dat er niets te tikken valt. */}
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          fontSize: 30, width: 40, textAlign: 'center', flexShrink: 0,
+                          filter: open ? 'none' : 'grayscale(1)',
+                          opacity: open ? 1 : 0.5,
+                        }}
+                      >
+                        {les.icoon}
                       </span>
                       <span style={{ flex: 1, textAlign: 'left' }}>{les.titel}</span>
                       {open ? (
                         <Sterren aantal={resultaat?.sterren ?? 0} />
                       ) : (
-                        <span className="muted" aria-label="Nog op slot" style={{ fontSize: '0.85rem' }}>
-                          nog dicht
+                        // "nog dicht" was tekst, en dat is precies wat de doelgroep
+                        // niet leest. Het slotje zegt hetzelfde zonder woorden.
+                        <span aria-label="Nog op slot" style={{ fontSize: 26 }}>
+                          🔒
                         </span>
                       )}
                     </>

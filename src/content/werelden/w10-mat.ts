@@ -24,7 +24,7 @@ export const wereld10: World = {
       id: 'mat-1',
       wereldId: 'mat',
       titel: 'Wat is schaakmat?',
-      icoon: '🏁',
+      icoon: '🔚',
       doel: 'Je kind weet dat mat betekent: schaak waar je niet meer uit kunt.',
       geleerd: 'Nu weet je wat schaakmat is.',
       vertel: [
@@ -50,7 +50,7 @@ export const wereld10: World = {
           vraag: 'Wat is het verschil tussen schaak en mat?',
           opties: [
             { label: 'bij mat kun je er niet meer uit', emoji: '🏁', goed: true },
-            { label: 'er is geen verschil', emoji: '🤷' },
+            { label: 'er is geen verschil', emoji: '🟰' },
             { label: 'mat is als je je dame verliest', emoji: '👑' },
           ],
           foutTip: 'Schaak los je op. Mat kun je niet oplossen: dan is de partij klaar.',
@@ -59,7 +59,7 @@ export const wereld10: World = {
           kind: 'quiz',
           vraag: 'Wordt de koning bij mat van het bord gehaald?',
           opties: [
-            { label: 'nee, het spel stopt gewoon', emoji: '🛑', goed: true },
+            { label: 'nee, het spel stopt gewoon', emoji: '🏳️', goed: true },
             { label: 'ja, hij wordt geslagen', emoji: '💀' },
           ],
           foutTip: 'Een koning wordt nooit geslagen. Bij mat stopt de partij, dat is genoeg.',
@@ -153,7 +153,7 @@ export const wereld10: World = {
           kind: 'quiz',
           vraag: 'Waar moet je op letten bij mat zetten?',
           opties: [
-            { label: 'op zijn vluchtvelden', emoji: '👀', goed: true },
+            { label: 'op zijn vluchtvelden', emoji: '🚪', goed: true },
             { label: 'alleen op je eigen stukken', emoji: '🙈' },
             { label: 'op de klok', emoji: '⏰' },
           ],
@@ -192,8 +192,8 @@ export const wereld10: World = {
           kind: 'quiz',
           vraag: 'Wat is het verschil tussen pat en mat?',
           opties: [
-            { label: 'bij mat sta je schaak, bij pat niet', emoji: '🧠', goed: true },
-            { label: 'er is geen verschil', emoji: '🤷' },
+            { label: 'bij mat sta je schaak, bij pat niet', emoji: '⚡', goed: true },
+            { label: 'er is geen verschil', emoji: '👯' },
             { label: 'pat is winst voor zwart', emoji: '🖤' },
           ],
         },
@@ -229,7 +229,7 @@ export const wereld10: World = {
           kind: 'quiz',
           vraag: 'Sta je veel beter en wil je winnen? Waar let je dan op?',
           opties: [
-            { label: 'dat hij altijd nog een zet kan doen', emoji: '👀', goed: true },
+            { label: 'dat hij altijd nog een zet kan doen', emoji: '🚶', goed: true },
             { label: 'dat je zo snel mogelijk speelt', emoji: '⚡' },
           ],
         },

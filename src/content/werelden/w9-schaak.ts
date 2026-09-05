@@ -61,7 +61,7 @@ export const wereld9: World = {
           vraag: 'Je staat schaak. Mag je iets anders doen?',
           opties: [
             { label: 'nee, je moet het schaak oplossen', emoji: '🚫', goed: true },
-            { label: 'ja, je mag elke zet doen', emoji: '🤷' },
+            { label: 'ja, je mag elke zet doen', emoji: '🎲' },
           ],
           foutTip: 'Schaak gaat altijd voor. Alle andere zetten mogen even niet.',
         },
@@ -146,7 +146,7 @@ export const wereld9: World = {
           vraag: 'Mag je de koning van de tegenstander opeten als hij schaak staat?',
           opties: [
             { label: 'nee, een koning wordt nooit geslagen', emoji: '🚫', goed: true },
-            { label: 'ja, dan win je meteen', emoji: '🏆' },
+            { label: 'ja, dan win je meteen', emoji: '😋' },
           ],
           foutTip: 'De koning gaat nooit van het bord. Je zet hem klem, en hoe dat heet leer je hierna.',
         },
@@ -195,7 +195,7 @@ export const wereld9: World = {
           kind: 'quiz',
           vraag: 'Welke drie manieren zijn er om uit schaak te gaan?',
           opties: [
-            { label: 'weglopen, slaan, ertussen zetten', emoji: '🧠', goed: true },
+            { label: 'weglopen, slaan, ertussen zetten', emoji: '🏃', goed: true },
             { label: 'weglopen, wachten, opgeven', emoji: '🤞' },
             { label: 'rokeren, ruilen, promoveren', emoji: '❓' },
           ],

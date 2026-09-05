@@ -115,9 +115,9 @@ export const wereld3: World = {
           kind: 'quiz',
           vraag: 'De dame staat helemaal ingesloten door haar eigen pionnen. Waar kan ze heen?',
           opties: [
-            { label: 'nergens', emoji: '🛑', goed: true },
+            { label: 'nergens', emoji: '🚧', goed: true },
             { label: 'overal', emoji: '🌈' },
-            { label: 'ze springt eroverheen', emoji: '🦘' },
+            { label: 'ze springt eroverheen', emoji: '🐴' },
           ],
           foutTip: 'Springen kan alleen het paard. De dame zit echt vast.',
         },
@@ -150,7 +150,7 @@ export const wereld3: World = {
           vraag: 'Het zwarte paard kan je dame pakken. Wat doe je?',
           opties: [
             { label: 'de dame wegzetten', emoji: '🏃', goed: true },
-            { label: 'gewoon iets anders doen', emoji: '🤷' },
+            { label: 'gewoon iets anders doen', emoji: '😳' },
           ],
           foutTip: 'Als je niets doet ben je je dame kwijt. Zet haar in veiligheid.',
         },

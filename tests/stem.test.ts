@@ -74,3 +74,20 @@ describe('wanneer Pip praat', () => {
     expect(gezegd).toEqual(['Waar kan deze toren heen?'])
   })
 })
+
+describe('de ondertiteling', () => {
+  it('wacht net als de stem tot de instellingen bekend zijn', async () => {
+    vi.resetModules()
+    zetBrowserNeer()
+    const { speak, onSubtitle, setVoiceConfig } = await import('@/audio/voice')
+    const gezien: (string | null)[] = []
+    onSubtitle((t) => gezien.push(t))
+    await speak('Hoi, ik ben Pip.')
+    expect(gezien.filter(Boolean)).toEqual([])
+    setVoiceConfig({ spraak: false, tempo: 1, ondertiteling: true })
+    await new Promise((r) => setTimeout(r, 0))
+    // Stem uit, ondertiteling aan: te lezen, niet te horen.
+    expect(gezien.filter(Boolean)).toEqual(['Hoi, ik ben Pip.'])
+    expect(gezegd).toEqual([])
+  })
+})

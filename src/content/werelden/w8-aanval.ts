@@ -65,7 +65,7 @@ export const wereld8: World = {
           vraag: 'Wat doe je als je merkt dat een stuk van jou aangevallen wordt?',
           opties: [
             { label: 'er iets aan doen', emoji: '🛟', goed: true },
-            { label: 'gewoon doorspelen', emoji: '🤷' },
+            { label: 'gewoon doorspelen', emoji: '▶️' },
           ],
           foutTip: 'Doe je niets, dan ben je je stuk kwijt. Er is bijna altijd iets aan te doen.',
         },
@@ -83,7 +83,7 @@ export const wereld8: World = {
           kind: 'quiz',
           vraag: 'Hoeveel manieren zijn er om een aangevallen stuk te redden?',
           opties: [
-            { label: 'meerdere: weglopen, slaan of dekken', emoji: '🧠', goed: true },
+            { label: 'meerdere: weglopen, slaan of dekken', emoji: '3️⃣', goed: true },
             { label: 'eentje: weglopen', emoji: '🏃' },
             { label: 'geen enkele', emoji: '😱' },
           ],
@@ -130,7 +130,7 @@ export const wereld8: World = {
           kind: 'quiz',
           vraag: 'Je stuk loopt weg naar een veld waar hij het weer kan pakken. Goed idee?',
           opties: [
-            { label: 'nee, kijk eerst goed', emoji: '👀', goed: true },
+            { label: 'nee, kijk eerst goed', emoji: '⚠️', goed: true },
             { label: 'ja, weglopen is weglopen', emoji: '🏃' },
           ],
           foutTip: 'Weglopen helpt alleen als het nieuwe veld echt veilig is.',
@@ -208,7 +208,7 @@ export const wereld8: World = {
           vraag: 'Je paard wordt aangevallen door een pion die jij kunt slaan. Wat doe je?',
           opties: [
             { label: 'de pion slaan', emoji: '⚔️', goed: true },
-            { label: 'het paard laten staan', emoji: '😴' },
+            { label: 'het paard laten staan', emoji: '🧍' },
           ],
         },
       ],
@@ -263,7 +263,7 @@ export const wereld8: World = {
           kind: 'quiz',
           vraag: 'Noem de drie manieren om een aangevallen stuk te redden.',
           opties: [
-            { label: 'weglopen, de aanvaller slaan, dekken', emoji: '🧠', goed: true },
+            { label: 'weglopen, de aanvaller slaan, dekken', emoji: '🛡️', goed: true },
             { label: 'weglopen, wachten, hopen', emoji: '🤞' },
             { label: 'slaan, rokeren, promoveren', emoji: '❓' },
           ],

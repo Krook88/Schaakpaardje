@@ -123,16 +123,16 @@ export const wereld0: World = {
           ],
         },
         {
-          kind: 'quiz',
-          vraag: 'Acht rijen van acht velden. Hoeveel velden heeft het bord dan?',
-          opties: [
-            // Drie keer 🔢 was voor een niet-lezend kind geen keuze maar gokken. Nu is
-            // het getal zelf het beeld, groot en verschillend.
-            { label: '64', emoji: '6️⃣', goed: true },
-            { label: '32', emoji: '3️⃣' },
-            { label: '100', emoji: '💯' },
-          ],
-          foutTip: 'Acht keer acht. Dat zijn er vierenzestig.',
+          // Hier stond een quiz met "64 / 32 / 100". Voor een kind dat niet leest is
+          // dat geen keuze maar gokken: het getal ís het antwoord, dus welk plaatje je
+          // er ook bij zet, het verklapt of het misleidt — 💯 was het best leesbare
+          // beeld en stond op een fout antwoord. Vierenzestig staat nu in wat Pip
+          // vertelt; de toets vraagt iets wat je kunt aanwijzen.
+          kind: 'tapSquares',
+          fen: LEEG,
+          correct: ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8'],
+          vraag: 'Nog één lijn. Tik alles aan wat recht boven het derde vakje ligt.',
+          foutTip: 'Een lijn gaat recht omhoog. Begin onderaan en klim naar boven.',
         },
       ],
       themas: ['bord', 'rij', 'lijn', 'diagonaal'],

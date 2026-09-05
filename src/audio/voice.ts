@@ -51,14 +51,13 @@ export function zinSleutel(tekst: string): string {
 
 export function setVoiceConfig(next: Partial<Config>) {
   Object.assign(config, next)
+  const eerdereKeer = configToegepast
   configToegepast = true
-  if (!config.spraak) {
-    wachtendeZin = null
-    stopSpeaking()
-    return
-  }
   const zin = wachtendeZin
   wachtendeZin = null
+  if (!config.spraak && eerdereKeer) stopSpeaking()
+  // De vastgehouden zin alsnog aanbieden: speak() past nu de echte regels toe, en die
+  // bepalen of hij te horen is, alleen te lezen, of geen van beide.
   if (zin) void speak(zin)
 }
 
@@ -125,16 +124,16 @@ export function kies(varianten: readonly string[], groep = 'algemeen'): string {
 export async function speak(tekst: string, opVerzoek = false): Promise<void> {
   if (!tekst) return
   stopSpeaking()
-  if (config.ondertiteling) ondertitelListener?.(tekst)
   if (typeof window === 'undefined') return
-  if (!opVerzoek) {
-    if (!configToegepast) {
-      // Nog niet bekend of Pip mag praten. Onthouden en wachten.
-      wachtendeZin = tekst
-      return
-    }
-    if (!config.spraak) return
+  // Eerst de vraag "mag dit al?", pas daarna de ondertitel. Andersom verscheen de
+  // ondertitel met de standaardinstelling in beeld voordat bekend was wat de ouder
+  // had gekozen — dezelfde race die voor de stem al gerepareerd was.
+  if (!opVerzoek && !configToegepast) {
+    wachtendeZin = tekst
+    return
   }
+  if (config.ondertiteling) ondertitelListener?.(tekst)
+  if (!opVerzoek && !config.spraak) return
 
   await laadManifest()
   const sleutel = zinSleutel(tekst)

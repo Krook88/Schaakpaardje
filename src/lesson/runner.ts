@@ -54,7 +54,36 @@ export function doelVelden(opgave: Exercise): Square[] {
   return []
 }
 
-export function startOpgave(opgave: Exercise): OpgaveStand {
+/**
+ * Zet de antwoorden van een quiz in een vaste, maar niet-voorspelbare volgorde.
+ *
+ * In alle 94 quizzen van de app stond het goede antwoord op de eerste plek. Een kind
+ * dat niet leest — en dat is de hele doelgroep van de eerste werelden — haalt dan drie
+ * sterren op élke quiz door steeds de bovenste knop te tikken, zonder één schaakregel
+ * te kennen. De volgorde hangt af van de vraagtekst zelf, dus hij is voor iedereen
+ * hetzelfde en verandert niet tussen serveren en tekenen (anders klaagt React over
+ * hydratie), maar hij verschilt wél per vraag.
+ */
+function husselOpties(opgave: Exercise): Exercise {
+  if (opgave.kind !== 'quiz') return opgave
+  let zaad = 5381
+  for (let i = 0; i < opgave.vraag.length; i++) {
+    zaad = ((zaad << 5) + zaad + opgave.vraag.charCodeAt(i)) >>> 0
+  }
+  const volgende = () => {
+    zaad = (zaad * 1103515245 + 12345) % 2147483648
+    return zaad / 2147483648
+  }
+  const opties = [...opgave.opties]
+  for (let i = opties.length - 1; i > 0; i--) {
+    const j = Math.floor(volgende() * (i + 1))
+    ;[opties[i], opties[j]] = [opties[j], opties[i]]
+  }
+  return { ...opgave, opties }
+}
+
+export function startOpgave(ruwe: Exercise): OpgaveStand {
+  const opgave = husselOpties(ruwe)
   const board = opgave.kind === 'quiz' ? {} : parseBoard(opgave.fen)
   const game = opgave.kind === 'regelZet' ? new Game(opgave.fen) : undefined
   const actiefStuk =

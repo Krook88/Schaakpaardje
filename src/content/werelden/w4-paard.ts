@@ -19,7 +19,7 @@ export const wereld4: World = {
       id: 'paard-1',
       wereldId: 'paard',
       titel: 'Ik spring in een L',
-      icoon: '🇱',
+      icoon: '🔀',
       doel: 'Je kind kent de L-sprong van het paard.',
       geleerd: 'Nu ken je de L-sprong van het paard.',
       vertel: [

@@ -121,8 +121,8 @@ export const wereld1: World = {
           kind: 'quiz',
           vraag: 'Er staat een eigen pion in de weg. Wat doet de toren?',
           opties: [
-            { label: 'hij stopt ervoor', emoji: '🛑', goed: true },
-            { label: 'hij springt eroverheen', emoji: '🦘' },
+            { label: 'hij stopt ervoor', emoji: '🚧', goed: true },
+            { label: 'hij springt eroverheen', emoji: '🐴' },
             { label: 'hij slaat zijn eigen pion', emoji: '😬' },
           ],
           foutTip: 'Je eigen stukken sla je nooit. De toren stopt er netjes voor.',
@@ -187,7 +187,7 @@ export const wereld1: World = {
           vraag: 'Hoe sla je een stuk?',
           opties: [
             { label: 'je gaat op zijn veld staan', emoji: '👣', goed: true },
-            { label: 'je springt eroverheen', emoji: '🦘' },
+            { label: 'je springt eroverheen', emoji: '🐴' },
             { label: 'je gaat ernaast staan', emoji: '↔️' },
           ],
         },

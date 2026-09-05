@@ -126,7 +126,7 @@ export const wereld11: World = {
           vraag: 'Er staat een eigen stuk tussen je koning en je toren. Mag je rokeren?',
           opties: [
             { label: 'nee, alles ertussen moet leeg zijn', emoji: '🚫', goed: true },
-            { label: 'ja, je springt er gewoon overheen', emoji: '🦘' },
+            { label: 'ja, je springt er gewoon overheen', emoji: '🐴' },
           ],
         },
         {

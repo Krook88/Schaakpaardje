@@ -3,7 +3,7 @@ import { alleZinnen, controleerContent, controleerOpgave } from '@/content/valid
 import { ALLE_LESSEN, WERELDEN } from '@/content'
 import { Game } from '@/engine/game'
 import { parseBoard } from '@/engine/board'
-import { goedeZetten } from '@/lesson/runner'
+import { goedeZetten, startOpgave } from '@/lesson/runner'
 
 describe('de content', () => {
   it('bevat geen enkele fout', () => {
@@ -178,5 +178,50 @@ describe('vangrails uit de tweede review', () => {
     const game = new Game('4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1')
     const goed = goedeZetten(game, 'enPassant')
     expect(goed.map((z) => z.san)).toEqual(['exd6'])
+  })
+})
+
+/**
+ * Wat een kind kan halen zónder iets te weten.
+ *
+ * Voor de eerste werelden is de doelgroep drie tot zeven jaar: die lezen de labels
+ * niet en gaan dus op het plaatje en op de plek af. Als daar een patroon in zit, meet
+ * de toets niet wat het kind kan maar hoe goed het patronen ziet — en dan geven we
+ * sterren voor het verkeerde.
+ */
+describe('een quiz mag niet te raden zijn', () => {
+  const quizzen = ALLE_LESSEN.flatMap((l) =>
+    [...l.meedoen, ...l.zelf, ...l.toets].filter((o) => o.kind === 'quiz'),
+  )
+
+  it('zet het goede antwoord niet steeds op dezelfde plek', () => {
+    const plek: number[] = [0, 0, 0, 0]
+    for (const q of quizzen) {
+      const gehusseld = startOpgave(q).opgave
+      if (gehusseld.kind !== 'quiz') continue
+      plek[gehusseld.opties.findIndex((op) => op.goed)]++
+    }
+    // Altijd de bovenste knop tikken mag niet beter uitpakken dan blind gokken plus
+    // wat speling. Vóór deze test stond het goede antwoord 94 van de 94 keer bovenaan.
+    const bovenste = plek[0] / quizzen.length
+    expect(bovenste).toBeLessThan(0.55)
+  })
+
+  it('verklapt het antwoord niet met het plaatje', () => {
+    const tel: Record<string, { goed: number; fout: number }> = {}
+    for (const q of quizzen) {
+      if (q.kind !== 'quiz') continue
+      for (const op of q.opties) {
+        const e = op.emoji ?? ''
+        tel[e] ??= { goed: 0, fout: 0 }
+        op.goed ? tel[e].goed++ : tel[e].fout++
+      }
+    }
+    // Een plaatje dat vaak voorkomt en altijd aan dezelfde kant staat, is een verklikker:
+    // dan leert een kind "de regenboog is nooit goed" in plaats van schaken.
+    const verklikkers = Object.entries(tel)
+      .filter(([, t]) => t.goed + t.fout >= 5 && (t.goed === 0 || t.fout === 0))
+      .map(([e, t]) => `${e} (${t.goed} goed, ${t.fout} fout)`)
+    expect(verklikkers).toEqual([])
   })
 })

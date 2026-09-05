@@ -87,7 +87,7 @@ export const wereld7: World = {
           vraag: 'Hoeveel is een pion waard?',
           opties: [
             { label: 'één', emoji: '1️⃣', goed: true },
-            { label: 'drie', emoji: '3️⃣' },
+            { label: 'vijf', emoji: '5️⃣' },
             { label: 'niets', emoji: '0️⃣' },
           ],
         },

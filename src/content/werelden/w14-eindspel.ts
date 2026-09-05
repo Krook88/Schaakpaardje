@@ -36,7 +36,7 @@ export const wereld14: World = {
           vraag: 'Waar staat je koning in het eindspel het liefst?',
           opties: [
             { label: 'in het midden, waar hij meedoet', emoji: '🎯', goed: true },
-            { label: 'veilig in de hoek', emoji: '🏯' },
+            { label: 'veilig in de hoek', emoji: '🧱' },
             { label: 'achter zijn pionnen', emoji: '🛡️' },
           ],
           foutTip: 'In het begin verstop je hem. Aan het eind laat je hem juist meespelen.',
@@ -58,7 +58,7 @@ export const wereld14: World = {
           vraag: 'Twee koningen staan tegenover elkaar met één veld ertussen. Wie moet er wijken?',
           opties: [
             { label: 'degene die aan zet is', emoji: '👣', goed: true },
-            { label: 'de zwarte koning', emoji: '🖤' },
+            { label: 'de zwarte koning', emoji: '♚' },
             { label: 'niemand', emoji: '🤝' },
           ],
           foutTip: 'Dat heet de oppositie: wie moet zetten, moet opzij. Handig om te weten.',
@@ -120,7 +120,7 @@ export const wereld14: World = {
           opties: [
             { label: 'naar de rand en dan de hoek', emoji: '📐', goed: true },
             { label: 'naar het midden', emoji: '🎯' },
-            { label: 'dat maakt niet uit', emoji: '🤷' },
+            { label: 'dat maakt niet uit', emoji: '🤔' },
           ],
         },
       ],
@@ -181,7 +181,7 @@ export const wereld14: World = {
           opties: [
             { label: 'omdat hij dame kan worden', emoji: '👑', goed: true },
             { label: 'omdat hij zo snel is', emoji: '💨' },
-            { label: 'dat is hij niet', emoji: '🤷' },
+            { label: 'dat is hij niet', emoji: '🙃' },
           ],
         },
       ],

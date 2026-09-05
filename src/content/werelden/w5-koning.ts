@@ -67,6 +67,20 @@ export const wereld5: World = {
           from: 'd2',
           vraag: 'Tik alle velden van deze koning aan.',
         },
+        {
+          // 🌈 stond zes keer in de app en was zes keer het foute antwoord ("alle
+          // kanten op", "overal", "iedereen"). Een kind dat niet leest, leerde daar
+          // "de regenboog is nooit goed" van in plaats van schaken. Bij de koning ís
+          // alle kanten op het juiste antwoord, dus hier hoort de vraag thuis.
+          kind: 'quiz',
+          vraag: 'Welke kanten op mag de koning?',
+          opties: [
+            { label: 'alle kanten op', emoji: '🌈', goed: true },
+            { label: 'alleen recht', emoji: '➕' },
+            { label: 'alleen schuin', emoji: '↗️' },
+          ],
+          foutTip: 'De koning mag recht én schuin. Alleen niet ver: één stapje.',
+        },
       ],
       themas: ['koning', 'bordvisie'],
     },
@@ -74,7 +88,7 @@ export const wereld5: World = {
       id: 'koning-2',
       wereldId: 'koning',
       titel: 'De koning pakt ook',
-      icoon: '🍽️',
+      icoon: '😋',
       doel: 'Je kind slaat met de koning een stuk dat ernaast staat.',
       geleerd: 'Nu pakt jouw koning zelf een stuk.',
       vertel: [
@@ -145,7 +159,7 @@ export const wereld5: World = {
           vraag: 'Mag de witte koning naast de zwarte koning gaan staan?',
           opties: [
             { label: 'nee', emoji: '🚫', goed: true },
-            { label: 'ja', emoji: '✅' },
+            { label: 'ja', emoji: '🤝' },
           ],
           foutTip: 'Er blijft altijd minstens één veld tussen de twee koningen.',
         },
@@ -164,7 +178,7 @@ export const wereld5: World = {
           vraag: 'Kan een koning een andere koning slaan?',
           opties: [
             { label: 'nee, nooit', emoji: '🚫', goed: true },
-            { label: 'ja, dan win je', emoji: '🏆' },
+            { label: 'ja, dan win je', emoji: '👑' },
           ],
         },
       ],
