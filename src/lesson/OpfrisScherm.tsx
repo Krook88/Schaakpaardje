@@ -7,7 +7,7 @@ import { Confetti } from '@/ui/Confetti'
 import { Kop } from '@/ui/Kop'
 import { Pip, type PipStemming } from '@/ui/Pip'
 import { sfx } from '@/audio/sfx'
-import { kies } from '@/audio/voice'
+import { kies, wachtTotUitgesproken } from '@/audio/voice'
 import {
   BIJNA,
   HINT_GEGEVEN,
@@ -99,7 +99,8 @@ export function OpfrisScherm() {
     setStemming('blij')
     setZin(kies(PRIJS_LAATSTE, 'prijs'))
     if (timer.current) clearTimeout(timer.current)
-    timer.current = setTimeout(verder, 1200)
+    // Eerst Pip laten uitpraten, dan pas de volgende opgave.
+    timer.current = setTimeout(() => void wachtTotUitgesproken().then(verder), 700)
   }, [instellingen.effecten, verder])
 
   const opVeld = useCallback(

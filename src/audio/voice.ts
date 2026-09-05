@@ -49,6 +49,46 @@ let beurt = 0
  * daardoor deed de app precies het verkeerde: hij sloeg de opname over en zette de
  * robot in. Nu wachten we op de eerste aanraking en spelen dan alsnog Pip af.
  */
+/**
+ * Lost op zodra de huidige zin is uitgesproken.
+ *
+ * De lesmotor schakelde na een vaste 1300 ms door naar de volgende opgave, en die
+ * vraagt dan meteen om een nieuwe zin — waarmee Pip zichzelf midden in "Hoppa! Precies
+ * goed" afkapte. Een langere vaste wachttijd lost dat niet op: de ene zin is drie keer
+ * zo lang als de andere, en dan zit een kind bij de korte zinnen te wachten op niets.
+ *
+ * Lost altijd op, ook als er niets speelt of als het geluid stukloopt: liever een keer
+ * te vroeg doorschakelen dan een scherm dat blijft hangen.
+ */
+let uitgesprokenBelofte: Promise<void> = Promise.resolve()
+let uitgesprokenKlaar: (() => void) | null = null
+
+function beginTeSpreken() {
+  uitgesprokenKlaar?.()
+  uitgesprokenBelofte = new Promise<void>((los) => {
+    uitgesprokenKlaar = los
+  })
+}
+
+function klaarMetSpreken() {
+  uitgesprokenKlaar?.()
+  uitgesprokenKlaar = null
+}
+
+/**
+ * Wacht tot Pip is uitgesproken, maar nooit langer dan `maxMs`.
+ *
+ * Die bovengrens is er omdat een browser niet altijd meldt dat hij klaar is — bij de
+ * apparaatstem gebeurt dat op sommige toestellen gewoon niet. Zonder grens blijft het
+ * lesscherm dan voorgoed op dezelfde opgave staan, en dat is erger dan een afgekapte zin.
+ */
+export function wachtTotUitgesproken(maxMs = 6000): Promise<void> {
+  return Promise.race([
+    uitgesprokenBelofte,
+    new Promise<void>((los) => setTimeout(los, maxMs)),
+  ])
+}
+
 let geblokkeerdeZin: string | null = null
 let geblokkeerdeBeurt = 0
 let luistertNaarTik = false
@@ -137,6 +177,7 @@ function laadManifest(): Promise<void> {
 
 export function stopSpeaking() {
   geblokkeerdeZin = null
+  klaarMetSpreken()
   if (huidigeAudio) {
     huidigeAudio.pause()
     huidigeAudio = null
@@ -197,13 +238,17 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
     const audio = new Audio(`${BASIS}/audio/${sleutel}.mp3`)
     audio.playbackRate = config.tempo
     huidigeAudio = audio
+    audio.addEventListener('ended', klaarMetSpreken, { once: true })
+    audio.addEventListener('error', klaarMetSpreken, { once: true })
     try {
+      beginTeSpreken()
       await audio.play()
       return
     } catch (e) {
       if (huidigeAudio === audio) huidigeAudio = null
       // Geweigerd omdat er nog niet getikt is? Dan niet de robot erin gooien, maar
       // wachten tot het kind iets aanraakt en dan alsnog Pip laten praten.
+      klaarMetSpreken()
       if ((e as DOMException)?.name === 'NotAllowedError') {
         geblokkeerdeZin = tekst
         geblokkeerdeBeurt = mijnBeurt
@@ -227,6 +272,9 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
   zin.pitch = 1.15
   const stem = nederlandseStem()
   if (stem) zin.voice = stem
+  beginTeSpreken()
+  zin.onend = klaarMetSpreken
+  zin.onerror = klaarMetSpreken
   window.speechSynthesis.speak(zin)
 }
 

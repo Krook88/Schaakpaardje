@@ -8,7 +8,7 @@ import { Pip, type PipStemming } from '@/ui/Pip'
 import { Confetti } from '@/ui/Confetti'
 import { Sterren } from '@/ui/Sterren'
 import { sfx } from '@/audio/sfx'
-import { kies, speak, stopSpeaking } from '@/audio/voice'
+import { kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import {
   AANMOEDIGING,
   BIJNA,
@@ -101,7 +101,28 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   const stopTimers = useCallback(() => {
     timers.current.forEach(clearTimeout)
     timers.current = []
+    doorschakeling.current++
   }, [])
+
+  /**
+   * Doorschakelen zodra Pip is uitgesproken.
+   *
+   * Eerst een korte adempauze zodat het goed-geluid en het vinkje landen, en dan
+   * wachten tot de zin echt af is. Met een vaste wachttijd werd Pip midden in "Hoppa!
+   * Precies goed" afgekapt, want de volgende opgave vraagt meteen om een nieuwe zin.
+   */
+  const doorschakeling = useRef(0)
+  const naHetPraten = useCallback(
+    (doe: () => void) => {
+      const mijn = ++doorschakeling.current
+      later(() => {
+        void wachtTotUitgesproken().then(() => {
+          if (mijn === doorschakeling.current) doe()
+        })
+      }, 700)
+    },
+    [later],
+  )
 
   useEffect(
     () => () => {
@@ -205,14 +226,14 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
         if (instellingen.effecten) sfx.goed()
         setStemming('blij')
         setZin(kies(klaar ? PRIJS_LAATSTE : PRIJS, 'prijs'))
-        if (klaar) later(volgendeOpgave, 1300)
+        if (klaar) naHetPraten(volgendeOpgave)
       } else {
         if (instellingen.effecten) sfx.fout()
         setStemming('moedigt')
         setZin(tip ?? kies(BIJNA, 'bijna'))
       }
     },
-    [instellingen.effecten, later, volgendeOpgave],
+    [instellingen.effecten, naHetPraten, volgendeOpgave],
   )
 
   const opVeld = useCallback(

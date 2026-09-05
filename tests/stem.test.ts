@@ -151,6 +151,8 @@ describe('opnames afspelen', () => {
         pause() {
           afgebroken++
         }
+        addEventListener() {}
+        removeEventListener() {}
       },
     )
     const mod = await import('@/audio/voice')
@@ -195,5 +197,30 @@ describe('opnames afspelen', () => {
     const { speak } = await metOpname('kapot')
     await speak(ZIN)
     expect(gezegd).toEqual([ZIN])
+  })
+})
+
+describe('wachten tot Pip is uitgesproken', () => {
+  it('wacht niet als er niets speelt', async () => {
+    vi.resetModules()
+    zetBrowserNeer()
+    const { wachtTotUitgesproken } = await import('@/audio/voice')
+    const t0 = Date.now()
+    await wachtTotUitgesproken(3000)
+    expect(Date.now() - t0).toBeLessThan(100)
+  })
+
+  it('geeft het na de bovengrens op, zodat een scherm nooit blijft hangen', async () => {
+    vi.resetModules()
+    zetBrowserNeer()
+    // Een apparaatstem die nooit meldt dat hij klaar is: dat gebeurt echt op
+    // sommige toestellen. Dan mag het lesscherm niet voorgoed stil blijven staan.
+    const { speak, setVoiceConfig, wachtTotUitgesproken } = await import('@/audio/voice')
+    setVoiceConfig({ spraak: true, tempo: 1, ondertiteling: false })
+    await speak('Een zin die nooit afloopt.')
+    const t0 = Date.now()
+    await wachtTotUitgesproken(60)
+    expect(Date.now() - t0).toBeGreaterThanOrEqual(50)
+    expect(Date.now() - t0).toBeLessThan(500)
   })
 })

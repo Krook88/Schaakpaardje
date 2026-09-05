@@ -6,7 +6,7 @@ import { Board, type BoardMarks } from '@/board/Board'
 import { Kop } from '@/ui/Kop'
 import { Pip, type PipStemming } from '@/ui/Pip'
 import { sfx } from '@/audio/sfx'
-import { kies } from '@/audio/voice'
+import { kies, wachtTotUitgesproken } from '@/audio/voice'
 import { BIJNA, HINT_GEGEVEN, OPNIEUW_PROBEREN, PRIJS, PRIJS_LAATSTE } from '@/content/voice'
 import { type Square } from '@/engine/board'
 import {
@@ -88,7 +88,10 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
           setZin(kies(PRIJS_LAATSTE, 'prijs'))
           setStemming('trots')
           const volgend = Math.min(niveau + 1, NIVEAUS)
-          doorTimer.current = setTimeout(() => nieuwRondje(niveau >= NIVEAUS ? NIVEAUS : volgend), 1400)
+          // Wachten tot Pip is uitgesproken, anders kapt het volgende rondje hem af.
+          doorTimer.current = setTimeout(() => {
+            void wachtTotUitgesproken().then(() => nieuwRondje(niveau >= NIVEAUS ? NIVEAUS : volgend))
+          }, 700)
           break
         }
         case 'fout':
