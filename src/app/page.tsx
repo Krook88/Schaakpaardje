@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
-import { kies, speak } from '@/audio/voice'
-import { KENNISMAKING, WELKOM, WELKOM_TERUG } from '@/content/voice'
+import { kies } from '@/audio/voice'
+import { WELKOM, WELKOM_TERUG } from '@/content/voice'
 import { lesMet, WERELDEN } from '@/content'
 import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
 import { aantalBezit, verzameling } from '@/progress/verzameling'
@@ -316,8 +316,10 @@ function NieuwProfiel({
           type="button"
           className="btn btn--primary btn--big"
           onClick={() => {
+            // Alleen het profiel aanmaken, niets zeggen: de stal die hierna verschijnt
+            // begroet het kind zelf. Zeiden ze allebei iets, dan praatten er twee
+            // zinnen door elkaar heen.
             onMaak(naam, leeftijd, avatar)
-            void speak(KENNISMAKING)
           }}
         >
           Beginnen →

@@ -29,6 +29,47 @@ let manifest: Record<string, unknown> | null = null
  * belofte zelf te bewaren wacht iedereen netjes op dezelfde ophaalactie.
  */
 let manifestBelofte: Promise<void> | null = null
+
+/**
+ * Welke zin de laatste is. Elke aanroep neemt een nummertje.
+ *
+ * speak() breekt aan het begin de vorige zin af, maar daarna staat er een await: het
+ * manifest ophalen. Twee zinnen die vlak na elkaar beginnen kwamen daardoor allebei
+ * voorbij dat afbreken heen, want de eerste had zijn geluid nog niet geregistreerd
+ * toen de tweede het probeerde te stoppen. Resultaat: twee of drie stemmen door elkaar.
+ * Wie na een await merkt dat er alweer iemand anders aan de beurt is, houdt op.
+ */
+let beurt = 0
+
+/**
+ * Een opname die niet mocht spelen omdat het kind nog niets had aangeraakt.
+ *
+ * Browsers weigeren geluid tot de eerste tik — een terechte regel tegen sites die
+ * ongevraagd beginnen te schreeuwen. De apparaatstem valt níet onder die regel, en
+ * daardoor deed de app precies het verkeerde: hij sloeg de opname over en zette de
+ * robot in. Nu wachten we op de eerste aanraking en spelen dan alsnog Pip af.
+ */
+let geblokkeerdeZin: string | null = null
+let geblokkeerdeBeurt = 0
+let luistertNaarTik = false
+
+function wachtOpEersteTik() {
+  if (luistertNaarTik || typeof window === 'undefined') return
+  luistertNaarTik = true
+  const los = () => {
+    window.removeEventListener('pointerdown', los)
+    window.removeEventListener('keydown', los)
+    luistertNaarTik = false
+    const zin = geblokkeerdeZin
+    const vanBeurt = geblokkeerdeBeurt
+    geblokkeerdeZin = null
+    // Alleen als er ondertussen niets nieuwers gevraagd is. Anders overstemt een
+    // begroeting van drie schermen terug wat er nú op het scherm staat.
+    if (zin && vanBeurt === beurt) void speak(zin, true)
+  }
+  window.addEventListener('pointerdown', los, { once: true })
+  window.addEventListener('keydown', los, { once: true })
+}
 let huidigeAudio: HTMLAudioElement | null = null
 let ondertitelListener: ((tekst: string | null) => void) | null = null
 let stemmenGeladen = false
@@ -95,6 +136,7 @@ function laadManifest(): Promise<void> {
 }
 
 export function stopSpeaking() {
+  geblokkeerdeZin = null
   if (huidigeAudio) {
     huidigeAudio.pause()
     huidigeAudio = null
@@ -133,6 +175,7 @@ export function kies(varianten: readonly string[], groep = 'algemeen'): string {
  */
 export async function speak(tekst: string, opVerzoek = false): Promise<void> {
   if (!tekst) return
+  const mijnBeurt = ++beurt
   stopSpeaking()
   if (typeof window === 'undefined') return
   // Eerst de vraag "mag dit al?", pas daarna de ondertitel. Andersom verscheen de
@@ -146,20 +189,32 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
   if (!opVerzoek && !config.spraak) return
 
   await laadManifest()
+  // Tijdens het ophalen kan er alweer een nieuwe zin gestart zijn.
+  if (mijnBeurt !== beurt) return
   const sleutel = zinSleutel(tekst)
 
   if (manifest && sleutel in manifest) {
+    const audio = new Audio(`${BASIS}/audio/${sleutel}.mp3`)
+    audio.playbackRate = config.tempo
+    huidigeAudio = audio
     try {
-      const audio = new Audio(`${BASIS}/audio/${sleutel}.mp3`)
-      audio.playbackRate = config.tempo
-      huidigeAudio = audio
       await audio.play()
       return
-    } catch {
-      // val door naar de stem van het apparaat
+    } catch (e) {
+      if (huidigeAudio === audio) huidigeAudio = null
+      // Geweigerd omdat er nog niet getikt is? Dan niet de robot erin gooien, maar
+      // wachten tot het kind iets aanraakt en dan alsnog Pip laten praten.
+      if ((e as DOMException)?.name === 'NotAllowedError') {
+        geblokkeerdeZin = tekst
+        geblokkeerdeBeurt = mijnBeurt
+        wachtOpEersteTik()
+        return
+      }
+      // Iets anders mis met het bestand: dan is de apparaatstem beter dan stilte.
     }
   }
 
+  if (mijnBeurt !== beurt) return
   if (!('speechSynthesis' in window)) return
   if (!stemmenGeladen) {
     // Safari en Chrome leveren de stemmenlijst pas asynchroon aan.

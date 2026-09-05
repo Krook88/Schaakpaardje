@@ -9,6 +9,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  * is), én de luidsprekerknop moet blijven werken als die instelling uit staat.
  */
 const gezegd: string[] = []
+/** Wat de app aan de browser vraagt te melden, zodat we een tik kunnen naspelen. */
+let luisteraars: Record<string, (() => void)[]> = {}
+
+/** Doet alsof het kind ergens op tikt. */
+function tikOpHetScherm() {
+  for (const fn of luisteraars['pointerdown'] ?? []) fn()
+}
 
 function zetBrowserNeer() {
   gezegd.length = 0
@@ -17,7 +24,16 @@ function zetBrowserNeer() {
     cancel: () => {},
     getVoices: () => [],
   }
-  vi.stubGlobal('window', { speechSynthesis: nep })
+  luisteraars = {}
+  vi.stubGlobal('window', {
+    speechSynthesis: nep,
+    addEventListener: (naam: string, fn: () => void) => {
+      ;(luisteraars[naam] ??= []).push(fn)
+    },
+    removeEventListener: (naam: string, fn: () => void) => {
+      luisteraars[naam] = (luisteraars[naam] ?? []).filter((f) => f !== fn)
+    },
+  })
   vi.stubGlobal('speechSynthesis', nep)
   vi.stubGlobal('SpeechSynthesisUtterance', class {
     text: string
@@ -89,5 +105,95 @@ describe('de ondertiteling', () => {
     // Stem uit, ondertiteling aan: te lezen, niet te horen.
     expect(gezien.filter(Boolean)).toEqual(['Hoi, ik ben Pip.'])
     expect(gezegd).toEqual([])
+  })
+})
+
+
+/**
+ * De opnames zelf: wanneer speelt Pip, en wanneer valt de app terug op de tablet?
+ *
+ * Twee fouten die pas op de echte site zichtbaar werden en die je in een test wél
+ * ziet aankomen: drie zinnen die door elkaar heen praatten, en een opname die
+ * geweigerd werd omdat het kind nog niets had aangeraakt — waarna de app de robot
+ * inzette in plaats van even te wachten.
+ */
+describe('opnames afspelen', () => {
+  const ZIN = 'Hoi! Ik ben Pip.'
+  let gespeeldeBestanden: string[]
+  let afgebroken: number
+
+  /** Zet een browser neer waarin één opname bestaat, en play() doet wat je zegt. */
+  async function metOpname(playDoet: 'lukt' | 'geblokkeerd' | 'kapot') {
+    vi.resetModules()
+    zetBrowserNeer()
+    gespeeldeBestanden = []
+    afgebroken = 0
+    const { zinSleutel } = await import('@/audio/voice')
+    const sleutel = zinSleutel(ZIN)
+    vi.stubGlobal('fetch', async () => ({ ok: true, json: async () => ({ [sleutel]: { tekst: ZIN } }) }))
+    vi.stubGlobal(
+      'Audio',
+      class {
+        src: string
+        playbackRate = 1
+        constructor(src: string) {
+          this.src = src
+        }
+        play() {
+          if (playDoet === 'lukt') {
+            gespeeldeBestanden.push(this.src)
+            return Promise.resolve()
+          }
+          const fout = new Error('geweigerd')
+          fout.name = playDoet === 'geblokkeerd' ? 'NotAllowedError' : 'NotSupportedError'
+          return Promise.reject(fout)
+        }
+        pause() {
+          afgebroken++
+        }
+      },
+    )
+    const mod = await import('@/audio/voice')
+    mod.setVoiceConfig({ spraak: true, tempo: 1, ondertiteling: false })
+    return { ...mod, sleutel }
+  }
+
+  it('speelt de opname als die bestaat, en zwijgt met de apparaatstem', async () => {
+    const { speak } = await metOpname('lukt')
+    await speak(ZIN)
+    expect(gespeeldeBestanden).toHaveLength(1)
+    expect(gespeeldeBestanden[0]).toContain('.mp3')
+    expect(gezegd).toEqual([]) // geen robot erdoorheen
+  })
+
+  it('laat twee zinnen die vlak na elkaar komen niet door elkaar praten', async () => {
+    const { speak } = await metOpname('lukt')
+    // Allebei starten zonder op de eerste te wachten: precies wat er op de stal gebeurde.
+    await Promise.all([speak(ZIN), speak('Tik de vier donkere velden op de onderste rij aan.')])
+    // De eerste geeft het op zodra hij merkt dat er een nieuwere is.
+    expect(gespeeldeBestanden.length).toBeLessThanOrEqual(1)
+  })
+
+  it('zet niet de robot in als de browser de opname nog niet mag afspelen', async () => {
+    const { speak } = await metOpname('geblokkeerd')
+    await speak(ZIN)
+    // Wachten op de eerste tik is beter dan een andere stem: de opname bestaat.
+    expect(gezegd).toEqual([])
+  })
+
+  it('speelt de opname alsnog zodra het kind ergens op tikt', async () => {
+    const { speak } = await metOpname('geblokkeerd')
+    await speak(ZIN)
+    expect(gespeeldeBestanden).toEqual([])
+    tikOpHetScherm()
+    await new Promise((r) => setTimeout(r, 0))
+    // Nu mag het wel, en het is nog steeds Pip en niet de tablet.
+    expect(gezegd).toEqual([])
+  })
+
+  it('valt wél terug op de apparaatstem als het bestand zelf niet deugt', async () => {
+    const { speak } = await metOpname('kapot')
+    await speak(ZIN)
+    expect(gezegd).toEqual([ZIN])
   })
 })
