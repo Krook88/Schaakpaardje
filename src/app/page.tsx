@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
 import { speak } from '@/audio/voice'
 import { lesMet, WERELDEN } from '@/content'
+import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
 import {
   AVATARS,
   sterrenTotaal,
@@ -45,6 +46,9 @@ export default function Thuis() {
   const totaal = sterrenTotaal(voortgang)
   const maxSterren = WERELDEN.flatMap((w) => w.lessen).length * 3
   const wereldenAf = WERELDEN.filter((w) => wereldIsAf(w.id, voortgang))
+  // Alleen tonen als er echt iets ligt te verstoffen. Een knop die "niets te doen"
+  // oplevert leert een kind de knop te negeren.
+  const opfrissen = kiesOpfrisopgaven(voortgang).length
 
   return (
     <main className="page">
@@ -121,6 +125,21 @@ export default function Thuis() {
             </span>
             <span style={{ flex: 1, textAlign: 'left' }}>Verder leren — {verder.titel}</span>
           </Link>
+          {opfrissen > 0 && (
+            <Link
+              href="/opfrissen/"
+              className="btn btn--big"
+              style={{ minHeight: 76, borderColor: 'var(--accent)' }}
+            >
+              <span aria-hidden="true" style={{ fontSize: 32 }}>
+                🔄
+              </span>
+              <span style={{ flex: 1, textAlign: 'left' }}>
+                Opfrissen — {opfrissen} van vorige week
+              </span>
+            </Link>
+          )}
+
           <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
             <Link href="/kaart/" className="btn btn--big" style={{ minHeight: 76 }}>
               <span aria-hidden="true" style={{ fontSize: 32 }}>

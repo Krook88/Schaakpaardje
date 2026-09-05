@@ -80,6 +80,7 @@ type State = {
   zetInstelling: <K extends keyof Instellingen>(sleutel: K, waarde: Instellingen[K]) => void
   bewaarLes: (lesId: string, resultaat: Omit<LesResultaat, 'laatst'>) => void
   bewaarHervatpunt: (lesId: string, fase: string | null) => void
+  bewaarOpfrissing: (lesId: string) => void
   bewaarPartij: (uitslag: 'gewonnen' | 'verloren' | 'remise') => void
   geefSticker: (sticker: string) => void
 }
@@ -171,6 +172,30 @@ export const useProfielStore = create<State>()(
                   laatst: new Date().toISOString(),
                 },
               },
+            },
+          }
+        })
+      },
+
+      /**
+       * Deze les is net opgefrist.
+       *
+       * Alleen de datum schuift op: de sterren, de fouten en de hints van de échte les
+       * blijven staan. Zo zakt de les weer terug in de rij en komt er iets anders
+       * bovendrijven — dat is het hele mechaniek van herhalen op afstand. En een
+       * opfrisser mag nooit een cijfer veranderen: het is oefenen, geen toets.
+       */
+      bewaarOpfrissing(lesId) {
+        const id = get().actiefId
+        if (!id) return
+        set((s) => {
+          const vanProfiel = s.voortgang[id] ?? {}
+          const bestaand = vanProfiel[lesId]
+          if (!bestaand) return {}
+          return {
+            voortgang: {
+              ...s.voortgang,
+              [id]: { ...vanProfiel, [lesId]: { ...bestaand, laatst: new Date().toISOString() } },
             },
           }
         })
