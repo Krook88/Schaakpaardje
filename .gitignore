@@ -9,3 +9,7 @@ public/audio/*.mp3
 !public/audio/.gitkeep
 public/sfx/*.mp3
 !public/sfx/.gitkeep
+
+# De zip om te uploaden. Die valt uit `out/` te maken en hoort dus niet in de repo:
+# hem meecommitten is een miljoen bytes bouwsel bewaren die morgen alweer verlopen is.
+schaakmaatje-site.zip
