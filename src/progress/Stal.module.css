@@ -39,7 +39,9 @@
   border-color: hsl(var(--toon) 32% 44%);
 }
 
-.teken { font-size: 38px; line-height: 1; }
+/* Zelfde reden als op het bord: zonder dit wordt de pion op iOS een zwarte emoji in
+   plaats van een lettervorm die de kleur van zijn wereld aanneemt. */
+.teken { font-size: 38px; line-height: 1; font-variant-emoji: text; }
 
 /* Nog niet verdiend: een silhouet, geen leeg vakje. Je ziet wát er komt, en dat
    trekt — een gat trekt niet. Gestippeld, zodat het duidelijk nog niet van jou is. */

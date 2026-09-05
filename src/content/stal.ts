@@ -34,12 +34,12 @@ export type StalStuk = {
 
 /** De zes stukken, elk in de kleur van zijn eigen wereld. */
 const STUKWERELDEN: { wereldId: string; teken: string; naam: string }[] = [
-  { wereldId: 'toren', teken: '♜', naam: 'De toren' },
-  { wereldId: 'loper', teken: '♝', naam: 'De loper' },
-  { wereldId: 'dame', teken: '♛', naam: 'De dame' },
-  { wereldId: 'paard', teken: '♞', naam: 'Het paard' },
-  { wereldId: 'koning', teken: '♚', naam: 'De koning' },
-  { wereldId: 'pion', teken: '♟', naam: 'De pion' },
+  { wereldId: 'toren', teken: '♜\uFE0E', naam: 'De toren' },
+  { wereldId: 'loper', teken: '♝\uFE0E', naam: 'De loper' },
+  { wereldId: 'dame', teken: '♛\uFE0E', naam: 'De dame' },
+  { wereldId: 'paard', teken: '♞\uFE0E', naam: 'Het paard' },
+  { wereldId: 'koning', teken: '♚\uFE0E', naam: 'De koning' },
+  { wereldId: 'pion', teken: '♟\uFE0E', naam: 'De pion' },
 ]
 
 const MAATJES: { botId: string; naam: string; teken: string; toon: number }[] = [

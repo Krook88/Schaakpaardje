@@ -32,6 +32,12 @@
 /* Stukken: wit is licht met een donkere rand, zwart is donker met een lichte rand.
    Zo blijven ze op beide veldkleuren leesbaar. */
 .piece {
+  /* Twee sloten op dezelfde deur: het teken zelf vraagt met U+FE0E om een lettervorm
+     (zie board/pieces.ts), en hier staat het nog eens als stijlregel. Browsers die
+     font-variant-emoji kennen houden zich daaraan; de rest heeft genoeg aan U+FE0E.
+     Zonder dit wordt de pion op iOS een zwarte emoji en is wit niet meer van zwart te
+     onderscheiden. */
+  font-variant-emoji: text;
   font-size: min(9.5vw, 44px); line-height: 1; user-select: none;
   transition: transform 0.14s ease;
   filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.28));
