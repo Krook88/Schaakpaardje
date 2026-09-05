@@ -23,6 +23,7 @@ export const wereld11: World = {
       id: 'rokade-1',
       wereldId: 'rokade',
       titel: 'Twee stukken tegelijk',
+      icoon: '🏯',
       doel: 'Je kind kan rokeren en weet waarom je het doet.',
       geleerd: 'Nu kun jij rokeren: twee stukken in één zet.',
       vertel: [
@@ -91,6 +92,7 @@ export const wereld11: World = {
       id: 'rokade-2',
       wereldId: 'rokade',
       titel: 'Kort en lang',
+      icoon: '📏',
       doel: 'Je kind kent het verschil tussen de korte en de lange rokade.',
       geleerd: 'Nu ken je de korte en de lange rokade.',
       vertel: [
@@ -161,6 +163,7 @@ export const wereld11: World = {
       id: 'rokade-3',
       wereldId: 'rokade',
       titel: 'De vier voorwaarden',
+      icoon: '📋',
       doel: 'Je kind weet wanneer rokeren niet mag.',
       geleerd: 'Nu weet je precies wanneer rokeren niet mag.',
       vertel: [

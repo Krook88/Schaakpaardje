@@ -20,6 +20,7 @@ export const wereld14: World = {
       id: 'eindspel-1',
       wereldId: 'eindspel',
       titel: 'De koning doet mee',
+      icoon: '🤴',
       doel: 'Je kind weet dat de koning in het eindspel een sterk stuk is.',
       geleerd: 'Nu laat jij je koning meespelen aan het eind.',
       vertel: [
@@ -87,6 +88,7 @@ export const wereld14: World = {
       id: 'eindspel-2',
       wereldId: 'eindspel',
       titel: 'Mat met dame en met toren',
+      icoon: '👸',
       doel: 'Je kind zet mat met koning plus dame, en met koning plus toren.',
       geleerd: 'Nu zet jij mat met je dame én met je toren.',
       vertel: [
@@ -146,6 +148,7 @@ export const wereld14: World = {
       id: 'eindspel-3',
       wereldId: 'eindspel',
       titel: 'De laatste pion',
+      icoon: '🌱',
       doel: 'Je kind brengt een pion naar de overkant en maakt er een dame van.',
       geleerd: 'Nu breng jij die laatste pion naar de overkant.',
       vertel: [

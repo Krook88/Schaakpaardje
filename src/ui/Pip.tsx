@@ -63,7 +63,7 @@ export function Pip({
         type="button"
         className={styles.pip}
         onClick={() => {
-          if (zegt) void speak(zegt)
+          if (zegt) void speak(zegt, true)
           onKlaar?.()
         }}
         aria-label={zegt ? `Pip zegt: ${zegt}. Tik om het nog eens te horen.` : 'Pip'}
@@ -80,6 +80,21 @@ export function Pip({
       {tekst && (
         <p className={styles.ballon} aria-live="polite">
           {tekst}
+          {zegt && (
+            // Een kind van vier leest deze ballon niet. Het hoort hem, en als het even
+            // niet oplette moet het hem opnieuw kunnen horen zonder te weten dat Pip
+            // zelf ook aanklikbaar is. Vandaar een luidspreker die eruitziet als een
+            // knop: één beeld, geen woord.
+            <button
+              type="button"
+              className={styles.luister}
+              onClick={() => void speak(zegt, true)}
+              aria-label="Zeg het nog eens"
+              title="Zeg het nog eens"
+            >
+              <span aria-hidden="true">🔊</span>
+            </button>
+          )}
         </p>
       )}
     </div>

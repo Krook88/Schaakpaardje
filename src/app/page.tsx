@@ -105,15 +105,34 @@ export default function Thuis() {
         </div>
 
         <div style={{ display: 'grid', gap: 14 }}>
-          <Link href={`/les/${verder.id}/`} className="btn btn--primary btn--big" style={{ padding: 20 }}>
-            ▶︎ Verder leren — {verder.titel}
+          {/* De grootste knop van de app. Voor een niet-lezer moet hij op één beeld
+              te herkennen zijn: het driehoekje van "start", plus het plaatje van
+              precies die les. De tekst is er voor de ouder. */}
+          <Link
+            href={`/les/${verder.id}/`}
+            className="btn btn--primary btn--big"
+            style={{ padding: 18, gap: 14, minHeight: 88 }}
+          >
+            <span aria-hidden="true" style={{ fontSize: 38, lineHeight: 1 }}>
+              ▶︎
+            </span>
+            <span aria-hidden="true" style={{ fontSize: 38, lineHeight: 1 }}>
+              {verderLes?.icoon ?? '🐴'}
+            </span>
+            <span style={{ flex: 1, textAlign: 'left' }}>Verder leren — {verder.titel}</span>
           </Link>
           <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
-            <Link href="/kaart/" className="btn btn--big">
-              🗺️ De kaart
+            <Link href="/kaart/" className="btn btn--big" style={{ minHeight: 76 }}>
+              <span aria-hidden="true" style={{ fontSize: 32 }}>
+                🗺️
+              </span>{' '}
+              De kaart
             </Link>
-            <Link href="/spelen/" className="btn btn--big">
-              ♟️ Een partijtje
+            <Link href="/spelen/" className="btn btn--big" style={{ minHeight: 76 }}>
+              <span aria-hidden="true" style={{ fontSize: 32 }}>
+                ♟️
+              </span>{' '}
+              Een partijtje
             </Link>
           </div>
         </div>

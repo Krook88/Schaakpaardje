@@ -25,6 +25,7 @@ export const wereld9: World = {
       id: 'schaak-1',
       wereldId: 'schaak',
       titel: 'Wat is schaak?',
+      icoon: '⚡',
       doel: 'Je kind herkent wanneer een koning wordt aangevallen.',
       geleerd: 'Nu zie je meteen wanneer een koning schaak staat.',
       vertel: [
@@ -98,6 +99,7 @@ export const wereld9: World = {
       id: 'schaak-2',
       wereldId: 'schaak',
       titel: 'Geef zelf schaak',
+      icoon: '📣',
       doel: 'Je kind vindt een zet die de vijandelijke koning aanvalt.',
       geleerd: 'Nu geef jij zelf schaak!',
       vertel: [
@@ -155,6 +157,7 @@ export const wereld9: World = {
       id: 'schaak-3',
       wereldId: 'schaak',
       titel: 'Uit schaak: drie manieren',
+      icoon: '🚪',
       doel: 'Je kind haalt de koning uit schaak, op alle drie de manieren.',
       geleerd: 'Nu ken je alle drie de manieren om uit schaak te gaan.',
       vertel: [

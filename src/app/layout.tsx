@@ -26,8 +26,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="nl">
       <body>
-        {children}
+        {/* Vóór de inhoud: de effecten van dit component draaien dan als eerste, zodat
+            de audiolaag de instellingen kent voordat een scherm Pip laat praten. */}
         <Instellingen />
+        {children}
         <ServiceWorker />
       </body>
     </html>

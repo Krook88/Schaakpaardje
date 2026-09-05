@@ -18,6 +18,7 @@ export const wereld0: World = {
       id: 'weide-1',
       wereldId: 'weide',
       titel: 'Licht en donker',
+      icoon: '🌗',
       doel: 'Je kind ziet dat het bord om en om licht en donker is.',
       geleerd: 'Nu zie je meteen welk veld licht is en welk veld donker.',
       vertel: [
@@ -71,6 +72,7 @@ export const wereld0: World = {
       id: 'weide-2',
       wereldId: 'weide',
       titel: 'Rijen en lijnen',
+      icoon: '➡️',
       doel: 'Je kind herkent een rij (opzij) en een lijn (omhoog).',
       geleerd: 'Nu weet je wat een rij is, wat een lijn is en wat een diagonaal is.',
       vertel: [
@@ -124,9 +126,11 @@ export const wereld0: World = {
           kind: 'quiz',
           vraag: 'Acht rijen van acht velden. Hoeveel velden heeft het bord dan?',
           opties: [
-            { label: '64', emoji: '🔢', goed: true },
-            { label: '32', emoji: '🔢' },
-            { label: '100', emoji: '🔢' },
+            // Drie keer 🔢 was voor een niet-lezend kind geen keuze maar gokken. Nu is
+            // het getal zelf het beeld, groot en verschillend.
+            { label: '64', emoji: '6️⃣', goed: true },
+            { label: '32', emoji: '3️⃣' },
+            { label: '100', emoji: '💯' },
           ],
           foutTip: 'Acht keer acht. Dat zijn er vierenzestig.',
         },
@@ -137,6 +141,7 @@ export const wereld0: World = {
       id: 'weide-3',
       wereldId: 'weide',
       titel: 'Wit rechtsonder',
+      icoon: '🧩',
       doel: 'Je kind legt het bord goed neer en zet de stukken op hun plek.',
       geleerd: 'Nu leg jij het bord goed neer en zet je alle stukken op hun plek.',
       vertel: [

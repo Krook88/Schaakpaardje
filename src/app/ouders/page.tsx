@@ -156,7 +156,11 @@ function OuderPaneel() {
 
         <section className="card stack">
           <h2>Instellingen</h2>
-          {schakel('spraak', 'Pip praat', 'Zet uit als je in de trein zit.')}
+          {schakel(
+            'spraak',
+            'Pip praat vanzelf',
+            'Zet uit als je in de trein zit. De luidsprekerknop bij Pip blijft het doen — een kind dat nog niet leest heeft die nodig.',
+          )}
           {schakel('ondertiteling', 'Ondertiteling', 'Laat zien wat Pip zegt.')}
           {schakel('effecten', 'Geluidjes')}
           {schakel('coordinaten', 'Velden benoemen (a1, e4)', 'Handig vanaf een jaar of acht.')}

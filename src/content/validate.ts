@@ -137,6 +137,14 @@ export function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
       if (o.opties.length < 2) fout('een quiz heeft minstens twee opties nodig')
       const goede = o.opties.filter((op) => op.goed).length
       if (goede !== 1) fout(`quiz heeft ${goede} goede antwoorden, dat moet er precies één zijn`)
+      // Een kind van vier leest de labels niet: het kiest op het plaatje. Dus moet
+      // elke optie er eentje hebben, en moeten ze binnen één vraag van elkaar
+      // verschillen — drie keer 🔢 naast elkaar is voor een niet-lezer geen keuze.
+      const zonder = o.opties.filter((op) => !op.emoji).length
+      if (zonder) fout(`${zonder} van de ${o.opties.length} opties hebben geen plaatje`)
+      const beelden = o.opties.map((op) => op.emoji).filter(Boolean)
+      const dubbel = beelden.filter((e, i) => beelden.indexOf(e) !== i)
+      if (dubbel.length) fout(`opties delen hetzelfde plaatje: ${[...new Set(dubbel)].join(' ')}`)
       break
     }
   }
@@ -282,6 +290,13 @@ export function controleerContent(): Bevinding[] {
     if (wereldIds.has(wereld.id)) uit.push({ waar: wereld.naam, probleem: 'dubbele wereld-id' })
     wereldIds.add(wereld.id)
     if (!wereld.lessen.length) uit.push({ waar: wereld.naam, probleem: 'wereld zonder lessen' })
+    // Twee lessen in dezelfde wereld met hetzelfde beeld zijn op de kaart niet uit
+    // elkaar te houden voor een kind dat de titels niet leest.
+    const iconen = wereld.lessen.map((l) => l.icoon)
+    const dubbel = iconen.filter((e, i) => iconen.indexOf(e) !== i)
+    if (dubbel.length) {
+      uit.push({ waar: wereld.naam, probleem: `lessen delen een icoon: ${[...new Set(dubbel)].join(' ')}` })
+    }
     for (const les of wereld.lessen) {
       if (lesIds.has(les.id)) uit.push({ waar: les.titel, probleem: `dubbele les-id ${les.id}` })
       lesIds.add(les.id)

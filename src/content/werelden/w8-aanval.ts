@@ -23,6 +23,7 @@ export const wereld8: World = {
       id: 'aanval-1',
       wereldId: 'aanval',
       titel: 'Staat mijn stuk te pakken?',
+      icoon: '👀',
       doel: 'Je kind ziet welk van zijn stukken door de tegenstander wordt aangevallen.',
       geleerd: 'Nu zie je zelf welk stuk van jou te pakken staat.',
       vertel: [
@@ -94,6 +95,7 @@ export const wereld8: World = {
       id: 'aanval-2',
       wereldId: 'aanval',
       titel: 'Manier één: weglopen',
+      icoon: '🏃',
       doel: 'Je kind zet een aangevallen stuk op een veilig veld.',
       geleerd: 'Nu breng jij je stuk in veiligheid.',
       vertel: [
@@ -151,6 +153,7 @@ export const wereld8: World = {
       id: 'aanval-3',
       wereldId: 'aanval',
       titel: 'Manier twee: sla de aanvaller',
+      icoon: '⚔️',
       doel: 'Je kind lost een dreiging op door het aanvallende stuk te slaan.',
       geleerd: 'Nu sla jij de aanvaller gewoon van het bord.',
       vertel: [
@@ -215,6 +218,7 @@ export const wereld8: World = {
       id: 'aanval-4',
       wereldId: 'aanval',
       titel: 'Manier drie: dekken',
+      icoon: '🛡️',
       doel: 'Je kind zet er een tweede stuk achter, zodat slaan een ruil wordt.',
       geleerd: 'Nu dek jij je eigen stukken.',
       vertel: [

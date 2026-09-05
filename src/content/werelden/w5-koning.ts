@@ -19,6 +19,7 @@ export const wereld5: World = {
       id: 'koning-1',
       wereldId: 'koning',
       titel: 'Eén stapje tegelijk',
+      icoon: '👣',
       doel: 'Je kind weet dat de koning één veld per zet gaat, alle kanten op.',
       geleerd: 'Nu weet je hoe de koning loopt: één stapje, alle kanten op.',
       vertel: [
@@ -73,6 +74,7 @@ export const wereld5: World = {
       id: 'koning-2',
       wereldId: 'koning',
       titel: 'De koning pakt ook',
+      icoon: '🍽️',
       doel: 'Je kind slaat met de koning een stuk dat ernaast staat.',
       geleerd: 'Nu pakt jouw koning zelf een stuk.',
       vertel: [
@@ -128,6 +130,7 @@ export const wereld5: World = {
       id: 'koning-3',
       wereldId: 'koning',
       titel: 'Koningen blijven van elkaar af',
+      icoon: '↔️',
       doel: 'Je kind weet dat twee koningen nooit naast elkaar mogen staan.',
       geleerd: 'Nu weet je dat twee koningen altijd een veld tussen zich houden.',
       vertel: [

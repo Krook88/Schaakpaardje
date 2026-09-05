@@ -22,6 +22,7 @@ export const wereld7: World = {
       id: 'waarde-1',
       wereldId: 'waarde',
       titel: 'Wat is een stuk waard?',
+      icoon: '🔢',
       doel: 'Je kind kent de waarde van de stukken en weet welke het duurst is.',
       geleerd: 'Nu weet je wat elk stuk waard is.',
       vertel: [
@@ -105,6 +106,7 @@ export const wereld7: World = {
       id: 'waarde-2',
       wereldId: 'waarde',
       titel: 'Pak wat gratis is',
+      icoon: '🎁',
       doel: 'Je kind ziet welk stuk het meeste oplevert en pakt dat.',
       geleerd: 'Nu pak jij altijd het duurste stuk dat je kunt krijgen.',
       vertel: [
@@ -170,6 +172,7 @@ export const wereld7: World = {
       id: 'waarde-3',
       wereldId: 'waarde',
       titel: 'Ruilen doe je zo',
+      icoon: '⚖️',
       doel: 'Je kind begrijpt wanneer een ruil goed uitpakt en wanneer niet.',
       geleerd: 'Nu kijk jij eerst of hij kan terugslaan.',
       vertel: [

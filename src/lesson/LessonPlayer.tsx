@@ -50,6 +50,16 @@ const FASE_NAAM: Record<Fase, string> = {
   beloning: 'Klaar!',
 }
 
+/** Dezelfde vier fasen, maar dan zonder woorden. De volgorde is altijd deze. */
+const FASE_BEELD: Record<Fase, string> = {
+  kijken: '👀',
+  meedoen: '🤝',
+  zelf: '🙋',
+  toets: '⭐',
+  beloning: '🎉',
+}
+const FASE_VOLGORDE: Fase[] = ['kijken', 'meedoen', 'zelf', 'toets']
+
 export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   const [fase, setFase] = useState<Fase>('kijken')
   const [vertelIndex, setVertelIndex] = useState(0)
@@ -290,6 +300,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
     return (
       <div className="page">
         <Kop titel={les.titel} terug="/kaart/" />
+        <FaseBalk nu="kijken" />
         <div className="stack">
           <Pip zegt={les.vertel[vertelIndex]} stemming={vertelIndex === 0 ? 'blij' : 'denkt'} />
           {les.vertelFen && (
@@ -314,7 +325,10 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
                 else setVertelIndex((i) => i + 1)
               }}
             >
-              {laatste ? 'Ik ga het proberen →' : 'Verder →'}
+              <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1 }}>
+                {laatste ? '🤝' : '▶︎'}
+              </span>{' '}
+              {laatste ? 'Ik ga het proberen' : 'Verder'}
             </button>
           </div>
         </div>
@@ -364,6 +378,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   return (
     <div className="page">
       <Kop titel={`${les.titel} · ${FASE_NAAM[fase]}`} terug="/kaart/" />
+      <FaseBalk nu={fase} />
 
       <div className="stack">
         <Pip zegt={zin} stemming={stemming} klein />
@@ -395,7 +410,15 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
                 onClick={() => opQuiz(i)}
                 disabled={stand.klaar}
               >
-                {optie.emoji && <span aria-hidden="true">{optie.emoji}</span>} {optie.label}
+                {/* Het plaatje is het antwoord, niet de versiering ernaast: een kind
+                    van vier leest het label niet. Vandaar groot, en links, waar het
+                    oog begint. */}
+                {optie.emoji && (
+                  <span className={styles.quizBeeld} aria-hidden="true">
+                    {optie.emoji}
+                  </span>
+                )}
+                <span className={styles.quizTekst}>{optie.label}</span>
               </button>
             ))}
           </div>
@@ -419,8 +442,17 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
             // Bij een quiz gaf hint() geen enkel veld terug: het kind zag niets
             // gebeuren en raakte stilzwijgend een ster kwijt. Dan hoort de knop er
             // niet te staan.
-            <button type="button" className="btn" onClick={vraagHint} disabled={stand.klaar}>
-              💡 Help me even
+            <button
+              type="button"
+              className="btn"
+              onClick={vraagHint}
+              disabled={stand.klaar}
+              style={{ minHeight: 60 }}
+            >
+              <span aria-hidden="true" style={{ fontSize: 28, lineHeight: 1 }}>
+                💡
+              </span>{' '}
+              Help me even
             </button>
           )}
           {totaalTeVinden > 0 && (
@@ -443,10 +475,53 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
               setZin('vraag' in opgave ? opgave.vraag : '')
             }}
           >
-            ↺ Opnieuw
+            <span aria-hidden="true" style={{ fontSize: 28, lineHeight: 1 }}>
+              ↺
+            </span>{' '}
+            Opnieuw
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+
+/**
+ * Waar zijn we in de les? Vier plaatjes, altijd in dezelfde volgorde: kijken,
+ * meedoen, zelf doen, laten zien. Voor een kind van vier is dit de enige aanwijzing
+ * dat er een begin en een eind aan zit — "Rijen en lijnen · Laat maar zien" in de
+ * bovenbalk leest het niet.
+ */
+function FaseBalk({ nu }: { nu: Fase }) {
+  const hier = FASE_VOLGORDE.indexOf(nu)
+  return (
+    <div
+      className="row"
+      style={{ justifyContent: 'center', gap: 10, marginBottom: 8, flexWrap: 'nowrap' }}
+      aria-label={`Stap ${hier + 1} van 4: ${FASE_NAAM[nu]}`}
+    >
+      {FASE_VOLGORDE.map((f, i) => (
+        <span
+          key={f}
+          aria-hidden="true"
+          title={FASE_NAAM[f]}
+          style={{
+            fontSize: i === hier ? 28 : 22,
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            display: 'grid',
+            placeItems: 'center',
+            background: i === hier ? 'var(--accent-soft)' : 'transparent',
+            border: i === hier ? '2px solid var(--accent)' : '2px solid transparent',
+            filter: i <= hier ? 'none' : 'grayscale(1)',
+            opacity: i <= hier ? 1 : 0.45,
+          }}
+        >
+          {FASE_BEELD[f]}
+        </span>
+      ))}
     </div>
   )
 }

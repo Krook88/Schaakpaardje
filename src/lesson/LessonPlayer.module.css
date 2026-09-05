@@ -13,7 +13,12 @@
 .stipAf { background: var(--grass); }
 .stipNu { background: var(--accent); transform: scale(1.35); }
 .quiz { display: grid; gap: 12px; max-width: min(100%, 70vh, 620px); margin: 0 auto; width: 100%; }
-.quizKnop { justify-content: flex-start; text-align: left; font-size: 1.1rem; }
+.quizKnop {
+  justify-content: flex-start; text-align: left; font-size: 1.05rem;
+  gap: 14px; min-height: 78px; padding: 10px 16px;
+}
+.quizBeeld { font-size: 40px; line-height: 1; flex: 0 0 auto; width: 48px; text-align: center; }
+.quizTekst { flex: 1; }
 
 /* Een fout antwoord veranderde eerst niets op het scherm — alleen Pips tekst, en die
    kan een kind van drie niet lezen. Nu schudt de knop en kleurt hij, net als het bord. */

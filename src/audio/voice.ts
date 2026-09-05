@@ -24,6 +24,16 @@ let manifestGeladen = false
 let huidigeAudio: HTMLAudioElement | null = null
 let ondertitelListener: ((tekst: string | null) => void) | null = null
 let stemmenGeladen = false
+/**
+ * Zijn de instellingen van het profiel al toegepast?
+ *
+ * Ze komen uit localStorage en dus pas ná de eerste render binnen. Tot dat moment
+ * stond hier de standaard "spraak aan", en die won: een kind van wie de ouder Pip had
+ * uitgezet, kreeg bij binnenkomst op een les alsnog de eerste zin te horen. We houden
+ * de zin daarom vast tot we weten wat er mag.
+ */
+let configToegepast = false
+let wachtendeZin: string | null = null
 
 /** Waar de app gehost wordt. Leeg = domeinwortel; zet NEXT_PUBLIC_BASE_PATH als de
  *  app in een submap staat. Zonder dit zoekt de browser audio onder de huidige route. */
@@ -41,7 +51,15 @@ export function zinSleutel(tekst: string): string {
 
 export function setVoiceConfig(next: Partial<Config>) {
   Object.assign(config, next)
-  if (!config.spraak) stopSpeaking()
+  configToegepast = true
+  if (!config.spraak) {
+    wachtendeZin = null
+    stopSpeaking()
+    return
+  }
+  const zin = wachtendeZin
+  wachtendeZin = null
+  if (zin) void speak(zin)
 }
 
 export function getVoiceConfig(): Config {
@@ -98,12 +116,25 @@ export function kies(varianten: readonly string[], groep = 'algemeen'): string {
 /**
  * Spreekt een zin uit. Breekt een lopende zin netjes af — wat het kind nú doet is
  * altijd belangrijker dan wat Pip nog aan het zeggen was.
+ *
+ * `opVerzoek` is voor de luidsprekerknop: de instelling "Pip praat" zet het
+ * automatische voorlezen uit, maar een kind dat zélf op de luidspreker tikt vraagt er
+ * om. Zonder dit onderscheid was die knop dood voor precies het kind dat hem nodig
+ * heeft — een van vier, dat de tekst eronder niet kan lezen.
  */
-export async function speak(tekst: string): Promise<void> {
+export async function speak(tekst: string, opVerzoek = false): Promise<void> {
   if (!tekst) return
   stopSpeaking()
   if (config.ondertiteling) ondertitelListener?.(tekst)
-  if (!config.spraak || typeof window === 'undefined') return
+  if (typeof window === 'undefined') return
+  if (!opVerzoek) {
+    if (!configToegepast) {
+      // Nog niet bekend of Pip mag praten. Onthouden en wachten.
+      wachtendeZin = tekst
+      return
+    }
+    if (!config.spraak) return
+  }
 
   await laadManifest()
   const sleutel = zinSleutel(tekst)

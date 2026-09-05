@@ -24,6 +24,7 @@ export const wereld10: World = {
       id: 'mat-1',
       wereldId: 'mat',
       titel: 'Wat is schaakmat?',
+      icoon: '🏁',
       doel: 'Je kind weet dat mat betekent: schaak waar je niet meer uit kunt.',
       geleerd: 'Nu weet je wat schaakmat is.',
       vertel: [
@@ -106,6 +107,7 @@ export const wereld10: World = {
       id: 'mat-2',
       wereldId: 'mat',
       titel: 'Mat in één',
+      icoon: '🎯',
       doel: 'Je kind vindt de zet die de partij in één keer wint.',
       geleerd: 'Nu vind jij de zet die de partij wint.',
       vertel: [
@@ -163,6 +165,7 @@ export const wereld10: World = {
       id: 'mat-3',
       wereldId: 'mat',
       titel: 'Pat en remise',
+      icoon: '🤝',
       doel: 'Je kind herkent pat en weet dat het gelijkspel is, geen winst.',
       geleerd: 'Nu herken je pat, en weet je dat dat gelijkspel is.',
       vertel: [

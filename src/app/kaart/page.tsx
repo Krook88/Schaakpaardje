@@ -59,12 +59,17 @@ export default function Kaart() {
                   const open = isOntgrendeld(les.id, voortgang)
                   const inhoud = (
                     <>
+                      {/* Het beeld eerst: dat is waar een kind van vier de les aan
+                          herkent. De titel staat ernaast voor wie al leest. */}
+                      <span aria-hidden="true" style={{ fontSize: 30, width: 40, textAlign: 'center', flexShrink: 0 }}>
+                        {open ? les.icoon : '🔒'}
+                      </span>
                       <span style={{ flex: 1, textAlign: 'left' }}>{les.titel}</span>
                       {open ? (
                         <Sterren aantal={resultaat?.sterren ?? 0} />
                       ) : (
-                        <span aria-label="Nog op slot" style={{ fontSize: 24 }}>
-                          🔒
+                        <span className="muted" aria-label="Nog op slot" style={{ fontSize: '0.85rem' }}>
+                          nog dicht
                         </span>
                       )}
                     </>
@@ -108,7 +113,10 @@ export default function Kaart() {
 
               {wereld.minispel && (
                 <Link href={`/spel/${wereld.minispel}/`} className="btn btn--ghost">
-                  🎲 Minispel: {wereld.minispel.replaceAll('-', ' ')}
+                  <span aria-hidden="true" style={{ fontSize: 26 }}>
+                    🎲
+                  </span>{' '}
+                  Minispel: {wereld.minispel.replaceAll('-', ' ')}
                 </Link>
               )}
 

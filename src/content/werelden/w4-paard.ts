@@ -19,6 +19,7 @@ export const wereld4: World = {
       id: 'paard-1',
       wereldId: 'paard',
       titel: 'Ik spring in een L',
+      icoon: '🇱',
       doel: 'Je kind kent de L-sprong van het paard.',
       geleerd: 'Nu ken je de L-sprong van het paard.',
       vertel: [
@@ -81,6 +82,7 @@ export const wereld4: World = {
       id: 'paard-2',
       wereldId: 'paard',
       titel: 'Over de heg',
+      icoon: '🌿',
       doel: 'Je kind weet dat alleen het paard over stukken heen springt.',
       geleerd: 'Nu weet je dat alleen het paard over stukken heen springt.',
       vertel: [
@@ -137,6 +139,7 @@ export const wereld4: World = {
       id: 'paard-3',
       wereldId: 'paard',
       titel: 'Hongerig paardje',
+      icoon: '🥕',
       doel: 'Je kind plant meerdere paardensprongen achter elkaar.',
       geleerd: 'Nu spring jij met het paard van hapje naar hapje.',
       vertel: [
@@ -185,6 +188,7 @@ export const wereld4: World = {
       id: 'paard-4',
       wereldId: 'paard',
       titel: 'Paardensprong-parcours',
+      icoon: '🏁',
       doel: 'Je kind loopt met het paard naar een doelveld.',
       geleerd: 'Nu breng jij het paard naar elk veld dat je wilt.',
       vertel: [

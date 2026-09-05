@@ -101,6 +101,11 @@ export type Lesson = {
   id: string
   wereldId: string
   titel: string
+  /**
+   * Eén beeld dat deze les voorstelt. Op de kaart en de stal is dit voor een kind van
+   * vier het énige waar het de les aan herkent — de titel leest het niet.
+   */
+  icoon: string
   /** Eén zin voor het ouderscherm: wat kan mijn kind hierna? Nooit aan het kind tonen. */
   doel: string
   /** Dezelfde les, maar tegen het kind zelf. Staat op het beloningsscherm. */

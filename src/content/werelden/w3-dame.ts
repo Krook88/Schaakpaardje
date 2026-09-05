@@ -18,6 +18,7 @@ export const wereld3: World = {
       id: 'dame-1',
       wereldId: 'dame',
       titel: 'Recht én schuin',
+      icoon: '✳️',
       doel: 'Je kind ziet dat de dame de toren en de loper bij elkaar is.',
       geleerd: 'Nu weet je waarom de dame het sterkste stuk is.',
       vertel: [
@@ -73,6 +74,7 @@ export const wereld3: World = {
       id: 'dame-2',
       wereldId: 'dame',
       titel: 'De dame stopt ook',
+      icoon: '🚧',
       doel: 'Je kind weet dat ook de dame niet door stukken heen kan.',
       geleerd: 'Nu weet je dat ook de dame nergens doorheen kan.',
       vertel: [
@@ -132,6 +134,7 @@ export const wereld3: World = {
       id: 'dame-3',
       wereldId: 'dame',
       titel: 'Pas op met je dame',
+      icoon: '💎',
       doel: 'Je kind begrijpt dat de dame kostbaar is en niet zomaar te grabbel ligt.',
       geleerd: 'Nu ben jij zuinig op je dame.',
       vertel: [

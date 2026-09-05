@@ -23,6 +23,7 @@ export const wereld13: World = {
       id: 'tactiek-1',
       wereldId: 'tactiek',
       titel: 'De dubbele aanval',
+      icoon: '🔱',
       doel: 'Je kind valt met één zet twee stukken tegelijk aan.',
       geleerd: 'Nu val jij met één zet twee stukken tegelijk aan.',
       vertel: [
@@ -87,6 +88,7 @@ export const wereld13: World = {
       id: 'tactiek-2',
       wereldId: 'tactiek',
       titel: 'De penning',
+      icoon: '📌',
       doel: 'Je kind zet een stuk vast doordat er iets kostbaars achter staat.',
       geleerd: 'Nu zet jij een stuk vast met een penning.',
       vertel: [

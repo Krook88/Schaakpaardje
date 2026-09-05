@@ -18,6 +18,7 @@ export const wereld1: World = {
       id: 'toren-1',
       wereldId: 'toren',
       titel: 'De toren loopt recht',
+      icoon: '➕',
       doel: 'Je kind weet dat de toren recht loopt, zo ver hij wil.',
       geleerd: 'Nu weet je precies hoe de toren loopt: kaarsrecht, zo ver hij wil.',
       vertel: [
@@ -81,6 +82,7 @@ export const wereld1: World = {
       id: 'toren-2',
       wereldId: 'toren',
       titel: 'Niet door stukken heen',
+      icoon: '🧱',
       doel: 'Je kind ziet dat de toren stopt voor een eigen stuk.',
       geleerd: 'Nu zie je waar de toren moet stoppen.',
       vertel: [
@@ -138,6 +140,7 @@ export const wereld1: World = {
       id: 'toren-3',
       wereldId: 'toren',
       titel: 'Pak dat stuk',
+      icoon: '🍽️',
       doel: 'Je kind slaat een vijandelijk stuk met de toren.',
       geleerd: 'Nu pak jij een stuk met je toren.',
       vertel: [

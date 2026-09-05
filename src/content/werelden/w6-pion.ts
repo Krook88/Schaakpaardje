@@ -20,6 +20,7 @@ export const wereld6: World = {
       id: 'pion-1',
       wereldId: 'pion',
       titel: 'Altijd vooruit',
+      icoon: '⬆️',
       doel: 'Je kind weet dat de pion één veld vooruit loopt en nooit terug.',
       geleerd: 'Nu weet je dat een pion alleen vooruit gaat en nooit terug.',
       vertel: [
@@ -78,6 +79,7 @@ export const wereld6: World = {
       id: 'pion-2',
       wereldId: 'pion',
       titel: 'De eerste keer twee',
+      icoon: '⏩',
       doel: 'Je kind kent de dubbelstap vanaf de startrij.',
       geleerd: 'Nu ken je de dubbele stap van de pion.',
       vertel: [
@@ -132,6 +134,7 @@ export const wereld6: World = {
       id: 'pion-3',
       wereldId: 'pion',
       titel: 'Lopen is niet slaan',
+      icoon: '✂️',
       doel: 'Je kind weet dat de pion recht loopt maar schuin slaat.',
       geleerd: 'Nu weet je het gekste van de pion: recht lopen, schuin slaan.',
       vertel: [
@@ -202,6 +205,7 @@ export const wereld6: World = {
       id: 'pion-4',
       wereldId: 'pion',
       titel: 'Pion wordt dame',
+      icoon: '👑',
       doel: 'Je kind promoveert een pion op de overkant.',
       geleerd: 'Nu maak jij van een pion een dame!',
       vertel: [
@@ -265,6 +269,7 @@ export const wereld6: World = {
       id: 'pion-5',
       wereldId: 'pion',
       titel: 'In het voorbijgaan',
+      icoon: '💨',
       doel: 'Je kind slaat een pion en passant.',
       geleerd: 'Nu ken je en passant, de laatste rare regel van de pion.',
       vertel: [
