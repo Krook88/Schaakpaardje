@@ -20,7 +20,15 @@ type Config = { spraak: boolean; tempo: number; ondertiteling: boolean }
 const config: Config = { spraak: true, tempo: 1, ondertiteling: true }
 
 let manifest: Record<string, unknown> | null = null
-let manifestGeladen = false
+/**
+ * De lopende ophaalactie, niet een simpele "al gedaan"-vlag.
+ *
+ * Met een vlag zette de eerste aanroep hem meteen op waar, waarna een tweede aanroep
+ * die er vlak achteraan kwam meteen doorliep — met een manifest dat nog leeg was. Die
+ * zin viel dan terug op de apparaatstem terwijl er een opname voor bestond. Door de
+ * belofte zelf te bewaren wacht iedereen netjes op dezelfde ophaalactie.
+ */
+let manifestBelofte: Promise<void> | null = null
 let huidigeAudio: HTMLAudioElement | null = null
 let ondertitelListener: ((tekst: string | null) => void) | null = null
 let stemmenGeladen = false
@@ -69,19 +77,21 @@ export function onSubtitle(fn: ((tekst: string | null) => void) | null) {
   ondertitelListener = fn
 }
 
-async function laadManifest() {
-  if (manifestGeladen) return
-  manifestGeladen = true
-  try {
-    // Geen force-cache: de service worker doet voor dit bestand al netwerk-eerst
-    // (public/sw.js), en force-cache pakt de HTTP-cache ook als die verlopen is.
-    // Dan blijft een kind na een nieuwe opname op het oude manifest hangen en valt
-    // elke nieuwe zin terug op de apparaatstem.
-    const res = await fetch(`${BASIS}/audio/manifest.json`, { cache: 'no-cache' })
-    if (res.ok) manifest = await res.json()
-  } catch {
-    manifest = null // nog niets ingesproken: we gebruiken de stem van het apparaat
-  }
+function laadManifest(): Promise<void> {
+  if (manifestBelofte) return manifestBelofte
+  manifestBelofte = (async () => {
+    try {
+      // Geen force-cache: de service worker doet voor dit bestand al netwerk-eerst
+      // (public/sw.js), en force-cache pakt de HTTP-cache ook als die verlopen is.
+      // Dan blijft een kind na een nieuwe opname op het oude manifest hangen en valt
+      // elke nieuwe zin terug op de apparaatstem.
+      const res = await fetch(`${BASIS}/audio/manifest.json`, { cache: 'no-cache' })
+      if (res.ok) manifest = await res.json()
+    } catch {
+      manifest = null // nog niets ingesproken: we gebruiken de stem van het apparaat
+    }
+  })()
+  return manifestBelofte
 }
 
 export function stopSpeaking() {
