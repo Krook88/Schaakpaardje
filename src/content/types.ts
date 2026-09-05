@@ -46,7 +46,7 @@ export type Exercise =
       kind: 'regelZet'
       /** Volledige FEN, inclusief wie er aan zet is. */
       fen: Fen
-      eis: 'geefSchaak' | 'uitSchaak' | 'matIn1' | 'rokeer'
+      eis: 'geefSchaak' | 'uitSchaak' | 'matIn1' | 'rokeer' | 'enPassant'
       vraag: string
       foutTip?: string
     }
@@ -81,6 +81,11 @@ export type TapBedoeling =
   | { soort: 'schaak' }
   /** De koning(en) die juist géén schaak staan. */
   | { soort: 'geenSchaak' }
+  /**
+   * De velden rondom een veld — de vluchtvelden van een koning dus.
+   * `filter` beperkt tot de bezette of juist de lege buurvelden.
+   */
+  | { soort: 'buurvelden'; van: Square; filter?: 'alles' | 'bezet' | 'leeg'; kleur?: Color }
 
 export type ZetBedoeling =
   /** Elk veld waar het stuk na de zet niet geslagen kan worden. */
@@ -96,8 +101,10 @@ export type Lesson = {
   id: string
   wereldId: string
   titel: string
-  /** Eén zin voor het ouderscherm: wat kan mijn kind hierna? */
+  /** Eén zin voor het ouderscherm: wat kan mijn kind hierna? Nooit aan het kind tonen. */
   doel: string
+  /** Dezelfde les, maar tegen het kind zelf. Staat op het beloningsscherm. */
+  geleerd: string
   /** Wat Pip vertelt in de kijkfase. */
   vertel: string[]
   /** Stelling die tijdens het vertellen op het bord staat. */

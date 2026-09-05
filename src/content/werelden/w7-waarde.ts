@@ -23,6 +23,7 @@ export const wereld7: World = {
       wereldId: 'waarde',
       titel: 'Wat is een stuk waard?',
       doel: 'Je kind kent de waarde van de stukken en weet welke het duurst is.',
+      geleerd: 'Nu weet je wat elk stuk waard is.',
       vertel: [
         'Niet elk stuk is even veel waard. Dat is handig om te weten.',
         'Een pion is er eentje waard. Een paard en een loper drie. Een toren vijf.',
@@ -105,6 +106,7 @@ export const wereld7: World = {
       wereldId: 'waarde',
       titel: 'Pak wat gratis is',
       doel: 'Je kind ziet welk stuk het meeste oplevert en pakt dat.',
+      geleerd: 'Nu pak jij altijd het duurste stuk dat je kunt krijgen.',
       vertel: [
         'Soms staat er een stuk van de tegenstander zomaar te wachten.',
         'Kun je kiezen? Pak dan het duurste. Een dame is meer waard dan een pion.',
@@ -146,7 +148,7 @@ export const wereld7: World = {
       toets: [
         {
           kind: 'move',
-          fen: '8/8/8/4q3/8/2B5/8/p7',
+          fen: '8/8/8/4q3/8/2B5/1p6/8',
           from: 'c3',
           goed: ['e5'],
           bedoeling: 'duurste',
@@ -169,6 +171,7 @@ export const wereld7: World = {
       wereldId: 'waarde',
       titel: 'Ruilen doe je zo',
       doel: 'Je kind begrijpt wanneer een ruil goed uitpakt en wanneer niet.',
+      geleerd: 'Nu kijk jij eerst of hij kan terugslaan.',
       vertel: [
         'Ruilen betekent: jij slaat zijn stuk, hij slaat daarna dat van jou.',
         'Ruil je een pion tegen een dame? Dan ben jij spekkoper.',

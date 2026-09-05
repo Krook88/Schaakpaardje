@@ -26,6 +26,7 @@ export const wereld9: World = {
       wereldId: 'schaak',
       titel: 'Wat is schaak?',
       doel: 'Je kind herkent wanneer een koning wordt aangevallen.',
+      geleerd: 'Nu zie je meteen wanneer een koning schaak staat.',
       vertel: [
         'Nu wordt het spannend. Weet je nog van de Aanvalsberg? Een stuk kan aangevallen worden.',
         'Als dat de koning is, heeft het een eigen naam: dan staat hij schaak.',
@@ -98,6 +99,7 @@ export const wereld9: World = {
       wereldId: 'schaak',
       titel: 'Geef zelf schaak',
       doel: 'Je kind vindt een zet die de vijandelijke koning aanvalt.',
+      geleerd: 'Nu geef jij zelf schaak!',
       vertel: [
         'Nu jij! Je kunt de koning van de tegenstander ook aanvallen.',
         'Zoek een zet waarmee jouw stuk bij zijn koning kan komen.',
@@ -144,7 +146,7 @@ export const wereld9: World = {
             { label: 'nee, een koning wordt nooit geslagen', emoji: '🚫', goed: true },
             { label: 'ja, dan win je meteen', emoji: '🏆' },
           ],
-          foutTip: 'De koning gaat nooit van het bord. Je zet hem klem, dat heet mat.',
+          foutTip: 'De koning gaat nooit van het bord. Je zet hem klem, en hoe dat heet leer je hierna.',
         },
       ],
       themas: ['schaak'],
@@ -154,6 +156,7 @@ export const wereld9: World = {
       wereldId: 'schaak',
       titel: 'Uit schaak: drie manieren',
       doel: 'Je kind haalt de koning uit schaak, op alle drie de manieren.',
+      geleerd: 'Nu ken je alle drie de manieren om uit schaak te gaan.',
       vertel: [
         'Sta jij schaak? Dan zijn er precies drie manieren om het op te lossen.',
         'Eén: weglopen met je koning. Twee: het aanvallende stuk slaan.',
@@ -203,14 +206,17 @@ export const wereld9: World = {
           vraag: 'Laatste keer: haal je koning uit het schaak.',
         },
         {
+          // Deze toets vroeg eerst naar mat. Dat is de les van wereld 10, en die komt
+          // hier expres pas na. Een vooruitblik in een foutTip mag; toetsen wat de les
+          // niet gegeven heeft niet.
           kind: 'quiz',
-          vraag: 'Je staat schaak en geen van de drie manieren werkt. Wat is dat?',
+          vraag: 'Je staat schaak. Welke zet mag je NIET doen?',
           opties: [
-            { label: 'dat heet mat, je hebt verloren', emoji: '🏁', goed: true },
-            { label: 'dan mag je iets anders doen', emoji: '🤷' },
-            { label: 'dan is het gelijkspel', emoji: '🤝' },
+            { label: 'een zet waarna je nog steeds schaak staat', emoji: '🚫', goed: true },
+            { label: 'het aanvallende stuk slaan', emoji: '⚔️' },
+            { label: 'er een stuk tussen zetten', emoji: '🛡️' },
           ],
-          foutTip: 'Schaak dat je niet kunt oplossen heet schaakmat. Daar gaat de volgende wereld over.',
+          foutTip: 'Slaan en ertussen zetten zijn juist twee van de drie manieren. Blijven staan mag nooit.',
         },
       ],
       themas: ['schaak', 'verdediging'],

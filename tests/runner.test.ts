@@ -175,3 +175,54 @@ describe('hints en sterren', () => {
     expect(fout.stand.fouten).toBe(1)
   })
 })
+
+describe('van gedachten veranderen', () => {
+  // Uit de tweede review: een ander eigen stuk aantikken werd als fout geteld, en drie
+  // van die misgrepen in de toetsfase houden de volgende les op slot. Precies het
+  // tegenovergestelde van wat de app belooft.
+  it('een ander eigen stuk aantikken wisselt de selectie in plaats van fout te rekenen', () => {
+    const opgave: Exercise = {
+      kind: 'move',
+      fen: '8/8/8/8/8/8/8/R3K2R',
+      from: 'a1',
+      goed: ['a8'],
+      vraag: 'Zet je toren naar boven.',
+    }
+    let stand = startOpgave(opgave)
+    stand = tik(stand, 'a1').stand
+    const gewisseld = tik(stand, 'e1') // de koning: ander eigen stuk
+    expect(gewisseld.uit).toBe('geselecteerd')
+    expect(gewisseld.stand.geselecteerd).toBe('e1')
+    expect(gewisseld.stand.fouten).toBe(0)
+  })
+
+  it('werkt ook bij een opgave met de echte schaakregels', () => {
+    const opgave: Exercise = {
+      kind: 'regelZet',
+      fen: 'r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1',
+      eis: 'rokeer',
+      vraag: 'Rokeer.',
+    }
+    let stand = startOpgave(opgave)
+    stand = tik(stand, 'a1').stand
+    const gewisseld = tik(stand, 'e1')
+    expect(gewisseld.uit).toBe('geselecteerd')
+    expect(gewisseld.stand.fouten).toBe(0)
+    // en daarna kan de rokade gewoon
+    const gerokeerd = tik(gewisseld.stand, 'c1')
+    expect(gerokeerd.uit).toBe('klaar')
+  })
+
+  it('een vijandelijk stuk aantikken blijft gewoon een zetpoging', () => {
+    const opgave: Exercise = {
+      kind: 'move',
+      fen: '8/8/8/8/8/8/8/R2rK3',
+      from: 'a1',
+      goed: ['d1'],
+      vraag: 'Sla de zwarte toren.',
+    }
+    let stand = startOpgave(opgave)
+    stand = tik(stand, 'a1').stand
+    expect(tik(stand, 'd1').uit).toBe('klaar')
+  })
+})

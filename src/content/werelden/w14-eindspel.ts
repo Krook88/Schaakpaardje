@@ -21,10 +21,12 @@ export const wereld14: World = {
       wereldId: 'eindspel',
       titel: 'De koning doet mee',
       doel: 'Je kind weet dat de koning in het eindspel een sterk stuk is.',
+      geleerd: 'Nu laat jij je koning meespelen aan het eind.',
       vertel: [
         'Aan het eind van de partij is het bord bijna leeg. En dan verandert er iets.',
         'De koning hoeft zich niet meer te verstoppen. Hij mag naar voren, want er is bijna niemand meer die hem aanvalt.',
         'Een koning in het midden is in het eindspel juist heel sterk.',
+        'Staan de twee koningen recht tegenover elkaar met één veld ertussen? Dat heet de oppositie. Wie dan moet zetten, moet opzij.',
       ],
       vertelFen: '8/8/8/3K4/8/8/8/7k',
       meedoen: [
@@ -41,8 +43,11 @@ export const wereld14: World = {
       ],
       zelf: [
         {
+          // Zonder zwarte koning op het bord: de meetkundige motor kent de regel
+          // "koningen nooit naast elkaar" niet, en liet wit anders vrolijk naar h1
+          // wandelen om hem op te eten. Dat spreekt koning-3 tegen.
           kind: 'reach',
-          fen: '8/8/8/8/8/8/8/K6k',
+          fen: '8/8/8/8/8/8/8/K7',
           from: 'a1',
           doel: 'd4',
           vraag: 'Breng je koning naar het midden.',
@@ -70,7 +75,7 @@ export const wereld14: World = {
         },
         {
           kind: 'reach',
-          fen: '8/8/8/8/8/8/8/K6k',
+          fen: '8/8/8/8/8/8/8/K7',
           from: 'a1',
           doel: 'e5',
           vraag: 'Loop met je koning naar e5.',
@@ -83,6 +88,7 @@ export const wereld14: World = {
       wereldId: 'eindspel',
       titel: 'Mat met dame en met toren',
       doel: 'Je kind zet mat met koning plus dame, en met koning plus toren.',
+      geleerd: 'Nu zet jij mat met je dame én met je toren.',
       vertel: [
         'Met alleen een dame of een toren erbij kun je mat zetten. Maar je koning moet helpen.',
         'Het idee is altijd hetzelfde: je duwt zijn koning naar de rand, en dan naar de hoek.',
@@ -95,7 +101,7 @@ export const wereld14: World = {
           fen: '5K2/7k/8/Q7/8/8/8/8 w - - 0 1',
           eis: 'matIn1',
           vraag: 'Zet mat met je dame. Je koning dekt de vluchtvelden al.',
-          foutTip: 'Zijn koning kan alleen nog opzij. Geef schaak op de rij waar hij staat.',
+          foutTip: 'Zijn koning kan nog naar boven en naar beneden. Kom op zijn lijn, dan dek je ook g6.',
         },
       ],
       zelf: [
@@ -131,7 +137,7 @@ export const wereld14: World = {
             { label: 'nee, je hebt hulp nodig', emoji: '🚫', goed: true },
             { label: 'ja, als je goed loopt', emoji: '🚶' },
           ],
-          foutTip: 'Twee koningen alleen is altijd remise. Je hebt minstens een toren of dame nodig.',
+          foutTip: 'Alleen met je koning lukt het nooit. Je hebt er minstens één stuk of pion bij nodig.',
         },
       ],
       themas: ['eindspel', 'mat'],
@@ -141,6 +147,7 @@ export const wereld14: World = {
       wereldId: 'eindspel',
       titel: 'De laatste pion',
       doel: 'Je kind brengt een pion naar de overkant en maakt er een dame van.',
+      geleerd: 'Nu breng jij die laatste pion naar de overkant.',
       vertel: [
         'Eén pion kan een hele partij winnen. Als hij de overkant haalt tenminste.',
         'Loop hem naar boven, stap voor stap. En laat je koning meelopen als schild.',
@@ -191,7 +198,7 @@ export const wereld14: World = {
             { label: 'een paard', emoji: '🐴' },
             { label: 'niets, hij blijft pion', emoji: '♟️' },
           ],
-          foutTip: 'De dame is het sterkst. Alleen heel soms is een paard slimmer.',
+          foutTip: 'De dame is het sterkste stuk. Kies er bijna altijd eentje.',
         },
       ],
       themas: ['eindspel', 'promotie'],

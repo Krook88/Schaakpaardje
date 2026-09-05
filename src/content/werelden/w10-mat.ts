@@ -25,6 +25,7 @@ export const wereld10: World = {
       wereldId: 'mat',
       titel: 'Wat is schaakmat?',
       doel: 'Je kind weet dat mat betekent: schaak waar je niet meer uit kunt.',
+      geleerd: 'Nu weet je wat schaakmat is.',
       vertel: [
         'Je weet nu wat schaak is, en dat er drie manieren zijn om eruit te komen.',
         'Maar wat als geen van die drie werkt? Niet weglopen, niet slaan, niets ertussen?',
@@ -65,10 +66,18 @@ export const wereld10: World = {
         {
           kind: 'tapSquares',
           fen: 'R6k/5ppp/8/8/8/8/8/6K1',
-          correct: ['f7', 'g7', 'h7'],
-          bedoeling: { soort: 'stuk', type: 'p', kleur: 'b' },
-          vraag: 'Waarom kan hij niet weg? Tik de drie eigen pionnen aan die in de weg staan.',
-          foutTip: 'Zijn eigen pionnen! Die blokkeren de velden waar hij heen zou willen.',
+          correct: ['g7', 'h7'],
+          bedoeling: { soort: 'buurvelden', van: 'h8', filter: 'bezet', kleur: 'b' },
+          vraag: 'Waarom kan hij niet weg? Tik de twee pionnen aan die vlak naast hem staan.',
+          foutTip: 'Alleen de velden náást de koning tellen. De pion op f7 staat niet in de weg.',
+        },
+        {
+          kind: 'tapSquares',
+          fen: 'R6k/5ppp/8/8/8/8/8/6K1',
+          correct: ['g8'],
+          bedoeling: { soort: 'buurvelden', van: 'h8', filter: 'leeg' },
+          vraag: 'Er is nog één leeg veld naast hem. Tik het aan.',
+          foutTip: 'Daar mag hij niet heen: de witte toren bewaakt die hele bovenste rij.',
         },
       ],
       toets: [
@@ -98,6 +107,7 @@ export const wereld10: World = {
       wereldId: 'mat',
       titel: 'Mat in één',
       doel: 'Je kind vindt de zet die de partij in één keer wint.',
+      geleerd: 'Nu vind jij de zet die de partij wint.',
       vertel: [
         'Nu ga je zelf mat zetten. In één zet!',
         'Zoek een zet die schaak geeft, én waarbij hij nergens meer heen kan.',
@@ -154,6 +164,7 @@ export const wereld10: World = {
       wereldId: 'mat',
       titel: 'Pat en remise',
       doel: 'Je kind herkent pat en weet dat het gelijkspel is, geen winst.',
+      geleerd: 'Nu herken je pat, en weet je dat dat gelijkspel is.',
       vertel: [
         'Let op, want dit is een gemene. Soms sta je níet schaak, maar kun je ook niets.',
         'Geen enkele zet is mogelijk. Dat heet pat, en dan is het gelijkspel.',
@@ -186,9 +197,10 @@ export const wereld10: World = {
         {
           kind: 'tapSquares',
           fen: '7k/5Q2/6K1/8/8/8/8/8',
-          correct: ['g8', 'h7'],
-          vraag: 'De zwarte koning kan nergens heen. Tik de twee velden aan die hij zou willen.',
-          foutTip: 'Naast zich: g8 en h7. Allebei worden ze bewaakt door de witte dame.',
+          correct: ['g7', 'g8', 'h7'],
+          bedoeling: { soort: 'buurvelden', van: 'h8' },
+          vraag: 'De zwarte koning kan nergens heen. Tik de drie velden aan die hij zou willen.',
+          foutTip: 'Naast zich: g7, g8 en h7. Alle drie worden ze bewaakt.',
         },
         {
           kind: 'quiz',

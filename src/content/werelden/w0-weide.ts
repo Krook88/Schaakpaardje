@@ -19,6 +19,7 @@ export const wereld0: World = {
       wereldId: 'weide',
       titel: 'Licht en donker',
       doel: 'Je kind ziet dat het bord om en om licht en donker is.',
+      geleerd: 'Nu zie je meteen welk veld licht is en welk veld donker.',
       vertel: [
         'Hoi! Ik ben Pip. Dit is een schaakbord.',
         'Kijk eens: een licht veld, een donker veld, een licht veld. Steeds om en om.',
@@ -57,14 +58,11 @@ export const wereld0: World = {
           vraag: 'Tik de twee donkere velden in het midden aan.',
         },
         {
-          kind: 'quiz',
-          vraag: 'Hoeveel velden heeft een schaakbord?',
-          opties: [
-            { label: '64', emoji: '🔢', goed: true },
-            { label: '32', emoji: '🔢' },
-            { label: '100', emoji: '🔢' },
-          ],
-          foutTip: 'Acht rijen van acht velden. Dat zijn er vierenzestig.',
+          kind: 'tapSquares',
+          fen: LEEG,
+          correct: ['d5', 'e4'],
+          vraag: 'En nu de twee lichte velden ernaast, in het midden.',
+          foutTip: 'Die is donker. De lichte zijn de zandkleurige.',
         },
       ],
       themas: ['bord', 'veldkleur'],
@@ -74,7 +72,9 @@ export const wereld0: World = {
       wereldId: 'weide',
       titel: 'Rijen en lijnen',
       doel: 'Je kind herkent een rij (opzij) en een lijn (omhoog).',
+      geleerd: 'Nu weet je wat een rij is, wat een lijn is en wat een diagonaal is.',
       vertel: [
+        'Het bord heeft acht rijen van acht velden. Samen vierenzestig.',
         'Een rij loopt van links naar rechts. Zo, opzij.',
         'Een lijn loopt van beneden naar boven. Zo, omhoog.',
         'Rijen liggen plat, lijnen staan rechtop.',
@@ -102,6 +102,13 @@ export const wereld0: World = {
           correct: ['a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4'],
           vraag: 'Tik de rij in het midden aan, de vierde van onderen.',
         },
+        {
+          kind: 'tapSquares',
+          fen: LEEG,
+          correct: ['a1', 'b2', 'c3', 'd4', 'e5', 'f6', 'g7', 'h8'],
+          vraag: 'En dit is een diagonaal: schuin van hoek tot hoek. Tik hem aan.',
+          foutTip: 'Schuin! Steeds eentje opzij en eentje omhoog.',
+        },
       ],
       toets: [
         {
@@ -114,11 +121,14 @@ export const wereld0: World = {
           ],
         },
         {
-          kind: 'tapSquares',
-          fen: LEEG,
-          correct: ['a1', 'b2', 'c3', 'd4', 'e5', 'f6', 'g7', 'h8'],
-          vraag: 'En dit is een diagonaal: schuin van hoek tot hoek. Tik hem aan.',
-          foutTip: 'Schuin! Steeds eentje opzij en eentje omhoog.',
+          kind: 'quiz',
+          vraag: 'Acht rijen van acht velden. Hoeveel velden heeft het bord dan?',
+          opties: [
+            { label: '64', emoji: '🔢', goed: true },
+            { label: '32', emoji: '🔢' },
+            { label: '100', emoji: '🔢' },
+          ],
+          foutTip: 'Acht keer acht. Dat zijn er vierenzestig.',
         },
       ],
       themas: ['bord', 'rij', 'lijn', 'diagonaal'],
@@ -128,6 +138,7 @@ export const wereld0: World = {
       wereldId: 'weide',
       titel: 'Wit rechtsonder',
       doel: 'Je kind legt het bord goed neer en zet de stukken op hun plek.',
+      geleerd: 'Nu leg jij het bord goed neer en zet je alle stukken op hun plek.',
       vertel: [
         'Voor je gaat schaken leg je het bord goed neer.',
         'Onthoud dit: wit rechts. Het veld rechtsonder is altijd licht.',

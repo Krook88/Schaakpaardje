@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Kop } from '@/ui/Kop'
 import { Sterren } from '@/ui/Sterren'
 import { WERELDEN } from '@/content'
-import { isOntgrendeld, useVoortgang, wereldIsAf } from '@/progress/store'
+import { isOntgrendeld, useToestandGeladen, useVoortgang, wereldIsAf } from '@/progress/store'
 
 /**
  * Het pad. Bewust één lijn van boven naar beneden: een vertakte kaart is voor een
@@ -12,6 +12,17 @@ import { isOntgrendeld, useVoortgang, wereldIsAf } from '@/progress/store'
  */
 export default function Kaart() {
   const voortgang = useVoortgang()
+  const geladen = useToestandGeladen()
+
+  // Zonder deze pauze toont de voorgerenderde HTML alle lessen op slot, en flitst dat
+  // even in beeld voordat de echte voortgang er is.
+  if (!geladen) {
+    return (
+      <main className="page">
+        <Kop titel="De kaart" terug="/" />
+      </main>
+    )
+  }
 
   return (
     <main className="page">
@@ -21,12 +32,12 @@ export default function Kaart() {
           const af = wereldIsAf(wereld.id, voortgang)
           return (
             <section key={wereld.id} className="card stack" style={{ gap: 12 }}>
-              <div className="row" style={{ justifyContent: 'space-between' }}>
-                <div className="row">
-                  <span style={{ fontSize: 30 }} aria-hidden="true">
+              <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
+                <div className="row" style={{ minWidth: 0, flexWrap: 'nowrap' }}>
+                  <span style={{ fontSize: 30, flexShrink: 0 }} aria-hidden="true">
                     {wereld.emoji}
                   </span>
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     <h2 style={{ fontSize: '1.15rem' }}>
                       {wereld.nummer}. {wereld.naam}
                     </h2>
@@ -52,7 +63,9 @@ export default function Kaart() {
                       {open ? (
                         <Sterren aantal={resultaat?.sterren ?? 0} />
                       ) : (
-                        <span aria-label="Nog op slot">🔒</span>
+                        <span aria-label="Nog op slot" style={{ fontSize: 24 }}>
+                          🔒
+                        </span>
                       )}
                     </>
                   )
@@ -76,6 +89,13 @@ export default function Kaart() {
                             // Gedempte kleur in plaats van doorzichtigheid: op 0,5 haalde
                             // deze tekst het contrast van 4,5:1 in het lichte thema niet.
                             color: 'var(--muted)',
+                            // En verder: geen knop meer. Geen schaduw, een gestippelde
+                            // rand en een vlakkere achtergrond, zodat je zonder te lezen
+                            // ziet dat hier niets te tikken valt.
+                            background: 'var(--surface-2)',
+                            border: '2px dashed var(--line)',
+                            boxShadow: 'none',
+                            cursor: 'default',
                           }}
                         >
                           {inhoud}

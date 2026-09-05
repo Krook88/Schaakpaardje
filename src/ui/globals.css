@@ -9,7 +9,7 @@
   --ink: #22201b;
   --muted: #6b6357;
   --line: #ded3bf;
-  --accent: #c2661a;      /* hoefijzer-oker: knoppen, sterren */
+  --accent: #b35c14;      /* hoefijzer-oker: knoppen, sterren. 4,71:1 op wit */
   --accent-ink: #ffffff;
   --accent-soft: #fbead7;
   --grass: #4e7a54;       /* wereldkaart, goed */
@@ -20,6 +20,8 @@
   --dark-sq: #8fa98a;
   --sel: #f0b429;
   --hint: #4e7a54;
+  --zetstip: #1b1b17;     /* waar mag je heen: minstens 3,6:1 op elke veldkleur */
+  --zetstip-rand: rgba(255, 255, 255, 0.62);
   --radius: 16px;
   --radius-sm: 10px;
   --shadow: 0 2px 0 rgba(34, 32, 27, 0.08), 0 10px 26px -18px rgba(34, 32, 27, 0.6);

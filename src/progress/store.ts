@@ -6,6 +6,7 @@
  * Alles staat lokaal op het apparaat. Geen account, geen server, geen persoonsgegevens:
  * een voornaam en een leeftijdsgroep, meer heeft de app niet nodig. Zie docs/08.
  */
+import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
@@ -25,7 +26,7 @@ export type Profiel = {
 
 export type LesResultaat = {
   sterren: 0 | 1 | 2 | 3
-  pogingen: number
+  fouten: number
   hints: number
   laatst: string
 }
@@ -155,7 +156,7 @@ export const useProfielStore = create<State>()(
                 ...vanProfiel,
                 [lesId]: {
                   sterren,
-                  pogingen: (bestaand?.pogingen ?? 0) + resultaat.pogingen,
+                  fouten: (bestaand?.fouten ?? 0) + resultaat.fouten,
                   hints: (bestaand?.hints ?? 0) + resultaat.hints,
                   laatst: new Date().toISOString(),
                 },
@@ -187,6 +188,20 @@ export const useProfielStore = create<State>()(
     { name: 'schaakmaatje-v1' },
   ),
 )
+
+/**
+ * Is de opgeslagen toestand al ingelezen?
+ *
+ * Tijdens het bouwen bestaat localStorage niet, dus wat er in de voorgerenderde HTML
+ * staat is de toestand van een kind zonder profiel: alle lessen op slot en geen enkel
+ * diploma. Zonder deze vlag ziet een kind dat even, en gooit React de boom daarna weg —
+ * met een hydratieklacht erbij. Elk scherm dat de voortgang leest, wacht hierop.
+ */
+export function useToestandGeladen(): boolean {
+  const [geladen, setGeladen] = useState(false)
+  useEffect(() => setGeladen(true), [])
+  return geladen
+}
 
 /* ---------- afgeleide vragen ----------
  *

@@ -1,44 +1,30 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
-import { setVoiceConfig, speak } from '@/audio/voice'
-import { setSfxEnabled } from '@/audio/sfx'
+import { speak } from '@/audio/voice'
 import { lesMet, WERELDEN } from '@/content'
 import {
   AVATARS,
   sterrenTotaal,
-  useInstellingen,
   useProfiel,
   useProfielStore,
   useStickers,
+  useToestandGeladen,
   useVoortgang,
   volgendeOpenLes,
+  wereldIsAf,
 } from '@/progress/store'
 
 export default function Thuis() {
-  const [geladen, setGeladen] = useState(false)
+  const geladen = useToestandGeladen()
   const profielen = useProfielStore((s) => s.profielen)
   const profiel = useProfiel()
   const kiesProfiel = useProfielStore((s) => s.kiesProfiel)
   const maakProfiel = useProfielStore((s) => s.maakProfiel)
   const voortgang = useVoortgang()
-  const instellingen = useInstellingen()
   const stickers = useStickers()
-
-  // Zustand leest localStorage pas in de browser; tot die tijd niets tonen dat
-  // straks omklapt.
-  useEffect(() => setGeladen(true), [])
-
-  useEffect(() => {
-    setVoiceConfig({
-      spraak: instellingen.spraak,
-      tempo: instellingen.tempo,
-      ondertiteling: instellingen.ondertiteling,
-    })
-    setSfxEnabled(instellingen.effecten)
-  }, [instellingen])
 
   if (!geladen) return <main className="page" />
 
@@ -58,6 +44,7 @@ export default function Thuis() {
   const verderLes = lesMet(verder.id)
   const totaal = sterrenTotaal(voortgang)
   const maxSterren = WERELDEN.flatMap((w) => w.lessen).length * 3
+  const wereldenAf = WERELDEN.filter((w) => wereldIsAf(w.id, voortgang))
 
   return (
     <main className="page">
@@ -72,7 +59,8 @@ export default function Thuis() {
               <p className="muted" style={{ fontSize: '0.9rem' }}>
                 {/* Geen sterrenrij hier: die stond na drie sterren al vol, terwijl de tekst
                     ernaast "5 van de 141" zei. Voor een kind dat nog niet leest is dat
-                    beeld het enige wat het ziet. */}
+                    beeld het enige wat het ziet. Het getal blijft, voor de ouder; de
+                    wereldrij hieronder is wat het kind ziet. */}
                 ⭐ {totaal} van de {maxSterren} sterren
               </p>
             </div>
@@ -83,9 +71,38 @@ export default function Thuis() {
         </div>
 
         <Pip
-          zegt={`Hoi ${profiel.naam}! Leuk dat je er bent. Zullen we verder gaan met ${verderLes?.titel ?? 'de eerste les'}?`}
+          // Zonder deze afweging staat er "... met Wat is een stuk waard??"
+          zegt={`Hoi ${profiel.naam}! Leuk dat je er bent. Zullen we verder gaan met ${
+            verderLes?.titel ?? 'de eerste les'
+          }${verderLes?.titel.endsWith('?') ? '' : '?'}`}
           stemming="blij"
         />
+
+        {/* Voortgang zonder letters: elke wereld één plaatje, in kleur als hij uit is.
+            Het loopt van links naar rechts vol, en dat is de hele boodschap. */}
+        <div
+          className="row"
+          style={{ gap: 6, rowGap: 8 }}
+          aria-label={`${wereldenAf.length} van de ${WERELDEN.length} werelden uit`}
+        >
+          {WERELDEN.map((w) => {
+            const af = wereldIsAf(w.id, voortgang)
+            return (
+              <span
+                key={w.id}
+                title={`${w.nummer}. ${w.naam}`}
+                aria-hidden="true"
+                style={{
+                  fontSize: 24,
+                  filter: af ? 'none' : 'grayscale(1)',
+                  opacity: af ? 1 : 0.4,
+                }}
+              >
+                {w.emoji}
+              </span>
+            )
+          })}
+        </div>
 
         <div style={{ display: 'grid', gap: 14 }}>
           <Link href={`/les/${verder.id}/`} className="btn btn--primary btn--big" style={{ padding: 20 }}>

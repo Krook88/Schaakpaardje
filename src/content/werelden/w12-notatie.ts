@@ -21,6 +21,7 @@ export const wereld12: World = {
       wereldId: 'notatie',
       titel: 'Elk veld heeft een naam',
       doel: 'Je kind vindt een veld op naam, zoals e4 of h8.',
+      geleerd: 'Nu vind jij elk veld op naam, zoals e4 en h8.',
       toonCoordinaten: true,
       vertel: [
         'Kijk eens naar de randen van het bord. Daar staan letters en cijfers.',
@@ -82,6 +83,7 @@ export const wereld12: World = {
       wereldId: 'notatie',
       titel: 'Zetten opschrijven',
       doel: 'Je kind leest en schrijft zetten als Pf3 en e4.',
+      geleerd: 'Nu kun jij een zet opschrijven en teruglezen.',
       toonCoordinaten: true,
       vertel: [
         'Nu kun je elke zet opschrijven. Je schrijft welk stuk het is, en waar het heen gaat.',
@@ -154,6 +156,7 @@ export const wereld12: World = {
       wereldId: 'notatie',
       titel: 'Hoe begin je een partij?',
       doel: 'Je kind kent de drie openingsregels: centrum, ontwikkelen, rokeren.',
+      geleerd: 'Nu weet je hoe je een partij begint.',
       toonCoordinaten: true,
       vertel: [
         'Nu je kunt opschrijven, leer je ook hoe je begint. Er zijn drie simpele regels.',

@@ -21,12 +21,13 @@ export const wereld6: World = {
       wereldId: 'pion',
       titel: 'Altijd vooruit',
       doel: 'Je kind weet dat de pion één veld vooruit loopt en nooit terug.',
+      geleerd: 'Nu weet je dat een pion alleen vooruit gaat en nooit terug.',
       vertel: [
         'Dit is de pion. Het kleinste stukje, maar wel dapper.',
         'Hij loopt één veld vooruit. Nooit opzij, nooit achteruit.',
         'Een pion gaat altijd door. Terug kan hij niet meer.',
       ],
-      vertelFen: '8/8/8/8/8/8/4P3/8',
+      vertelFen: '8/8/8/4P3/8/8/8/8',
       meedoen: [
         {
           kind: 'tapMoves',
@@ -62,13 +63,13 @@ export const wereld6: World = {
         },
         {
           kind: 'quiz',
-          vraag: 'Een stuk staat pal voor je pion. Wat kan de pion doen?',
+          vraag: 'Welke kant loopt jouw pion op?',
           opties: [
-            { label: 'niets, hij zit vast', emoji: '🛑', goed: true },
-            { label: 'het stuk slaan', emoji: '⚔️' },
-            { label: 'eromheen lopen', emoji: '↪️' },
+            { label: 'recht vooruit, naar boven', emoji: '⬆️', goed: true },
+            { label: 'opzij', emoji: '↔️' },
+            { label: 'alle kanten op', emoji: '🌈' },
           ],
-          foutTip: 'Recht vooruit slaat een pion nooit. Hij zit dus echt vast.',
+          foutTip: 'De pion loopt recht vooruit. Opzij en achteruit kan hij niet.',
         },
       ],
       themas: ['pion', 'bordvisie'],
@@ -78,6 +79,7 @@ export const wereld6: World = {
       wereldId: 'pion',
       titel: 'De eerste keer twee',
       doel: 'Je kind kent de dubbelstap vanaf de startrij.',
+      geleerd: 'Nu ken je de dubbele stap van de pion.',
       vertel: [
         'Eén ding mag een pion maar één keer in zijn leven.',
         'Vanaf zijn startplek mag hij twee velden vooruit. Een lekkere sprint.',
@@ -131,6 +133,7 @@ export const wereld6: World = {
       wereldId: 'pion',
       titel: 'Lopen is niet slaan',
       doel: 'Je kind weet dat de pion recht loopt maar schuin slaat.',
+      geleerd: 'Nu weet je het gekste van de pion: recht lopen, schuin slaan.',
       vertel: [
         'Nu het gekste van de pion. Let goed op.',
         'Hij loopt recht vooruit. Maar hij slaat schuin!',
@@ -182,6 +185,16 @@ export const wereld6: World = {
           from: 'a2',
           vraag: 'Sla de zwarte pion op.',
         },
+        {
+          kind: 'quiz',
+          vraag: 'Een stuk staat pal voor je pion. Wat kan de pion doen?',
+          opties: [
+            { label: 'niets, hij zit vast', emoji: '🛑', goed: true },
+            { label: 'het stuk slaan', emoji: '⚔️' },
+            { label: 'eromheen lopen', emoji: '↪️' },
+          ],
+          foutTip: 'Recht vooruit slaat een pion nooit. Hij zit dus echt vast.',
+        },
       ],
       themas: ['pion', 'slaan'],
     },
@@ -190,6 +203,7 @@ export const wereld6: World = {
       wereldId: 'pion',
       titel: 'Pion wordt dame',
       doel: 'Je kind promoveert een pion op de overkant.',
+      geleerd: 'Nu maak jij van een pion een dame!',
       vertel: [
         'En nu het mooiste van de pion.',
         'Haalt hij de overkant? Dan wordt hij een dame! Zomaar, midden in de partij.',
@@ -241,6 +255,72 @@ export const wereld6: World = {
         },
       ],
       themas: ['pion', 'promotie'],
+    },
+    {
+      // De laatste pionregel. Hij stond er niet, maar de bots speelden hem wél: Kiki
+      // en Rens pakken een gratis pion en het kind ziet er eentje verdwijnen door een
+      // zet die volgens alles wat het geleerd heeft niet kan. Deze les gebruikt
+      // 'regelZet', want en passant is een echte regel — de meetkundige motor kent
+      // hem niet, en kan hem ook niet kennen: hij hangt af van de vorige zet.
+      id: 'pion-5',
+      wereldId: 'pion',
+      titel: 'In het voorbijgaan',
+      doel: 'Je kind slaat een pion en passant.',
+      geleerd: 'Nu ken je en passant, de laatste rare regel van de pion.',
+      vertel: [
+        'Nog één rare regel van de pion. Deze heet en passant, dat is Frans voor "in het voorbijgaan".',
+        'Staat jouw pion al ver vooruit, en springt zijn pion er met een dubbelstap langs? Dan mag je hem toch pakken.',
+        'Je slaat schuin, naar het lege veld waar hij overheen sprong. En dat mag alleen meteen, anders is de kans weg.',
+      ],
+      vertelFen: '4k3/8/8/3pP3/8/8/8/4K3',
+      vertelWijs: ['d6'],
+      meedoen: [
+        {
+          kind: 'regelZet',
+          fen: '4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1',
+          eis: 'enPassant',
+          vraag: 'Zijn pion sprong er net langs. Pak hem in het voorbijgaan!',
+          foutTip: 'Sla schuin naar het lege veld waar hij overheen sprong. Hij gaat er alsnog af.',
+        },
+      ],
+      zelf: [
+        {
+          kind: 'regelZet',
+          fen: '4k3/8/8/5pP1/8/8/8/4K3 w - f6 0 1',
+          eis: 'enPassant',
+          vraag: 'Nog een keer. Sla en passant.',
+          foutTip: 'Schuin naar het lege veld erachter. Zijn pion staat ernaast, maar je gaat er niet heen.',
+        },
+        {
+          kind: 'quiz',
+          vraag: 'Wanneer mag je en passant slaan?',
+          opties: [
+            { label: 'meteen, of nooit meer', emoji: '⏱️', goed: true },
+            { label: 'wanneer je maar wilt', emoji: '♾️' },
+            { label: 'alleen met een dame', emoji: '👑' },
+          ],
+          foutTip: 'Je hebt precies één zet de tijd. Doe je iets anders, dan is de kans voorbij.',
+        },
+      ],
+      toets: [
+        {
+          kind: 'regelZet',
+          fen: '4k3/8/8/1pP5/8/8/8/4K3 w - b6 0 1',
+          eis: 'enPassant',
+          vraag: 'Laatste keer: sla zijn pion in het voorbijgaan.',
+        },
+        {
+          kind: 'quiz',
+          vraag: 'Welk stuk kan en passant slaan?',
+          opties: [
+            { label: 'alleen een pion', emoji: '\u265f\ufe0f', goed: true },
+            { label: 'elk stuk', emoji: '\ud83c\udf08' },
+            { label: 'alleen de dame', emoji: '\ud83d\udc51' },
+          ],
+          foutTip: 'Het is een pionregel. Alleen een pion kan een pion in het voorbijgaan pakken.',
+        },
+      ],
+      themas: ['pion', 'en passant'],
     },
   ],
 }

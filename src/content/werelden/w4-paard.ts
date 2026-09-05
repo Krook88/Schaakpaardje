@@ -20,6 +20,7 @@ export const wereld4: World = {
       wereldId: 'paard',
       titel: 'Ik spring in een L',
       doel: 'Je kind kent de L-sprong van het paard.',
+      geleerd: 'Nu ken je de L-sprong van het paard.',
       vertel: [
         'Dit ben ik! Het paard. Ik loop niet, ik spring.',
         'Kijk mee: twee velden rechtdoor, en dan één opzij. Dat is een L.',
@@ -81,6 +82,7 @@ export const wereld4: World = {
       wereldId: 'paard',
       titel: 'Over de heg',
       doel: 'Je kind weet dat alleen het paard over stukken heen springt.',
+      geleerd: 'Nu weet je dat alleen het paard over stukken heen springt.',
       vertel: [
         'Nu iets wat alleen ik kan.',
         'Staan er stukken in de weg? Ik spring er gewoon overheen!',
@@ -98,7 +100,7 @@ export const wereld4: World = {
       zelf: [
         {
           kind: 'tapMoves',
-          fen: '8/8/8/8/8/8/PPP5/NP6',
+          fen: '8/8/8/8/8/8/PPP5/N7',
           from: 'a1',
           vraag: 'Ik sta in de hoek achter mijn eigen pionnen. Waar kan ik heen?',
         },
@@ -136,6 +138,7 @@ export const wereld4: World = {
       wereldId: 'paard',
       titel: 'Hongerig paardje',
       doel: 'Je kind plant meerdere paardensprongen achter elkaar.',
+      geleerd: 'Nu spring jij met het paard van hapje naar hapje.',
       vertel: [
         'Ik heb honger! Er liggen wortels op het bord. Nou ja, pionnen dan.',
         'Spring van pion naar pion. Elke sprong moet raak zijn.',
@@ -183,6 +186,7 @@ export const wereld4: World = {
       wereldId: 'paard',
       titel: 'Paardensprong-parcours',
       doel: 'Je kind loopt met het paard naar een doelveld.',
+      geleerd: 'Nu breng jij het paard naar elk veld dat je wilt.',
       vertel: [
         'Zie je de ster? Daar moet ik heen.',
         'Soms lukt dat niet in één sprong. Dan spring je gewoon nog een keer.',

@@ -19,6 +19,7 @@ export const wereld2: World = {
       wereldId: 'loper',
       titel: 'De loper gaat schuin',
       doel: 'Je kind weet dat de loper alleen schuin loopt.',
+      geleerd: 'Nu weet je hoe de loper loopt: altijd schuin.',
       vertel: [
         'Dit is de loper. Hij loopt alleen schuin.',
         'Naar voren schuin, naar achteren schuin. Zo ver als hij wil.',
@@ -74,6 +75,7 @@ export const wereld2: World = {
       wereldId: 'loper',
       titel: 'Altijd dezelfde kleur',
       doel: 'Je kind ziet dat een loper nooit van veldkleur wisselt.',
+      geleerd: 'Nu weet je dat een loper zijn kleur nooit kwijtraakt.',
       vertel: [
         'Let eens op iets grappigs.',
         'Een loper die op een donker veld staat, komt nooit op een licht veld.',
@@ -130,6 +132,7 @@ export const wereld2: World = {
       wereldId: 'loper',
       titel: 'Schuin slaan',
       doel: 'Je kind slaat met de loper over een diagonaal.',
+      geleerd: 'Nu sla jij een stuk met je loper.',
       vertel: [
         'Slaan doet de loper ook schuin. Hoe kan het ook anders.',
         'Hij glijdt over de diagonaal tot hij bij het stuk is, en pakt het.',

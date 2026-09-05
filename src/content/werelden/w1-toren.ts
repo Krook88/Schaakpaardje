@@ -19,6 +19,7 @@ export const wereld1: World = {
       wereldId: 'toren',
       titel: 'De toren loopt recht',
       doel: 'Je kind weet dat de toren recht loopt, zo ver hij wil.',
+      geleerd: 'Nu weet je precies hoe de toren loopt: kaarsrecht, zo ver hij wil.',
       vertel: [
         'Dit is de toren. Hij loopt kaarsrecht.',
         'Vooruit, achteruit, naar links en naar rechts. Zo ver als hij wil.',
@@ -81,6 +82,7 @@ export const wereld1: World = {
       wereldId: 'toren',
       titel: 'Niet door stukken heen',
       doel: 'Je kind ziet dat de toren stopt voor een eigen stuk.',
+      geleerd: 'Nu zie je waar de toren moet stoppen.',
       vertel: [
         'De toren is sterk, maar hij kan niet toveren.',
         'Staat er een eigen stuk in de weg? Dan stopt hij ervoor.',
@@ -137,6 +139,7 @@ export const wereld1: World = {
       wereldId: 'toren',
       titel: 'Pak dat stuk',
       doel: 'Je kind slaat een vijandelijk stuk met de toren.',
+      geleerd: 'Nu pak jij een stuk met je toren.',
       vertel: [
         'Staat er een stuk van de tegenstander in de weg? Dan mag je hem pakken!',
         'Je zet je toren op zijn veld, en zijn stuk gaat van het bord af.',
@@ -164,7 +167,7 @@ export const wereld1: World = {
         },
         {
           kind: 'captureAll',
-          fen: '8/8/8/8/R2p4/8/8/3p4',
+          fen: '8/8/8/8/R2p4/8/3p4/8',
           from: 'a4',
           vraag: 'Sla alle zwarte pionnen. Neem rustig de tijd.',
         },

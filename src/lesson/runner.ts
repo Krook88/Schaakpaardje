@@ -7,6 +7,7 @@ import {
   applyMove,
   parseBoard,
   pieceMoves,
+  PIECE_VALUE,
   type BoardMap,
   type Square,
 } from '@/engine/board'
@@ -138,6 +139,18 @@ export function tik(stand: OpgaveStand, veld: Square): { stand: OpgaveStand; uit
   const van = stand.geselecteerd
   if (veld === van) return { stand: { ...stand, geselecteerd: null }, uit: 'genegeerd' }
 
+  // Een ander eigen stuk aantikken is van gedachten veranderen, geen fout. Een kind dat
+  // de toren pakt, zich bedenkt en de koning aantikt, deed precies wat de les vraagt —
+  // dat mag geen ster kosten. Blijkt de nieuwe keuze verkeerd, dan merkt het kind dat
+  // vanzelf bij de zet zelf.
+  //
+  // Bij 'reach' en 'captureAll' kan dat niet: daar hoort de hele opgave bij één stuk,
+  // en met een ander stuk zetten zou de puzzel stukmaken.
+  const eigenKleur = stand.board[van]?.color
+  if (o.kind === 'move' && stuk && stuk.color === eigenKleur) {
+    return { stand: { ...stand, geselecteerd: veld, misser: null }, uit: 'geselecteerd' }
+  }
+
   const mogelijk = pieceMoves(stand.board, van)
   if (!mogelijk.all.includes(veld)) {
     return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1, geselecteerd: null }, uit: 'fout' }
@@ -246,6 +259,12 @@ function tikRegelZet(
   const van = stand.geselecteerd
   if (veld === van) return { stand: { ...stand, geselecteerd: null }, uit: 'genegeerd' }
 
+  // Ook hier: een ander eigen stuk kiezen is geen fout maar een andere gedachte.
+  const ander = stand.board[veld]
+  if (ander && ander.color === game.turn) {
+    return { stand: { ...stand, geselecteerd: veld, misser: null }, uit: 'geselecteerd' }
+  }
+
   const proef = game.clone()
   const gedaan = proef.move(van, veld)
   if (!gedaan) {
@@ -291,17 +310,54 @@ function tikRegelZet(
 /** Alle zetten die aan de eis voldoen. Ook gebruikt door de contentcontrole. */
 export function goedeZetten(
   game: Game,
-  eis: 'geefSchaak' | 'uitSchaak' | 'matIn1' | 'rokeer',
+  eis: 'geefSchaak' | 'uitSchaak' | 'matIn1' | 'rokeer' | 'enPassant',
 ) {
-  return game.legalMoves().filter((zet) => {
+  const alle = game.legalMoves().filter((zet) => {
     if (eis === 'uitSchaak') return true
     if (eis === 'rokeer') return zet.san.startsWith('O-O')
+    if (eis === 'enPassant') return zet.isEnPassant
     const na = game.clone()
     na.move(zet.from, zet.to)
     const status = na.status()
     const mat = status.over && status.reason === 'mat'
     return eis === 'matIn1' ? mat : zet.isCheck || mat
   })
+
+  // Schaak geven met een stuk dat daarna gratis van het bord gaat, is geen goed
+  // schaak. Twee werelden eerder is "kijk of hij kan terugslaan" juist de hele les,
+  // dus zo'n zet mogen we hier niet met een sterretje belonen.
+  // Blijft er niets over — dan bestaat er in deze stelling geen veilig schaak — dan
+  // keuren we ze alsnog allemaal goed: het kind mag nooit vastlopen op een opgave
+  // waarin geen goed antwoord bestaat.
+  if (eis !== 'geefSchaak') return alle
+  const veilig = alle.filter((zet) => materieelSaldo(game, zet) >= 0)
+  return veilig.length ? veilig : alle
+}
+
+/**
+ * Wat kost deze zet, als beide kanten daarna één keer het slaan afmaken?
+ * Een miniatuur-ruilrekening: wat we pakken, min wat we kwijtraken, plus wat we
+ * terugpakken. Genoeg om "dame weggeven" van "toren winnen" te onderscheiden.
+ */
+function materieelSaldo(game: Game, zet: { from: Square; to: Square }): number {
+  const na = game.clone()
+  const gedaan = na.move(zet.from, zet.to)
+  if (!gedaan) return 0
+  const gepakt = gedaan.captured ? PIECE_VALUE[gedaan.captured] : 0
+  const onsStuk = PIECE_VALUE[gedaan.promotion ?? parseBoard(game.fen)[zet.from].type]
+
+  const terugslagen = na.legalMoves().filter((z) => z.to === zet.to)
+  if (!terugslagen.length) return gepakt
+
+  let slechtste = Infinity
+  for (const slag of terugslagen) {
+    const naSlag = na.clone()
+    const slagStuk = PIECE_VALUE[parseBoard(na.fen)[slag.from].type]
+    naSlag.move(slag.from, slag.to)
+    const heroveren = naSlag.legalMoves().some((z) => z.to === zet.to)
+    slechtste = Math.min(slechtste, gepakt - onsStuk + (heroveren ? slagStuk : 0))
+  }
+  return slechtste
 }
 
 /** Antwoord op een meerkeuzevraag. */

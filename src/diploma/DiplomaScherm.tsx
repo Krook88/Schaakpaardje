@@ -1,10 +1,18 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Kop } from '@/ui/Kop'
 import { WERELDEN } from '@/content'
 import { DIPLOMAS, type DiplomaSoort } from '@/content/diplomas'
-import { diplomaBehaald, sterrenTotaal, useProfiel, useVoortgang } from '@/progress/store'
+import {
+  diplomaBehaald,
+  sterrenTotaal,
+  useProfiel,
+  useToestandGeladen,
+  useVoortgang,
+  wereldIsAf,
+} from '@/progress/store'
 import styles from './Diploma.module.css'
 
 const KLEUR: Record<DiplomaSoort, string> = { brons: '🥉', zilver: '🥈', goud: '🥇' }
@@ -17,11 +25,30 @@ const KLEUR: Record<DiplomaSoort, string> = { brons: '🥉', zilver: '🥈', gou
 export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
   const profiel = useProfiel()
   const voortgang = useVoortgang()
+  const geladen = useToestandGeladen()
   const diploma = DIPLOMAS.find((d) => d.soort === soort)!
   const behaald = diplomaBehaald(soort, voortgang)
   const werelden = WERELDEN.filter((w) => w.nummer <= diploma.tot)
+  const laatste = werelden[werelden.length - 1]
+  const nogOpen = werelden.filter((w) => !wereldIsAf(w.id, voortgang)).length
   const sterren = sterrenTotaal(voortgang)
-  const datum = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  // De datum hoort bij het moment van kijken, niet bij het moment van bouwen: in de
+  // voorgerenderde HTML zou de dag van de uitrol staan.
+  const [datum, setDatum] = useState('')
+  useEffect(() => {
+    setDatum(new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }))
+  }, [])
+
+  // Wachten tot de voortgang is ingelezen, anders krijgt een kind dat het diploma net
+  // verdiend heeft eerst het slotje te zien.
+  if (!geladen) {
+    return (
+      <main className="page">
+        <Kop titel={diploma.naam} terug="/kaart/" />
+      </main>
+    )
+  }
 
   if (!behaald) {
     return (
@@ -33,8 +60,10 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
           </p>
           <h2>Nog even doorzetten</h2>
           <p className="muted">
-            Dit hoefijzer krijg je als de werelden tot en met {diploma.tot} af zijn:{' '}
-            {diploma.wat.toLowerCase()}.
+            {/* Een wereldnummer zegt een kind niets; de naam en het aantal dat nog
+                open staat wel. */}
+            Dit hoefijzer krijg je als je klaar bent tot en met <strong>{laatste?.naam}</strong>
+            {nogOpen > 0 ? `. Nog ${nogOpen} ${nogOpen === 1 ? 'wereld' : 'werelden'} te gaan!` : '.'}
           </p>
           <Link href="/kaart/" className="btn btn--primary btn--big">
             Naar de kaart

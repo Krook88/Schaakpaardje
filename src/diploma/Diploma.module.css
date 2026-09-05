@@ -34,7 +34,32 @@
 .datum { margin-top: 12px; font-size: 0.85rem; color: var(--muted); }
 .handtekening { font-size: 1.05rem; font-weight: 700; }
 
+/* Op papier gelden de themakleuren niet.
+   Browsers printen achtergronden standaard niet, dus in het donkere thema kwam de
+   oorkonde blanco uit de printer: bijna witte tekst op wit papier. Alles wat hier
+   staat is daarom een vaste kleur, niet een token. En de randkleur per soort wordt
+   opnieuw gezet, want de algemene .oorkonde-regel stond eerder in dit blok dan
+   .brons/.zilver/.goud en maakte alle drie de hoefijzers even grijs. */
 @media print {
   .verbergBijPrinten { display: none !important; }
-  .oorkonde { box-shadow: none; border-color: #333; }
+  .oorkonde {
+    box-shadow: none;
+    background: #ffffff;
+    color: #000000;
+    border-color: #333333;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .klein,
+  .uitgereikt,
+  .wat,
+  .wereld,
+  .datum {
+    color: #444444;
+  }
+  .naam { border-bottom-color: #333333; }
+  .wereld { border-color: #777777; }
+  .oorkonde.brons { border-color: #8a5f34; }
+  .oorkonde.zilver { border-color: #6b737d; }
+  .oorkonde.goud { border-color: #937200; }
 }

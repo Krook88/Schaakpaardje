@@ -56,7 +56,11 @@ async function laadManifest() {
   if (manifestGeladen) return
   manifestGeladen = true
   try {
-    const res = await fetch(`${BASIS}/audio/manifest.json`, { cache: 'force-cache' })
+    // Geen force-cache: de service worker doet voor dit bestand al netwerk-eerst
+    // (public/sw.js), en force-cache pakt de HTTP-cache ook als die verlopen is.
+    // Dan blijft een kind na een nieuwe opname op het oude manifest hangen en valt
+    // elke nieuwe zin terug op de apparaatstem.
+    const res = await fetch(`${BASIS}/audio/manifest.json`, { cache: 'no-cache' })
     if (res.ok) manifest = await res.json()
   } catch {
     manifest = null // nog niets ingesproken: we gebruiken de stem van het apparaat

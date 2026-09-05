@@ -13,7 +13,8 @@ import {
   PARTIJ_REMISE,
   PARTIJ_START,
   PARTIJ_VERLOREN,
-  SCHAAK,
+  SCHAAK_TEGEN_JOU,
+  SCHAAK_VAN_JOU,
 } from '@/content/voice'
 import { PIECE_NAME, type Square } from '@/engine/board'
 import { Game, materialBalance } from '@/engine/game'
@@ -42,8 +43,19 @@ export function PartijScherm({ botId }: { botId: string }) {
   const [twijfel, setTwijfel] = useState<{ van: Square; naar: Square; verlies: number } | null>(null)
   const [zetten, setZetten] = useState(0)
 
-  const kidBot = useMemo(() => (bot ? new KidBot(bot, 2) : null), [bot])
+  // Nieuwe KidBot per partij: het genadebudget hoort bij één partij, niet bij de sessie.
+  const [partijNr, setPartijNr] = useState(0)
+  const kidBot = useMemo(() => (bot ? new KidBot(bot, 2) : null), [bot, partijNr])
   const samen = !bot
+  const denkTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const stopDenken = useCallback(() => {
+    if (denkTimer.current) clearTimeout(denkTimer.current)
+    denkTimer.current = null
+    setBotDenkt(false)
+  }, [])
+
+  useEffect(() => () => stopDenken(), [stopDenken])
 
   const eindig = useCallback(
     (nieuw: Uitslag, tekst: string) => {
@@ -63,7 +75,12 @@ export function PartijScherm({ botId }: { botId: string }) {
       if (!status.over) {
         if (status.check) {
           if (instellingen.effecten) sfx.schaak()
-          setZin(kies(SCHAAK, 'schaak'))
+          // Wie aan zet is, staat schaak. Is dat het kind zelf, dan is het een
+          // waarschuwing; is het de tegenstander, dan is het juist goed nieuws. Eén
+          // zin voor allebei zou de helft van de meldingen omdraaien — precies het
+          // begrip dat wereld 9 net heeft aangeleerd.
+          const tegenHetKind = samen || status.turn === 'w'
+          setZin(kies(tegenHetKind ? SCHAAK_TEGEN_JOU : SCHAAK_VAN_JOU, 'schaak'))
           setStemming('verrast')
         }
         return false
@@ -76,24 +93,35 @@ export function PartijScherm({ botId }: { botId: string }) {
       }
       return true
     },
-    [eindig, instellingen.effecten],
+    [eindig, instellingen.effecten, samen],
   )
 
-  /** Hoeveel kan de tegenstander na deze zet gratis pakken? */
+  /**
+   * Hoeveel kost deze zet netto, als de tegenstander het beste antwoord speelt?
+   *
+   * Alleen kijken naar wat hij kan pakken is niet genoeg: dan gaat de waarschuwing ook
+   * af bij een eerlijke ruil (paard voor paard) en leert een kind dat ruilen eng is.
+   * Daarom telt de herovering mee — precies zoals wereld 7 het uitlegt.
+   */
   const blunderVerlies = useCallback((game: Game, van: Square, naar: Square): number => {
     const proef = game.clone()
     if (!proef.move(van, naar)) return 0
-    const voor = Math.abs(materialBalance(proef.fen))
+    const balansNa = materialBalance(proef.fen)
     let ergste = 0
     for (const reactie of proef.legalMoves()) {
       if (!reactie.isCapture) continue
       const na = proef.clone()
       na.move(reactie.from, reactie.to)
-      const verschil = Math.abs(materialBalance(na.fen)) - voor
-      // Voor wit is een negatievere balans slechter; we kijken naar het verlies.
-      const verlies = materialBalance(proef.fen) - materialBalance(na.fen)
+      // Wat blijft er van dat verlies over nadat wij terugslaan?
+      let besteHerovering = materialBalance(na.fen)
+      for (const terug of na.legalMoves()) {
+        if (!terug.isCapture) continue
+        const daarna = na.clone()
+        daarna.move(terug.from, terug.to)
+        besteHerovering = Math.max(besteHerovering, materialBalance(daarna.fen))
+      }
+      const verlies = balansNa - besteHerovering
       if (verlies > ergste) ergste = verlies
-      void verschil
     }
     return ergste
   }, [])
@@ -101,20 +129,29 @@ export function PartijScherm({ botId }: { botId: string }) {
   const botAanZet = useCallback(() => {
     if (!kidBot || !bot) return
     setBotDenkt(true)
-    const wacht = setTimeout(() => {
+    if (denkTimer.current) clearTimeout(denkTimer.current)
+    denkTimer.current = setTimeout(() => {
       const game = gameRef.current
       const zet = kidBot.kies(game)
+      let gedaanDoorBot: ReturnType<Game['move']> = null
       if (zet) {
-        const gedaan = game.move(zet.from, zet.to)
-        if (gedaan && instellingen.effecten) (gedaan.isCapture ? sfx.slaan : sfx.zet)()
+        gedaanDoorBot = game.move(zet.from, zet.to)
+        if (gedaanDoorBot && instellingen.effecten) {
+          ;(gedaanDoorBot.isCapture ? sfx.slaan : sfx.zet)()
+        }
         setLaatsteZet([zet.from, zet.to])
         setFen(game.fen)
       }
+      denkTimer.current = null
       setBotDenkt(false)
-      controleerEinde(game)
+      if (controleerEinde(game)) return
+      // Het pionnenspel geldt beide kanten op: haalt de bot als eerste de overkant,
+      // dan heeft hij gewonnen. Zonder dit werkte de winregel maar één kant op.
+      if (opzet?.winBijPromotie && gedaanDoorBot?.promotion) {
+        eindig('verloren', 'Zijn pion is dame geworden. Deze keer wint hij.')
+      }
     }, bot.denktijd)
-    return () => clearTimeout(wacht)
-  }, [kidBot, bot, controleerEinde, instellingen.effecten])
+  }, [kidBot, bot, controleerEinde, eindig, instellingen.effecten, opzet?.winBijPromotie])
 
   const voerUit = useCallback(
     (van: Square, naar: Square) => {
@@ -176,6 +213,7 @@ export function PartijScherm({ botId }: { botId: string }) {
   )
 
   const neemTerug = useCallback(() => {
+    stopDenken()
     const game = gameRef.current
     game.undo()
     if (!samen) game.undo()
@@ -183,11 +221,16 @@ export function PartijScherm({ botId }: { botId: string }) {
     setLaatsteZet(null)
     setGeselecteerd(null)
     setUitslag(null)
+    setZetten((n) => Math.max(0, n - 1))
     setZin('Geeft niet, we doen die zet gewoon nog een keer.')
     setStemming('moedigt')
-  }, [samen])
+  }, [samen, stopDenken])
 
   const opnieuw = useCallback(() => {
+    // Zonder dit bleef de oude denk-timer lopen: die deed daarna een zet op de nieuwe
+    // partij, en dan begint een kind zijn potje met een zet die de app deed.
+    stopDenken()
+    setPartijNr((n) => n + 1)
     gameRef.current = new Game(opzet?.fen)
     setFen(gameRef.current.fen)
     setGeselecteerd(null)
@@ -196,7 +239,7 @@ export function PartijScherm({ botId }: { botId: string }) {
     setZetten(0)
     setZin(kies(PARTIJ_START, 'start'))
     setStemming('blij')
-  }, [opzet?.fen])
+  }, [opzet?.fen, stopDenken])
 
   useEffect(() => {
     setZin(kies(PARTIJ_START, 'start'))
@@ -218,7 +261,7 @@ export function PartijScherm({ botId }: { botId: string }) {
       <div className="stack">
         <Pip zegt={zin} stemming={stemming} klein />
 
-        <div style={{ maxWidth: 460, margin: '0 auto', width: '100%' }}>
+        <div style={{ maxWidth: 'min(100%, 70vh, 620px)', margin: '0 auto', width: '100%' }}>
           <Board
             position={fen}
             selected={geselecteerd}
@@ -240,7 +283,7 @@ export function PartijScherm({ botId }: { botId: string }) {
                   : 'Gelijkspel'
               : botDenkt
                 ? `${bot?.naam ?? 'De ander'} denkt na…`
-                : `Jij bent aan zet · zet ${Math.floor(zetten / 2) + 1}`}
+                : `Jij bent aan zet · zet ${zetten + 1}`}
           </span>
           <span className="muted">
             {balans > 0 ? `Jij staat ${balans} voor` : balans < 0 ? `Je staat ${-balans} achter` : 'Gelijk'}
@@ -297,7 +340,7 @@ export function PartijScherm({ botId }: { botId: string }) {
           <div className="card stack center">
             <h2>{uitslag === 'gewonnen' ? 'Gewonnen! 🏆' : uitslag === 'verloren' ? 'Deze ging verloren' : 'Gelijkspel'}</h2>
             <p className="muted">
-              Je deed {Math.ceil(zetten / 2)} zetten. {laatsteZet && `De laatste ging naar ${laatsteZet[1]}.`}
+              Je deed {zetten} zetten. {laatsteZet && `De laatste ging naar ${laatsteZet[1]}.`}
             </p>
             <div className="row" style={{ justifyContent: 'center' }}>
               <button type="button" className="btn btn--primary btn--big" onClick={opnieuw}>

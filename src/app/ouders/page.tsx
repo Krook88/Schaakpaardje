@@ -33,6 +33,7 @@ export default function Ouders() {
     setSom({ a, b, antwoord: a * b })
   }, [])
   const [invoer, setInvoer] = useState('')
+  const [misgelukt, setMisgelukt] = useState(false)
 
   if (!open) {
     if (!som) return <main className="page" />
@@ -43,19 +44,38 @@ export default function Ouders() {
           <h2>Even voor de grote mensen</h2>
           <p className="muted">Hoeveel is {som.a} × {som.b}?</p>
           <input
+            id="rekenslot"
             inputMode="numeric"
             value={invoer}
-            onChange={(e) => setInvoer(e.target.value)}
+            onChange={(e) => {
+              setInvoer(e.target.value)
+              setMisgelukt(false)
+            }}
             aria-label={`Hoeveel is ${som.a} maal ${som.b}`}
+            aria-invalid={misgelukt}
             style={{
               font: 'inherit', padding: '14px 16px', borderRadius: 12, minHeight: 56,
-              border: '2px solid var(--line)', background: 'var(--surface)', color: 'var(--ink)',
+              border: `2px solid ${misgelukt ? 'var(--berry)' : 'var(--line)'}`,
+              background: 'var(--surface)', color: 'var(--ink)',
             }}
           />
+          {misgelukt && (
+            <p style={{ color: 'var(--berry)', margin: 0 }} role="alert">
+              Dat klopt niet helemaal. Probeer het nog eens.
+            </p>
+          )}
           <button
             type="button"
             className="btn btn--primary btn--big"
-            onClick={() => setOpen(Number(invoer) === som.antwoord)}
+            onClick={() => {
+              if (Number(invoer) === som.antwoord) {
+                setOpen(true)
+                return
+              }
+              setMisgelukt(true)
+              setInvoer('')
+              document.getElementById('rekenslot')?.focus()
+            }}
           >
             Verder
           </button>
@@ -93,7 +113,7 @@ function OuderPaneel() {
         type="checkbox"
         checked={Boolean(instellingen[sleutel])}
         onChange={(e) => zetInstelling(sleutel, e.target.checked as never)}
-        style={{ width: 28, height: 28 }}
+        style={{ width: 44, height: 44, flexShrink: 0 }}
       />
     </label>
   )

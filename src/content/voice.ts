@@ -81,7 +81,15 @@ export const BLUNDER_WAARSCHUWING = [
   'Pas op, daar kan hij hem slaan.',
 ] as const
 
-export const SCHAAK = ['Schaak! Je koning wordt aangevallen.'] as const
+export const SCHAAK_TEGEN_JOU = [
+  'Schaak! Je koning wordt aangevallen.',
+  'Pas op, schaak! Los het eerst op.',
+] as const
+
+export const SCHAAK_VAN_JOU = [
+  'Schaak! Jij valt zijn koning aan.',
+  'Mooi, schaak! Nu moet hij wat.',
+] as const
 export const MAT_VOOR_JOU = ['Mat! De koning kan nergens meer heen.'] as const
 
 /** Wordt gebruikt als er geen specifieke fout-tip in de opgave staat. */

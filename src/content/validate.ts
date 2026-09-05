@@ -52,6 +52,16 @@ export function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
         const verwacht = tapAntwoord(parseBoard(o.fen), o.bedoeling)
         const verschil = vergelijk(o.correct, verwacht)
         if (verschil) fout(`het antwoord klopt niet met de stelling: ${verschil}`)
+        // Tweede motor erbij halen: zie schaakVolgensRegels.
+        if (o.bedoeling.soort === 'schaak' || o.bedoeling.soort === 'geenSchaak') {
+          const hoort = o.bedoeling.soort === 'schaak'
+          for (const sq of o.correct) {
+            const volgensRegels = schaakVolgensRegels(o.fen, sq)
+            if (volgensRegels !== null && volgensRegels !== hoort) {
+              fout(`chess.js zegt iets anders over ${sq}: schaak=${volgensRegels}`)
+            }
+          }
+        }
       }
       break
     }
@@ -147,6 +157,27 @@ function tapAntwoord(board: BoardMap, bedoeling: NonNullable<Extract<Exercise, {
         .map(([sq]) => sq)
     case 'bedreigd':
       return bedreigdeStukken(board, bedoeling.kleur)
+    case 'buurvelden': {
+      const f = 'abcdefgh'.indexOf(bedoeling.van[0])
+      const r = Number(bedoeling.van[1])
+      const rondom: Square[] = []
+      for (const df of [-1, 0, 1]) {
+        for (const dr of [-1, 0, 1]) {
+          if (!df && !dr) continue
+          const nf = f + df
+          const nr = r + dr
+          if (nf < 0 || nf > 7 || nr < 1 || nr > 8) continue
+          rondom.push(`${'abcdefgh'[nf]}${nr}`)
+        }
+      }
+      const filter = bedoeling.filter ?? 'alles'
+      return rondom.filter((sq) => {
+        const stuk = board[sq]
+        if (filter === 'bezet') return Boolean(stuk) && (!bedoeling.kleur || stuk.color === bedoeling.kleur)
+        if (filter === 'leeg') return !stuk
+        return true
+      })
+    }
     case 'schaak':
     case 'geenSchaak': {
       const koningen = stukken.filter(([, p]) => p.type === 'k')
@@ -157,6 +188,28 @@ function tapAntwoord(board: BoardMap, bedoeling: NonNullable<Extract<Exercise, {
         })
         .map(([sq]) => sq)
     }
+  }
+}
+
+/**
+ * Kruiscontrole op schaak: dezelfde vraag nog eens, maar dan door chess.js.
+ *
+ * tapAntwoord rekent meetkundig, en die motor kent geen beurt en geen legaliteit — een
+ * stelling waarin beide koningen schaak staan komt er ongehinderd doorheen. Dit is de
+ * enige plek in de contentcontrole waar de twee motoren hetzelfde moeten zeggen; zeggen
+ * ze iets anders, dan deugt de stelling niet en niet het antwoord.
+ */
+function schaakVolgensRegels(fen: string, veld: Square): boolean | null {
+  const kleur = parseBoard(fen)[veld]?.color
+  if (!kleur) return null
+  try {
+    // De koning die we onderzoeken aan zet zetten: inCheck geldt altijd voor de beurt.
+    const game = new Game(`${fen.split(' ')[0]} ${kleur} - - 0 1`)
+    return game.inCheck
+  } catch {
+    // chess.js weigert de stelling (geen twee koningen, pion op de eindrij, ...).
+    // Dat is zelf een bevinding, maar niet eentje die deze functie kan melden.
+    return null
   }
 }
 
@@ -233,6 +286,34 @@ export function controleerContent(): Bevinding[] {
       if (lesIds.has(les.id)) uit.push({ waar: les.titel, probleem: `dubbele les-id ${les.id}` })
       lesIds.add(les.id)
       uit.push(...controleerLes(les, wereld))
+    }
+  }
+  return uit
+}
+
+/**
+ * Opgaven waarvan het antwoord met de hand is ingetypt.
+ *
+ * `bedoeling` is optioneel, en dat is met opzet: lang niet elk antwoord volgt uit de
+ * stelling. Maar zolang overslaan onzichtbaar is, glipt de volgende fout er net zo
+ * makkelijk doorheen als de negen die de contentcontrole bij wereld 0 tot en met 6
+ * vond. Dus tellen we ze, en zetten we het getal onder elke controle.
+ */
+export function nietNagerekend(): string[] {
+  const uit: string[] = []
+  for (const wereld of WERELDEN) {
+    for (const les of wereld.lessen) {
+      for (const [fase, lijst] of [
+        ['meedoen', les.meedoen],
+        ['zelf', les.zelf],
+        ['toets', les.toets],
+      ] as const) {
+        lijst.forEach((o, i) => {
+          if ((o.kind === 'tapSquares' || o.kind === 'move') && !o.bedoeling) {
+            uit.push(`${les.id}/${fase}[${i}] (${o.kind})`)
+          }
+        })
+      }
     }
   }
   return uit

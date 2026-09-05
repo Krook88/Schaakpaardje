@@ -30,7 +30,13 @@ import {
   tik,
   type OpgaveStand,
 } from './runner'
-import { useInstellingen, useProfielStore, useVoortgang, wereldIsAf } from '@/progress/store'
+import {
+  useInstellingen,
+  useProfielStore,
+  useToestandGeladen,
+  useVoortgang,
+  wereldIsAf,
+} from '@/progress/store'
 import styles from './LessonPlayer.module.css'
 
 type Fase = 'kijken' | 'meedoen' | 'zelf' | 'toets' | 'beloning'
@@ -53,6 +59,9 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   const [stemming, setStemming] = useState<PipStemming>('blij')
   const [hintVelden, setHintVelden] = useState<Square[]>([])
   const [shake, setShake] = useState<Square | null>(null)
+  /** Welke quizknop net fout was, en welke net goed. Alleen om het te laten zien. */
+  const [quizFout, setQuizFout] = useState<number | null>(null)
+  const [quizGoed, setQuizGoed] = useState<number | null>(null)
   const [toetsFouten, setToetsFouten] = useState(0)
   const [toetsHints, setToetsHints] = useState(0)
   const [sterren, setSterren] = useState<0 | 1 | 2 | 3>(0)
@@ -61,18 +70,30 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   const geefSticker = useProfielStore((s) => s.geefSticker)
   const instellingen = useInstellingen()
   const voortgang = useVoortgang()
+  const geladen = useToestandGeladen()
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
   const later = useCallback((fn: () => void, ms: number) => {
-    timers.current.push(setTimeout(fn, ms))
+    // Afgelopen timers eruit: anders groeit deze lijst een hele les lang door.
+    const id = setTimeout(() => {
+      timers.current = timers.current.filter((t) => t !== id)
+      fn()
+    }, ms)
+    timers.current.push(id)
+  }, [])
+
+  /** Alle geplande doorschakelingen afbreken. */
+  const stopTimers = useCallback(() => {
+    timers.current.forEach(clearTimeout)
+    timers.current = []
   }, [])
 
   useEffect(
     () => () => {
-      timers.current.forEach(clearTimeout)
+      stopTimers()
       stopSpeaking()
     },
-    [],
+    [stopTimers],
   )
 
   const opgaven = useMemo(() => {
@@ -110,18 +131,30 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
       const behaald = sterrenVoor(toetsFouten, toetsHints)
       setSterren(behaald)
       setFase('beloning')
-      bewaarLes(les.id, { sterren: behaald, pogingen: toetsFouten, hints: toetsHints })
+      bewaarLes(les.id, { sterren: behaald, fouten: toetsFouten, hints: toetsHints })
       if (behaald === 3) geefSticker(`${les.id}`)
       sfx.diploma()
       setStemming('trots')
-      setZin(kies(behaald === 3 ? STER3 : behaald === 2 ? STER2 : STER1, 'sterren'))
+      // De zin één keer kiezen, hier. Stond dit in de render, dan koos Pip bij elke
+      // hertekening opnieuw en begon hij spontaan een andere zin uit te spreken.
+      const wereldKlaar = wereldIsAf(wereld.id, {
+        ...voortgang,
+        [les.id]: { sterren: behaald, fouten: toetsFouten, hints: toetsHints, laatst: '' },
+      })
+      setZin(
+        wereldKlaar
+          ? kies(WERELD_AF, 'wereld')
+          : kies(behaald === 3 ? STER3 : behaald === 2 ? STER2 : STER1, 'sterren'),
+      )
       return
     }
     startFase(volgende)
-  }, [fase, toetsFouten, toetsHints, bewaarLes, geefSticker, les.id, startFase])
+  }, [fase, toetsFouten, toetsHints, bewaarLes, geefSticker, les.id, startFase, voortgang, wereld.id])
 
   const volgendeOpgave = useCallback(() => {
     setHintVelden([])
+    setQuizFout(null)
+    setQuizGoed(null)
     if (opgaveIndex + 1 < opgaven.length) {
       const nieuw = opgaven[opgaveIndex + 1]
       setOpgaveIndex(opgaveIndex + 1)
@@ -168,7 +201,10 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
           reageer(true, true)
           break
         case 'fout': {
-          setShake(veld)
+          // Even op null zetten, anders ziet het bord dezelfde waarde en schudt het niet
+          // opnieuw als het kind twee keer hetzelfde verkeerde veld aantikt.
+          setShake(null)
+          setTimeout(() => setShake(veld), 0)
           const tip = 'foutTip' in r.stand.opgave ? r.stand.opgave.foutTip : undefined
           reageer(false, false, tip)
           if (fase === 'toets') setToetsFouten((n) => n + 1)
@@ -197,8 +233,13 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
       if (!stand) return
       const r = antwoordQuiz(stand, index)
       setStand(r.stand)
-      if (r.goed) reageer(true, true)
-      else {
+      if (r.goed) {
+        setQuizGoed(index)
+        setQuizFout(null)
+        reageer(true, true)
+      } else {
+        setQuizFout(null)
+        setTimeout(() => setQuizFout(index), 0)
         const tip = 'foutTip' in r.stand.opgave ? r.stand.opgave.foutTip : undefined
         reageer(false, false, tip)
         if (fase === 'toets') setToetsFouten((n) => n + 1)
@@ -234,6 +275,16 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
 
   /* ---------- schermen ---------- */
 
+  // Het lesscherm leest de instellingen (coördinaten, geluid) uit de opgeslagen
+  // toestand; wachten tot die er is, scheelt een omklappend scherm bij het openen.
+  if (!geladen) {
+    return (
+      <div className="page">
+        <Kop titel={les.titel} terug="/kaart/" />
+      </div>
+    )
+  }
+
   if (fase === 'kijken') {
     const laatste = vertelIndex >= les.vertel.length - 1
     return (
@@ -251,7 +302,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
               />
             </div>
           )}
-          <div className="row" style={{ justifyContent: 'space-between' }}>
+          <div className={`row ${styles.kolom}`} style={{ justifyContent: 'space-between' }}>
             <span className="muted">
               {vertelIndex + 1} van {les.vertel.length}
             </span>
@@ -273,16 +324,18 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
 
   if (fase === 'beloning') {
     const volgende = volgendeLes(les.id)
-    const wereldKlaar = wereldIsAf(wereld.id, { ...voortgang, [les.id]: { sterren, pogingen: 0, hints: 0, laatst: '' } })
+    const wereldKlaar = wereldIsAf(wereld.id, { ...voortgang, [les.id]: { sterren, fouten: 0, hints: 0, laatst: '' } })
     return (
       <div className="page">
         <Kop titel="Klaar!" terug="/kaart/" />
         <div className="stack center">
-          <Pip zegt={wereldKlaar ? kies(WERELD_AF, 'wereld') : zin} stemming="trots" />
+          <Pip zegt={zin} stemming="trots" />
           <div className="card stack center">
             <Sterren aantal={sterren} groot />
             <h2>{les.titel}</h2>
-            <p className="muted">{les.doel}</p>
+            {/* Niet les.doel: dat is de zin voor de ouder ("Je kind ziet dat...") en
+                die stond hier letterlijk, over het kind gepraat tegen het kind. */}
+            <p>{les.geleerd}</p>
             {sterren >= 3 && <p>🏅 Sticker verdiend!</p>}
             {wereldKlaar && (
               <p>
@@ -315,6 +368,8 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
       <div className="stack">
         <Pip zegt={zin} stemming={stemming} klein />
 
+        {/* Bij één opgave zei die ene losse stip niets; dan laten we hem weg. */}
+        {opgaven.length > 1 && (
         <div className={styles.voortgang} aria-label={`Opgave ${opgaveIndex + 1} van ${opgaven.length}`}>
           {opgaven.map((_, i) => (
             <span
@@ -326,6 +381,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
             />
           ))}
         </div>
+        )}
 
         {opgave.kind === 'quiz' ? (
           <div className={styles.quiz}>
@@ -333,7 +389,9 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
               <button
                 key={optie.label}
                 type="button"
-                className={`btn btn--big ${styles.quizKnop}`}
+                className={`btn btn--big ${styles.quizKnop} ${
+                  quizGoed === i ? styles.quizJuist : quizFout === i ? styles.quizMis : ''
+                }`}
                 onClick={() => opQuiz(i)}
                 disabled={stand.klaar}
               >
@@ -356,10 +414,15 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
           </div>
         )}
 
-        <div className="row" style={{ justifyContent: 'space-between' }}>
-          <button type="button" className="btn" onClick={vraagHint} disabled={stand.klaar}>
-            💡 Help me even
-          </button>
+        <div className={`row ${styles.kolom}`} style={{ justifyContent: 'space-between' }}>
+          {opgave.kind !== 'quiz' && (
+            // Bij een quiz gaf hint() geen enkel veld terug: het kind zag niets
+            // gebeuren en raakte stilzwijgend een ster kwijt. Dan hoort de knop er
+            // niet te staan.
+            <button type="button" className="btn" onClick={vraagHint} disabled={stand.klaar}>
+              💡 Help me even
+            </button>
+          )}
           {totaalTeVinden > 0 && (
             <span className="muted" aria-live="polite">
               {stand.gevonden.length} van de {totaalTeVinden} gevonden
@@ -369,8 +432,14 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
             type="button"
             className="btn btn--ghost"
             onClick={() => {
+              // Eerst de geplande doorschakeling afbreken: zonder dat sprong de app
+              // 1300 ms later alsnog naar de volgende opgave.
+              stopTimers()
               setStand(startOpgave(opgave))
               setHintVelden([])
+              setShake(null)
+              setQuizFout(null)
+              setQuizGoed(null)
               setZin('vraag' in opgave ? opgave.vraag : '')
             }}
           >

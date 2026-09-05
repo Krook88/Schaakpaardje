@@ -19,6 +19,7 @@ export const wereld3: World = {
       wereldId: 'dame',
       titel: 'Recht én schuin',
       doel: 'Je kind ziet dat de dame de toren en de loper bij elkaar is.',
+      geleerd: 'Nu weet je waarom de dame het sterkste stuk is.',
       vertel: [
         'Dit is de dame. Zij is het sterkste stuk van het bord.',
         'Weet je waarom? Ze kan alles wat de toren kan: kaarsrecht.',
@@ -73,6 +74,7 @@ export const wereld3: World = {
       wereldId: 'dame',
       titel: 'De dame stopt ook',
       doel: 'Je kind weet dat ook de dame niet door stukken heen kan.',
+      geleerd: 'Nu weet je dat ook de dame nergens doorheen kan.',
       vertel: [
         'De dame is sterk, maar toveren kan zij ook niet.',
         'Voor een eigen stuk stopt ze. Een stuk van de tegenstander mag ze pakken.',
@@ -131,6 +133,7 @@ export const wereld3: World = {
       wereldId: 'dame',
       titel: 'Pas op met je dame',
       doel: 'Je kind begrijpt dat de dame kostbaar is en niet zomaar te grabbel ligt.',
+      geleerd: 'Nu ben jij zuinig op je dame.',
       vertel: [
         'De dame is je duurste stuk. Wees er zuinig op.',
         'Als jij haar naast een stuk van de tegenstander zet, kan hij haar zomaar pakken.',

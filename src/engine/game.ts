@@ -13,6 +13,8 @@ export type GameMove = {
   promotion?: PieceType
   isCapture: boolean
   isCheck: boolean
+  /** En passant: schuin slaan op een leeg veld. De enige zet die dat kan. */
+  isEnPassant: boolean
 }
 
 export type GameStatus =
@@ -53,6 +55,7 @@ export class Game {
       promotion: m.promotion as PieceType | undefined,
       isCapture: Boolean(m.captured),
       isCheck: m.san.includes('+') || m.san.includes('#'),
+      isEnPassant: m.flags.includes('e'),
     }))
   }
 
@@ -73,6 +76,7 @@ export class Game {
         promotion: m.promotion as PieceType | undefined,
         isCapture: Boolean(m.captured),
         isCheck: this.chess.inCheck(),
+        isEnPassant: m.flags.includes('e'),
       }
     } catch {
       return null

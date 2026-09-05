@@ -1,11 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Kop } from '@/ui/Kop'
 import { Pip, type PipStemming } from '@/ui/Pip'
-import { Sterren } from '@/ui/Sterren'
 import { sfx } from '@/audio/sfx'
 import { kies } from '@/audio/voice'
 import { BIJNA, PRIJS, PRIJS_LAATSTE } from '@/content/voice'
@@ -33,18 +32,28 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
   const [hintVelden, setHintVelden] = useState<Square[]>([])
   const [shake, setShake] = useState<Square | null>(null)
   const [gehaald, setGehaald] = useState(0)
+  // Eén timer, en die ruimen we op. Zonder ref gooide "Ander rondje" binnen 1400 ms
+  // na een gehaald rondje het verse rondje meteen weer weg.
+  const doorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const nieuwRondje = useCallback(
     (volgendNiveau: number) => {
+      if (doorTimer.current) clearTimeout(doorTimer.current)
+      doorTimer.current = null
       setNiveau(volgendNiveau)
       const opgave = spel.maakOpgave(volgendNiveau)
       setStand(startOpgave(opgave))
       setZin('vraag' in opgave ? opgave.vraag : spel.uitleg)
       setStemming('denkt')
       setHintVelden([])
+      setShake(null)
     },
     [spel],
   )
+
+  useEffect(() => () => {
+    if (doorTimer.current) clearTimeout(doorTimer.current)
+  }, [])
 
   useEffect(() => {
     const opgave = spel.maakOpgave(1)
@@ -79,12 +88,15 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
           setZin(kies(PRIJS_LAATSTE, 'prijs'))
           setStemming('trots')
           const volgend = Math.min(niveau + 1, NIVEAUS)
-          setTimeout(() => nieuwRondje(niveau >= NIVEAUS ? NIVEAUS : volgend), 1400)
+          doorTimer.current = setTimeout(() => nieuwRondje(niveau >= NIVEAUS ? NIVEAUS : volgend), 1400)
           break
         }
         case 'fout':
           if (instellingen.effecten) sfx.fout()
-          setShake(veld)
+          // Eerst leegmaken: anders ziet Board dezelfde waarde en schudt het bord bij
+          // twee keer dezelfde misser maar één keer.
+          setShake(null)
+          setTimeout(() => setShake(veld), 0)
           setZin(kies(BIJNA, 'bijna'))
           setStemming('moedigt')
           break
@@ -117,12 +129,10 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
           <span className="muted">
             Niveau {niveau} van {NIVEAUS}
           </span>
-          <span aria-label={`${gehaald} rondjes gehaald`}>
-            <Sterren aantal={Math.min(3, gehaald)} /> {gehaald}
-          </span>
+          <span aria-label={`${gehaald} rondjes gehaald`}>⭐ {gehaald} gehaald</span>
         </div>
 
-        <div style={{ maxWidth: 460, margin: '0 auto', width: '100%' }}>
+        <div style={{ maxWidth: 'min(100%, 70vh, 620px)', margin: '0 auto', width: '100%' }}>
           <Board
             position={stand.board}
             selected={stand.geselecteerd}

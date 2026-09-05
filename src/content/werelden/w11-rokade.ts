@@ -24,6 +24,7 @@ export const wereld11: World = {
       wereldId: 'rokade',
       titel: 'Twee stukken tegelijk',
       doel: 'Je kind kan rokeren en weet waarom je het doet.',
+      geleerd: 'Nu kun jij rokeren: twee stukken in één zet.',
       vertel: [
         'Nu een hele bijzondere zet: de rokade. Het is de enige zet met twee stukken tegelijk.',
         'Je koning stapt twee velden opzij, en de toren springt er meteen overheen.',
@@ -91,6 +92,7 @@ export const wereld11: World = {
       wereldId: 'rokade',
       titel: 'Kort en lang',
       doel: 'Je kind kent het verschil tussen de korte en de lange rokade.',
+      geleerd: 'Nu ken je de korte en de lange rokade.',
       vertel: [
         'Er zijn twee rokades. Aan de kant van de koning is het maar een klein stukje: dat is de korte.',
         'Aan de kant van de dame is het verder: dat is de lange rokade.',
@@ -160,6 +162,7 @@ export const wereld11: World = {
       wereldId: 'rokade',
       titel: 'De vier voorwaarden',
       doel: 'Je kind weet wanneer rokeren niet mag.',
+      geleerd: 'Nu weet je precies wanneer rokeren niet mag.',
       vertel: [
         'Rokeren mag niet altijd. Er zijn vier regels, en je moet ze alle vier onthouden.',
         'Eén: je koning en die toren mogen nog niet gezet hebben. Twee: ertussen moet alles leeg zijn.',
@@ -197,10 +200,14 @@ export const wereld11: World = {
           foutTip: 'Alleen de koning mag niet door vuur. Voor de toren geldt dat niet.',
         },
         {
+          // "Mag het hier?" suggereerde dat er iets verboden was, terwijl beide
+          // rokades gewoon mogen — en elk ander antwoord dan rokeren wordt afgekeurd,
+          // dus "nee" kon het kind niet eens geven.
           kind: 'regelZet',
           fen: '4k2r/8/8/8/8/8/8/R3K2R w KQk - 0 1',
           eis: 'rokeer',
-          vraag: 'Mag het hier? Probeer maar.',
+          vraag: 'Zijn toren staat op jouw toren te loeren. En toch mag het. Rokeer maar.',
+          foutTip: 'De toren mag best aangevallen worden. Het gaat erom waar je koning langs komt.',
         },
       ],
       toets: [

@@ -20,6 +20,7 @@ export const wereld5: World = {
       wereldId: 'koning',
       titel: 'Eén stapje tegelijk',
       doel: 'Je kind weet dat de koning één veld per zet gaat, alle kanten op.',
+      geleerd: 'Nu weet je hoe de koning loopt: één stapje, alle kanten op.',
       vertel: [
         'Dit is de koning. Hij is de belangrijkste van allemaal.',
         'Maar hij is ook een beetje traag: één stapje per zet.',
@@ -73,6 +74,7 @@ export const wereld5: World = {
       wereldId: 'koning',
       titel: 'De koning pakt ook',
       doel: 'Je kind slaat met de koning een stuk dat ernaast staat.',
+      geleerd: 'Nu pakt jouw koning zelf een stuk.',
       vertel: [
         'De koning is niet bang. Staat er een stuk vlak naast hem? Dan pakt hij het.',
         'Wel alleen op de velden waar hij bij kan. Dus vlak ernaast.',
@@ -127,6 +129,7 @@ export const wereld5: World = {
       wereldId: 'koning',
       titel: 'Koningen blijven van elkaar af',
       doel: 'Je kind weet dat twee koningen nooit naast elkaar mogen staan.',
+      geleerd: 'Nu weet je dat twee koningen altijd een veld tussen zich houden.',
       vertel: [
         'Nog één regel over de koning. Een grappige.',
         'Twee koningen mogen nooit naast elkaar staan. Er blijft altijd een veld tussen.',

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { alleZinnen, controleerContent, controleerOpgave } from '@/content/validate'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
+import { Game } from '@/engine/game'
+import { parseBoard } from '@/engine/board'
+import { goedeZetten } from '@/lesson/runner'
 
 describe('de content', () => {
   it('bevat geen enkele fout', () => {
@@ -98,5 +101,82 @@ describe('de contentcontrole vangt verkeerde antwoorden', () => {
         vraag: 'test',
       }),
     ).toEqual([])
+  })
+})
+
+/**
+ * Vangrails uit de tweede review. Elke test hier hoort bij een bevinding die de
+ * contentcontrole zelf niet zag — niet omdat hij een veld verkeerd narekende, maar
+ * omdat er helemaal geen controle op stond.
+ */
+describe('vangrails uit de tweede review', () => {
+  it('zet geen enkele stelling vanaf wereld 9 de speler zelf schaak', () => {
+    const fout: string[] = []
+    for (const les of ALLE_LESSEN) {
+      const wereld = WERELDEN.find((w) => w.id === les.wereldId)!
+      if (wereld.nummer < 9) continue
+      for (const opgave of [...les.meedoen, ...les.zelf, ...les.toets]) {
+        // Alleen de zetopgaven: bij een tik-opgave ("welke koning staat schaak?") is
+        // schaak juist het onderwerp, en de tik-stellingen zijn meetkundig — daar
+        // staat lang niet altijd een koning op.
+        if (opgave.kind !== 'regelZet') continue
+        const game = new Game(opgave.fen)
+        const status = game.status()
+        // uitSchaak is de ene eis die schaak juist nódig heeft.
+        if (!status.over && status.check && opgave.eis !== 'uitSchaak') {
+          fout.push(`${les.id}: wit staat schaak in ${opgave.fen}`)
+        }
+      }
+    }
+    expect(fout).toEqual([])
+  })
+
+  it('zet nergens een pion op rij 1 of rij 8', () => {
+    const fout: string[] = []
+    for (const les of ALLE_LESSEN) {
+      for (const opgave of [...les.meedoen, ...les.zelf, ...les.toets]) {
+        const fen = 'fen' in opgave ? opgave.fen : les.vertelFen
+        if (!fen) continue
+        const board = parseBoard(fen.split(' ')[0])
+        for (const [sq, stuk] of Object.entries(board)) {
+          if (stuk.type === 'p' && (sq[1] === '1' || sq[1] === '8')) {
+            fout.push(`${les.id}: pion op ${sq}`)
+          }
+        }
+      }
+    }
+    expect(fout).toEqual([])
+  })
+
+  it('vraagt vóór wereld 10 nergens naar mat', () => {
+    const fout: string[] = []
+    for (const les of ALLE_LESSEN) {
+      const wereld = WERELDEN.find((w) => w.id === les.wereldId)!
+      if (wereld.nummer >= 10) continue
+      for (const opgave of [...les.meedoen, ...les.zelf, ...les.toets]) {
+        if (opgave.kind !== 'quiz') continue
+        // Als afleider mag het woord vallen — dat noemt iets zonder het te leren.
+        // Wat niet mag is ernaar vrágen of het als goed antwoord rekenen.
+        const goed = opgave.opties.find((o) => o.goed)?.label ?? ''
+        const tekst = `${opgave.vraag} ${goed}`.toLowerCase()
+        if (/\bmat\b|schaakmat/.test(tekst)) fout.push(`${les.id}: "${opgave.vraag}"`)
+      }
+    }
+    expect(fout).toEqual([])
+  })
+
+  it('beloont bij geefSchaak geen zet die het stuk weggeeft', () => {
+    // Dd8+ pakt niets en wordt door de koning opgegeten; Dd1+ is veilig.
+    const game = new Game('4k3/8/8/8/8/8/3Q4/6K1 w - - 0 1')
+    const goed = goedeZetten(game, 'geefSchaak').map((z) => z.san)
+    expect(goed).toContain('Qe2+')
+    expect(goed).not.toContain('Qd8+')
+    expect(goed).not.toContain('Qd7+')
+  })
+
+  it('laat en passant alleen de en-passantzet door', () => {
+    const game = new Game('4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1')
+    const goed = goedeZetten(game, 'enPassant')
+    expect(goed.map((z) => z.san)).toEqual(['exd6'])
   })
 })

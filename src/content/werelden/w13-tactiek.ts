@@ -24,6 +24,7 @@ export const wereld13: World = {
       wereldId: 'tactiek',
       titel: 'De dubbele aanval',
       doel: 'Je kind valt met één zet twee stukken tegelijk aan.',
+      geleerd: 'Nu val jij met één zet twee stukken tegelijk aan.',
       vertel: [
         'Nu een echte truc. Wat als je met één zet twee stukken tegelijk aanvalt?',
         'Hij kan er maar eentje redden. De andere is voor jou.',
@@ -44,7 +45,7 @@ export const wereld13: World = {
       zelf: [
         {
           kind: 'move',
-          fen: '1N5k/8/8/r3r3/8/8/8/K7',
+          fen: '1N5k/8/8/r3r3/8/8/8/6K1',
           from: 'b8',
           goed: ['c6'],
           vraag: 'Val met je paard beide torens tegelijk aan.',
@@ -87,6 +88,7 @@ export const wereld13: World = {
       wereldId: 'tactiek',
       titel: 'De penning',
       doel: 'Je kind zet een stuk vast doordat er iets kostbaars achter staat.',
+      geleerd: 'Nu zet jij een stuk vast met een penning.',
       vertel: [
         'Nog een truc: de penning. Je zet een stuk vast zodat het niet meer weg kan.',
         'Hoe? Je zorgt dat er iets duurders achter staat. Zijn koning bijvoorbeeld.',

@@ -11,6 +11,8 @@ import {
   allSquares,
   applyMove,
   controleVelden,
+  fileIndex,
+  rankOf,
   parseBoard,
   pieceMoves,
   PIECE_VALUE,
@@ -56,12 +58,61 @@ function willekeurigVeld(random: () => number, behalve: Square[] = []): Square {
   return velden[Math.floor(random() * velden.length)]
 }
 
+/**
+ * Een veld waar een pion kán staan: rij 2 tot en met 7.
+ * Een pion op rij 1 of 8 bestaat niet — hij was daar allang gepromoveerd. Uitgerekend
+ * in 'laatste-pion', het spel dat over promotie gaat, stond er anders soms een witte
+ * pion ongepromoveerd op a8 terwijl Pip zegt dat dat niet kan.
+ */
+function willekeurigPionVeld(random: () => number, behalve: Square[] = []): Square {
+  const velden = allSquares().filter(
+    (sq) => !behalve.includes(sq) && Number(sq[1]) > 1 && Number(sq[1]) < 8,
+  )
+  return velden[Math.floor(random() * velden.length)]
+}
+
+/** Staat er ergens een pion op rij 1 of 8? Dan deugt de stelling niet. */
+function pionOpEindrij(board: BoardMap): boolean {
+  return Object.entries(board).some(
+    ([sq, p]) => p.type === 'p' && (Number(sq[1]) === 1 || Number(sq[1]) === 8),
+  )
+}
+
+/**
+ * Kan deze stelling écht op een bord staan?
+ *
+ * De meetkundige motor rekent alleen waar een stuk heen mag; hij weet niet dat
+ * koningen niet naast elkaar mogen staan en dat je niet aan zet bent terwijl de ander
+ * schaak staat. Alles wat een koning bevat gaat daarom eerst langs chess.js.
+ */
+function stellingKlopt(board: BoardMap): boolean {
+  if (pionOpEindrij(board)) return false
+  try {
+    const game = new Game(`${toPlacement(board)} w - - 0 1`)
+    const status = game.status()
+    return !status.over && !status.check
+  } catch {
+    return false
+  }
+}
+
 function bordNaarFen(board: BoardMap): string {
   return toPlacement(board)
 }
 
 function zet(board: BoardMap, sq: Square, type: PieceType, kleur: 'w' | 'b'): BoardMap {
   return { ...board, [sq]: { type, color: kleur } }
+}
+
+/**
+ * Geeft dit schaak het stuk niet weg? We laten de lesmotor het narekenen: die keurt
+ * bij 'geefSchaak' alleen veilige schaakzetten goed, tenzij er geen enkele bestaat.
+ * Door hier per zet te vragen, zien we dat verschil wél.
+ */
+function veiligSchaak(game: Game, zet: { from: Square; to: Square }): boolean {
+  const na = game.clone()
+  if (!na.move(zet.from, zet.to)) return false
+  return !na.legalMoves().some((z) => z.to === zet.to)
 }
 
 /** Bouwt een keten van slagzetten door vanaf het stuk vooruit te lopen. */
@@ -78,7 +129,9 @@ function maakSlagketen(
     const gebruikt: Square[] = [start]
     let gelukt = true
     for (let i = 0; i < aantal; i++) {
-      const opties = pieceMoves(board, hier).all.filter((sq) => !gebruikt.includes(sq))
+      const opties = pieceMoves(board, hier).all.filter(
+        (sq) => !gebruikt.includes(sq) && Number(sq[1]) > 1 && Number(sq[1]) < 8,
+      )
       if (!opties.length) {
         gelukt = false
         break
@@ -108,7 +161,7 @@ function maakParcours(
     let board = zet({}, start, type, 'w')
     const bezet: Square[] = [start]
     for (let i = 0; i < blokkades; i++) {
-      const sq = willekeurigVeld(random, bezet)
+      const sq = willekeurigPionVeld(random, bezet)
       board = zet(board, sq, 'p', 'w')
       bezet.push(sq)
     }
@@ -128,7 +181,10 @@ export const MINISPELLEN: Minispel[] = [
     emoji: '🔎',
     uitleg: 'Tik het stuk aan dat Pip noemt.',
     maakOpgave(niveau, random = Math.random) {
-      const soorten: PieceType[] = ['r', 'b', 'n', 'q', 'k', 'p']
+      // Alleen toren, dame en paard: dat zijn de stukken die wereld 0 bij naam noemt
+      // (weide-3). Loper, koning en pion komen pas in wereld 2, 5 en 6, en dit spel
+      // hoort bij wereld 0 — vanaf drie jaar.
+      const soorten: PieceType[] = ['r', 'q', 'n']
       const aantal = Math.min(2 + niveau, 7)
       let board: BoardMap = {}
       const bezet: Square[] = []
@@ -142,7 +198,7 @@ export const MINISPELLEN: Minispel[] = [
         .filter(([, p]) => p.type === gezocht)
         .map(([sq]) => sq)
       const namen: Record<PieceType, string> = {
-        r: 'torens', b: 'lopers', n: 'paarden', q: "dames", k: 'koningen', p: 'pionnen',
+        r: 'torens', b: 'lopers', n: 'paarden', q: 'dames', k: 'koningen', p: 'pionnen',
       }
       return {
         kind: 'tapSquares',
@@ -208,7 +264,7 @@ export const MINISPELLEN: Minispel[] = [
         fen,
         from,
         elkeZetRaak: true,
-        vraag: 'Sla alle wortels op. Elke sprong moet raak zijn!',
+        vraag: 'Sla alle zwarte pionnen op. Elke sprong moet raak zijn!',
       }
     },
   },
@@ -241,8 +297,8 @@ export const MINISPELLEN: Minispel[] = [
       let board: BoardMap = zet({}, square(lijn, 2), 'p', 'w')
       const bezet = [square(lijn, 2)]
       for (let i = 0; i < niveau; i++) {
-        const sq = willekeurigVeld(random, [...bezet, square(lijn, 3), square(lijn, 4)])
-        if (Number(sq[1]) >= 7 || Number(sq[1]) <= 2) continue
+        const sq = willekeurigPionVeld(random, [...bezet, square(lijn, 3), square(lijn, 4)])
+        if (Number(sq[1]) >= 7) continue
         board = zet(board, sq, 'p', 'w')
         bezet.push(sq)
       }
@@ -273,7 +329,9 @@ export const MINISPELLEN: Minispel[] = [
           const vrij = pieceMoves(board, start).quiet
           if (!vrij.length) break
           const veld = vrij[Math.floor(random() * vrij.length)]
-          board = zet(board, veld, buit[Math.floor(random() * buit.length)], 'b')
+          const soort = buit[Math.floor(random() * buit.length)]
+          if (soort === 'p' && (Number(veld[1]) === 1 || Number(veld[1]) === 8)) continue
+          board = zet(board, veld, soort, 'b')
         }
         const slag = pieceMoves(board, start).captures
         if (slag.length < 2) continue
@@ -281,6 +339,14 @@ export const MINISPELLEN: Minispel[] = [
         const hoogste = Math.max(...waardes)
         // Alleen bruikbaar als er echt iets te kiezen valt.
         if (waardes.every((w) => w === hoogste)) continue
+        // En alleen als het duurste stuk ook echt gratis is. Stond er een tweede
+        // zwart stuk achter, dan won het "goede" antwoord een toren en verloor het de
+        // dame — terwijl waarde-3, de volgende les in deze wereld, letterlijk leert
+        // dat je eerst kijkt of hij kan terugslaan.
+        const gedekt = slag.some(
+          (sq) => PIECE_VALUE[board[sq].type] === hoogste && aanvallersVan(applyMove(board, start, sq), sq, 'b').length,
+        )
+        if (gedekt) continue
         return {
           kind: 'move',
           fen: bordNaarFen(board),
@@ -316,6 +382,7 @@ export const MINISPELLEN: Minispel[] = [
         const type = vijand[Math.floor(random() * vijand.length)]
         const kandidaten = allSquares().filter((sq) => {
           if (sq === mijnVeld) return false
+          if (type === 'p' && (Number(sq[1]) === 1 || Number(sq[1]) === 8)) return false
           const proef = zet(board, sq, type, 'b')
           return controleVelden(proef, sq).includes(mijnVeld)
         })
@@ -324,7 +391,9 @@ export const MINISPELLEN: Minispel[] = [
 
         // Bij een hoger niveau staat er nog een stuk in de weg.
         if (niveau >= 4) {
-          const vrij = pieceMoves(board, mijnVeld).quiet
+          const vrij = pieceMoves(board, mijnVeld).quiet.filter(
+            (sq) => Number(sq[1]) > 1 && Number(sq[1]) < 8,
+          )
           if (vrij.length > 3) board = zet(board, vrij[Math.floor(random() * vrij.length)], 'p', 'w')
         }
 
@@ -384,9 +453,12 @@ export const MINISPELLEN: Minispel[] = [
           const game = new Game(fen)
           const status = game.status()
           if (status.over || status.check) continue
+          // goedeZetten laat bij 'geefSchaak' alleen schaakzetten door die het stuk
+          // niet weggeven — behalve als die er niet zijn, dan geeft hij alles terug.
+          // Zo'n stelling willen we hier juist niet, dus we rekenen het zelf na.
           const goed = goedeZetten(game, 'geefSchaak')
-          // Minstens één schaak, maar niet zó veel dat het vanzelf goed gaat.
           if (!goed.length || goed.length > 4) continue
+          if (!goed.every((z) => veiligSchaak(game, z))) continue
           return {
             kind: 'regelZet',
             fen,
@@ -413,9 +485,22 @@ export const MINISPELLEN: Minispel[] = [
     uitleg: 'Zet mat in één zet.',
     maakOpgave(niveau, random = Math.random) {
       const hulp: PieceType[] = niveau <= 3 ? ['q'] : ['q', 'r']
+      // Twee filters vóór chess.js, want die is hier de dure stap. Mat met alleen
+      // koning en dame (of toren) kan bijna alleen aan de rand, en alleen als je eigen
+      // koning meehelpt. Willekeurig prikken kostte 600 pogingen en ruim een halve
+      // seconde per opgave — dat is op een tablet een bevroren scherm.
+      const rand = allSquares().filter(
+        (sq) => sq[0] === 'a' || sq[0] === 'h' || sq[1] === '1' || sq[1] === '8',
+      )
       for (let poging = 0; poging < 600; poging++) {
-        const zwarteKoning = willekeurigVeld(random)
-        const witteKoning = willekeurigVeld(random, [zwarteKoning])
+        const zwarteKoning = rand[Math.floor(random() * rand.length)]
+        const dichtbij = allSquares().filter(
+          (sq) =>
+            sq !== zwarteKoning &&
+            Math.abs(fileIndex(sq) - fileIndex(zwarteKoning)) <= 2 &&
+            Math.abs(rankOf(sq) - rankOf(zwarteKoning)) <= 2,
+        )
+        const witteKoning = dichtbij[Math.floor(random() * dichtbij.length)]
         if (controleVelden(zet({}, witteKoning, 'k', 'w'), witteKoning).includes(zwarteKoning)) continue
         const soort = hulp[Math.floor(random() * hulp.length)]
         const veld = willekeurigVeld(random, [zwarteKoning, witteKoning])
@@ -540,6 +625,10 @@ export const MINISPELLEN: Minispel[] = [
           return raak.length >= 2 && !aanvallersVan(na, naar, 'b').length
         })
         if (vork.length !== 1) continue
+        // Anders dan schaak-alarm en mat-in-1-regen haalde dit spel zijn stelling
+        // nooit door chess.js: koningen naast elkaar, of wit dat een vork moet spelen
+        // terwijl het zelf schaak staat. Precies wat wereld 9 verbiedt.
+        if (!stellingKlopt(board)) continue
         return {
           kind: 'move',
           fen: bordNaarFen(board),
@@ -571,7 +660,7 @@ export const MINISPELLEN: Minispel[] = [
         const verboden = [start]
         for (let r = 3; r <= 8; r++) verboden.push(square(lijn, r))
         for (let i = 0; i < niveau; i++) {
-          const sq = willekeurigVeld(random, verboden)
+          const sq = willekeurigPionVeld(random, verboden)
           board = zet(board, sq, 'p', i % 2 === 0 ? 'b' : 'w')
           verboden.push(sq)
         }

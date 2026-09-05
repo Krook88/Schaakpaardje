@@ -5,6 +5,7 @@ import styles from './Board.module.css'
 import { GLYPH } from './pieces'
 import {
   FILES,
+  fileIndex,
   PIECE_NAME,
   isLightSquare,
   parseBoard,
@@ -101,6 +102,15 @@ export function Board({
   )
 
   const [shaking, setShaking] = useState<Square | null>(null)
+  /**
+   * Eén tabstop voor het hele bord.
+   *
+   * Elk veld was een losse knop in de tabvolgorde: 64 keer Tab om van het bord bij
+   * "Terugnemen" te komen, en na elke zet opnieuw. Dit is het gebruikelijke
+   * rasterpatroon — tab erin, pijltjes erbinnen — en het scheelt 63 tabstops zonder
+   * dat er iets verdwijnt.
+   */
+  const [focusVeld, setFocusVeld] = useState<Square | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
     if (!shake) return
@@ -118,6 +128,38 @@ export function Board({
   const linkse = files[0]
 
   const has = (list: Square[] | undefined, sq: Square) => Boolean(list?.includes(sq))
+
+  // Waar de tabstop staat: op het geselecteerde veld, anders op waar de focus laatst
+  // was, anders linksonder — zodat er altijd precies één is.
+  const tabVeld = selected ?? focusVeld ?? toSquare(linkse, onderste)
+
+  const verplaats = (sq: Square, dFile: number, dRank: number): Square | null => {
+    const file = fileIndex(sq)
+    const rank = Number(sq[1])
+    // De pijltjes volgen wat het kind ziet, niet de coördinaten: bij een omgedraaid
+    // bord is "naar rechts" de andere kant op.
+    const richting = orientation === 'w' ? 1 : -1
+    const nf = file + dFile * richting
+    const nr = rank + dRank * richting
+    if (nf < 0 || nf > 7 || nr < 1 || nr > 8) return null
+    return toSquare(nf, nr)
+  }
+
+  const opToets = (e: React.KeyboardEvent<HTMLButtonElement>, sq: Square) => {
+    const stap: Record<string, [number, number]> = {
+      ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1],
+    }
+    const richting = stap[e.key]
+    if (!richting) return
+    const doel = verplaats(sq, richting[0], richting[1])
+    if (!doel) return
+    e.preventDefault()
+    setFocusVeld(doel)
+    const knop = e.currentTarget.parentElement?.querySelector<HTMLButtonElement>(
+      `[data-square="${doel}"]`,
+    )
+    knop?.focus()
+  }
 
   return (
     <div className={styles.wrap}>
@@ -151,7 +193,13 @@ export function Board({
                   key={sq}
                   type="button"
                   className={classes.join(' ')}
-                  onClick={() => onSquare?.(sq)}
+                  onClick={() => {
+                    setFocusVeld(sq)
+                    onSquare?.(sq)
+                  }}
+                  onKeyDown={(e) => opToets(e, sq)}
+                  onFocus={() => setFocusVeld(sq)}
+                  tabIndex={sq === tabVeld ? 0 : -1}
                   disabled={disabled || !onSquare}
                   aria-label={`${sq}, ${naam}${isTarget ? ', hier kun je heen' : ''}`}
                   aria-pressed={selected === sq}
