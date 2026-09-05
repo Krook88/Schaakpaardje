@@ -12,7 +12,7 @@
 // De versie hóórt bij elke uitrol te veranderen: zolang hij gelijk blijft, ruimt het
 // activate-blok hieronder nooit iets op en blijven oude _next/static-brokken staan.
 // Vervang de datum bij een release (of laat het bouwscript het doen).
-const CACHE = 'schaakmaatje-2026-09-05'
+const CACHE = 'schaakmaatje-2026-09-05b'
 
 // Wat er sowieso in moet, ook als het kind alleen de voorpagina heeft gezien.
 const KERN = ['./', './manifest.webmanifest', './icon.svg']
