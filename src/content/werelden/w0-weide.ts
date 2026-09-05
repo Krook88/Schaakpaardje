@@ -34,7 +34,10 @@ export const wereld0: World = {
           fen: LEEG,
           correct: ['a1', 'c1', 'e1', 'g1'],
           vraag: 'Tik de vier donkere velden op de onderste rij aan.',
-          foutTip: 'Die is licht. De donkere zijn de groene.',
+          // Niet zeggen wát het kind aantikte: dat weet de content niet. Wie een
+          // donker veld op de verkeerde rij koos, kreeg hier te horen dat het licht
+          // was — en dat is gewoon onwaar.
+          foutTip: 'Zoek de groene velden, en alleen die op de onderste rij.',
         },
       ],
       zelf: [
@@ -64,7 +67,7 @@ export const wereld0: World = {
           fen: LEEG,
           correct: ['d5', 'e4'],
           vraag: 'En nu de twee lichte velden ernaast, in het midden.',
-          foutTip: 'Die is donker. De lichte zijn de zandkleurige.',
+          foutTip: 'Zoek de zandkleurige velden, en alleen die twee in het midden.',
         },
       ],
       themas: ['bord', 'veldkleur'],

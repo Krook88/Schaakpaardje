@@ -165,6 +165,20 @@ describe('vangrails uit de tweede review', () => {
     expect(fout).toEqual([])
   })
 
+  it('laat een foutTip niets beweren over het veld dat het kind aantikte', () => {
+    // Precies de tekst die op schaakmaatje.nl stond. Een kind dat een donker veld op
+    // de verkeerde rij aantikte, kreeg te horen dat het licht was.
+    const bevindingen = controleerOpgave('proef', {
+      kind: 'tapSquares',
+      fen: '8/8/8/8/8/8/8/8',
+      correct: ['a1', 'c1'],
+      vraag: 'Tik de donkere velden op de onderste rij aan.',
+      foutTip: 'Die is licht. De donkere zijn de groene.',
+    })
+    expect(bevindingen).toHaveLength(1)
+    expect(bevindingen[0].probleem).toContain('beweert iets over het aangetikte veld')
+  })
+
   it('beloont bij geefSchaak geen zet die het stuk weggeeft', () => {
     // Dd8+ pakt niets en wordt door de koning opgegeten; Dd1+ is veilig.
     const game = new Game('4k3/8/8/8/8/8/3Q4/6K1 w - - 0 1')

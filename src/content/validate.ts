@@ -48,6 +48,13 @@ export function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
     case 'tapSquares': {
       if (!o.correct.length) fout('geen goede velden opgegeven')
       for (const sq of o.correct) if (!geldigVeld(sq)) fout(`onbekend veld ${sq}`)
+      // Een foutTip mag niets beweren over het veld dat het kind aantikte: welk veld
+      // dat was weet de content niet. "Die is licht" klopt alleen als het kind
+      // toevallig een licht veld koos, en is anders ronduit onwaar — een kind leert
+      // dan dat een groen veld licht is. Beschrijf waar het naar op zoek moet.
+      if (o.foutTip && /\b(die|dat|deze)\s+(is|zijn)\s+\w/i.test(o.foutTip)) {
+        fout(`de foutTip beweert iets over het aangetikte veld: "${o.foutTip}"`)
+      }
       if (o.bedoeling) {
         const verwacht = tapAntwoord(parseBoard(o.fen), o.bedoeling)
         const verschil = vergelijk(o.correct, verwacht)
