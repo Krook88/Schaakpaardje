@@ -7,3 +7,5 @@ next-env.d.ts
 .DS_Store
 public/audio/*.mp3
 !public/audio/.gitkeep
+public/sfx/*.mp3
+!public/sfx/.gitkeep

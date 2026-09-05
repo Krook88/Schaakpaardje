@@ -12,7 +12,7 @@
 // De versie hóórt bij elke uitrol te veranderen: zolang hij gelijk blijft, ruimt het
 // activate-blok hieronder nooit iets op en blijven oude _next/static-brokken staan.
 // Vervang de datum bij een release (of laat het bouwscript het doen).
-const CACHE = 'schaakmaatje-2026-09-05b'
+const CACHE = 'schaakmaatje-2026-09-05c'
 
 // Wat er sowieso in moet, ook als het kind alleen de voorpagina heeft gezien.
 const KERN = ['./', './manifest.webmanifest', './icon.svg']
@@ -48,10 +48,13 @@ self.addEventListener('fetch', (event) => {
   // manifest blijft hangen, en dat Pip stilletjes terugvalt op de stem van het apparaat.
   // includes in plaats van startsWith: met een NEXT_PUBLIC_BASE_PATH staat de app in
   // een submap en begint het pad daarmee, niet met /audio/.
-  const isAudioManifest = url.pathname.endsWith('/audio/manifest.json')
+  const isAudioManifest =
+    url.pathname.endsWith('/audio/manifest.json') || url.pathname.endsWith('/sfx/manifest.json')
   const isBlijvend =
     !isAudioManifest &&
-    (url.pathname.includes('/_next/static/') || url.pathname.includes('/audio/'))
+    (url.pathname.includes('/_next/static/') ||
+      url.pathname.includes('/audio/') ||
+      url.pathname.includes('/sfx/'))
 
   if (isBlijvend) {
     event.respondWith(

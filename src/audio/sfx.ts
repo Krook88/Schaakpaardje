@@ -1,17 +1,58 @@
 'use client'
 
 /**
- * Bordgeluiden. Bewust gesynthetiseerd met de Web Audio API in plaats van
- * geluidsbestanden: nul kilobytes, werkt offline, en we kunnen de toonhoogte
- * afstemmen op wat er gebeurt. Bij de audio-oplevering kunnen hier echte
- * opnames voor in de plaats komen — de aanroepen blijven hetzelfde.
+ * Bordgeluiden.
+ *
+ * Twee lagen, in deze volgorde: staat er een opname in public/sfx/, dan speelt die.
+ * Zo niet, dan synthetiseert de Web Audio API hetzelfde geluid. Die synthese kost nul
+ * kilobytes en werkt altijd, maar klinkt als een rekenmachine uit 1985.
+ *
+ * Dezelfde afspraak als bij Pips stem, en om dezelfde reden: de app moet volledig
+ * werken zonder dat er ook maar één bestand is ingesproken of opgenomen, en beter
+ * worden zodra dat wel zo is. Je kunt dus ook een paar geluiden vervangen en de rest
+ * laten zoals hij is. Zie scripts/sfx-render.ts.
  */
 
 let ctx: AudioContext | null = null
 let aan = true
 
+/** Waar de app gehost wordt; zelfde afspraak als in voice.ts. */
+const BASIS = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+
+/** Welke geluiden er als opname bestaan. Leeg tot het manifest binnen is. */
+let opnames: Record<string, unknown> | null = null
+let manifestGeladen = false
+
+async function laadOpnames() {
+  if (manifestGeladen || typeof window === 'undefined') return
+  manifestGeladen = true
+  try {
+    const res = await fetch(`${BASIS}/sfx/manifest.json`, { cache: 'no-cache' })
+    if (res.ok) opnames = await res.json()
+  } catch {
+    opnames = null // niets opgenomen: de synthese doet het werk
+  }
+}
+
+/**
+ * Probeert de opname. Lukt dat niet, dan geeft hij false terug en valt de aanroeper
+ * terug op de synthese — een kind mag nooit in stilte staan omdat een bestand mist.
+ */
+function speelOpname(naam: string): boolean {
+  if (!aan || !opnames || !(naam in opnames) || typeof window === 'undefined') return false
+  try {
+    const audio = new Audio(`${BASIS}/sfx/${naam}.mp3`)
+    audio.volume = 0.7
+    void audio.play().catch(() => {})
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function setSfxEnabled(waarde: boolean) {
   aan = waarde
+  if (waarde) void laadOpnames()
 }
 
 function audioCtx(): AudioContext | null {
@@ -50,35 +91,30 @@ function speel(tonen: Toon[]) {
 }
 
 export const sfx = {
-  tik: () => speel([{ hz: 320, duur: 0.07, vorm: 'triangle', volume: 0.1 }]),
-  zet: () => speel([{ hz: 180, duur: 0.1, vorm: 'triangle' }]),
-  slaan: () => speel([{ hz: 140, duur: 0.16, vorm: 'sawtooth', volume: 0.12, glij: 70 }]),
-  goed: () =>
-    speel([
+  tik: () => speelOpname('tik') || speel([{ hz: 320, duur: 0.07, vorm: 'triangle', volume: 0.1 }]),
+  zet: () => speelOpname('zet') || speel([{ hz: 180, duur: 0.1, vorm: 'triangle' }]),
+  slaan: () => speelOpname('slaan') || speel([{ hz: 140, duur: 0.16, vorm: 'sawtooth', volume: 0.12, glij: 70 }]),
+  goed: () => speelOpname('goed') || speel([
       { hz: 523, duur: 0.12 },
       { hz: 659, duur: 0.12, vanaf: 0.1 },
       { hz: 784, duur: 0.2, vanaf: 0.2 },
     ]),
-  fout: () => speel([{ hz: 220, duur: 0.18, vorm: 'sine', volume: 0.09, glij: 165 }]),
-  ster: () =>
-    speel([
+  fout: () => speelOpname('fout') || speel([{ hz: 220, duur: 0.18, vorm: 'sine', volume: 0.09, glij: 165 }]),
+  ster: () => speelOpname('ster') || speel([
       { hz: 880, duur: 0.1 },
       { hz: 1175, duur: 0.18, vanaf: 0.09 },
     ]),
-  diploma: () =>
-    speel([
+  diploma: () => speelOpname('diploma') || speel([
       { hz: 523, duur: 0.15 },
       { hz: 659, duur: 0.15, vanaf: 0.14 },
       { hz: 784, duur: 0.15, vanaf: 0.28 },
       { hz: 1047, duur: 0.35, vanaf: 0.42 },
     ]),
-  schaak: () =>
-    speel([
+  schaak: () => speelOpname('schaak') || speel([
       { hz: 700, duur: 0.1, vorm: 'square', volume: 0.08 },
       { hz: 700, duur: 0.1, vorm: 'square', volume: 0.08, vanaf: 0.15 },
     ]),
-  promotie: () =>
-    speel([
+  promotie: () => speelOpname('promotie') || speel([
       { hz: 392, duur: 0.1 },
       { hz: 523, duur: 0.1, vanaf: 0.09 },
       { hz: 659, duur: 0.1, vanaf: 0.18 },
