@@ -104,3 +104,47 @@
   .quizMis { animation: none; }
 }
 
+
+/* De poort naar een nieuwe wereld.
+   Een wereld uitspelen was tot nu toe onzichtbaar: je drukte op "volgende les" en
+   stond in Loperbos zonder dat er iets gevierd was. Dit is het moment waar een kind
+   drie of vier lessen naartoe heeft gewerkt, dus het krijgt de kleur van die nieuwe
+   wereld en een wapen dat binnenkomt zetten. */
+.poort {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  border: 3px solid hsl(var(--toon) 45% 55%);
+  background: hsl(var(--toon) 55% 94%);
+  animation: poortOpen 0.6s cubic-bezier(0.18, 1.3, 0.4, 1) 0.4s backwards;
+}
+.poortWapen {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  background: hsl(var(--toon) 60% 86%);
+  border: 3px solid hsl(var(--toon) 42% 58%);
+}
+.poortKop { margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--muted); }
+.poortNaam { font-size: 1.2rem; }
+
+@keyframes poortOpen {
+  0% { transform: scale(0.8) translateY(14px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .poort { background: hsl(var(--toon) 22% 20%); }
+  :root:not([data-theme='light']) .poortWapen { background: hsl(var(--toon) 24% 27%); }
+}
+:root[data-theme='dark'] .poort { background: hsl(var(--toon) 22% 20%); }
+:root[data-theme='dark'] .poortWapen { background: hsl(var(--toon) 24% 27%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .poort { animation: none; }
+}

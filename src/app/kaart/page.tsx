@@ -4,8 +4,30 @@ import Link from 'next/link'
 import { Kop } from '@/ui/Kop'
 import { Sterren } from '@/ui/Sterren'
 import { WERELDEN } from '@/content'
-import { isOntgrendeld, useModus, useToestandGeladen, useVoortgang, wereldIsAf } from '@/progress/store'
+import {
+  isOntgrendeld,
+  useModus,
+  useToestandGeladen,
+  useVoortgang,
+  volgendeOpenLes,
+  wereldIsAf,
+} from '@/progress/store'
 import styles from './Kaart.module.css'
+import pad from './Pad.module.css'
+
+/** Eén halteplaats op het pad: een les, of het minispel aan het eind van een wereld. */
+type Halte = {
+  id: string
+  icoon: string
+  titel: string
+  href: string
+  open: boolean
+  /** Null bij het minispel: daar zijn geen sterren te halen. */
+  sterren: number | null
+  af: boolean
+  /** Staat Pip hier? */
+  jij: boolean
+}
 
 /**
  * Het pad. Bewust één lijn van boven naar beneden: een vertakte kaart is voor een
@@ -15,6 +37,8 @@ export default function Kaart() {
   const voortgang = useVoortgang()
   const modus = useModus()
   const geladen = useToestandGeladen()
+  // Waar het kind gebleven is: de enige plek op de hele kaart waar Pip staat.
+  const hier = volgendeOpenLes(voortgang, modus).id
 
   // Zonder deze pauze toont de voorgerenderde HTML alle lessen op slot, en flitst dat
   // even in beeld voordat de echte voortgang er is.
@@ -68,6 +92,38 @@ export default function Kaart() {
               </section>
             )
           }
+          // De halteplaatsen van deze wereld: eerst de lessen, dan het minispel als
+          // laatste stop. Het minispel stond eronder als losse knop en werd daardoor
+          // met geen mogelijkheid gevonden; op het pad is het gewoon de volgende halte.
+          const haltes: Halte[] = [
+            ...wereld.lessen.map((les) => ({
+              id: les.id,
+              icoon: les.icoon,
+              titel: les.titel,
+              href: `/les/${les.id}/`,
+              open: isOntgrendeld(les.id, voortgang, modus),
+              sterren: voortgang[les.id]?.sterren ?? 0,
+              af: (voortgang[les.id]?.sterren ?? 0) >= 2,
+              jij: les.id === hier,
+            })),
+            ...(wereld.minispel
+              ? [
+                  {
+                    id: `spel-${wereld.minispel}`,
+                    icoon: '🎲',
+                    titel: `Minispel: ${wereld.minispel.replaceAll('-', ' ')}`,
+                    href: `/spel/${wereld.minispel}/`,
+                    open: true,
+                    sterren: null,
+                    af: false,
+                    jij: false,
+                  },
+                ]
+              : []),
+          ]
+          const sterrenNu = wereld.lessen.reduce((n, l) => n + (voortgang[l.id]?.sterren ?? 0), 0)
+          const sterrenMax = wereld.lessen.length * 3
+
           return (
             <section
               key={wereld.id}
@@ -93,86 +149,93 @@ export default function Kaart() {
                 )}
               </div>
 
+              {/* Hoeveel sterren er in deze wereld te halen zijn, en hoeveel er al
+                  liggen. Een balk die voller wordt zegt dat zonder één cijfer; het
+                  getal ernaast is voor wie leest, en voor de schermlezer. */}
+              <div className={styles.oogst}>
+                <div
+                  className={styles.balk}
+                  role="img"
+                  aria-label={`${sterrenNu} van de ${sterrenMax} sterren in deze wereld`}
+                >
+                  <span
+                    className={styles.vulling}
+                    style={{ width: `${Math.round((sterrenNu / sterrenMax) * 100)}%` }}
+                  />
+                </div>
+                <span className={styles.oogstGetal} aria-hidden="true">
+                  ⭐ {sterrenNu}/{sterrenMax}
+                </span>
+              </div>
+
               <div className={styles.binnen}>
-              <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
-                {wereld.lessen.map((les) => {
-                  const resultaat = voortgang[les.id]
-                  const open = isOntgrendeld(les.id, voortgang, modus)
-                  const inhoud = (
+              {/* Het pad: één spoor met de lessen als halteplaatsen erop, en Pip op de
+                  plek waar het kind gebleven is. Zie Pad.module.css voor waarom het
+                  spoor kaarsrecht loopt en niet slingert. */}
+              <ol className={pad.pad}>
+                {haltes.map((halte, i) => {
+                  const links = i % 2 === 0
+                  const bol = [
+                    pad.bol,
+                    halte.af ? pad.af : '',
+                    halte.open ? '' : pad.dicht,
+                    halte.jij ? pad.jij : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')
+                  const binnenkant = (
                     <>
-                      {/* Het beeld eerst: dat is waar een kind van vier de les aan
-                          herkent. De titel staat ernaast voor wie al leest. */}
-                      {/* Ook een gesloten les toont haar eigen beeld — grijs, met het
-                          slotje ernaast. Een kind ziet dan wat er nog komt, en de
-                          gestippelde rand en de vlakke achtergrond zeggen nog steeds
-                          dat er niets te tikken valt. */}
-                      <span
-                        aria-hidden="true"
-                        style={{
-                          fontSize: 30, width: 40, textAlign: 'center', flexShrink: 0,
-                          filter: open ? 'none' : 'grayscale(1)',
-                          opacity: open ? 1 : 0.5,
-                        }}
-                      >
-                        {les.icoon}
+                      {halte.jij && (
+                        <span className={pad.pip} aria-hidden="true">
+                          🐴
+                        </span>
+                      )}
+                      <span className={pad.icoon} aria-hidden="true">
+                        {halte.icoon}
                       </span>
-                      <span style={{ flex: 1, textAlign: 'left' }}>{les.titel}</span>
-                      {open ? (
-                        <Sterren aantal={resultaat?.sterren ?? 0} />
-                      ) : (
-                        // "nog dicht" was tekst, en dat is precies wat de doelgroep
-                        // niet leest. Het slotje zegt hetzelfde zonder woorden.
-                        <span aria-label="Nog op slot" style={{ fontSize: 26 }}>
+                      {!halte.open && (
+                        <span className={pad.slot} aria-hidden="true">
                           🔒
                         </span>
                       )}
                     </>
                   )
                   return (
-                    <li key={les.id}>
-                      {open ? (
+                    <li
+                      key={halte.id}
+                      className={`${pad.knoop} ${halte.af ? pad.gelopen : ''}`}
+                    >
+                      <div className={`${pad.bij} ${links ? pad.links : pad.rechts}`}>
+                        <span className={`${pad.titel} ${halte.open ? '' : pad.dichtTekst}`}>
+                          {halte.titel}
+                        </span>
+                        {halte.open && halte.sterren !== null && <Sterren aantal={halte.sterren} />}
+                      </div>
+                      {halte.open ? (
                         <Link
-                          href={`/les/${les.id}/`}
-                          className="btn"
-                          style={{ width: '100%', justifyContent: 'space-between' }}
+                          href={halte.href}
+                          className={bol}
+                          aria-label={
+                            halte.sterren === null
+                              ? halte.titel
+                              : `${halte.titel}, ${halte.sterren} van de 3 sterren${halte.jij ? ', hier ben je gebleven' : ''}`
+                          }
                         >
-                          {inhoud}
+                          {binnenkant}
                         </Link>
                       ) : (
                         <span
-                          className="btn"
+                          className={bol}
                           aria-disabled="true"
-                          style={{
-                            width: '100%',
-                            justifyContent: 'space-between',
-                            // Gedempte kleur in plaats van doorzichtigheid: op 0,5 haalde
-                            // deze tekst het contrast van 4,5:1 in het lichte thema niet.
-                            color: 'var(--muted)',
-                            // En verder: geen knop meer. Geen schaduw, een gestippelde
-                            // rand en een vlakkere achtergrond, zodat je zonder te lezen
-                            // ziet dat hier niets te tikken valt.
-                            background: 'var(--surface-2)',
-                            border: '2px dashed var(--line)',
-                            boxShadow: 'none',
-                            cursor: 'default',
-                          }}
+                          aria-label={`${halte.titel}, nog op slot`}
                         >
-                          {inhoud}
+                          {binnenkant}
                         </span>
                       )}
                     </li>
                   )
                 })}
               </ol>
-
-              {wereld.minispel && (
-                <Link href={`/spel/${wereld.minispel}/`} className="btn btn--ghost">
-                  <span aria-hidden="true" style={{ fontSize: 26 }}>
-                    🎲
-                  </span>{' '}
-                  Minispel: {wereld.minispel.replaceAll('-', ' ')}
-                </Link>
-              )}
 
               {wereld.diploma && af && (
                 <Link href={`/diploma/${wereld.diploma}/`} className="btn btn--primary">

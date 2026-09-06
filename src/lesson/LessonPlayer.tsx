@@ -11,7 +11,7 @@ import { Teller } from '@/ui/Teller'
 import { sfx } from '@/audio/sfx'
 import { kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import { HINT_GEGEVEN, OPNIEUW_PROBEREN, pipZinnen } from '@/content/voice'
-import { volgendeLes, type Lesson, type World } from '@/content'
+import { volgendeLes, wereldMet, type Lesson, type World } from '@/content'
 import { vertelTekst, vertelWijzers } from '@/content/types'
 import { type Square } from '@/engine/board'
 import {
@@ -136,7 +136,17 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
     return []
   }, [fase, les])
 
-  const opgave = opgaven[opgaveIndex]
+  /**
+   * De opgave zoals hij in de content staat. Alleen om een opgave te stárten.
+   *
+   * Alles wat het scherm tekent, hoort uit `stand.opgave` te komen: dat is dezelfde
+   * opgave, maar dan zoals de lesmotor hem kent — met de antwoorden van een quiz al
+   * geschud. Hier stond één keer `opgave.opties` in de JSX, en toen kreeg een kind dat
+   * het goede plaatje aantikte te horen dat het fout was: het scherm tekende de ene
+   * volgorde en `antwoordQuiz` keek de andere na. De naam is nu lelijk genoeg om die
+   * verwisseling niet nog eens per ongeluk te maken.
+   */
+  const ruweOpgave = opgaven[opgaveIndex]
 
   /* ---------- fase- en opgavewissels ---------- */
 
@@ -398,6 +408,12 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   if (fase === 'beloning') {
     const volgende = volgendeLes(les.id)
     const wereldKlaar = wereldIsAf(wereld.id, { ...voortgang, [les.id]: { sterren, fouten: 0, hints: 0, laatst: '' } })
+    // Ging er met deze les een héle nieuwe wereld open? Dat gebeurde tot nu toe
+    // stilzwijgend: je maakte Torenburcht af, drukte op "volgende les" en stond
+    // ineens in Loperbos zonder dat er iets gevierd was. Terwijl dit precies het
+    // moment is waar een kind vier lessen lang naartoe heeft gewerkt.
+    const nieuweWereld =
+      volgende && volgende.wereldId !== wereld.id ? (wereldMet(volgende.wereldId) ?? null) : null
     return (
       <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
         <Kop titel="Klaar!" terug="/kaart/" />
@@ -421,6 +437,24 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
               </p>
             )}
           </div>
+
+          {nieuweWereld && (
+            <div
+              className={`card ${styles.poort}`}
+              style={{ '--toon': nieuweWereld.toon } as React.CSSProperties}
+            >
+              <span className={styles.poortWapen} aria-hidden="true">
+                {nieuweWereld.emoji}
+              </span>
+              <div>
+                <p className={styles.poortKop}>Een nieuwe wereld gaat open!</p>
+                <strong className={styles.poortNaam}>{nieuweWereld.naam}</strong>
+                <p className="muted" style={{ margin: '2px 0 0', fontSize: '0.9rem' }}>
+                  {nieuweWereld.belofte}
+                </p>
+              </div>
+            </div>
+          )}
           <div className="row" style={{ justifyContent: 'center' }}>
             <Link href="/kaart/" className="btn">
               Naar de kaart
@@ -437,7 +471,8 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   }
 
   /* ---------- opgavescherm ---------- */
-  if (!stand || !opgave) return null
+  if (!stand || !ruweOpgave) return null
+  const opgave = stand.opgave
 
   return (
     <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
@@ -543,7 +578,10 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
               // Eerst de geplande doorschakeling afbreken: zonder dat sprong de app
               // 1300 ms later alsnog naar de volgende opgave.
               stopTimers()
-              setStand(startOpgave(opgave))
+              // Vanaf de ruwe opgave, niet vanaf de geschudde: startOpgave schudt zelf,
+              // en twee keer schudden geeft een andere volgorde dan één keer. Dan zou
+              // "Opnieuw" de antwoorden onder het kind vandaan schuiven.
+              setStand(startOpgave(ruweOpgave))
               setHintVelden([])
               setShake(null)
               setQuizFout(null)

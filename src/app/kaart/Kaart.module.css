@@ -88,3 +88,32 @@
   font-size: 25px;
   filter: grayscale(0.55);
 }
+
+/* De sterrenoogst van een wereld: een balk die voller wordt.
+   Een kind ziet aan de lengte hoe ver het is; het getal ernaast is voor wie leest. */
+.oogst {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px 0;
+}
+.balk {
+  flex: 1;
+  height: 12px;
+  border-radius: 6px;
+  background: hsl(var(--toon) 30% 88%);
+  overflow: hidden;
+}
+.vulling {
+  display: block;
+  height: 100%;
+  border-radius: 6px;
+  background: var(--sel);
+  transition: width 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.oogstGetal { font-size: 0.85rem; font-weight: 700; color: var(--muted); }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .balk { background: hsl(var(--toon) 16% 26%); }
+}
+:root[data-theme='dark'] .balk { background: hsl(var(--toon) 16% 26%); }

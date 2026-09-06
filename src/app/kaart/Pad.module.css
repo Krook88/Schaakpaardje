@@ -1,0 +1,183 @@
+/*
+ * De kaart als pad.
+ *
+ * Hier stond een lijst van knoppen onder elkaar. Dat werkt, maar het is een menu en
+ * geen reis: je zag niet dat de lessen ergens naartoe leiden, en je zag al helemaal
+ * niet waar je zelf stond. Nu loopt er één spoor van boven naar beneden met de lessen
+ * als halteplaatsen erop, en staat Pip op de plek waar het kind gebleven is.
+ *
+ * De geometrie is expres saai gehouden — een recht spoor met de knopen erop, en de
+ * bijschriften om en om links en rechts. Een slingerend pad ziet er in een ontwerp
+ * leuker uit, maar het gaat stuk zodra een titel over twee regels loopt, en dan staat
+ * er een gebroken pad op het scherm van een kind. Dit kan niet scheef gaan.
+ */
+
+.pad {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0 0;
+  display: grid;
+  /* Geen gat tussen de rijen: elk stuk spoor loopt van de bovenkant van zijn rij tot
+     de onderkant, dus vier pixels ruimte ertussen worden vier pixels onderbroken
+     spoor. Lucht komt uit de hoogte van de rij zelf. */
+  gap: 0;
+  position: relative;
+}
+
+.knoop {
+  display: grid;
+  /* Bijschrift · knoop · bijschrift. De knoop staat altijd in het midden, dus het
+     spoor loopt gegarandeerd recht — welke kant het bijschrift ook op staat. */
+  grid-template-columns: 1fr 84px 1fr;
+  align-items: center;
+  position: relative;
+  /* Ruim boven de 76 van de bol: wat overblijft is het stuk spoor dát je ziet. Op
+     84px bleef daar acht pixel van over en las het niet als een pad maar als bollen
+     die elkaar raken. */
+  min-height: 112px;
+}
+
+/* Het spoor: een balk achter de middelste kolom door, van knoop naar knoop.
+   De eerste begint halverwege en de laatste eindigt halverwege, zodat het pad niet
+   boven de eerste les uit steekt of onder de laatste doorloopt. */
+.knoop::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  top: 0;
+  bottom: 0;
+  background: hsl(var(--toon) 40% 84%);
+  border-radius: 4px;
+}
+.knoop:first-child::before { top: 50%; }
+.knoop:last-child::before { bottom: 50%; }
+
+/* Al gelopen: het stuk spoor onder een les die af is, krijgt kleur. Zo zie je van een
+   afstandje hoe ver je bent, zonder één cijfer te lezen. Duidelijk donkerder dan het
+   spoor eronder, anders is het verschil er wel maar zie je het niet. */
+.gelopen::before { background: hsl(var(--toon) 55% 40%); }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .knoop::before { background: hsl(var(--toon) 20% 28%); }
+  :root:not([data-theme='light']) .gelopen::before { background: hsl(var(--toon) 38% 48%); }
+}
+:root[data-theme='dark'] .knoop::before { background: hsl(var(--toon) 20% 28%); }
+:root[data-theme='dark'] .gelopen::before { background: hsl(var(--toon) 38% 48%); }
+
+/* De halteplaats zelf. Groot genoeg voor een kindervinger (76px, ruim boven de 44 die
+   de richtlijn vraagt) en rond, want een rondje op een lijn leest als een halte en een
+   rechthoek als een knop in een menu. */
+.bol {
+  grid-column: 2;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  border: 4px solid hsl(var(--toon) 40% 62%);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  text-decoration: none;
+  color: inherit;
+  padding: 0;
+  justify-self: center;
+  transition: transform 0.15s ease;
+}
+.bol:active { transform: scale(0.93); }
+.bol:focus-visible { outline: 4px solid var(--accent); outline-offset: 3px; }
+
+/* Af: gevuld met de kleur van de wereld, zodat een volle wereld er ook vol uitziet. */
+.af {
+  background: hsl(var(--toon) 55% 88%);
+  border-color: hsl(var(--toon) 45% 48%);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .af { background: hsl(var(--toon) 24% 24%); }
+}
+:root[data-theme='dark'] .af { background: hsl(var(--toon) 24% 24%); }
+
+/* Nog dicht: vlak, gestippeld, geen schaduw. Zonder te lezen zie je dat hier niets
+   te tikken valt — maar het beeld van de les staat er wel, want dat lonkt. */
+.dicht {
+  background: var(--surface-2);
+  border-style: dashed;
+  border-color: var(--line);
+  box-shadow: none;
+  cursor: default;
+}
+.dicht .icoon { filter: grayscale(1); opacity: 0.45; }
+
+.icoon { line-height: 1; }
+
+/* Het slotje hangt aan de rand van de bol in plaats van erin: dan blijft het beeld van
+   de les heel, en zie je toch meteen dat hij dicht is. */
+.slot {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* Waar het kind gebleven is. Eén plek op de hele kaart, en de enige die beweegt. */
+.jij {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 6px var(--accent-soft), var(--shadow);
+  animation: kloppen 2.2s ease-in-out infinite;
+}
+@keyframes kloppen {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+
+/* Pip staat erbovenop, als een speelstuk op een bordspel. */
+.pip {
+  position: absolute;
+  top: -34px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 30px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
+  animation: wippen 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes wippen {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jij, .pip { animation: none; }
+}
+
+/* Het bijschrift naast de halte, om en om links en rechts. Dat maakt van een rechte
+   lijn toch een pad dat heen en weer beweegt, zonder dat er iets scheef kan lopen. */
+.bij {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.links { grid-column: 1; text-align: right; justify-items: end; padding-right: 12px; }
+.rechts { grid-column: 3; text-align: left; justify-items: start; padding-left: 12px; }
+
+.titel {
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+.dichtTekst { color: var(--muted); font-weight: 600; }
+
+/* Smalle telefoons: het bijschrift krijgt de volle breedte naast de bol in plaats van
+   een halve, anders breekt een titel als "Paardensprong-parcours" in zes regels. */
+@media (max-width: 380px) {
+  .knoop { grid-template-columns: 1fr 68px 1fr; min-height: 100px; }
+  .bol { width: 62px; height: 62px; font-size: 28px; border-width: 3px; }
+  .titel { font-size: 0.85rem; }
+}
