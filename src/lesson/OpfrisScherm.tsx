@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Confetti } from '@/ui/Confetti'
 import { Kop } from '@/ui/Kop'
+import { Teller } from '@/ui/Teller'
 import { Pip, type PipStemming } from '@/ui/Pip'
 import { sfx } from '@/audio/sfx'
 import { kies, wachtTotUitgesproken } from '@/audio/voice'
@@ -116,7 +117,7 @@ export function OpfrisScherm() {
         case 'goed':
           if (instellingen.effecten) sfx.goed()
           setZin(kies(PRIJS, 'prijs'))
-          setStemming('blij')
+          setStemming('juicht')
           break
         case 'zet':
           if (instellingen.effecten) sfx.zet()
@@ -284,11 +285,7 @@ export function OpfrisScherm() {
               Help me even
             </button>
           )}
-          {totaalTeVinden > 0 && (
-            <span className="muted" aria-live="polite">
-              {stand.gevonden.length} van de {totaalTeVinden} gevonden
-            </span>
-          )}
+          {totaalTeVinden > 0 && <Teller gevonden={stand.gevonden.length} totaal={totaalTeVinden} />}
           {/* Overslaan mag: dit is opwarmen. Wie een opgave niet ziet zitten hoeft
               niet vast te lopen op iets wat vandaag toch geen cijfer oplevert. */}
           <button type="button" className="btn btn--ghost" onClick={verder}>

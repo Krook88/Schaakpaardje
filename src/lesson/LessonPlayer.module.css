@@ -1,3 +1,27 @@
+/* Elke wereld zijn eigen kleur, ook buiten de kaart.
+ *
+ * Vijftien werelden met namen als Torenburcht en Loperbos zagen er tijdens de les alle
+ * vijftien identiek uit: crème met één bruine knop. De kleurtoon van de wereld stond
+ * al in de data en werd alleen in een bandje van veertig pixels gebruikt. Nu kleurt de
+ * hele achtergrond van het lesscherm mee — heel licht, want er staat tekst op.
+ *
+ * Alleen de ondergrond, nooit een vlak waar letters op staan: kaarten, ballonnen en
+ * knoppen houden hun eigen kleur. Zo kan geen enkele wereldtoon per ongeluk het
+ * contrast verpesten, en dat is precies waarom dit met tonen werkt en niet met vijftien
+ * hexcodes die iemand met de hand moet nakijken.
+ */
+/* Als vast vlak achter alles, niet als achtergrond van de kolom: die is hooguit
+   940 breed en niet zo hoog als het scherm, dus dan liep de kleur op een tablet in een
+   harde rand dood. */
+.wereldpagina::before {
+  content: ''; position: fixed; inset: 0; z-index: -1;
+  background: hsl(var(--toon) 44% 95%);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .wereldpagina::before { background: hsl(var(--toon) 14% 10%); }
+}
+:root[data-theme='dark'] .wereldpagina::before { background: hsl(var(--toon) 14% 10%); }
+
 /* De kleur van de wereld waarin deze les hoort. Een band bovenaan, meer niet: genoeg
    om te zien dat je in Torenburcht bent en niet in Loperbos, zonder dat het de opgave
    zelf in de weg zit. */
@@ -79,3 +103,4 @@
 @media (prefers-reduced-motion: reduce) {
   .quizMis { animation: none; }
 }
+

@@ -7,6 +7,7 @@ import { Kop } from '@/ui/Kop'
 import { Pip, type PipStemming } from '@/ui/Pip'
 import { Confetti } from '@/ui/Confetti'
 import { Sterren } from '@/ui/Sterren'
+import { Teller } from '@/ui/Teller'
 import { sfx } from '@/audio/sfx'
 import { kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import {
@@ -225,7 +226,9 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
     (goed: boolean, klaar: boolean, tip?: string) => {
       if (goed) {
         if (instellingen.effecten) sfx.goed()
-        setStemming('blij')
+        // 'juicht' in plaats van 'blij': dat is ook de stemming waarin Pip staat als
+        // er niets gebeurt, dus een goed antwoord veranderde visueel helemaal niets.
+        setStemming('juicht')
         setZin(kies(klaar ? PRIJS_LAATSTE : PRIJS, 'prijs'))
         if (klaar) naHetPraten(volgendeOpgave)
       } else {
@@ -339,7 +342,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   // toestand; wachten tot die er is, scheelt een omklappend scherm bij het openen.
   if (!geladen) {
     return (
-      <div className="page">
+      <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
         <Kop titel={les.titel} terug="/kaart/" />
       </div>
     )
@@ -350,7 +353,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
     const dezeZin = les.vertel[vertelIndex]
     const spoor = dezeZin ? vertelWijzers(dezeZin) : []
     return (
-      <div className="page">
+      <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
         <Kop titel={les.titel} terug="/kaart/" />
         <WereldBand wereld={wereld} />
         <FaseBalk nu="kijken" />
@@ -399,7 +402,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
     const volgende = volgendeLes(les.id)
     const wereldKlaar = wereldIsAf(wereld.id, { ...voortgang, [les.id]: { sterren, fouten: 0, hints: 0, laatst: '' } })
     return (
-      <div className="page">
+      <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
         <Kop titel="Klaar!" terug="/kaart/" />
         <div className="stack center">
           <Pip zegt={zin} stemming="trots" />
@@ -440,7 +443,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   if (!stand || !opgave) return null
 
   return (
-    <div className="page">
+    <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
       <Kop titel={`${les.titel} · ${FASE_NAAM[fase]}`} terug="/kaart/" />
       <WereldBand wereld={wereld} />
       <FaseBalk nu={fase} />
@@ -509,6 +512,15 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
           </div>
         )}
 
+        {/* Hoe ver je bent, vlak onder het bord waar je kijkt — niet weggestopt naast
+            de knoppen, want daar viel het buiten beeld zodra "Opnieuw" een regel
+            omlaag ging. */}
+        {totaalTeVinden > 0 && (
+          <div className={`row ${styles.kolom}`} style={{ justifyContent: 'center' }}>
+            <Teller gevonden={stand.gevonden.length} totaal={totaalTeVinden} />
+          </div>
+        )}
+
         <div className={`row ${styles.kolom}`} style={{ justifyContent: 'space-between' }}>
           {opgave.kind !== 'quiz' && (
             // Bij een quiz gaf hint() geen enkel veld terug: het kind zag niets
@@ -526,11 +538,6 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
               </span>{' '}
               Help me even
             </button>
-          )}
-          {totaalTeVinden > 0 && (
-            <span className="muted" aria-live="polite">
-              {stand.gevonden.length} van de {totaalTeVinden} gevonden
-            </span>
           )}
           <button
             type="button"

@@ -1,0 +1,14 @@
+/* Eén bolletje per veld dat gevonden moet worden; ze lopen van links naar rechts vol.
+   Bij een opgave met acht velden is dat nog steeds één oogopslag, en bij twee velden
+   ziet een kind meteen dat het er bijna is. */
+.teller { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.bol {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--line); background: transparent;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.vol {
+  background: var(--grass);
+  border-color: var(--grass);
+  transform: scale(1.15);
+}

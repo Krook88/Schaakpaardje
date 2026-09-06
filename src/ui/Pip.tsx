@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { onSubtitle, speak, stopSpeaking } from '@/audio/voice'
+import { onSubtitle, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import styles from './Pip.module.css'
 
-export type PipStemming = 'blij' | 'verrast' | 'denkt' | 'moedigt' | 'trots' | 'slaapt'
+export type PipStemming = 'blij' | 'juicht' | 'verrast' | 'denkt' | 'moedigt' | 'trots' | 'slaapt'
 
 const GEZICHT: Record<PipStemming, string> = {
   blij: '🐴',
+  juicht: '🐴',
   verrast: '🐴',
   denkt: '🐴',
   moedigt: '🐴',
@@ -17,11 +18,23 @@ const GEZICHT: Record<PipStemming, string> = {
 
 const BADGE: Record<PipStemming, string> = {
   blij: '',
+  juicht: '🎉',
   verrast: '❗',
   denkt: '💭',
   moedigt: '💪',
   trots: '⭐',
   slaapt: '💤',
+}
+
+/** Wat Pip met zijn hoofd doet bij elke stemming. Zie Pip.module.css. */
+const BEWEGING: Record<PipStemming, string> = {
+  blij: '',
+  juicht: styles.juicht,
+  verrast: styles.verrast,
+  denkt: styles.denkt,
+  moedigt: styles.moedigt,
+  trots: styles.trots,
+  slaapt: styles.slaapt,
 }
 
 /**
@@ -30,6 +43,13 @@ const BADGE: Record<PipStemming, string> = {
  * Voorlopig is Pip een emoji in een cirkel. Bij de visuele oplevering komt hier een
  * Rive-animatie met echte gezichtsuitdrukkingen; de component-interface blijft gelijk,
  * dus dat is één bestand omwisselen.
+ *
+ * Tot die tijd doet de beweging het werk dat het gezicht nog niet kan doen. Pip was
+ * zes stemmingen lang exact hetzelfde plaatje met een ander speldje ernaast — hij
+ * praatte wel, maar hij deed niets. Nu knikt hij als hij aanmoedigt, kantelt hij als
+ * hij nadenkt, springt hij als je het goed hebt, en wiebelt hij zachtjes zolang hij
+ * aan het woord is. Dat laatste is het belangrijkste: een kind ziet daaraan dat het
+ * even moet luisteren, en ziet even goed wanneer het weer aan de beurt is.
  */
 export function Pip({
   zegt,
@@ -43,6 +63,15 @@ export function Pip({
   onKlaar?: () => void
 }) {
   const [ondertitel, setOndertitel] = useState<string | null>(null)
+  const [pratend, setPratend] = useState(false)
+  /**
+   * Een teller die bij elke nieuwe zin of stemming omhoog gaat, als sleutel op het
+   * gezicht. Zonder dat blijft een CSS-animatie staan waar hij stond: twee goede
+   * antwoorden achter elkaar zijn allebei 'juicht', en dan springt Pip alleen de
+   * eerste keer. Alleen het gezicht krijgt een nieuwe sleutel, niet de knop eromheen —
+   * anders raakt de toetsenbordfocus kwijt midden in een les.
+   */
+  const [puls, setPuls] = useState(0)
 
   useEffect(() => {
     onSubtitle(setOndertitel)
@@ -50,9 +79,22 @@ export function Pip({
   }, [])
 
   useEffect(() => {
+    setPuls((p) => p + 1)
+  }, [zegt, stemming])
+
+  useEffect(() => {
     if (!zegt) return
+    let actueel = true
+    setPratend(true)
     void speak(zegt)
-    return () => stopSpeaking()
+    void wachtTotUitgesproken().then(() => {
+      if (actueel) setPratend(false)
+    })
+    return () => {
+      actueel = false
+      setPratend(false)
+      stopSpeaking()
+    }
   }, [zegt])
 
   const tekst = ondertitel ?? zegt ?? null
@@ -61,14 +103,14 @@ export function Pip({
     <div className={`${styles.wrap} ${klein ? styles.klein : ''}`}>
       <button
         type="button"
-        className={`${styles.pip} ${stemming === 'trots' ? styles.trots : ''}`}
+        className={`${styles.pip} ${pratend ? styles.pratend : ''}`}
         onClick={() => {
           if (zegt) void speak(zegt, true)
           onKlaar?.()
         }}
         aria-label={zegt ? `Pip zegt: ${zegt}. Tik om het nog eens te horen.` : 'Pip'}
       >
-        <span className={styles.gezicht} aria-hidden="true">
+        <span key={puls} className={`${styles.gezicht} ${BEWEGING[stemming]}`} aria-hidden="true">
           {GEZICHT[stemming]}
         </span>
         {BADGE[stemming] && (

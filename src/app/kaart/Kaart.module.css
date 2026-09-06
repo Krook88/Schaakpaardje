@@ -68,3 +68,23 @@
   background: hsl(var(--toon) 24% 26%);
   border-color: hsl(var(--toon) 32% 46%);
 }
+
+/* Een wereld die nog helemaal dicht zit: één regel, geen kaart.
+   Vlakker en zachter dan een open wereld, zodat je zonder te lezen ziet dat hier
+   niets te tikken valt — maar niet zó grijs dat het niet meer lonkt. */
+.dicht {
+  /* Smaller randje dan een open wereld: hetzelfde kleurtje, minder gewicht. Gestippeld
+     was het ook geprobeerd, maar dat leest van een afstandje als een weergavefout.
+
+     Geen doorzichtigheid, hoe voor de hand liggend dat hier ook is: de belofte staat in
+     --muted op de gekleurde band en haalt dan precies 4,51:1. Op 85% zakt hij naar
+     3,43:1 en is hij dus niet meer leesbaar volgens de norm. Het slotje en het grijze
+     wapen zeggen al genoeg. */
+  border-left-width: 4px;
+}
+.dicht .wapen {
+  width: 44px;
+  height: 44px;
+  font-size: 25px;
+  filter: grayscale(0.55);
+}

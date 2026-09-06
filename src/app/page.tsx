@@ -19,6 +19,7 @@ import {
   useVoortgang,
   volgendeOpenLes,
   wereldIsAf,
+  type LesResultaat,
 } from '@/progress/store'
 
 export default function Thuis() {
@@ -91,30 +92,15 @@ export default function Thuis() {
         />
 
         {/* Voortgang zonder letters: elke wereld één plaatje, in kleur als hij uit is.
-            Het loopt van links naar rechts vol, en dat is de hele boodschap. */}
-        <div
-          className="row"
-          style={{ gap: 6, rowGap: 8 }}
-          aria-label={`${wereldenAf.length} van de ${WERELDEN.length} werelden uit`}
-        >
-          {WERELDEN.map((w) => {
-            const af = wereldIsAf(w.id, voortgang)
-            return (
-              <span
-                key={w.id}
-                title={`${w.nummer}. ${w.naam}`}
-                aria-hidden="true"
-                style={{
-                  fontSize: 24,
-                  filter: af ? 'none' : 'grayscale(1)',
-                  opacity: af ? 1 : 0.4,
-                }}
-              >
-                {w.emoji}
-              </span>
-            )
-          })}
-        </div>
+            Het loopt van links naar rechts vol, en dat is de hele boodschap.
+
+            Alleen: hier stonden vijftien werelden waarvan er bij een nieuw kind
+            vijftien grijs waren, met daaronder een stal van zestien grijze silhouetten
+            en tweemaal een nul. Het allereerste scherm van de app was daarmee een
+            inventaris van alles wat je níet hebt. Nu tonen we wat af is, waar je nú
+            bent, en een glimp van wat er komt — de rest wordt één telletje. Het groeit
+            dus mee met het kind in plaats van het te begroeten met een lege kast. */}
+        <Wereldrij voortgang={voortgang} hier={verderLes?.wereldId} />
 
         <div style={{ display: 'grid', gap: 14 }}>
           {/* De grootste knop van de app. Voor een niet-lezer moet hij op één beeld
@@ -165,29 +151,18 @@ export default function Thuis() {
         </div>
 
         {/* De stal: wat er te verzamelen valt. Hier stond een raster van 48 identieke
-            medailles — je zag dus niet wát je verdiend had, alleen hoevéél. */}
+            medailles — je zag dus niet wát je verdiend had, alleen hoevéél. En daarna
+            een raster van zestien grijze silhouetten, wat bij nul verdiend precies even
+            leeg aanvoelt. Nu staat voorop wat je hébt, en daarachter alleen het
+            eerstvolgende dat te halen valt: een worst, geen leegte. */}
         <Link href="/stal/" className="card stack" style={{ textDecoration: 'none', color: 'inherit' }}>
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <h2 style={{ fontSize: '1.1rem' }}>Mijn stal</h2>
             <span className="muted">
-              {inStal} van de {stalVakken.length}
+              {inStal > 0 ? `${inStal} van de ${stalVakken.length}` : 'Nog leeg'}
             </span>
           </div>
-          <div className="row" style={{ gap: 8 }} aria-hidden="true">
-            {stalVakken.map((v) => (
-              <span
-                key={v.id}
-                title={v.bezit ? v.naam : `${v.naam} — ${v.hoe}`}
-                style={{
-                  fontSize: 24,
-                  filter: v.bezit ? 'none' : 'grayscale(1)',
-                  opacity: v.bezit ? 1 : 0.28,
-                }}
-              >
-                {v.teken}
-              </span>
-            ))}
-          </div>
+          <Stalrij vakken={stalVakken} />
           {stickers.length > 0 && (
             <p className="muted" style={{ fontSize: '0.85rem', margin: 0 }}>
               Plus {stickers.length} {stickers.length === 1 ? 'sticker' : 'stickers'} van perfecte lessen.
@@ -216,6 +191,107 @@ export default function Thuis() {
         )}
       </div>
     </main>
+  )
+}
+
+/**
+ * De werelden als een pad: wat af is, waar je nu bent, en een glimp van wat komt.
+ *
+ * Meer dan een glimp heeft geen zin. Vijftien grijze plaatjes zeggen een kind van vier
+ * niets over wat het te wachten staat; ze zeggen alleen "dit is allemaal nog niet van
+ * jou". De twee die eraan komen zijn genoeg om nieuwsgierig te maken, en het getal
+ * erachter is er voor wie al telt.
+ */
+function Wereldrij({
+  voortgang,
+  hier,
+}: {
+  voortgang: Record<string, LesResultaat>
+  hier?: string
+}) {
+  const af = WERELDEN.filter((w) => wereldIsAf(w.id, voortgang))
+  const huidig = WERELDEN.find((w) => w.id === hier)
+  const getoond = [...af]
+  if (huidig && !getoond.includes(huidig)) getoond.push(huidig)
+  const rest = WERELDEN.filter((w) => !getoond.includes(w))
+  const straks = rest.slice(0, 2)
+  const verborgen = rest.length - straks.length
+
+  return (
+    <div
+      className="row"
+      style={{ gap: 8, rowGap: 8 }}
+      aria-label={`${af.length} van de ${WERELDEN.length} werelden uit`}
+    >
+      {getoond.map((w) => (
+        <span
+          key={w.id}
+          title={`${w.nummer}. ${w.naam}`}
+          aria-hidden="true"
+          style={{
+            fontSize: 26,
+            // Waar je nú bent krijgt een rondje om zich heen: dat is het enige plekje
+            // op dit scherm dat "hier" zegt zonder een woord te gebruiken.
+            ...(w.id === hier
+              ? {
+                  outline: '3px solid var(--accent)',
+                  outlineOffset: 3,
+                  borderRadius: '50%',
+                }
+              : null),
+          }}
+        >
+          {w.emoji}
+        </span>
+      ))}
+      {straks.map((w) => (
+        <span
+          key={w.id}
+          title={`${w.nummer}. ${w.naam}`}
+          aria-hidden="true"
+          style={{ fontSize: 26, filter: 'grayscale(1)', opacity: 0.38 }}
+        >
+          {w.emoji}
+        </span>
+      ))}
+      {verborgen > 0 && (
+        <span className="muted" aria-hidden="true" style={{ fontSize: '0.85rem' }}>
+          +{verborgen}
+        </span>
+      )}
+    </div>
+  )
+}
+
+/** Wat je verzameld hebt, en daarachter het eerstvolgende dat te halen valt. */
+function Stalrij({ vakken }: { vakken: { id: string; teken: string; naam: string; hoe: string; bezit: boolean }[] }) {
+  const heeft = vakken.filter((v) => v.bezit)
+  const mist = vakken.filter((v) => !v.bezit)
+  const volgend = mist.slice(0, heeft.length ? 2 : 3)
+  const verborgen = mist.length - volgend.length
+
+  return (
+    <div className="row" style={{ gap: 8 }} aria-hidden="true">
+      {heeft.map((v) => (
+        <span key={v.id} title={v.naam} style={{ fontSize: 26 }}>
+          {v.teken}
+        </span>
+      ))}
+      {volgend.map((v) => (
+        <span
+          key={v.id}
+          title={`${v.naam} — ${v.hoe}`}
+          style={{ fontSize: 26, filter: 'grayscale(1)', opacity: 0.32 }}
+        >
+          {v.teken}
+        </span>
+      ))}
+      {verborgen > 0 && (
+        <span className="muted" style={{ fontSize: '0.85rem' }}>
+          +{verborgen}
+        </span>
+      )}
+    </div>
   )
 }
 

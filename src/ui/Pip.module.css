@@ -8,7 +8,7 @@
 }
 .pip:active { transform: scale(0.96); }
 .pip:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-.gezicht { font-size: 40px; line-height: 1; }
+.gezicht { font-size: 40px; line-height: 1; display: block; }
 .badge {
   position: absolute; top: -6px; right: -6px; font-size: 20px;
   background: var(--surface); border-radius: 50%; padding: 2px 4px;
@@ -43,16 +43,57 @@
 .klein .pip { width: 52px; height: 52px; }
 .klein .gezicht { font-size: 27px; }
 .klein .ballon { font-size: 0.92rem; padding: 9px 60px 9px 12px; }
-/* Trots is het enige moment waarop Pip echt iets doet. Drie keer springen en dan
-   weer rustig ademen: genoeg om te vieren, niet genoeg om af te leiden. */
+/* Pip beweegt, want zijn gezicht kan het nog niet.
+ *
+ * Alle zes de stemmingen waren hetzelfde emoji met een ander speldje ernaast. Voor een
+ * kind dat niet leest was Pip dus een plaatje dat geluid maakt. Deze animaties doen wat
+ * een gezicht zou doen: een knikje bij aanmoedigen, een kanteling bij nadenken, een
+ * sprongetje bij goed. Kort en klein — het gaat om leven, niet om een show, en er staat
+ * altijd een opgave naast die de aandacht moet houden.
+ *
+ * Ze staan op het gezicht en niet op de knop: de knop ademt (en wiebelt als Pip praat),
+ * en twee animaties op één element vechten om dezelfde transform. */
+.juicht { animation: springen 0.5s ease-in-out 1; }
 .trots { animation: springen 0.55s ease-in-out 3; }
+.verrast { animation: schrikken 0.4s ease-out 1; }
+.moedigt { animation: knikken 0.5s ease-in-out 2; }
+.denkt { animation: peinzen 3s ease-in-out infinite; }
+.slaapt { animation: zakken 4s ease-in-out infinite; }
+
 @keyframes springen {
   0%, 100% { transform: translateY(0) rotate(0); }
   30% { transform: translateY(-14px) rotate(-8deg); }
   60% { transform: translateY(0) rotate(6deg); }
 }
+@keyframes schrikken {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.28) rotate(-6deg); }
+  100% { transform: scale(1); }
+}
+@keyframes knikken {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(3px) rotate(9deg); }
+}
+@keyframes peinzen {
+  0%, 100% { transform: rotate(-9deg); }
+  50% { transform: rotate(-2deg) translateY(-2px); }
+}
+@keyframes zakken {
+  0%, 100% { transform: rotate(6deg) translateY(1px); }
+  50% { transform: rotate(10deg) translateY(4px); }
+}
+
+/* Zolang Pip aan het woord is wiebelt hij zachtjes mee. Dat is niet alleen leuk: het
+   is het enige teken waaraan een kind dat niet leest ziet dat het even moet luisteren,
+   en waaraan het ziet dat het daarna weer zelf aan de beurt is. */
+.pratend { animation: praten 0.62s ease-in-out infinite; }
+@keyframes praten {
+  0%, 100% { transform: translateY(0) rotate(-2deg) scale(1); }
+  50% { transform: translateY(-3px) rotate(2deg) scale(1.035); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .trots { animation: none; }
+  .juicht, .trots, .verrast, .moedigt, .denkt, .slaapt, .pratend { animation: none; }
 }
 
 @keyframes adem {

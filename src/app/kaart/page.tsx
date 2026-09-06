@@ -31,6 +31,42 @@ export default function Kaart() {
       <div className="stack">
         {WERELDEN.map((wereld) => {
           const af = wereldIsAf(wereld.id, voortgang)
+          // Een wereld waarvan nog geen enkele les open is, krijgt één regel in plaats
+          // van een uitgeklapte kaart met vier lessen erin.
+          //
+          // De kaart was 6.300 pixels lang: zeven en een half telefoonscherm scrollen
+          // langs zesenvijftig hangslotjes om bij les twee te komen. Voor een kind is
+          // dat geen kaart maar een muur van alles wat het nog niet mag. Wat komen gaat
+          // blijft zichtbaar — het wapen, de naam, de belofte — maar het neemt geen
+          // halve pagina meer in beslag. Zodra er één les opengaat, klapt de wereld
+          // vanzelf helemaal open.
+          const open = wereld.lessen.some((les) => isOntgrendeld(les.id, voortgang))
+          if (!open) {
+            return (
+              <section
+                key={wereld.id}
+                className={`card ${styles.wereld} ${styles.dicht}`}
+                style={{ '--toon': wereld.toon } as React.CSSProperties}
+              >
+                <div className={styles.band}>
+                  <span className={styles.wapen} aria-hidden="true">
+                    {wereld.emoji}
+                  </span>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <h2 style={{ fontSize: '1.05rem' }}>
+                      {wereld.nummer}. {wereld.naam}
+                    </h2>
+                    <p className="muted" style={{ fontSize: '0.85rem' }}>
+                      {wereld.belofte}
+                    </p>
+                  </div>
+                  <span aria-label="Nog op slot" style={{ fontSize: 24, flexShrink: 0 }}>
+                    🔒
+                  </span>
+                </div>
+              </section>
+            )
+          }
           return (
             <section
               key={wereld.id}

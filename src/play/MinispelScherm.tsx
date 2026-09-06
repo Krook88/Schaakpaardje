@@ -74,7 +74,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
         case 'goed':
           if (instellingen.effecten) sfx.goed()
           setZin(kies(PRIJS, 'prijs'))
-          setStemming('blij')
+          setStemming('juicht')
           break
         case 'sla':
           if (instellingen.effecten) sfx.slaan()

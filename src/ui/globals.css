@@ -1,6 +1,9 @@
 /* Ontwerpsysteem van Schaakmaatje.
    Alle kleuren als tokens; componenten gebruiken nooit een losse hex.
-   Donker thema is bewust rustig: kinderen spelen ook 's avonds. */
+   Donker thema is bewust rustig: kinderen spelen ook 's avonds. Het is wél warm
+   gehouden — bruin en groen in plaats van blauwgrijs. Het was technisch keurig maar
+   kwam uit op een strenge grijze plaat, en dat is voor een app voor driejarigen het
+   verkeerde gevoel. Nu is het schemer in de weide, geen instellingenscherm. */
 :root {
   color-scheme: light;
   --ground: #f6f1e6;
@@ -30,19 +33,19 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --ground: #14161a;
-    --surface: #1c2026;
-    --surface-2: #262b33;
-    --ink: #eceef2;
-    --muted: #9aa3b0;
-    --line: #333a44;
+    --ground: #191510;
+    --surface: #221d16;
+    --surface-2: #2c261d;
+    --ink: #f3ece0;
+    --muted: #b3a692;
+    --line: #3d3527;
     --accent: #e2903f;
     --accent-ink: #1a1207;
-    --accent-soft: #2c2318;
-    --grass: #6fa377;
-    --grass-soft: #1e2a21;
-    --sky: #6f9dc8;
-    --berry: #d1748c;
+    --accent-soft: #2f2416;
+    --grass: #7aab6f;
+    --grass-soft: #212b1e;
+    --sky: #7ba3c4;
+    --berry: #d8808f;
     --light-sq: #c4bcaa;
     --dark-sq: #5f7a5e;
     --shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 10px 26px -18px #000;
@@ -50,19 +53,19 @@
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --ground: #14161a;
-  --surface: #1c2026;
-  --surface-2: #262b33;
-  --ink: #eceef2;
-  --muted: #9aa3b0;
-  --line: #333a44;
+  --ground: #191510;
+  --surface: #221d16;
+  --surface-2: #2c261d;
+  --ink: #f3ece0;
+  --muted: #b3a692;
+  --line: #3d3527;
   --accent: #e2903f;
   --accent-ink: #1a1207;
-  --accent-soft: #2c2318;
-  --grass: #6fa377;
-  --grass-soft: #1e2a21;
-  --sky: #6f9dc8;
-  --berry: #d1748c;
+  --accent-soft: #2f2416;
+  --grass: #7aab6f;
+  --grass-soft: #212b1e;
+  --sky: #7ba3c4;
+  --berry: #d8808f;
   --light-sq: #c4bcaa;
   --dark-sq: #5f7a5e;
   --shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 10px 26px -18px #000;
