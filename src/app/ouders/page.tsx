@@ -11,6 +11,7 @@ import {
   useProfiel,
   useProfielStore,
   useVoortgang,
+  modusVoorLeeftijd,
   type Instellingen,
   type Modus,
 } from '@/progress/store'
@@ -115,6 +116,8 @@ function OuderPaneel() {
   const instellingen = useInstellingen()
   const zetInstelling = useProfielStore((s) => s.zetInstelling)
   const zetModus = useProfielStore((s) => s.zetModus)
+  const zetLeeftijd = useProfielStore((s) => s.zetLeeftijd)
+  const herstelInstellingen = useProfielStore((s) => s.herstelInstellingen)
   const verwijderProfiel = useProfielStore((s) => s.verwijderProfiel)
   const gespeeld = useGespeeld()
 
@@ -190,6 +193,37 @@ function OuderPaneel() {
             tegenstanders er meteen te zien zijn, en hoe Pip praat. Het verandert niets aan de
             lessen zelf, en niets aan wat er al gehaald is.
           </p>
+          {/* De leeftijd werd één keer gevraagd bij het aanmaken en daarna nooit meer:
+              een kind dat jarig was bleef voorgoed vijf. Verzetten schuift de modus mee,
+              want daar is de leeftijd voor — en wie het daar niet mee eens is, kiest
+              hieronder gewoon iets anders. */}
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            {[3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+              <button
+                key={n}
+                type="button"
+                className="btn"
+                onClick={() => zetLeeftijd(n)}
+                aria-pressed={profiel?.leeftijd === n}
+                aria-label={`${n} jaar`}
+                style={{
+                  minHeight: 52,
+                  minWidth: 52,
+                  padding: '0 12px',
+                  borderColor: profiel?.leeftijd === n ? 'var(--accent)' : undefined,
+                  background: profiel?.leeftijd === n ? 'var(--accent-soft)' : undefined,
+                }}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+
+          <p className="muted" style={{ margin: 0, fontSize: '0.9rem' }}>
+            Bij {profiel?.leeftijd ?? 6} jaar hoort{' '}
+            <strong>{MODI.find((m) => m.id === modusVoorLeeftijd(profiel?.leeftijd ?? 6))?.naam}</strong>.
+            Klopt dat niet voor jouw kind, kies dan zelf:
+          </p>
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
             {MODI.map((m) => (
               <button
@@ -213,7 +247,19 @@ function OuderPaneel() {
         </section>
 
         <section className="card stack">
-          <h2>Instellingen</h2>
+          <div className="row" style={{ justifyContent: 'space-between', gap: 12 }}>
+            <h2 style={{ margin: 0 }}>Instellingen</h2>
+            {/* Van modus wisselen laat deze schuifjes expres staan — het kunnen jouw
+                keuzes zijn. Maar dan moet er wel een weg terug zijn. */}
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={herstelInstellingen}
+              style={{ minHeight: 44, fontSize: '0.9rem' }}
+            >
+              ↺ Standaard voor {MODI.find((m) => m.id === profiel?.modus)?.naam.split(' ·')[0]}
+            </button>
+          </div>
           {schakel(
             'spraak',
             'Pip praat vanzelf',

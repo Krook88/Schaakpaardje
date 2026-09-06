@@ -4,11 +4,27 @@ import {
   modusVoorLeeftijd,
   standaardInstellingen,
   volgendeOpenLes,
+  useProfielStore,
+  instellingenVan,
   STANDAARD_INSTELLINGEN,
   type LesResultaat,
   type Modus,
 } from '@/progress/store'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
+
+// De store bewaart zichzelf in localStorage. Die bestaat hier niet, en zustand roept
+// dan bij elke set een waarschuwing over de testuitvoer heen. Een emmertje volstaat.
+const emmer = new Map<string, string>()
+globalThis.localStorage = {
+  getItem: (k: string) => emmer.get(k) ?? null,
+  setItem: (k: string, v: string) => void emmer.set(k, v),
+  removeItem: (k: string) => void emmer.delete(k),
+  clear: () => emmer.clear(),
+  key: (i: number) => [...emmer.keys()][i] ?? null,
+  get length() {
+    return emmer.size
+  },
+} as Storage
 import { pipZinnen } from '@/content/voice'
 import * as stem from '@/content/voice'
 
@@ -149,5 +165,70 @@ describe('hoe Pip praat', () => {
     for (const zin of alles) {
       expect(geexporteerd.has(zin), `staat niet in een export: "${zin}"`).toBe(true)
     }
+  })
+})
+
+describe('de leeftijd bijstellen', () => {
+  // De leeftijd werd één keer gevraagd en daarna nooit meer opgeslagen dan wel
+  // gewijzigd: een kind dat jarig werd bleef voorgoed vijf, en de modus dus ook.
+  const verse = () => {
+    useProfielStore.setState({ profielen: [], actiefId: null, voortgang: {}, instellingen: {} })
+    const id = useProfielStore.getState().maakProfiel('Sanne', 5, '🐴')
+    return id
+  }
+
+  it('slaat bij het aanmaken de leeftijd en de bijpassende modus op', () => {
+    verse()
+    const p = useProfielStore.getState().profielen[0]
+    expect(p.leeftijd).toBe(5)
+    expect(p.modus).toBe('pip')
+  })
+
+  it('schuift de modus mee als de leeftijd omhoog gaat', () => {
+    verse()
+    useProfielStore.getState().zetLeeftijd(8)
+    const p = useProfielStore.getState().profielen[0]
+    expect(p.leeftijd).toBe(8)
+    expect(p.modus).toBe('schaker')
+  })
+
+  it('laat de ouder de modus daarna alsnog zelf kiezen', () => {
+    // Een achtjarige die nog nooit geschaakt heeft is beter af op Ontdekker.
+    verse()
+    useProfielStore.getState().zetLeeftijd(8)
+    useProfielStore.getState().zetModus('ontdekker')
+    const p = useProfielStore.getState().profielen[0]
+    expect(p.leeftijd).toBe(8)
+    expect(p.modus).toBe('ontdekker')
+  })
+
+  it('raakt de voortgang niet aan', () => {
+    const id = verse()
+    useProfielStore.getState().bewaarLes(ALLE_LESSEN[0].id, { sterren: 3, fouten: 0, hints: 0 })
+    const voor = useProfielStore.getState().voortgang[id]
+    useProfielStore.getState().zetLeeftijd(10)
+    expect(useProfielStore.getState().voortgang[id]).toEqual(voor)
+  })
+})
+
+describe('instellingen terugzetten naar de modus', () => {
+  it('laat de instellingen staan als de modus verandert', () => {
+    // Ze kunnen keuzes van de ouder zijn; die overschrijf je niet stilzwijgend.
+    useProfielStore.setState({ profielen: [], actiefId: null, voortgang: {}, instellingen: {} })
+    useProfielStore.getState().maakProfiel('Sanne', 5, '🐴')
+    useProfielStore.getState().zetInstelling('effecten', false)
+    useProfielStore.getState().zetLeeftijd(9)
+    expect(instellingenVan(useProfielStore.getState()).effecten).toBe(false)
+    expect(instellingenVan(useProfielStore.getState()).coordinaten).toBe(false)
+  })
+
+  it('zet ze op verzoek wél terug naar de standaard van de huidige modus', () => {
+    // Anders houdt een profiel dat op vijf jaar is aangemaakt voorgoed het rustige
+    // tempo en de veldnamen uit, ook als het kind inmiddels negen is.
+    useProfielStore.setState({ profielen: [], actiefId: null, voortgang: {}, instellingen: {} })
+    useProfielStore.getState().maakProfiel('Sanne', 5, '🐴')
+    useProfielStore.getState().zetLeeftijd(9)
+    useProfielStore.getState().herstelInstellingen()
+    expect(instellingenVan(useProfielStore.getState())).toEqual(standaardInstellingen('schaker'))
   })
 })

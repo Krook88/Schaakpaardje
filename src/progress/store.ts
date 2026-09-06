@@ -142,8 +142,18 @@ type State = {
   kiesProfiel: (id: string) => void
   verwijderProfiel: (id: string) => void
   zetInstelling: <K extends keyof Instellingen>(sleutel: K, waarde: Instellingen[K]) => void
+  /**
+   * De ouder zet de leeftijd bij, en de modus schuift mee.
+   *
+   * De leeftijd werd één keer gevraagd en daarna nooit meer: een kind dat jarig was
+   * bleef voorgoed vijf. Verzetten past ook de modus aan, want dat is waar de leeftijd
+   * voor dient; wie daarna een andere modus wil, kiest die er los bij.
+   */
+  zetLeeftijd: (leeftijd: number) => void
   /** De ouder verzet de modus van het actieve profiel. Verandert geen voortgang. */
   zetModus: (modus: Modus) => void
+  /** Alle schuifjes terug naar wat bij de huidige modus hoort. */
+  herstelInstellingen: () => void
   bewaarLes: (lesId: string, resultaat: Omit<LesResultaat, 'laatst'>) => void
   bewaarHervatpunt: (lesId: string, fase: string | null) => void
   bewaarOpfrissing: (lesId: string) => void
@@ -191,12 +201,43 @@ export const useProfielStore = create<State>()(
         set({ actiefId: id })
       },
 
+      zetLeeftijd(leeftijd) {
+        set((s) => {
+          if (!s.actiefId) return s
+          return {
+            profielen: s.profielen.map((p) =>
+              p.id === s.actiefId
+                ? { ...p, leeftijd, modus: modusVoorLeeftijd(leeftijd) }
+                : p,
+            ),
+          }
+        })
+      },
+
       zetModus(modus) {
         set((s) => {
           if (!s.actiefId) return s
           return {
             profielen: s.profielen.map((p) => (p.id === s.actiefId ? { ...p, modus } : p)),
           }
+        })
+      },
+
+      /**
+       * Terug naar de standaard van de huidige modus.
+       *
+       * Van modus wisselen laat de instellingen expres staan: het kunnen keuzes van de
+       * ouder zijn, en die overschrijf je niet stilzwijgend. Maar dan moet er wel een
+       * weg terug zijn — anders houdt een profiel dat op vijf jaar is aangemaakt tot in
+       * lengte van dagen het rustige tempo en de veldnamen uit, ook als het kind
+       * inmiddels negen is.
+       */
+      herstelInstellingen() {
+        set((s) => {
+          const id = s.actiefId
+          if (!id) return s
+          const modus = s.profielen.find((p) => p.id === id)?.modus ?? 'pip'
+          return { instellingen: { ...s.instellingen, [id]: standaardInstellingen(modus) } }
         })
       },
 
