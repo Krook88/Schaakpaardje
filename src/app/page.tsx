@@ -32,7 +32,31 @@ export default function Thuis() {
   const stickers = useStickers()
   const verslagen = useVerslagen()
 
-  if (!geladen) return <main className="page" />
+  // De staat vóór de opgeslagen profielen binnen zijn.
+  //
+  // Hier stond `<main className="page" />` — een leeg vlak. Dat is precies wat een
+  // zoekmachine van de startpagina binnenkreeg: nul tekens tekst. De hele app is
+  // client-side, dus dit lege vlak was letterlijk de geëxporteerde index.html.
+  //
+  // Nu staat er wat de app is en waar je meer kunt lezen. Een kind ziet het een
+  // fractie van een seconde; een zoekmachine ziet het altijd.
+  if (!geladen) {
+    return (
+      <main className="page">
+        <div className="stack" style={{ maxWidth: 620, margin: '0 auto' }}>
+          <h1 style={{ fontSize: '1.9rem', margin: 0 }}>Schaakmaatje</h1>
+          <p style={{ fontSize: '1.1rem', margin: 0 }}>
+            Leer schaken met Pip het schaakpaardje. Gratis, in het Nederlands, voor kinderen
+            van 3 tot 10 jaar. Pip leest alles voor, dus lezen hoeft nog niet.
+          </p>
+          <p className="muted" style={{ margin: 0 }}>
+            <Link href="/over/">Over Schaakmaatje</Link> ·{' '}
+            <Link href="/lessen/">Alle {WERELDEN.flatMap((w) => w.lessen).length} lessen</Link>
+          </p>
+        </div>
+      </main>
+    )
+  }
 
   if (!profiel) {
     return (
@@ -403,6 +427,12 @@ function NieuwProfiel({
         <p className="muted" style={{ fontSize: '0.85rem' }}>
           Alles blijft op dit apparaat. Er gaat niets naar internet en je hoeft nergens een
           account voor te maken.
+        </p>
+        {/* Voor de ouder die eerst wil weten waar hij zijn kind op zet — en meteen de
+            enige link vanaf de startpagina naar de twee pagina's die zonder de app te
+            lezen zijn. Zonder zo'n link staan ze los in de sitemap en verder nergens. */}
+        <p className="muted" style={{ fontSize: '0.85rem', margin: 0 }}>
+          <Link href="/over/">Over Schaakmaatje</Link> · <Link href="/lessen/">Alle lessen</Link>
         </p>
       </section>
     </div>
