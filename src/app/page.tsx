@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
 import { kies } from '@/audio/voice'
-import { WELKOM, WELKOM_TERUG } from '@/content/voice'
+import { WELKOM, pipZinnen } from '@/content/voice'
 import { lesMet, WERELDEN } from '@/content'
 import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
 import { aantalBezit, verzameling } from '@/progress/verzameling'
@@ -46,7 +46,7 @@ export default function Thuis() {
     )
   }
 
-  const verder = volgendeOpenLes(voortgang)
+  const verder = volgendeOpenLes(voortgang, profiel.modus)
   const verderLes = lesMet(verder.id)
   const totaal = sterrenTotaal(voortgang)
   const maxSterren = WERELDEN.flatMap((w) => w.lessen).length * 3
@@ -87,7 +87,7 @@ export default function Thuis() {
           // stem van de tablet, precies tussen alle zinnen die Pip zelf zegt in — dat
           // hoor je meteen. De naam staat toch al groot in de kop hierboven, en welke
           // les het is staat op de knop eronder.
-          zegt={kies(WELKOM_TERUG, 'welkom')}
+          zegt={kies(pipZinnen(profiel.modus === 'schaker').WELKOM_TERUG, 'welkom')}
           stemming="blij"
         />
 

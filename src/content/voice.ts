@@ -141,3 +141,82 @@ export const OPFRISSER_KLAAR = 'Alles nog paraat. Mooi zo!'
 export const OPFRISSER_LEEG = 'Er is nog niets om op te frissen. Ga eerst maar lekker verder.'
 export const OPFRISSER_START = 'Even kijken of je het nog weet.'
 export const WEET_JE_HET_NOG = 'Weet je het nog?'
+
+
+/* ---------------------------------------------------------------------------
+ * Dezelfde zinnen, maar dan voor de oudste groep.
+ *
+ * "Hoppa! Precies goed." en "Nee joh, niet erg" zijn precies goed voor een vierjarige
+ * en precies verkeerd voor een tienjarige: die hoort er iemand in die hem te jong
+ * inschat, en dan telt het compliment niet meer. Warm blijven, alleen zonder
+ * kleuterstem — geen "hoor", geen "joh", geen "hoppa".
+ *
+ * Alleen de categorieën die wringen krijgen een variant. De lesteksten zelf blijven één
+ * versie: die gaan over het schaken, en daar verandert de leeftijd niets aan. Dat
+ * scheelt ook driemaal inspreken van dertigduizend tekens.
+ * ------------------------------------------------------------------------- */
+
+export const PRIJS_OUDER = [
+  'Goed gezien.',
+  'Klopt precies.',
+  'Ja, die is het.',
+  'Netjes.',
+  'Helemaal goed.',
+] as const
+
+export const PRIJS_LAATSTE_OUDER = [
+  'Alles gevonden. Netjes.',
+  'Compleet, en alles goed.',
+  'Dat was de laatste.',
+] as const
+
+export const BIJNA_OUDER = [
+  'Nog niet. Kijk nog eens.',
+  'Die kan niet. Kijk waar het stuk heen mag.',
+  'Net niet. Probeer een ander veld.',
+] as const
+
+export const AANMOEDIGING_OUDER = ['Rustig kijken.', 'Neem de tijd.', 'Je komt er wel.'] as const
+
+export const STER1_OUDER = ['Eén ster. Nog een keer proberen?'] as const
+export const STER2_OUDER = ['Twee sterren. De volgende les staat open.'] as const
+export const STER3_OUDER = ['Drie sterren, en een sticker erbij.'] as const
+
+export const WERELD_AF_OUDER = [
+  'Deze wereld is uit. Goed bezig.',
+  'Wereld uitgespeeld. Hoefijzer verdiend.',
+] as const
+
+export const WELKOM_TERUG_OUDER = [
+  'Daar ben je weer. Verder waar je gebleven was?',
+  'Welkom terug. Zullen we verder?',
+] as const
+
+export const PARTIJ_VERLOREN_OUDER = [
+  'Deze ging naar de ander. Kijk even terug waar het misging.',
+  'Verloren. Er zaten wel goede zetten bij.',
+] as const
+
+/** Op het spelersscherm: de oudste groep hoeft niet aangemoedigd te worden om makkelijk te beginnen. */
+export const TEGEN_WIE_OUDER = 'Tegen wie wil je spelen?'
+
+/**
+ * De zinnen die bij deze speler horen.
+ *
+ * `ouder` is waar in de schaker-modus (8-10). Bewust een boolean en niet de modus zelf:
+ * de content weet niets van profielen, en dat moet zo blijven.
+ */
+export function pipZinnen(ouder: boolean) {
+  return {
+    PRIJS: ouder ? PRIJS_OUDER : PRIJS,
+    PRIJS_LAATSTE: ouder ? PRIJS_LAATSTE_OUDER : PRIJS_LAATSTE,
+    BIJNA: ouder ? BIJNA_OUDER : BIJNA,
+    AANMOEDIGING: ouder ? AANMOEDIGING_OUDER : AANMOEDIGING,
+    STER1: ouder ? STER1_OUDER : STER1,
+    STER2: ouder ? STER2_OUDER : STER2,
+    STER3: ouder ? STER3_OUDER : STER3,
+    WERELD_AF: ouder ? WERELD_AF_OUDER : WERELD_AF,
+    WELKOM_TERUG: ouder ? WELKOM_TERUG_OUDER : WELKOM_TERUG,
+    PARTIJ_VERLOREN: ouder ? PARTIJ_VERLOREN_OUDER : PARTIJ_VERLOREN,
+  } satisfies Record<string, readonly string[]>
+}

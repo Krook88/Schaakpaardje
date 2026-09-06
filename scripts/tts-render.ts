@@ -97,14 +97,27 @@ function blokken(): Blok[] {
       return true
     })
 
-  const reacties = new Set<string>()
-  for (const waarde of Object.values(pip)) {
-    if (typeof waarde === 'string') reacties.add(waarde)
-    else if (Array.isArray(waarde)) waarde.forEach((z) => typeof z === 'string' && reacties.add(z))
-  }
-  reacties.delete('Pip')
+  // De zinnen voor de oudste groep apart houden, en ná de gewone. Een kind hoort er
+  // maar één van de twee sets, en welke hangt van de modus af — wie een budget opgeeft
+  // moet dus eerst de set krijgen die iederéén hoort. In het overzicht hieronder zie je
+  // meteen wat de tweede toon kost.
+  const isOuder = (sleutel: string) => sleutel.endsWith('_OUDER')
 
-  const uit: Blok[] = [{ naam: 'Pips reacties en schermzinnen', zinnen: nieuw(reacties) }]
+  const verzamel = (kies: (sleutel: string) => boolean) => {
+    const uit = new Set<string>()
+    for (const [sleutel, waarde] of Object.entries(pip)) {
+      if (!kies(sleutel)) continue
+      if (typeof waarde === 'string') uit.add(waarde)
+      else if (Array.isArray(waarde)) waarde.forEach((z) => typeof z === 'string' && uit.add(z))
+    }
+    uit.delete('Pip')
+    return uit
+  }
+
+  const uit: Blok[] = [
+    { naam: 'Pips reacties en schermzinnen', zinnen: nieuw(verzamel((k) => !isOuder(k))) },
+    { naam: 'Pip tegen de oudste groep (8-10)', zinnen: nieuw(verzamel(isOuder)) },
+  ]
 
   for (const wereld of WERELDEN) {
     const zinnen = new Set<string>([wereld.belofte])

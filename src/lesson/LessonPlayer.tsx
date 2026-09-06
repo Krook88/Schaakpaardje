@@ -10,17 +10,7 @@ import { Sterren } from '@/ui/Sterren'
 import { Teller } from '@/ui/Teller'
 import { sfx } from '@/audio/sfx'
 import { kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
-import {
-  AANMOEDIGING,
-  BIJNA,
-  OPNIEUW_PROBEREN,
-  PRIJS,
-  PRIJS_LAATSTE,
-  STER1,
-  STER2,
-  STER3,
-  WERELD_AF,
-} from '@/content/voice'
+import { HINT_GEGEVEN, OPNIEUW_PROBEREN, pipZinnen } from '@/content/voice'
 import { volgendeLes, type Lesson, type World } from '@/content'
 import { vertelTekst, vertelWijzers } from '@/content/types'
 import { type Square } from '@/engine/board'
@@ -37,6 +27,7 @@ import {
 import {
   useInstellingen,
   useHervatpunt,
+  useModus,
   useProfielStore,
   useToestandGeladen,
   useVoortgang,
@@ -86,6 +77,10 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   const hervat = useHervatpunt(les.id)
   const geefSticker = useProfielStore((s) => s.geefSticker)
   const instellingen = useInstellingen()
+  const modus = useModus()
+  // Dezelfde categorieën, maar in de toon die bij deze speler past. "Hoppa! Precies
+  // goed" is voor een vierjarige precies raak en voor een tienjarige precies mis.
+  const zinnen = useMemo(() => pipZinnen(modus === 'schaker'), [modus])
   const voortgang = useVoortgang()
   const geladen = useToestandGeladen()
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -194,15 +189,15 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
       })
       setZin(
         wereldKlaar
-          ? kies(WERELD_AF, 'wereld')
-          : kies(behaald === 3 ? STER3 : behaald === 2 ? STER2 : STER1, 'sterren'),
+          ? kies(zinnen.WERELD_AF, 'wereld')
+          : kies(behaald === 3 ? zinnen.STER3 : behaald === 2 ? zinnen.STER2 : zinnen.STER1, 'sterren'),
       )
       return
     }
     startFase(volgende)
   }, [
     fase, toetsFouten, toetsHints, bewaarLes, bewaarHervatpunt, geefSticker, les.id,
-    startFase, voortgang, wereld.id,
+    startFase, voortgang, wereld.id, zinnen,
   ])
 
   const volgendeOpgave = useCallback(() => {
@@ -229,15 +224,15 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
         // 'juicht' in plaats van 'blij': dat is ook de stemming waarin Pip staat als
         // er niets gebeurt, dus een goed antwoord veranderde visueel helemaal niets.
         setStemming('juicht')
-        setZin(kies(klaar ? PRIJS_LAATSTE : PRIJS, 'prijs'))
+        setZin(kies(klaar ? zinnen.PRIJS_LAATSTE : zinnen.PRIJS, 'prijs'))
         if (klaar) naHetPraten(volgendeOpgave)
       } else {
         if (instellingen.effecten) sfx.fout()
         setStemming('moedigt')
-        setZin(tip ?? kies(BIJNA, 'bijna'))
+        setZin(tip ?? kies(zinnen.BIJNA, 'bijna'))
       }
     },
-    [instellingen.effecten, naHetPraten, volgendeOpgave],
+    [instellingen.effecten, naHetPraten, volgendeOpgave, zinnen],
   )
 
   const opVeld = useCallback(
@@ -268,7 +263,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
         }
         case 'sla':
           if (instellingen.effecten) sfx.slaan()
-          setZin(kies(PRIJS, 'prijs'))
+          setZin(kies(zinnen.PRIJS, 'prijs'))
           break
         case 'zet':
           if (instellingen.effecten) sfx.zet()
@@ -281,7 +276,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
           break
       }
     },
-    [stand, instellingen.effecten, reageer, fase],
+    [stand, instellingen.effecten, reageer, fase, zinnen],
   )
 
   const opQuiz = useCallback(
@@ -310,9 +305,11 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
     setStand(r.stand)
     setHintVelden(r.velden)
     setStemming('denkt')
-    setZin(r.velden.length ? 'Kijk eens naar het veld dat oplicht.' : kies(AANMOEDIGING, 'moed'))
+    // HINT_GEGEVEN en niet dezelfde zin nog eens overgetypt: een letterlijke zin hier
+    // ontsnapt aan `npm run audio:dekking` en wordt dus stilletjes niet ingesproken.
+    setZin(r.velden.length ? HINT_GEGEVEN : kies(zinnen.AANMOEDIGING, 'moed'))
     if (fase === 'toets') setToetsHints((n) => n + 1)
-  }, [stand, fase])
+  }, [stand, fase, zinnen])
 
   /* ---------- wat er op het bord te zien is ---------- */
 

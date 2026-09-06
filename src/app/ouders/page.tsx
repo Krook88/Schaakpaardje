@@ -12,6 +12,7 @@ import {
   useProfielStore,
   useVoortgang,
   type Instellingen,
+  type Modus,
 } from '@/progress/store'
 
 /**
@@ -19,6 +20,27 @@ import {
  * voorkomt dat een kind per ongeluk instellingen omzet, en het is wat Apple en Google
  * van een kinder-app verwachten.
  */
+const MODI: { id: Modus; naam: string; uitleg: string }[] = [
+  {
+    id: 'pip',
+    naam: 'Pip · 3-5',
+    uitleg:
+      'Begint bij de eerste les en werkt het pad af. Drie tegenstanders in beeld, Pip praat rustig en waarschuwt voor een blunder.',
+  },
+  {
+    id: 'ontdekker',
+    naam: 'Ontdekker · 6-8',
+    uitleg:
+      'De Weide, Torenburcht en Loperbos staan meteen open, dus wachten hoeft niet. Vijf tegenstanders in beeld.',
+  },
+  {
+    id: 'schaker',
+    naam: 'Schaker · 8-10',
+    uitleg:
+      'Alle werelden tot en met Waardevallei staan meteen open. Alle tegenstanders in beeld, velden krijgen hun naam (a1, e4), geen blunderwaarschuwing, en Pip praat wat volwassener.',
+  },
+]
+
 export default function Ouders() {
   const [open, setOpen] = useState(false)
   // De som wordt pas in de browser gekozen: willekeur tijdens het prerenderen geeft
@@ -92,6 +114,7 @@ function OuderPaneel() {
   const voortgang = useVoortgang()
   const instellingen = useInstellingen()
   const zetInstelling = useProfielStore((s) => s.zetInstelling)
+  const zetModus = useProfielStore((s) => s.zetModus)
   const verwijderProfiel = useProfielStore((s) => s.verwijderProfiel)
   const gespeeld = useGespeeld()
 
@@ -152,6 +175,41 @@ function OuderPaneel() {
             })}
             {gedaan === 0 && <li className="muted">Nog niets gedaan. De eerste les staat klaar.</li>}
           </ul>
+        </section>
+
+        {/* De leeftijdsmodus doet nu iets, dus hoort hij hier te staan.
+            Hij werd bij het aanmaken van het profiel uit de leeftijd berekend en daarna
+            nooit meer gelezen: een driejarige en een tienjarige kregen letterlijk
+            hetzelfde scherm. Nu bepaalt hij drie dingen, en dus moet een ouder hem
+            kunnen verzetten — een achtjarige die nog nooit geschaakt heeft is hier
+            beter af op Ontdekker. */}
+        <section className="card stack">
+          <h2>Leeftijd</h2>
+          <p className="muted" style={{ margin: 0 }}>
+            Bepaalt waar {profiel?.naam ?? 'je kind'} mag beginnen op de kaart, hoeveel
+            tegenstanders er meteen te zien zijn, en hoe Pip praat. Het verandert niets aan de
+            lessen zelf, en niets aan wat er al gehaald is.
+          </p>
+          <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+            {MODI.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                className="btn"
+                onClick={() => zetModus(m.id)}
+                aria-pressed={profiel?.modus === m.id}
+                style={{
+                  minHeight: 56,
+                  padding: '0 16px',
+                  borderColor: profiel?.modus === m.id ? 'var(--accent)' : undefined,
+                  background: profiel?.modus === m.id ? 'var(--accent-soft)' : undefined,
+                }}
+              >
+                {m.naam}
+              </button>
+            ))}
+          </div>
+          <small className="muted">{MODI.find((m) => m.id === profiel?.modus)?.uitleg}</small>
         </section>
 
         <section className="card stack">

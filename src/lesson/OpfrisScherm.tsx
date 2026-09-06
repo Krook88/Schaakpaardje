@@ -5,18 +5,16 @@ import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Confetti } from '@/ui/Confetti'
 import { Kop } from '@/ui/Kop'
+import { pipZinnen } from '@/content/voice'
 import { Teller } from '@/ui/Teller'
 import { Pip, type PipStemming } from '@/ui/Pip'
 import { sfx } from '@/audio/sfx'
 import { kies, wachtTotUitgesproken } from '@/audio/voice'
 import {
-  BIJNA,
   HINT_GEGEVEN,
   OPFRISSER_KLAAR,
   OPFRISSER_LEEG,
   OPFRISSER_START,
-  PRIJS,
-  PRIJS_LAATSTE,
   WEET_JE_HET_NOG,
 } from '@/content/voice'
 import { type Square } from '@/engine/board'
@@ -30,7 +28,7 @@ import {
   type OpgaveStand,
 } from '@/lesson/runner'
 import { kiesOpfrisopgaven, type Opfrisopgave } from '@/lesson/opfrisser'
-import { useInstellingen, useProfielStore, useToestandGeladen, useVoortgang } from '@/progress/store'
+import { useInstellingen, useModus, useProfielStore, useToestandGeladen, useVoortgang } from '@/progress/store'
 import styles from './LessonPlayer.module.css'
 
 /**
@@ -45,6 +43,7 @@ export function OpfrisScherm() {
   const geladen = useToestandGeladen()
   const voortgang = useVoortgang()
   const instellingen = useInstellingen()
+  const zinnen = pipZinnen(useModus() === 'schaker')
   const bewaarOpfrissing = useProfielStore((s) => s.bewaarOpfrissing)
 
   // Eén keer kiezen, bij binnenkomst. Zou dit elke hertekening opnieuw gebeuren, dan
@@ -98,7 +97,7 @@ export function OpfrisScherm() {
   const gelukt = useCallback(() => {
     if (instellingen.effecten) sfx.goed()
     setStemming('blij')
-    setZin(kies(PRIJS_LAATSTE, 'prijs'))
+    setZin(kies(zinnen.PRIJS_LAATSTE, 'prijs'))
     if (timer.current) clearTimeout(timer.current)
     // Eerst Pip laten uitpraten, dan pas de volgende opgave.
     timer.current = setTimeout(() => void wachtTotUitgesproken().then(verder), 700)
@@ -116,7 +115,7 @@ export function OpfrisScherm() {
           break
         case 'goed':
           if (instellingen.effecten) sfx.goed()
-          setZin(kies(PRIJS, 'prijs'))
+          setZin(kies(zinnen.PRIJS, 'prijs'))
           setStemming('juicht')
           break
         case 'zet':
@@ -133,7 +132,7 @@ export function OpfrisScherm() {
           setShake(null)
           setTimeout(() => setShake(veld), 0)
           const tip = 'foutTip' in r.stand.opgave ? r.stand.opgave.foutTip : undefined
-          setZin(tip ?? kies(BIJNA, 'bijna'))
+          setZin(tip ?? kies(zinnen.BIJNA, 'bijna'))
           setStemming('moedigt')
           break
         }
@@ -156,7 +155,7 @@ export function OpfrisScherm() {
         setTimeout(() => setQuizFout(i), 0)
         if (instellingen.effecten) sfx.fout()
         const tip = 'foutTip' in r.stand.opgave ? r.stand.opgave.foutTip : undefined
-        setZin(tip ?? kies(BIJNA, 'bijna'))
+        setZin(tip ?? kies(zinnen.BIJNA, 'bijna'))
         setStemming('moedigt')
       }
     },

@@ -7,7 +7,7 @@ import { Kop } from '@/ui/Kop'
 import { Pip, type PipStemming } from '@/ui/Pip'
 import { sfx } from '@/audio/sfx'
 import { kies, wachtTotUitgesproken } from '@/audio/voice'
-import { BIJNA, HINT_GEGEVEN, OPNIEUW_PROBEREN, PRIJS, PRIJS_LAATSTE } from '@/content/voice'
+import { HINT_GEGEVEN, OPNIEUW_PROBEREN, pipZinnen } from '@/content/voice'
 import { type Square } from '@/engine/board'
 import {
   doelVelden,
@@ -17,7 +17,7 @@ import {
   tik,
   type OpgaveStand,
 } from '@/lesson/runner'
-import { useInstellingen } from '@/progress/store'
+import { useInstellingen, useModus } from '@/progress/store'
 import { minispelMet, zaad, type Minispel } from './minispellen'
 
 const NIVEAUS = 6
@@ -25,6 +25,7 @@ const NIVEAUS = 6
 export function MinispelScherm({ spelId }: { spelId: string }) {
   const spel = useMemo(() => minispelMet(spelId) as Minispel, [spelId])
   const instellingen = useInstellingen()
+  const zinnen = pipZinnen(useModus() === 'schaker')
   const [niveau, setNiveau] = useState(1)
   const [stand, setStand] = useState<OpgaveStand>(() => startOpgave(minispelMet(spelId)!.maakOpgave(1, zaad(1))))
   const [zin, setZin] = useState(() => minispelMet(spelId)!.uitleg)
@@ -73,7 +74,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
           break
         case 'goed':
           if (instellingen.effecten) sfx.goed()
-          setZin(kies(PRIJS, 'prijs'))
+          setZin(kies(zinnen.PRIJS, 'prijs'))
           setStemming('juicht')
           break
         case 'sla':
@@ -85,7 +86,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
         case 'klaar': {
           if (instellingen.effecten) sfx.ster()
           setGehaald((n) => n + 1)
-          setZin(kies(PRIJS_LAATSTE, 'prijs'))
+          setZin(kies(zinnen.PRIJS_LAATSTE, 'prijs'))
           setStemming('trots')
           const volgend = Math.min(niveau + 1, NIVEAUS)
           // Wachten tot Pip is uitgesproken, anders kapt het volgende rondje hem af.
@@ -100,7 +101,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
           // twee keer dezelfde misser maar één keer.
           setShake(null)
           setTimeout(() => setShake(veld), 0)
-          setZin(kies(BIJNA, 'bijna'))
+          setZin(kies(zinnen.BIJNA, 'bijna'))
           setStemming('moedigt')
           break
         case 'opnieuw':

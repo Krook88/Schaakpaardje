@@ -13,15 +13,15 @@ import {
   PARTIJ_GEWONNEN,
   PARTIJ_REMISE,
   PARTIJ_START,
-  PARTIJ_VERLOREN,
   SCHAAK_TEGEN_JOU,
   SCHAAK_VAN_JOU,
   ZET_TERUGGENOMEN,
+  pipZinnen,
 } from '@/content/voice'
 import { PIECE_NAME, type Square } from '@/engine/board'
 import { Game, materialBalance } from '@/engine/game'
 import { getBot, KidBot } from '@/engine/bots'
-import { useInstellingen, useProfielStore } from '@/progress/store'
+import { useInstellingen, useModus, useProfielStore } from '@/progress/store'
 import { OPSTELLING } from './opstellingen'
 
 type Uitslag = 'gewonnen' | 'verloren' | 'remise' | null
@@ -30,6 +30,7 @@ export function PartijScherm({ botId }: { botId: string }) {
   const bot = useMemo(() => (botId === 'samen' ? null : (getBot(botId) ?? null)), [botId])
   const opzet = OPSTELLING[bot?.id ?? 'samen']
   const instellingen = useInstellingen()
+  const zinnen = pipZinnen(useModus() === 'schaker')
   const bewaarPartij = useProfielStore((s) => s.bewaarPartij)
   const bewaarOverwinning = useProfielStore((s) => s.bewaarOverwinning)
 
@@ -94,7 +95,7 @@ export function PartijScherm({ botId }: { botId: string }) {
       }
       if (status.reason === 'mat') {
         const jijWint = status.winner === 'w'
-        eindig(jijWint ? 'gewonnen' : 'verloren', kies(jijWint ? PARTIJ_GEWONNEN : PARTIJ_VERLOREN, 'einde'))
+        eindig(jijWint ? 'gewonnen' : 'verloren', kies(jijWint ? PARTIJ_GEWONNEN : zinnen.PARTIJ_VERLOREN, 'einde'))
       } else {
         eindig('remise', kies(PARTIJ_REMISE, 'einde'))
       }

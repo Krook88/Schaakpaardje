@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Kop } from '@/ui/Kop'
 import { Sterren } from '@/ui/Sterren'
 import { WERELDEN } from '@/content'
-import { isOntgrendeld, useToestandGeladen, useVoortgang, wereldIsAf } from '@/progress/store'
+import { isOntgrendeld, useModus, useToestandGeladen, useVoortgang, wereldIsAf } from '@/progress/store'
 import styles from './Kaart.module.css'
 
 /**
@@ -13,6 +13,7 @@ import styles from './Kaart.module.css'
  */
 export default function Kaart() {
   const voortgang = useVoortgang()
+  const modus = useModus()
   const geladen = useToestandGeladen()
 
   // Zonder deze pauze toont de voorgerenderde HTML alle lessen op slot, en flitst dat
@@ -40,7 +41,7 @@ export default function Kaart() {
           // blijft zichtbaar — het wapen, de naam, de belofte — maar het neemt geen
           // halve pagina meer in beslag. Zodra er één les opengaat, klapt de wereld
           // vanzelf helemaal open.
-          const open = wereld.lessen.some((les) => isOntgrendeld(les.id, voortgang))
+          const open = wereld.lessen.some((les) => isOntgrendeld(les.id, voortgang, modus))
           if (!open) {
             return (
               <section
@@ -96,7 +97,7 @@ export default function Kaart() {
               <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
                 {wereld.lessen.map((les) => {
                   const resultaat = voortgang[les.id]
-                  const open = isOntgrendeld(les.id, voortgang)
+                  const open = isOntgrendeld(les.id, voortgang, modus)
                   const inhoud = (
                     <>
                       {/* Het beeld eerst: dat is waar een kind van vier de les aan
