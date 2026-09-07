@@ -60,6 +60,16 @@ const FASE_VOLGORDE: Fase[] = ['kijken', 'meedoen', 'zelf', 'toets']
 export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   const [fase, setFase] = useState<Fase>('kijken')
   const [vertelIndex, setVertelIndex] = useState(0)
+  /**
+   * Naar welke fase we terugkeren na een tussentijds kijkje in de uitleg.
+   *
+   * Een kind dat in "zelf doen" niet meer weet welk stuk de dame ook alweer was, kon
+   * nergens heen: de uitleg was drie schermen terug en er was geen weg terug behalve de
+   * hele les opnieuw. Nu is het oogje in de fasebalk aan te tikken. Dit onthoudt waar
+   * het kind vandaan kwam, zodat het daarna verdergaat waar het gebleven was in plaats
+   * van opnieuw te beginnen.
+   */
+  const [kijkTerug, setKijkTerug] = useState<Fase | null>(null)
   const [opgaveIndex, setOpgaveIndex] = useState(0)
   const [stand, setStand] = useState<OpgaveStand | null>(null)
   const [zin, setZin] = useState<string>(les.vertel[0] ? vertelTekst(les.vertel[0]) : '')
@@ -400,14 +410,22 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
               type="button"
               className="btn btn--primary btn--big"
               onClick={() => {
-                if (laatste) startFase('meedoen')
-                else setVertelIndex((i) => i + 1)
+                if (!laatste) return setVertelIndex((i) => i + 1)
+                // Kwam het kind hier vanuit een opgave, dan gaat het daar ook weer
+                // heen — met dezelfde opgave op hetzelfde punt. De les opnieuw laten
+                // beginnen zou van "even terugkijken" een straf maken.
+                if (kijkTerug) {
+                  setFase(kijkTerug)
+                  setKijkTerug(null)
+                  return
+                }
+                startFase('meedoen')
               }}
             >
               <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1 }}>
-                {laatste ? '🤝' : '▶︎'}
+                {!laatste ? '▶︎' : kijkTerug ? '↩︎' : '🤝'}
               </span>{' '}
-              {laatste ? 'Ik ga het proberen' : 'Verder'}
+              {!laatste ? 'Verder' : kijkTerug ? 'Terug naar de opgave' : 'Ik ga het proberen'}
             </button>
           </div>
         </div>
@@ -488,7 +506,16 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
     <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
       <Kop titel={`${les.titel} · ${FASE_NAAM[fase]}`} terug="/kaart/" />
       <WereldBand wereld={wereld} />
-      <FaseBalk nu={fase} />
+      <FaseBalk
+        nu={fase}
+        opNogEensKijken={() => {
+          stopTimers()
+          stopSpeaking()
+          setKijkTerug(fase)
+          setVertelIndex(0)
+          setFase('kijken')
+        }}
+      />
 
       <div className="stack">
         <Pip zegt={zin} stemming={stemming} klein />
@@ -617,7 +644,18 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
  * dat er een begin en een eind aan zit — "Rijen en lijnen · Laat maar zien" in de
  * bovenbalk leest het niet.
  */
-function FaseBalk({ nu }: { nu: Fase }) {
+/**
+ * De vier fasen als beeld, en het oogje als weg terug.
+ *
+ * Een kind dat in "zelf doen" niet meer weet welk stuk de dame ook alweer was, kon
+ * nergens heen: de uitleg lag drie schermen terug en de enige uitweg was de hele les
+ * opnieuw. Het oogje is nu een knop — "laat het nog eens zien" — en brengt je daarna
+ * terug naar precies de opgave waar je was.
+ *
+ * Alleen het oogje, niet alle vier: de andere fasen terugzetten zou voortgang
+ * weggooien, en dit moet een kijkje zijn en geen valstrik.
+ */
+function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => void }) {
   const hier = FASE_VOLGORDE.indexOf(nu)
   return (
     <div
@@ -625,7 +663,23 @@ function FaseBalk({ nu }: { nu: Fase }) {
       style={{ justifyContent: 'center', gap: 10, marginBottom: 8, flexWrap: 'nowrap' }}
       aria-label={`Stap ${hier + 1} van 4: ${FASE_NAAM[nu]}`}
     >
-      {FASE_VOLGORDE.map((f, i) => (
+      {FASE_VOLGORDE.map((f, i) => {
+        const terugknop = f === 'kijken' && Boolean(opNogEensKijken) && nu !== 'kijken'
+        if (terugknop) {
+          return (
+            <button
+              key={f}
+              type="button"
+              className={styles.nogEens}
+              onClick={opNogEensKijken}
+              aria-label="Laat de uitleg nog eens zien"
+              title="Laat de uitleg nog eens zien"
+            >
+              <span aria-hidden="true">{FASE_BEELD[f]}</span>
+            </button>
+          )
+        }
+        return (
         <span
           key={f}
           aria-hidden="true"
@@ -645,7 +699,8 @@ function FaseBalk({ nu }: { nu: Fase }) {
         >
           {FASE_BEELD[f]}
         </span>
-      ))}
+        )
+      })}
     </div>
   )
 }

@@ -381,6 +381,16 @@ const STUK_WOORDEN: Record<string, RegExp> = {
  * hij wijst de stukken eerst aan terwijl hij ze noemt. Wat niet mag, is een naam in een
  * opgave die nergens in de les is uitgelegd.
  */
+/**
+ * Noemt Pip dit stuk in de vertelfase én wijst hij het daarbij aan?
+ *
+ * Alleen zeggen is niet genoeg. Voor een kind dat niet leest is een naam zonder een
+ * vinger erbij geen introductie maar een klank.
+ */
+function verteldMetWijzer(les: Lesson, patroon: RegExp): boolean {
+  return les.vertel.some((zin) => patroon.test(vertelTekst(zin)) && vertelWijzers(zin).length > 0)
+}
+
 function vroegGenoemd(): { hard: Bevinding[]; zacht: string[] } {
   const hard: Bevinding[] = []
   const zacht: string[] = []
@@ -388,7 +398,6 @@ function vroegGenoemd(): { hard: Bevinding[]; zacht: string[] } {
 
   for (const [i, wereld] of WERELDEN.entries()) {
     for (const les of wereld.lessen) {
-      const verteld = les.vertel.map(vertelTekst).join(' ')
       for (const opgave of alleOpgaven(les)) {
         const vraag = 'vraag' in opgave ? opgave.vraag : ''
         if (!vraag) continue
@@ -396,8 +405,15 @@ function vroegGenoemd(): { hard: Bevinding[]; zacht: string[] } {
           if (!patroon.test(vraag)) continue
           const thuis = wereldIndex.get(STUK_WERELD[stuk])
           if (thuis === undefined || i >= thuis) continue
-          // Pip introduceert het stuk zelf in deze les: dan mag het.
-          if (patroon.test(verteld)) continue
+          // Pip introduceert het stuk zelf in deze les: dan mag het — maar dan moet hij
+          // het ook echt aanwíjzen.
+          //
+          // De eerste versie van deze regel eiste alleen dat het woord ergens in de les
+          // viel. Dat keurde de les goed waar een kind alsnog op vastliep: Pip noemde
+          // "de dame" één keer in de kijkfase, en drie schermen later in "zelf doen"
+          // had het kind daar niets meer aan. Een regel die met een losse vermelding
+          // tevreden is, lijkt streng en is het niet.
+          if (verteldMetWijzer(les, patroon)) continue
           const waar = `${wereld.naam} / ${les.titel}`
           const uitleg = `"${stuk}" wordt pas uitgelegd in ${WERELDEN[thuis].naam}`
           if (opgave.kind === 'tapSquares') {

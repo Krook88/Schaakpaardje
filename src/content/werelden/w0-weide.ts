@@ -220,7 +220,13 @@ export const wereld0: World = {
           kind: 'tapSquares',
           fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
           correct: ['d1'],
-          vraag: 'Waar staat de witte dame? Tik haar aan.',
+          // Elke andere opgave in deze les zegt er ook bíj waar het stuk staat ("in de
+          // hoeken", "naast de torens"). Deze niet, en dat was precies de opgave waar
+          // een kind op vastliep: de naam alleen helpt je niet als je hem net één keer
+          // gehoord hebt. "In het midden, op het lichte veld" wijst d1 eenduidig aan —
+          // e1 ernaast is donker — en herhaalt meteen wat de les zelf zegt: de dame
+          // staat op haar eigen kleur.
+          vraag: 'Tik de witte dame aan. Zij staat in het midden, op het lichte veld.',
           foutTip: 'De dame staat naast de koning, op haar eigen kleur.',
         },
         {

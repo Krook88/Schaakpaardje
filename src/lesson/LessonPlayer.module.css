@@ -148,3 +148,22 @@
 @media (prefers-reduced-motion: reduce) {
   .poort { animation: none; }
 }
+
+/* Het oogje in de fasebalk is buiten de kijkfase een knop: "laat het nog eens zien".
+   Hij moet er als een knop uitzien zonder de balk te laten schreeuwen — een rustige
+   rand en een handje, meer niet. Volle 44 bij 44, want kindervingers. */
+.nogEens {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  padding: 0;
+  cursor: pointer;
+  background: var(--surface);
+  border: 2px dashed var(--line);
+  color: inherit;
+}
+.nogEens:active { transform: scale(0.94); }
+.nogEens:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
