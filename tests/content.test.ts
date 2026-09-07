@@ -1,5 +1,11 @@
+import { vertelTekst } from '@/content/types'
 import { describe, expect, it } from 'vitest'
-import { alleZinnen, controleerContent, controleerOpgave } from '@/content/validate'
+import {
+  alleZinnen,
+  controleerContent,
+  controleerOpgave,
+  stukkenVroegGenoemd,
+} from '@/content/validate'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
 import { Game } from '@/engine/game'
 import { parseBoard } from '@/engine/board'
@@ -237,5 +243,33 @@ describe('een quiz mag niet te raden zijn', () => {
       .filter(([, t]) => t.goed + t.fout >= 5 && (t.goed === 0 || t.fout === 0))
       .map(([e, t]) => `${e} (${t.goed} goed, ${t.fout} fout)`)
     expect(verklikkers).toEqual([])
+  })
+})
+
+describe('een stuk noemen voor het is uitgelegd', () => {
+  // De echte fout: in "Wit rechtsonder" (wereld 0) werd gevraagd om "de twee witte
+  // torens", terwijl de toren pas in wereld 1 wordt uitgelegd. Alle 48 lessen en alle
+  // tests kwamen er ongehinderd doorheen — de stelling klopte, de velden bestonden,
+  // het antwoord was juist. Alleen de volgorde van het onderwijs deugde niet.
+  it('komt in geen enkele aanwijsopgave voor', () => {
+    // controleerContent() weigert dit; deze test legt vast waaróm.
+    expect(controleerContent().filter((b) => b.probleem.includes('aan te wijzen'))).toEqual([])
+  })
+
+  it('mag wel als Pip het stuk in diezelfde les introduceert', () => {
+    // Zo is weide-3 opgelost: Pip wijst torens, paarden en lopers eerst aan.
+    const weide3 = ALLE_LESSEN.find((l) => l.id === 'weide-3')!
+    const verteld = weide3.vertel.map(vertelTekst).join(' ')
+    for (const woord of [/\btorens?\b/i, /\bpaard(en)?\b/i, /\blopers?\b/i]) {
+      expect(woord.test(verteld), `${woord}`).toBe(true)
+    }
+  })
+
+  it('telt de gevallen waar een stuk alleen doelwit is, zonder ze te weigeren', () => {
+    // "Pak de zwarte pion die boven de toren staat" in Torenburcht is prima: je speelt
+    // met de toren die je net geleerd hebt, en de pion is aangewezen met een plek en
+    // een kleur. Je kunt niet leren slaan zonder iets om te slaan. Die worden dus
+    // geteld en getoond, niet geblokkeerd — maar het aantal mag niet ongemerkt groeien.
+    expect(stukkenVroegGenoemd().length).toBeLessThan(40)
   })
 })

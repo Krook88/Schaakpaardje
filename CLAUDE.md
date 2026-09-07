@@ -38,10 +38,38 @@ een kind hier verkeerd leert, moet het bij de club weer afleren.
 
 ```bash
 npm run dev              # ontwikkelserver
-npm run check            # typecheck + tests + build (draai dit vóór je pusht)
+npm run check            # typecheck + tests + content + build (draai dit vóór je pusht)
+npm run doorloop         # de app spelen als kind (vereist een draaiende `npx serve out`)
 npm run validate:content # alle stellingen en opgaven controleren
 npm run audio:render     # Pip inspreken (vereist ELEVENLABS_API_KEY)
 ```
+
+### Waarom er twee controles zijn
+
+`npm run check` kijkt naar types, content en losse functies. Dat vangt veel — de
+contentcontrole heeft echte fouten in stellingen en antwoorden gevonden — maar het
+mist een hele soort fouten: die welke pas ontstaan als je de app gebruikt.
+
+Vijf voorbeelden, allemaal echt gebeurd en allemaal ongehinderd door `check` heen:
+
+| wat er misging | waarom `check` het niet zag |
+|---|---|
+| Het goede antwoord op een quiz werd fout gerekend | Het scherm tekende de antwoorden in een andere volgorde dan de lesmotor ze nakeek. Beide lijsten bestonden en waren geldig; het verschil zat in één woord in de JSX. |
+| De opdracht verdween bij de eerste misser | Pas zichtbaar nadat je expres een fout maakt. |
+| Een minispel had geen einde | Pas zichtbaar als je zes rondjes uitspeelt. |
+| Pip ging schuil achter zijn eigen speldje | Alleen te zien, niet te meten. |
+| Er werd naar een toren gevraagd voor die was uitgelegd | De stelling klopte, het antwoord klopte, alleen de didactische volgorde niet. |
+
+`npm run doorloop` speelt de app daarom echt: het maakt expres een fout, speelt een
+minispel uit, tikt een quizantwoord aan. Elke regel erin is geleerd van een van
+bovenstaande fouten. **Gaat er iets stuk in dit soort gedrag, voeg dan een regel toe
+aan de doorloop in plaats van alleen de fout te repareren** — anders komt hij terug.
+
+Voor de laatste soort (didactische volgorde) is er wél een mechanische regel: de
+contentcontrole weigert een aanwijsopgave die naar een stuk vraagt dat pas in een
+latere wereld wordt uitgelegd. Zie `stukkenVroegGenoemd()` in `src/content/validate.ts`.
+
+En wat geen van beide vangt: of een kind het leuk vindt. Daar is een kind voor nodig.
 
 ## Hoe het in elkaar zit
 

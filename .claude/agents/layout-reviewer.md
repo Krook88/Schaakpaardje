@@ -25,6 +25,32 @@ Maak dan met Playwright (chromium staat in `/opt/pw-browsers/chromium`, zie
 
 Bewaar ze in `/tmp/review-<datum>/` en benoem in je rapport wat je op welke afbeelding ziet.
 
+## Doorlopen, niet alleen kijken
+
+Schermafbeeldingen zijn stilstaande beelden, en een hele soort fouten ontstaat pas als
+je iets dóet. Vijf echte fouten op één avond zaten precies daar, en geen van alle was
+op een plaatje te zien:
+
+- de opdracht in Pips ballon werd overschreven door de fouttip en kwam nooit terug;
+- een minispel had geen einde en deelde eindeloos rondjes uit;
+- het goede antwoord op een quiz werd fout gerekend, doordat het scherm de antwoorden
+  in een andere volgorde tekende dan de lesmotor ze nakeek.
+
+Draai daarom eerst `npm run doorloop` (zie `scripts/doorloop.mjs`). Die controleert een
+handvol van dit soort regels automatisch, en elke regel erin is geleerd van een echte
+fout. Staat er iets rood, dan begin je daar.
+
+En doe daarna zelf een ronde waarin je je misdraagt zoals een kind van vijf:
+
+- **Maak expres een fout.** Kun je daarna nog terugvinden wat de bedoeling was? Werkt
+  de luidsprekerknop dan nog en herhaalt hij de opdracht, of alleen de tip?
+- **Speel iets helemaal uit.** Een les, een minispel, een partij. Houdt het een keer op,
+  en weet je dat je klaar bent?
+- **Loop halverwege weg** (terug naar de kaart) en kom terug. Sta je op een plek die
+  klopt?
+- **Vraag om hulp.** Wijst het tipje echt iets aan, of gebeurt er niets?
+- **Tik op iets willekeurigs.** Loopt er iets vast of blijft de app rustig?
+
 ## Waar je op let
 
 **Leesbaarheid en rust**
@@ -42,6 +68,9 @@ Bewaar ze in `/tmp/review-<datum>/` en benoem in je rapport wat je op welke afbe
 - Is licht/donker rustig genoeg, en staan wit en zwart duidelijk uit elkaar?
 - Zijn markeringen (stip, ring, vinkje, kruisje, ster, hint) meteen te snappen en niet
   storend? Ze mogen het stuk eronder nooit verbergen.
+- Hetzelfde geldt voor Pip zelf: zijn speldje dekte ooit zijn halve gezicht af, zodat
+  je een ster met een stukje paard eronder zag. Bekijk hem in élke stemming, en op de
+  kleine variant, niet alleen de grote.
 
 **Layout**
 - Niets dat afgekapt wordt, niets dat horizontaal scrolt, geen overlappende elementen.

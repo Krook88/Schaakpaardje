@@ -20,7 +20,7 @@ import { Game } from '@/engine/game'
 import { goedeZetten } from '@/lesson/runner'
 import { geldigVeld, korstePad, slaAllesOp } from '@/engine/puzzels'
 import { WERELDEN } from './index'
-import { vertelTekst, vertelWijzers } from './types'
+import { alleOpgaven, vertelTekst, vertelWijzers } from './types'
 import type { Exercise, Lesson, World } from './types'
 
 export type Bevinding = { waar: string; probleem: string }
@@ -340,8 +340,109 @@ function controleerLes(les: Lesson, wereld: World): Bevinding[] {
   return uit
 }
 
+/**
+ * Welke wereld een stuk introduceert. De sleutel is de wereld-id uit de content zelf,
+ * dus dit blijft kloppen als de volgorde ooit verandert.
+ */
+const STUK_WERELD: Record<string, string> = {
+  toren: 'toren',
+  loper: 'loper',
+  dame: 'dame',
+  paard: 'paard',
+  koning: 'koning',
+  pion: 'pion',
+}
+
+/** Alle vormen waarin een stuk in een zin kan opduiken. */
+const STUK_WOORDEN: Record<string, RegExp> = {
+  toren: /\btorens?\b/i,
+  loper: /\blopers?\b/i,
+  dame: /\bdames?\b/i,
+  paard: /\bpaard(en|je|jes)?\b/i,
+  koning: /\bkoningen?\b/i,
+  pion: /\bpionn?(en|etje|etjes)?\b/i,
+}
+
+/**
+ * Noemt een opgave een stuk dat het kind nog nooit heeft gezien?
+ *
+ * Dit was een echte fout, en een die niemand ving. In "Wit rechtsonder" — de derde
+ * les van wereld nul — werd gevraagd om "de twee witte torens" en om de paarden.
+ * De toren wordt pas in wereld 1 uitgelegd en het paard pas in wereld 4, dus voor een
+ * kind dat netjes bij het begin begint vielen die namen uit de lucht. Het zag een vol
+ * bord, hoorde een woord dat het nooit geleerd had, en kon niets.
+ *
+ * Alle achtenveertig lessen en alle tests kwamen er ongehinderd doorheen: de stelling
+ * klopte, de velden bestonden, het antwoord was juist. Alleen de vólgorde van het
+ * onderwijs deugde niet, en daar keek niets naar.
+ *
+ * De uitzondering is belangrijk: Pip mag een stuk best eerder noemen, als hij het in
+ * diezelfde les ook introduceert. Precies dat is de oplossing die weide-3 nu gebruikt —
+ * hij wijst de stukken eerst aan terwijl hij ze noemt. Wat niet mag, is een naam in een
+ * opgave die nergens in de les is uitgelegd.
+ */
+function vroegGenoemd(): { hard: Bevinding[]; zacht: string[] } {
+  const hard: Bevinding[] = []
+  const zacht: string[] = []
+  const wereldIndex = new Map(WERELDEN.map((w, i) => [w.id, i]))
+
+  for (const [i, wereld] of WERELDEN.entries()) {
+    for (const les of wereld.lessen) {
+      const verteld = les.vertel.map(vertelTekst).join(' ')
+      for (const opgave of alleOpgaven(les)) {
+        const vraag = 'vraag' in opgave ? opgave.vraag : ''
+        if (!vraag) continue
+        for (const [stuk, patroon] of Object.entries(STUK_WOORDEN)) {
+          if (!patroon.test(vraag)) continue
+          const thuis = wereldIndex.get(STUK_WERELD[stuk])
+          if (thuis === undefined || i >= thuis) continue
+          // Pip introduceert het stuk zelf in deze les: dan mag het.
+          if (patroon.test(verteld)) continue
+          const waar = `${wereld.naam} / ${les.titel}`
+          const uitleg = `"${stuk}" wordt pas uitgelegd in ${WERELDEN[thuis].naam}`
+          if (opgave.kind === 'tapSquares') {
+            hard.push({
+              waar,
+              probleem:
+                `de opgave vraagt het kind een ${stuk} aan te wijzen, maar ${uitleg}. ` +
+                `De naam ís hier de opdracht, dus zonder die naam kan het kind niets. ` +
+                `Laat Pip het stuk in deze les eerst aanwijzen (met \`wijs\` in de ` +
+                `vertelfase), of vraag ernaar zonder de naam te gebruiken.`,
+            })
+          } else {
+            zacht.push(`${waar}: ${uitleg} — "${vraag}"`)
+          }
+        }
+      }
+    }
+  }
+  return { hard, zacht }
+}
+
+/**
+ * Stukken die genoemd worden vóór hun eigen wereld, maar niet blokkerend zijn.
+ *
+ * Het onderscheid zit in de vraag of de naam de opdracht ís. "Tik de twee witte torens
+ * aan" kan een kind niet zonder te weten wat een toren is: dat is blokkerend, en het
+ * was ook de echte fout die dit vond. Maar "Pak de zwarte pion die boven de toren
+ * staat" in Torenburcht is iets anders — daar speel je met de toren die je net geleerd
+ * hebt, en de pion is het doelwit, aangewezen met een plek en een kleur. Je kunt niet
+ * leren slaan zonder iets om te slaan.
+ *
+ * Die tweede soort wordt dus geteld en getoond, niet geweigerd. Wie de content schrijft
+ * kan er zelf naar kijken; de contentcontrole gaat er niet over oordelen waar hij het
+ * niet zeker weet.
+ */
+export function stukkenVroegGenoemd(): string[] {
+  return vroegGenoemd().zacht
+}
+
+function controleerVolgorde(): Bevinding[] {
+  return vroegGenoemd().hard
+}
+
 export function controleerContent(): Bevinding[] {
-  const uit: Bevinding[] = []
+  const uit: Bevinding[] = [...controleerVolgorde()]
   const lesIds = new Set<string>()
   const wereldIds = new Set<string>()
 
