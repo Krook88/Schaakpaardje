@@ -1,4 +1,4 @@
-import { vertelTekst } from '@/content/types'
+import { alleOpgaven, vertelTekst } from '@/content/types'
 import { describe, expect, it } from 'vitest'
 import {
   alleZinnen,
@@ -256,13 +256,38 @@ describe('een stuk noemen voor het is uitgelegd', () => {
     expect(controleerContent().filter((b) => b.probleem.includes('aan te wijzen'))).toEqual([])
   })
 
-  it('mag wel als Pip het stuk in diezelfde les introduceert', () => {
-    // Zo is weide-3 opgelost: Pip wijst torens, paarden en lopers eerst aan.
-    const weide3 = ALLE_LESSEN.find((l) => l.id === 'weide-3')!
-    const verteld = weide3.vertel.map(vertelTekst).join(' ')
-    for (const woord of [/\btorens?\b/i, /\bpaard(en)?\b/i, /\blopers?\b/i]) {
-      expect(woord.test(verteld), `${woord}`).toBe(true)
+  it('komt in wereld 0 helemaal niet voor, in geen enkele vorm', () => {
+    // Sterker dan de regel eist, en met opzet. Wereld 0 is er voor kinderen van drie
+    // en bevat volgens docs/02 géén enkele schaakregel — alleen kijken, tellen en
+    // aanwijzen. Er stond eerst een les die om de dame, de torens en de paarden vroeg;
+    // die is verhuisd naar het eind van Pionnenveld, waar alle stukken bekend zijn.
+    // Sluipt hier ooit weer een stuk binnen, dan is dat een besluit dat je bewust
+    // neemt en niet iets wat er per ongeluk in glijdt.
+    const wereld0 = WERELDEN[0]
+    const alleTekst = wereld0.lessen
+      .flatMap((l) => [
+        ...l.vertel.map(vertelTekst),
+        ...alleOpgaven(l).map((o) => ('vraag' in o ? o.vraag : '')),
+        ...alleOpgaven(l).map((o) => ('foutTip' in o && o.foutTip ? o.foutTip : '')),
+      ])
+      .join(' ')
+    for (const woord of [/\btorens?\b/i, /\blopers?\b/i, /\bdames?\b/i, /\bpaard(en)?\b/i, /\bkoningen?\b/i, /\bpionn?en?\b/i]) {
+      expect(woord.test(alleTekst), `${woord} in ${wereld0.naam}`).toBe(false)
     }
+  })
+
+  it('zet de opstelling pas neer als alle zes de stukken geleerd zijn', () => {
+    // De les "Zet het bord op" noemt alle zes de stukken. Hij mag dus nooit vóór
+    // Pionnenveld komen te staan, want daar wordt het laatste stuk uitgelegd.
+    const index = ALLE_LESSEN.findIndex((l) => l.id === 'opstelling')
+    expect(index, 'de les "Zet het bord op" bestaat').toBeGreaterThan(-1)
+    const wereldVanOpstelling = WERELDEN.findIndex((w) => w.lessen.some((l) => l.id === 'opstelling'))
+    const laatsteStuk = Math.max(
+      ...['toren', 'loper', 'dame', 'paard', 'koning', 'pion'].map((id) =>
+        WERELDEN.findIndex((w) => w.id === id),
+      ),
+    )
+    expect(wereldVanOpstelling).toBeGreaterThanOrEqual(laatsteStuk)
   })
 
   it('telt de gevallen waar een stuk alleen doelwit is, zonder ze te weigeren', () => {

@@ -182,31 +182,30 @@ export const wereld0: World = {
       id: 'weide-3',
       wereldId: 'weide',
       titel: 'Wit rechtsonder',
-      icoon: '🧩',
-      doel: 'Je kind legt het bord goed neer en zet de stukken op hun plek.',
-      geleerd: 'Nu leg jij het bord goed neer en zet je alle stukken op hun plek.',
+      icoon: '🧭',
+      doel: 'Je kind legt het bord goed neer: rechtsonder hoort een licht veld.',
+      geleerd: 'Nu leg jij het bord altijd goed neer. Wit rechts!',
+      /*
+       * Deze les ging over het bord én over de stukken, en dat laatste hoorde hier niet.
+       *
+       * Drie van de vijf opgaven vroegen om de dame, de torens en de paarden — stukken
+       * die pas in wereld 3, 1 en 4 worden uitgelegd. Een kind dat netjes bij het begin
+       * begint zag hier een vol bord en een opdracht over iets waarvan het het woord
+       * nog nooit gehoord had. Ik heb dat eerst geprobeerd op te lossen door Pip de
+       * stukken vooraf te laten aanwijzen, maar dat is pleisterwerk: wereld 0 is er
+       * volgens docs/02 juist voor kinderen van drie, en bevat met opzet géén enkele
+       * schaakregel — alleen kijken, tellen en aanwijzen.
+       *
+       * Het opstellen is verhuisd naar het eind van Pionnenveld, waar alle zes de
+       * stukken bekend zijn. Wat hier overblijft is waar de les eigenlijk over gaat:
+       * hoe je het bord neerlegt. Dat kan op een leeg bord, en dat is precies goed.
+       */
       vertel: [
         'Voor je gaat schaken leg je het bord goed neer.',
-        'Onthoud dit: wit rechts. Het veld rechtsonder is altijd licht.',
-        // De stukken worden hier voor het eerst bij naam genoemd, en dat moest ook wel:
-        // twee opgaven verderop wordt om "de twee witte torens" gevraagd, en om de
-        // paarden. Die namen kwamen daar uit de lucht vallen — de toren wordt pas in
-        // wereld 1 uitgelegd, het paard pas in wereld 4. Een kind zag een vol bord en
-        // een opdracht over iets waarvan het het woord nog nooit gehoord had.
-        //
-        // Nu wijst Pip ze eerst aan terwijl hij ze noemt, van buiten naar binnen. Dat
-        // is geen les over hoe ze lopen — dat blijft voor hun eigen wereld — maar
-        // alleen hoe ze heten en waar ze staan. Precies wat deze les nodig heeft: het
-        // bord goed neerleggen.
-        { tekst: 'In de hoeken staan de torens.', wijs: ['a1', 'h1'] },
-        { tekst: 'Daarnaast de paarden, en dan de lopers.', wijs: ['b1', 'g1', 'c1', 'f1'] },
-        {
-          tekst: 'En de dame? Die staat op haar eigen kleur. De witte dame op een licht veld.',
-          wijs: ['d1'],
-        },
-        { tekst: 'De koning staat ernaast. Dat is iedereen.', wijs: ['e1'] },
+        { tekst: 'Onthoud dit: wit rechts. Het veld rechtsonder is altijd licht.', wijs: ['h1'] },
+        { tekst: 'Een bord heeft vier hoeken. Twee lichte en twee donkere.', wijs: ['a1', 'h1', 'h8', 'a8'] },
       ],
-      vertelFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
+      vertelFen: LEEG,
       meedoen: [
         {
           kind: 'tapSquares',
@@ -218,22 +217,19 @@ export const wereld0: World = {
       zelf: [
         {
           kind: 'tapSquares',
-          fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
-          correct: ['d1'],
-          // Elke andere opgave in deze les zegt er ook bíj waar het stuk staat ("in de
-          // hoeken", "naast de torens"). Deze niet, en dat was precies de opgave waar
-          // een kind op vastliep: de naam alleen helpt je niet als je hem net één keer
-          // gehoord hebt. "In het midden, op het lichte veld" wijst d1 eenduidig aan —
-          // e1 ernaast is donker — en herhaalt meteen wat de les zelf zegt: de dame
-          // staat op haar eigen kleur.
-          vraag: 'Tik de witte dame aan. Zij staat in het midden, op het lichte veld.',
-          foutTip: 'De dame staat naast de koning, op haar eigen kleur.',
+          fen: LEEG,
+          correct: ['a1', 'h1', 'a8', 'h8'],
+          vraag: 'Tik alle vier de hoeken van het bord aan.',
+          foutTip: 'Een hoek is een veld waar twee randen samenkomen.',
         },
         {
           kind: 'tapSquares',
-          fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
-          correct: ['a1', 'h1'],
-          vraag: 'Tik de twee witte torens aan. Die staan in de hoeken.',
+          fen: LEEG,
+          // h1 en a8 zijn de lichte hoeken; a1 en h8 de donkere. Dat is geen toeval
+          // maar de reden dat "wit rechtsonder" werkt.
+          correct: ['h1', 'a8'],
+          vraag: 'Twee hoeken zijn licht. Tik die twee aan.',
+          foutTip: 'Zoek de zandkleurige hoeken, niet de groene.',
         },
       ],
       toets: [
@@ -248,9 +244,10 @@ export const wereld0: World = {
         },
         {
           kind: 'tapSquares',
-          fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
-          correct: ['b1', 'g1'],
-          vraag: 'Tik de twee witte paarden aan. Die staan naast de torens.',
+          fen: LEEG,
+          correct: ['a1'],
+          vraag: 'En het veld linksonder? Tik dat aan.',
+          foutTip: 'Helemaal onderaan, aan de andere kant.',
         },
       ],
       themas: ['bord', 'opstelling'],

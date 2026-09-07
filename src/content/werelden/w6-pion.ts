@@ -1,4 +1,5 @@
-import { type World } from '../types'
+import { START, type World } from '../types'
+import { rij } from '../velden'
 
 /**
  * Wereld 6 — Pionnenveld.
@@ -344,6 +345,95 @@ export const wereld6: World = {
         },
       ],
       themas: ['pion', 'en passant'],
+    },
+    {
+      /*
+       * Het bord opzetten hoort hier, niet in wereld 0.
+       *
+       * Deze les stond eerst als "Wit rechtsonder" in De Weide, en vroeg daar om de
+       * dame, de torens en de paarden — stukken die pas in wereld 3, 1 en 4 worden
+       * uitgelegd. Wereld 0 is er voor kinderen van drie en bevat met opzet geen enkele
+       * schaakregel; een kind zag daar een vol bord en een opdracht over iets waarvan
+       * het het woord nog nooit gehoord had.
+       *
+       * Hier klopt het wel. Pionnenveld is de laatste stukkenwereld: na deze les ken je
+       * de toren, de loper, de dame, het paard, de koning en de pion. Het bord opzetten
+       * is dan geen nieuwe stof maar een samenvatting — je zet alles neer wat je hebt
+       * leren kennen, en je verdient er het bronzen hoefijzer mee.
+       *
+       * Alle antwoorden worden nagerekend uit de stelling (`bedoeling`), zoals de
+       * afspraak in CLAUDE.md wil: geen overgetypte veldnamen.
+       */
+      id: 'opstelling',
+      wereldId: 'pion',
+      titel: 'Zet het bord op',
+      icoon: '🧩',
+      doel: 'Je kind zet alle stukken op hun juiste plek en weet dat de dame op haar eigen kleur staat.',
+      geleerd: 'Nu zet jij het hele bord zelf op. Alle stukken op hun eigen plek!',
+      vertel: [
+        'Je kent nu alle stukken. Dan kun je het bord ook helemaal zelf opzetten.',
+        { tekst: 'Wit rechts: het veld rechtsonder is licht.', wijs: ['h1'] },
+        { tekst: 'De torens in de hoeken, daarnaast de paarden, dan de lopers.', wijs: ['a1', 'h1', 'b1', 'g1', 'c1', 'f1'] },
+        { tekst: 'De dame op haar eigen kleur, en de koning naast haar.', wijs: ['d1', 'e1'] },
+        { tekst: 'En de pionnen staan er in een rij voor.', wijs: rij(2) },
+      ],
+      vertelFen: START,
+      meedoen: [
+        {
+          kind: 'tapSquares',
+          fen: START,
+          correct: ['a1', 'h1'],
+          bedoeling: { soort: 'stuk', type: 'r', kleur: 'w' },
+          vraag: 'Tik de twee witte torens aan. Die staan in de hoeken.',
+          foutTip: 'De torens staan helemaal in de hoeken van de onderste rij.',
+        },
+      ],
+      zelf: [
+        {
+          kind: 'tapSquares',
+          fen: START,
+          correct: ['b1', 'g1'],
+          bedoeling: { soort: 'stuk', type: 'n', kleur: 'w' },
+          vraag: 'Tik de twee witte paarden aan. Die staan naast de torens.',
+          foutTip: 'Zoek naast elke hoek eentje.',
+        },
+        {
+          kind: 'tapSquares',
+          fen: START,
+          correct: ['d1'],
+          bedoeling: { soort: 'stuk', type: 'q', kleur: 'w' },
+          vraag: 'Tik de witte dame aan. Zij staat op haar eigen kleur.',
+          foutTip: 'De witte dame staat op een licht veld, naast de koning.',
+        },
+        {
+          kind: 'tapSquares',
+          fen: START,
+          correct: ['c1', 'f1'],
+          bedoeling: { soort: 'stuk', type: 'b', kleur: 'w' },
+          vraag: 'Tik de twee witte lopers aan. Die staan naast de paarden.',
+          foutTip: 'Eentje op een licht veld, eentje op een donker veld.',
+        },
+      ],
+      toets: [
+        {
+          kind: 'quiz',
+          vraag: 'De witte dame staat op...',
+          opties: [
+            { label: 'een licht veld', veld: 'licht', goed: true },
+            { label: 'een donker veld', veld: 'donker' },
+          ],
+          foutTip: 'De dame staat op haar eigen kleur. De witte dame is licht.',
+        },
+        {
+          kind: 'tapSquares',
+          fen: START,
+          correct: ['e1'],
+          bedoeling: { soort: 'stuk', type: 'k', kleur: 'w' },
+          vraag: 'Tik de witte koning aan. Hij staat naast de dame.',
+          foutTip: 'De koning heeft een kruisje op zijn kroon.',
+        },
+      ],
+      themas: ['bord', 'opstelling'],
     },
   ],
 }

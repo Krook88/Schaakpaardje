@@ -151,9 +151,9 @@ async function quizRekentGoedGoed() {
   // Doorwerken tot de quiz "Welk veld is rechtsonder?" in beeld staat.
   const antwoorden = {
     'veld rechtsonder aan': ['h1'],
-    'witte dame': ['d1'],
-    'twee witte torens': ['a1', 'h1'],
-    'twee witte paarden': ['b1', 'g1'],
+    'vier de hoeken': ['a1', 'h1', 'a8', 'h8'],
+    'hoeken zijn licht': ['h1', 'a8'],
+    'veld linksonder': ['a1'],
   }
   for (let ronde = 0; ronde < 10; ronde++) {
     const goed = page.getByRole('button', { name: /een licht veld/ })
