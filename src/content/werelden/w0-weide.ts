@@ -188,7 +188,23 @@ export const wereld0: World = {
       vertel: [
         'Voor je gaat schaken leg je het bord goed neer.',
         'Onthoud dit: wit rechts. Het veld rechtsonder is altijd licht.',
-        'En de dame? Die staat op haar eigen kleur. De witte dame op een licht veld.',
+        // De stukken worden hier voor het eerst bij naam genoemd, en dat moest ook wel:
+        // twee opgaven verderop wordt om "de twee witte torens" gevraagd, en om de
+        // paarden. Die namen kwamen daar uit de lucht vallen — de toren wordt pas in
+        // wereld 1 uitgelegd, het paard pas in wereld 4. Een kind zag een vol bord en
+        // een opdracht over iets waarvan het het woord nog nooit gehoord had.
+        //
+        // Nu wijst Pip ze eerst aan terwijl hij ze noemt, van buiten naar binnen. Dat
+        // is geen les over hoe ze lopen — dat blijft voor hun eigen wereld — maar
+        // alleen hoe ze heten en waar ze staan. Precies wat deze les nodig heeft: het
+        // bord goed neerleggen.
+        { tekst: 'In de hoeken staan de torens.', wijs: ['a1', 'h1'] },
+        { tekst: 'Daarnaast de paarden, en dan de lopers.', wijs: ['b1', 'g1', 'c1', 'f1'] },
+        {
+          tekst: 'En de dame? Die staat op haar eigen kleur. De witte dame op een licht veld.',
+          wijs: ['d1'],
+        },
+        { tekst: 'De koning staat ernaast. Dat is iedereen.', wijs: ['e1'] },
       ],
       vertelFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
       meedoen: [

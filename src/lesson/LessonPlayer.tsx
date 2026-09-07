@@ -8,6 +8,7 @@ import { Pip, type PipStemming } from '@/ui/Pip'
 import { Confetti } from '@/ui/Confetti'
 import { Sterren } from '@/ui/Sterren'
 import { Teller } from '@/ui/Teller'
+import { gebruikTip } from '@/ui/gebruikTip'
 import { sfx } from '@/audio/sfx'
 import { kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import { HINT_GEGEVEN, OPNIEUW_PROBEREN, pipZinnen } from '@/content/voice'
@@ -85,6 +86,8 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
   const geladen = useToestandGeladen()
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
+  const { zegTip, afbreken: tipAfbreken } = gebruikTip(setZin)
+
   const later = useCallback((fn: () => void, ms: number) => {
     // Afgelopen timers eruit: anders groeit deze lijst een hele les lang door.
     const id = setTimeout(() => {
@@ -99,7 +102,8 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
     timers.current.forEach(clearTimeout)
     timers.current = []
     doorschakeling.current++
-  }, [])
+    tipAfbreken()
+  }, [tipAfbreken])
 
   /**
    * Doorschakelen zodra Pip is uitgesproken.
@@ -234,15 +238,21 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
         // 'juicht' in plaats van 'blij': dat is ook de stemming waarin Pip staat als
         // er niets gebeurt, dus een goed antwoord veranderde visueel helemaal niets.
         setStemming('juicht')
+        tipAfbreken()
         setZin(kies(klaar ? zinnen.PRIJS_LAATSTE : zinnen.PRIJS, 'prijs'))
         if (klaar) naHetPraten(volgendeOpgave)
       } else {
         if (instellingen.effecten) sfx.fout()
         setStemming('moedigt')
-        setZin(tip ?? kies(zinnen.BIJNA, 'bijna'))
+        // De opdracht komt na de tip terug: zonder dat was hij voorgoed weg, en Pips
+        // ballon is de enige plek waar staat wat de bedoeling was.
+        zegTip(
+          tip ?? kies(zinnen.BIJNA, 'bijna'),
+          stand && 'vraag' in stand.opgave ? stand.opgave.vraag : '',
+        )
       }
     },
-    [instellingen.effecten, naHetPraten, volgendeOpgave, zinnen],
+    [instellingen.effecten, naHetPraten, volgendeOpgave, zinnen, zegTip, tipAfbreken, stand],
   )
 
   const opVeld = useCallback(
@@ -281,7 +291,7 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
         case 'opnieuw':
           if (instellingen.effecten) sfx.fout()
           setStemming('moedigt')
-          setZin(kies(OPNIEUW_PROBEREN, 'opnieuw'))
+          zegTip(kies(OPNIEUW_PROBEREN, 'opnieuw'), 'vraag' in opgave ? opgave.vraag : '')
           if (fase === 'toets') setToetsFouten((n) => n + 1)
           break
       }

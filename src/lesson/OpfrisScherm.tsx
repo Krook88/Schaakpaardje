@@ -7,6 +7,7 @@ import { Confetti } from '@/ui/Confetti'
 import { Kop } from '@/ui/Kop'
 import { pipZinnen } from '@/content/voice'
 import { Teller } from '@/ui/Teller'
+import { gebruikTip } from '@/ui/gebruikTip'
 import { Pip, type PipStemming } from '@/ui/Pip'
 import { sfx } from '@/audio/sfx'
 import { kies, wachtTotUitgesproken } from '@/audio/voice'
@@ -66,6 +67,9 @@ export function OpfrisScherm() {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const huidig = ronde?.[index]
+  const { zegTip, afbreken: tipAfbreken } = gebruikTip(setZin)
+  /** De opdracht van de opgave die nu op het scherm staat, om na een tip te herstellen. */
+  const opdracht = huidig && 'vraag' in huidig.opgave ? huidig.opgave.vraag : WEET_JE_HET_NOG
 
   useEffect(() => {
     if (!huidig) return
@@ -115,6 +119,7 @@ export function OpfrisScherm() {
           break
         case 'goed':
           if (instellingen.effecten) sfx.goed()
+          tipAfbreken()
           setZin(kies(zinnen.PRIJS, 'prijs'))
           setStemming('juicht')
           break
@@ -132,7 +137,7 @@ export function OpfrisScherm() {
           setShake(null)
           setTimeout(() => setShake(veld), 0)
           const tip = 'foutTip' in r.stand.opgave ? r.stand.opgave.foutTip : undefined
-          setZin(tip ?? kies(zinnen.BIJNA, 'bijna'))
+          zegTip(tip ?? kies(zinnen.BIJNA, 'bijna'), opdracht)
           setStemming('moedigt')
           break
         }
@@ -155,7 +160,7 @@ export function OpfrisScherm() {
         setTimeout(() => setQuizFout(i), 0)
         if (instellingen.effecten) sfx.fout()
         const tip = 'foutTip' in r.stand.opgave ? r.stand.opgave.foutTip : undefined
-        setZin(tip ?? kies(zinnen.BIJNA, 'bijna'))
+        zegTip(tip ?? kies(zinnen.BIJNA, 'bijna'), opdracht)
         setStemming('moedigt')
       }
     },

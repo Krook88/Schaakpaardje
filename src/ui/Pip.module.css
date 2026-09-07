@@ -9,10 +9,19 @@
 .pip:active { transform: scale(0.96); }
 .pip:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .gezicht { font-size: 40px; line-height: 1; display: block; }
+/* Het speldje bij Pips stemming.
+   Vaste maat en een echte cirkel, in plaats van tekstgrootte plus binnenmarge: zo
+   groeide hij mee met het teken en dekte hij op de kleine Pip zijn halve gezicht af.
+   Je zag dan een ster met een stukje paard eronder. Hij hangt nu grotendeels buiten
+   de cirkel, als een meldingsbolletje. */
 .badge {
-  position: absolute; top: -6px; right: -6px; font-size: 20px;
-  background: var(--surface); border-radius: 50%; padding: 2px 4px;
+  position: absolute; top: -7px; right: -7px;
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  font-size: 15px; line-height: 1;
+  background: var(--surface); border-radius: 50%;
   border: 2px solid var(--line);
+  box-shadow: var(--shadow);
 }
 .ballon {
   position: relative; background: var(--surface); border: 2px solid var(--line);
@@ -42,6 +51,9 @@
 }
 .klein .pip { width: 52px; height: 52px; }
 .klein .gezicht { font-size: 27px; }
+/* Op de kleine Pip nog een maatje kleiner, anders is het speldje half zo groot als
+   het gezicht waar het bij hoort. */
+.klein .badge { width: 20px; height: 20px; font-size: 12px; top: -5px; right: -5px; }
 .klein .ballon { font-size: 0.92rem; padding: 9px 60px 9px 12px; }
 /* Pip beweegt, want zijn gezicht kan het nog niet.
  *

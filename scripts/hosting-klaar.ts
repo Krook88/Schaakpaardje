@@ -15,7 +15,7 @@
  * zijn. Daarom vervangen we alleen de URL-gecodeerde vorm (%5B…%5D), want dat is per
  * definitie een pad dat is opgevraagd, nooit een patroon.
  */
-import { readdirSync, renameSync, readFileSync, writeFileSync, existsSync, statSync } from 'node:fs'
+import { readdirSync, renameSync, readFileSync, writeFileSync, existsSync, statSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 
 const UIT = join(process.cwd(), 'out')
@@ -95,6 +95,46 @@ function main() {
       ? `Hosting-klaar: ${hernoemd.length} mappen hernoemd (${hernoemd.join(', ')}), ${aangepast} bestanden bijgewerkt.`
       : 'Hosting-klaar: geen blokhaken gevonden.',
   )
+
+  laatOpnamesMetRust()
+}
+
+/**
+ * Haal lege audiomappen uit de uitvoer, zodat ze de opnames op de server niet slopen.
+ *
+ * De mp3's staan met opzet niet in git — ze horen bij de release, niet bij de broncode.
+ * Maar `public/audio/manifest.json` staat er wél in, als leeg `{}`, en die kwam dus in
+ * elke zip terecht. Wie de zip over zijn webmap uitpakte, overschreef daarmee het
+ * manifest van de opnames die er al stonden: de app dacht vanaf dat moment dat er niets
+ * ingesproken was en viel terug op de stem van het apparaat. Twee minuten uploaden om
+ * negenduizend credits aan opnames onbruikbaar te maken.
+ *
+ * Is er niets ingesproken, dan hoort er ook niets in de zip te zitten. Ontbreekt het
+ * manifest, dan valt de app netjes terug op de apparaatstem — precies wat hij zonder
+ * opnames toch al doet. Staan er wél opnames, dan blijft alles staan en gaat het
+ * gewoon mee.
+ */
+function laatOpnamesMetRust() {
+  for (const map of ['audio', 'sfx']) {
+    const pad = join(UIT, map)
+    const manifest = join(pad, 'manifest.json')
+    if (!existsSync(manifest)) continue
+    let leeg = false
+    try {
+      leeg = Object.keys(JSON.parse(readFileSync(manifest, 'utf8'))).length === 0
+    } catch {
+      leeg = true
+    }
+    if (!leeg) {
+      console.log(`Hosting-klaar: ${map}/ bevat opnames en gaat mee.`)
+      continue
+    }
+    rmSync(pad, { recursive: true, force: true })
+    console.log(
+      `Hosting-klaar: ${map}/ was leeg en is uit de uitvoer gehaald, zodat het ` +
+        `de opnames op de server niet overschrijft.`,
+    )
+  }
 }
 
 main()

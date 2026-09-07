@@ -220,3 +220,6 @@ export function pipZinnen(ouder: boolean) {
     PARTIJ_VERLOREN: ouder ? PARTIJ_VERLOREN_OUDER : PARTIJ_VERLOREN,
   } satisfies Record<string, readonly string[]>
 }
+
+/** Als een minispel na zes rondjes uit is. Zonder deze zin had het spel geen einde. */
+export const SPEL_UIT = 'Alle rondjes gehaald! Wil je er nog een doen?'
