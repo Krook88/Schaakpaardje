@@ -57,6 +57,12 @@ const getal = (vlag: string) => {
 const limiet = getal('--limit')
 /** Hoogstens zoveel tekens deze ronde. Eén teken is ongeveer één credit. */
 const budget = getal('--budget')
+/** Zie hieronder: het manifest van de draaiende site als startpunt. */
+const tekst = (vlag: string) => {
+  const i = args.indexOf(vlag)
+  return i >= 0 ? args[i + 1] : null
+}
+const vanaf = tekst('--vanaf')
 
 /**
  * De proefzinnen: een dwarsdoorsnede van wat Pip de hele dag zegt.
@@ -142,6 +148,45 @@ function alleTeksten(): string[] {
   return blokken().flatMap((b) => b.zinnen)
 }
 
+/**
+ * Wat er al op de site staat, als startpunt.
+ *
+ * Dit is verreweg de grootste besparing die dit script kent, en de reden is saai: de
+ * mp3's staan met opzet niet in git, dus op een verse kloon is `public/audio/` leeg.
+ * Het script kijkt naar dat lege mapje, concludeert dat er niets is ingesproken, en
+ * rendert vrolijk alles opnieuw — inclusief de zinnen waar je de vorige keer al voor
+ * betaald hebt. Bij deze app is dat bijna tienduizend credits die je twee keer uitgeeft.
+ *
+ * Met `--vanaf https://schaakmaatje.nl` haalt hij eerst het manifest van de draaiende
+ * site op en behandelt alles wat daarin staat als klaar. Er wordt dan alleen
+ * ingesproken wat nieuw of veranderd is.
+ *
+ * De bestanden zelf hoeven daarvoor niet lokaal te staan: het manifest is een lijst van
+ * hashes, en de app zoekt de mp3 op de server. Wat dit script schrijft is dus precies
+ * de aanvulling — de nieuwe mp3's plus een manifest waar oud én nieuw in staat. Dat
+ * mapje zet je erbij op de server; je gooit er niets voor weg.
+ */
+async function haalOnline(basis: string): Promise<Record<string, { tekst: string; bytes: number }>> {
+  const url = `${basis.replace(/\/+$/, '')}/audio/manifest.json`
+  try {
+    const res = await fetch(url)
+    if (!res.ok) {
+      console.error(`Kon ${url} niet ophalen (${res.status}). Draai zonder --vanaf, of controleer het adres.`)
+      process.exit(1)
+    }
+    const inhoud = (await res.json()) as Record<string, { tekst: string; bytes: number }>
+    const aantal = Object.keys(inhoud).length
+    if (!aantal) {
+      console.error(`${url} is leeg. Dan valt er niets over te slaan — draai zonder --vanaf.`)
+      process.exit(1)
+    }
+    return inhoud
+  } catch (e) {
+    console.error(`Kon ${url} niet ophalen: ${(e as Error).message}`)
+    process.exit(1)
+  }
+}
+
 async function rendeer(tekst: string, sleutel: string, apiKey: string): Promise<number> {
   const res = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}?output_format=mp3_44100_128`,
@@ -175,10 +220,23 @@ async function main() {
   const manifest: Record<string, { tekst: string; bytes: number }> =
     existsSync(MANIFEST) && !force ? JSON.parse(readFileSync(MANIFEST, 'utf8')) : {}
 
+  /** Sleutels die op de server staan maar niet in dit mapje. */
+  const online = new Set<string>()
+  if (vanaf && !force) {
+    const alDaar = await haalOnline(vanaf)
+    for (const [sleutel, waarde] of Object.entries(alDaar)) {
+      online.add(sleutel)
+      manifest[sleutel] ??= waarde
+    }
+    console.log(`${online.size} zinnen staan al op ${vanaf} en worden overgeslagen.`)
+  }
+
   let teDoen = teksten.filter((tekst) => {
     const sleutel = zinSleutel(tekst)
     if (force) return true
-    return !manifest[sleutel] || !existsSync(join(UITVOER, `${sleutel}.mp3`))
+    if (!manifest[sleutel]) return true
+    // Staat hij online, dan hoeft het bestand hier niet te liggen.
+    return !online.has(sleutel) && !existsSync(join(UITVOER, `${sleutel}.mp3`))
   })
 
   if (proef) {
@@ -224,7 +282,10 @@ async function main() {
   if (dry) {
     console.log()
     let loop = 0
-    const nogTeDoen = new Set(teksten)
+    // Alleen wat er nog te doen is. Stond hier `new Set(teksten)`, dan telde de tabel
+    // ook de zinnen mee die al ingesproken zijn — en dan lees je dat wereld 1 nog
+    // 1483 credits kost terwijl hij allang op de server staat.
+    const nogTeDoen = new Set(teDoen)
     for (const blok of blokken()) {
       const open = blok.zinnen.filter((z) => nogTeDoen.has(z))
       const tekens = open.reduce((n, z) => n + z.length, 0)
@@ -261,6 +322,13 @@ async function main() {
     writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2))
   }
 
+  if (prune && vanaf) {
+    // Opruimen kijkt naar de bestanden die hier liggen, en met --vanaf is dat maar een
+    // deel van de waarheid: de rest staat op de server. Dan zou hij het manifest
+    // leegvegen voor zinnen die het prima doen.
+    console.error('--prune en --vanaf gaan niet samen: opruimen kan alleen met alle bestanden erbij.')
+    process.exit(1)
+  }
   if (prune && !proef && limiet === null) {
     const geldig = new Set(teksten.map(zinSleutel))
     for (const bestand of readdirSync(UITVOER)) {
@@ -277,6 +345,12 @@ async function main() {
 
   const over = teksten.filter((t) => !manifest[zinSleutel(t)]).length
   console.log(`Klaar. ${klaar} zinnen ingesproken, manifest bijgewerkt.`)
+  if (vanaf) {
+    console.log(
+      `In public/audio/ staan nu alleen de nieuwe opnames plus een manifest waar oud én ` +
+        `nieuw in staat. Zet die map erbij op de server — niets weggooien.`,
+    )
+  }
   if (over) {
     const tekens = teksten.filter((t) => !manifest[zinSleutel(t)]).reduce((n, t) => n + t.length, 0)
     console.log(`Nog ${over} zinnen te gaan (${tekens} credits). Draai dit script opnieuw wanneer je wilt.`)

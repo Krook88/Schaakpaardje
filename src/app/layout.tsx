@@ -40,6 +40,16 @@ export const metadata: Metadata = {
     images: ['/og.png'],
   },
   robots: { index: true, follow: true },
+  /*
+   * Het bewijs voor Google Search Console, als tweede route naast het DNS-record.
+   *
+   * Dit is geen geheim: een verificatiecode hoort juist openbaar in de HTML of in het
+   * DNS te staan, en hij geeft niemand toegang tot iets. Hij staat hier omdat een
+   * DNS-record uren kan duren en soms bij de verkeerde naam belandt, terwijl deze
+   * regel meteen werkt zodra de site online staat. Twee routes naar dezelfde
+   * verificatie, en beide mogen blijven staan.
+   */
+  verification: { google: '6CXFPUgzbTPIMzBI-UpGnp4hfkB25KwvvITfUPIdLUI' },
 }
 
 export const viewport: Viewport = {
