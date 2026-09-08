@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
 import { kies } from '@/audio/voice'
-import { WELKOM, pipZinnen } from '@/content/voice'
+import { EERSTE_KEER, WELKOM, pipZinnen } from '@/content/voice'
 import { lesMet, WERELDEN } from '@/content'
 import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
 import { aantalBezit, verzameling } from '@/progress/verzameling'
@@ -78,6 +78,8 @@ export default function Thuis() {
   // Alleen tonen als er echt iets ligt te verstoffen. Een knop die "niets te doen"
   // oplevert leert een kind de knop te negeren.
   const opfrissen = kiesOpfrisopgaven(voortgang).length
+  // Nog geen enkele les gedaan: dan is dit het allereerste scherm dat dit kind ziet.
+  const eersteKeer = Object.keys(voortgang).length === 0
   const stalVakken = verzameling(voortgang, verslagen)
   const inStal = aantalBezit(stalVakken)
 
@@ -111,9 +113,21 @@ export default function Thuis() {
           // stem van de tablet, precies tussen alle zinnen die Pip zelf zegt in — dat
           // hoor je meteen. De naam staat toch al groot in de kop hierboven, en welke
           // les het is staat op de knop eronder.
-          zegt={kies(pipZinnen(profiel.modus === 'schaker').WELKOM_TERUG, 'welkom')}
+          zegt={
+            eersteKeer
+              ? EERSTE_KEER
+              : kies(pipZinnen(profiel.modus === 'schaker').WELKOM_TERUG, 'welkom')
+          }
           stemming="blij"
         />
+
+        {/* De rondleiding, alleen zolang er nog niets gedaan is.
+            Wie hier voor het eerst komt kreeg vier knoppen en een lege stal, zonder
+            dat ergens stond wat dit is of wat je moet doen. Voor de ouder ernaast is
+            dat net zo goed onduidelijk als voor het kind. Zodra de eerste les gedaan
+            is verdwijnt hij vanzelf: uitleg die blijft staan als je het al weet is
+            geen uitleg meer maar meubilair. */}
+        {eersteKeer && <Rondleiding />}
 
         {/* Voortgang zonder letters: elke wereld één plaatje, in kleur als hij uit is.
             Het loopt van links naar rechts vol, en dat is de hele boodschap.
@@ -141,7 +155,10 @@ export default function Thuis() {
             <span aria-hidden="true" style={{ fontSize: 38, lineHeight: 1 }}>
               {verderLes?.icoon ?? '🐴'}
             </span>
-            <span style={{ flex: 1, textAlign: 'left' }}>Verder leren — {verder.titel}</span>
+            {/* "Verder leren" klopt niet als je nog nergens was. */}
+            <span style={{ flex: 1, textAlign: 'left' }}>
+              {eersteKeer ? 'De eerste les' : 'Verder leren'} — {verder.titel}
+            </span>
           </Link>
           {opfrissen > 0 && (
             <Link
@@ -319,6 +336,37 @@ function Stalrij({ vakken }: { vakken: { id: string; teken: string; naam: string
   )
 }
 
+/**
+ * De rondleiding op het eerste scherm.
+ *
+ * Drie regels, in de volgorde waarin de knoppen eronder staan, elk met hetzelfde
+ * plaatje als de knop waar hij over gaat. Dat plaatje is voor een kind dat niet leest
+ * de hele koppeling; de tekst is voor wie ernaast zit.
+ *
+ * Bewust geen doorklikbare tour met stipjes en "volgende": die moet je wegklikken
+ * voordat je iets kunt, en een kind van vier klikt hem weg zonder hem te lezen.
+ */
+function Rondleiding() {
+  const stappen: [string, string][] = [
+    ['▶︎', 'Met de grote knop begin je de volgende les. Pip legt alles voor je uit.'],
+    ['🗺️', 'Op de kaart zie je alle lessen achter elkaar, en waar jij nu bent.'],
+    ['♟️', 'Bij een partijtje speel je een echt spelletje tegen een maatje.'],
+  ]
+  return (
+    <section className="card stack" aria-label="Zo werkt het">
+      <h2 style={{ fontSize: '1.1rem' }}>Zo werkt het</h2>
+      {stappen.map(([teken, uitleg]) => (
+        <div key={uitleg} className="row" style={{ gap: 12, alignItems: 'flex-start' }}>
+          <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1.2, width: 32 }}>
+            {teken}
+          </span>
+          <p style={{ margin: 0, flex: 1 }}>{uitleg}</p>
+        </div>
+      ))}
+    </section>
+  )
+}
+
 function NieuwProfiel({
   bestaand,
   onKies,
@@ -336,6 +384,33 @@ function NieuwProfiel({
     <div className="stack">
       <h1>Schaakmaatje</h1>
       <Pip zegt={WELKOM} stemming="blij" />
+
+      {/* Wat dit is, vóór er iets ingevuld moet worden.
+          Hier stond meteen "Hoe heet je?". Wie via een zoekmachine of een tip van
+          iemand anders binnenkwam, moest dus een naam en een leeftijd van zijn kind
+          invullen om erachter te komen wat de app eigenlijk doet. Gemeld met "ik val
+          zo plots in het spel zonder enige uitleg".
+
+          Vier regels, gericht op de volwassene die ernaast zit — het kind luistert
+          naar Pip hierboven. Alleen bij een eerste bezoek: staat er al een profiel,
+          dan weet je het al en wil je gewoon doorklikken. */}
+      {bestaand.length === 0 && (
+        <section className="card stack" aria-label="Wat is Schaakmaatje?">
+          <p style={{ margin: 0, fontSize: '1.05rem' }}>
+            Leer schaken met Pip het schaakpaardje. Van het bord leren kennen tot je
+            eerste partij — in vijftien werelden, stap voor stap.
+          </p>
+          <ul className="stack" style={{ margin: 0, paddingLeft: '1.1em', gap: 6 }}>
+            <li>Pip leest alles voor, dus lezen hoeft nog niet.</li>
+            <li>Elke les duurt een paar minuten: Pip doet het voor, daarna doe jij het.</li>
+            <li>Je kunt niet verliezen. Geen levens, geen game-over, geen klok.</li>
+          </ul>
+          <p className="muted" style={{ margin: 0, fontSize: '0.9rem' }}>
+            Hieronder vul je een voornaam en een leeftijd in — daarmee kiest Pip hoe
+            moeilijk hij begint. <Link href="/over/">Lees eerst meer</Link> als je wilt.
+          </p>
+        </section>
+      )}
 
       {bestaand.length > 0 && (
         <section className="card stack">

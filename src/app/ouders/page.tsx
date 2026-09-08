@@ -43,21 +43,49 @@ const MODI: { id: Modus; naam: string; uitleg: string }[] = [
   },
 ]
 
+type Som = { a: number; b: number; antwoord: number }
+
+/**
+ * De som voor het rekenslot.
+ *
+ * Twee cijfers maal één, en met opzet geen tafeltjessom: 6 × 7 lost een kind van negen
+ * zo op, en dan is de drempel er niet meer. Twee cijfers maal één leert een kind pas op
+ * de basisschool in groep zes of zeven, en dan nog op papier.
+ *
+ * Wat wél is bijgesteld: de eenheden botsen niet meer. 32 × 9 vraagt onthouden en
+ * overdragen — dat is voor een ouder geen drempel maar een klusje, en dat was precies
+ * de klacht. Nu is het cijfer achter de tien altijd zo klein dat er niets overloopt:
+ * 31 × 9 splits je in 270 en 9 en ben je klaar. Voor een kind dat de bewerking niet
+ * kent verandert er niets — die kan hem sowieso niet.
+ *
+ * En als het toch een keer tegenzit, is er de knop "Andere som".
+ */
+function nieuweSom(): Som {
+  const b = 3 + Math.floor(Math.random() * 7)
+  // Eenheden die met b vermenigvuldigd onder de tien blijven, dus zonder overdracht.
+  const eenheid = 1 + Math.floor(Math.random() * Math.floor(9 / b))
+  // Vanaf twintig: 11 × 7 is voor een kind van negen nog wel te doen, 41 × 7 niet.
+  const tiental = 2 + Math.floor(Math.random() * 4)
+  const a = tiental * 10 + eenheid
+  return { a, b, antwoord: a * b }
+}
+
 export default function Ouders() {
   const [open, setOpen] = useState(false)
   // De som wordt pas in de browser gekozen: willekeur tijdens het prerenderen geeft
   // een hydratieverschil.
-  //
-  // Twee cijfers maal één, en geen tafeltjessom: 6 × 7 lost een kind van negen zo op,
-  // en dan is de drempel er niet meer. Voor een volwassene is 27 × 8 net zo snel.
-  const [som, setSom] = useState<{ a: number; b: number; antwoord: number } | null>(null)
-  useEffect(() => {
-    const a = 12 + Math.floor(Math.random() * 28)
-    const b = 3 + Math.floor(Math.random() * 7)
-    setSom({ a, b, antwoord: a * b })
-  }, [])
+  const [som, setSom] = useState<Som | null>(null)
+  useEffect(() => setSom(nieuweSom()), [])
   const [invoer, setInvoer] = useState('')
   const [misgelukt, setMisgelukt] = useState(false)
+
+  /** Een andere som, en met een schone lei. */
+  const andereSom = () => {
+    setSom(nieuweSom())
+    setInvoer('')
+    setMisgelukt(false)
+    document.getElementById('rekenslot')?.focus()
+  }
 
   if (!open) {
     if (!som) return <main className="page" />
@@ -88,21 +116,26 @@ export default function Ouders() {
               Dat klopt niet helemaal. Probeer het nog eens.
             </p>
           )}
-          <button
-            type="button"
-            className="btn btn--primary btn--big"
-            onClick={() => {
-              if (Number(invoer) === som.antwoord) {
-                setOpen(true)
-                return
-              }
-              setMisgelukt(true)
-              setInvoer('')
-              document.getElementById('rekenslot')?.focus()
-            }}
-          >
-            Verder
-          </button>
+          <div className="rij" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn btn--primary btn--big"
+              onClick={() => {
+                if (Number(invoer) === som.antwoord) {
+                  setOpen(true)
+                  return
+                }
+                setMisgelukt(true)
+                setInvoer('')
+                document.getElementById('rekenslot')?.focus()
+              }}
+            >
+              Verder
+            </button>
+            <button type="button" className="btn btn--big" onClick={andereSom}>
+              ↻ Andere som
+            </button>
+          </div>
         </div>
       </main>
     )

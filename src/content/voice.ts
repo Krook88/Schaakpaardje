@@ -128,6 +128,17 @@ export const WELKOM_TERUG = [
   'Daar ben je weer. Zullen we verder?',
 ] as const
 
+/**
+ * Wat Pip zegt als je voor het eerst binnenkomt.
+ *
+ * Zonder dit stond een kind na "Beginnen" ineens voor een scherm met vier knoppen en
+ * een lege stal, zonder dat iemand vertelde wat het was. Gemeld met "ik val zo plots in
+ * het spel zonder enige uitleg". De zin wijst één ding aan — de grote knop — en verder
+ * niets: wie voor het eerst ergens is, kan één opdracht onthouden, geen drie.
+ */
+export const EERSTE_KEER =
+  'Welkom in mijn stal! Druk op de grote oranje knop, dan gaan we samen beginnen.'
+
 export const KENNISMAKING = 'Leuk je te ontmoeten! We beginnen bij het bord.'
 export const TEGEN_WIE = 'Tegen wie wil je spelen? Begin gerust makkelijk hoor.'
 export const HINT_GEGEVEN = 'Kijk eens naar het veld dat oplicht.'
