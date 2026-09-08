@@ -41,6 +41,35 @@ import { zinSleutel } from '../src/audio/voice'
 import * as pip from '../src/content/voice'
 
 /**
+ * De sleutel uit `.env.local` halen als hij niet al in de omgeving staat.
+ *
+ * De foutmelding verderop verwees hier al naar, maar niets las dat bestand ooit — wie
+ * de sleutel er netjes in zette kreeg gewoon "zet ELEVENLABS_API_KEY in de omgeving".
+ *
+ * Het is bovendien de veiligere van de twee manieren. `export ELEVENLABS_API_KEY=sk_...`
+ * belandt in je shell-geschiedenis en blijft daar staan; een bestand dat in .gitignore
+ * staat niet. Handmatig ingelezen, want één regel eigen code is hier minder gedoe dan
+ * een pakket erbij.
+ */
+function laadEnvLocal() {
+  const pad = join(process.cwd(), '.env.local')
+  if (!existsSync(pad)) return
+  for (const regel of readFileSync(pad, 'utf8').split('\n')) {
+    const schoon = regel.trim()
+    if (!schoon || schoon.startsWith('#')) continue
+    const isGelijk = schoon.indexOf('=')
+    if (isGelijk < 1) continue
+    const naam = schoon.slice(0, isGelijk).trim()
+    // Aanhalingstekens eromheen zijn gebruikelijk en horen er niet bij te blijven.
+    const waarde = schoon.slice(isGelijk + 1).trim().replace(/^["']|["']$/g, '')
+    // Wat al in de omgeving staat wint: een expliciete export moet altijd voorgaan.
+    if (!process.env[naam]) process.env[naam] = waarde
+  }
+}
+
+laadEnvLocal()
+
+/**
  * Pips stem: een vrouwenstem, ontworpen voor deze app — warm, rustig, en enthousiast
  * zonder schril te worden. Vervangen? Zet ELEVENLABS_VOICE_ID in de omgeving.
  *
@@ -336,7 +365,10 @@ async function main() {
 
   const apiKey = process.env.ELEVENLABS_API_KEY
   if (!apiKey) {
-    console.error('Zet ELEVENLABS_API_KEY in de omgeving (bijvoorbeeld in .env.local).')
+    console.error('Geen ELEVENLABS_API_KEY gevonden.')
+    console.error('Zet hem in .env.local naast package.json:')
+    console.error('  ELEVENLABS_API_KEY=sk_jouwsleutel')
+    console.error('Of eenmalig in de omgeving: export ELEVENLABS_API_KEY=sk_jouwsleutel')
     process.exit(1)
   }
 
