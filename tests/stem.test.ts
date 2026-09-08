@@ -224,3 +224,94 @@ describe('wachten tot Pip is uitgesproken', () => {
     expect(Date.now() - t0).toBeLessThan(500)
   })
 })
+
+describe('als het apparaat de stem inslikt', () => {
+  /**
+   * Een browser weigert geluid tot er getikt is. Bij een opname zegt hij dat met een
+   * NotAllowedError; bij de apparaatstem zegt hij niets en doet hij niets. Het gevolg
+   * was stilte, en voor een kind dat niet leest is stilte hetzelfde als een leeg
+   * scherm. Gemeld met "ik hoor ook niets, klopt dat?".
+   *
+   * Dus kijken we even later of hij is gaan praten, en zetten we de zin anders klaar
+   * voor de eerstvolgende aanraking. Precies één keer: op een apparaat dat helemaal
+   * geen stem heeft zou herhalen bij elke tik erger zijn dan de stilte.
+   */
+  function stilleBrowser() {
+    gezegd.length = 0
+    luisteraars = {}
+    // Een speechSynthesis die de zin aanneemt en er niets mee doet: speaking blijft
+    // false, pending blijft false, en onstart komt nooit. Dat is wat Chrome doet
+    // wanneer er nog niet getikt is.
+    const nep = {
+      speak: (u: { text: string }) => gezegd.push(u.text),
+      cancel: () => {},
+      getVoices: () => [],
+      speaking: false,
+      pending: false,
+    }
+    vi.stubGlobal('window', {
+      speechSynthesis: nep,
+      addEventListener: (naam: string, fn: () => void) => {
+        ;(luisteraars[naam] ??= []).push(fn)
+      },
+      removeEventListener: (naam: string, fn: () => void) => {
+        luisteraars[naam] = (luisteraars[naam] ?? []).filter((f) => f !== fn)
+      },
+    })
+    vi.stubGlobal('speechSynthesis', nep)
+    vi.stubGlobal('SpeechSynthesisUtterance', class {
+      text: string
+      lang = ''
+      rate = 1
+      pitch = 1
+      voice: unknown = null
+      constructor(t: string) {
+        this.text = t
+      }
+    })
+    vi.stubGlobal('fetch', async () => ({ ok: false }))
+  }
+
+  const wacht = (ms: number) => new Promise((los) => setTimeout(los, ms))
+  /**
+   * Tel alleen déze zin.
+   *
+   * De speak-aanroepen van eerdere tests in dit bestand hebben hun eigen timer lopen,
+   * en die tikken door in een module die al vervangen is. Ze praten dan in dezelfde
+   * lijst. Dat is een eigenaardigheid van het naspelen, geen fout in de app: op een
+   * echte pagina is er maar één module.
+   */
+  const aantalKeer = (zin: string) => gezegd.filter((z) => z === zin).length
+
+  it('zegt de zin alsnog zodra het kind iets aanraakt', async () => {
+    vi.resetModules()
+    stilleBrowser()
+    const { speak, setVoiceConfig } = await import('@/audio/voice')
+    setVoiceConfig({ spraak: true, tempo: 1, ondertiteling: false })
+
+    await speak('Welkom in mijn stal!')
+    expect(aantalKeer('Welkom in mijn stal!')).toBe(1)
+
+    // De browser heeft hem ingeslikt. Even wachten tot de app dat doorheeft.
+    await wacht(600)
+    tikOpHetScherm()
+    await wacht(20)
+    expect(aantalKeer('Welkom in mijn stal!')).toBe(2)
+  })
+
+  it('doet dat maar één keer, ook als er tien keer getikt wordt', async () => {
+    vi.resetModules()
+    stilleBrowser()
+    const { speak, setVoiceConfig } = await import('@/audio/voice')
+    setVoiceConfig({ spraak: true, tempo: 1, ondertiteling: false })
+
+    await speak('Welkom in mijn stal!')
+    await wacht(600)
+    for (let i = 0; i < 10; i++) {
+      tikOpHetScherm()
+      await wacht(80)
+    }
+    // Eén keer gezegd, één keer herhaald. Niet elf keer.
+    expect(aantalKeer('Welkom in mijn stal!')).toBe(2)
+  })
+})

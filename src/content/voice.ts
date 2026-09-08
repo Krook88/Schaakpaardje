@@ -133,11 +133,16 @@ export const WELKOM_TERUG = [
  *
  * Zonder dit stond een kind na "Beginnen" ineens voor een scherm met vier knoppen en
  * een lege stal, zonder dat iemand vertelde wat het was. Gemeld met "ik val zo plots in
- * het spel zonder enige uitleg". De zin wijst één ding aan — de grote knop — en verder
+ * het spel zonder enige uitleg". De zin wijst één ding aan, de grote knop, en verder
  * niets: wie voor het eerst ergens is, kan één opdracht onthouden, geen drie.
+ *
+ * En geen kleur erbij. Hier stond "de grote oranje knop", en dat is hij alleen in het
+ * donkere thema: --accent is daar #e2903f, maar in het lichte thema #b35c14, en dat
+ * leest als bruin. Een kleurwoord kan hier dus per definitie niet kloppen. Groot is
+ * hij in allebei, en er is er maar één.
  */
 export const EERSTE_KEER =
-  'Welkom in mijn stal! Druk op de grote oranje knop, dan gaan we samen beginnen.'
+  'Welkom in mijn stal! Druk op de grote knop, dan gaan we samen beginnen.'
 
 /** Bij een partijtje samen op één tablet, als er geen tegenstander gekozen is. */
 export const SAMEN_SPELEN = 'Samen spelen! Wit begint.'

@@ -89,6 +89,12 @@ export function wachtTotUitgesproken(maxMs = 6000): Promise<void> {
   ])
 }
 
+/** Hoe lang we de apparaatstem de tijd geven om te beginnen voor we hem opgeven. */
+const GEEN_GELUID_MS = 400
+
+/** Zinnen die we al een keer opnieuw hebben aangeboden. Nooit twee keer. */
+const alGeprobeerd = new Set<string>()
+
 let geblokkeerdeZin: string | null = null
 let geblokkeerdeBeurt = 0
 let luistertNaarTik = false
@@ -273,9 +279,38 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
   const stem = nederlandseStem()
   if (stem) zin.voice = stem
   beginTeSpreken()
+  let begonnen = false
+  zin.onstart = () => {
+    begonnen = true
+  }
   zin.onend = klaarMetSpreken
   zin.onerror = klaarMetSpreken
   window.speechSynthesis.speak(zin)
+
+  // Hetzelfde vangnet als bij de opnames, maar dan voor de apparaatstem.
+  //
+  // Een browser weigert geluid tot er getikt is. Bij een opname zegt hij dat met een
+  // NotAllowedError en vangen we dat hierboven af; speechSynthesis.speak() zégt niets
+  // en gooit niets, hij doet gewoon niets. Het gevolg is stilte, en voor een kind dat
+  // niet leest is stilte hetzelfde als een leeg scherm.
+  //
+  // Er is geen nette manier om te vragen "is het gelukt", dus we kijken even later of
+  // hij aan het praten is of nog in de wachtrij staat. Zo niet, dan is de zin
+  // verdampt en zetten we hem klaar voor de eerstvolgende aanraking.
+  //
+  // Eén keer, en niet vaker: anders herhaalt een zin zich bij elke tik op een apparaat
+  // dat helemaal geen stem heeft, en dat is erger dan de stilte die we repareren.
+  if (!alGeprobeerd.has(tekst)) {
+    setTimeout(() => {
+      const praat = window.speechSynthesis.speaking || window.speechSynthesis.pending
+      if (begonnen || praat || mijnBeurt !== beurt) return
+      alGeprobeerd.add(tekst)
+      klaarMetSpreken()
+      geblokkeerdeZin = tekst
+      geblokkeerdeBeurt = mijnBeurt
+      wachtOpEersteTik()
+    }, GEEN_GELUID_MS)
+  }
 }
 
 /** Spreekt één willekeurige variant uit een lijstje uit. */
