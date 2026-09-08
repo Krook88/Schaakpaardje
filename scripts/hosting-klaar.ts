@@ -97,6 +97,40 @@ function main() {
   )
 
   laatOpnamesMetRust()
+  stempelDeCacheversie()
+}
+
+/**
+ * Zet de datum van deze uitrol in de service worker.
+ *
+ * In `public/sw.js` stond `const CACHE = 'schaakmaatje-...'` met een datum erin en het
+ * verzoek eronder om die met de hand bij te werken. Dat is precies één keer goed
+ * gegaan: de versie die op schaakmaatje.nl staat is van 5 september, terwijl er sinds
+ * die dag drie keer een nieuwe zip overheen is gegaan.
+ *
+ * Zolang die naam gelijk blijft, ruimt het activate-blok van de service worker niets
+ * op en blijven alle oude `_next/static`-brokken van elke vorige uitrol op de tablet
+ * van het kind staan. De app zelf raakt niet achterop — pagina's worden netwerk-eerst
+ * opgehaald en de brokken hebben een hash in hun naam — maar het is rommel die nooit
+ * meer weggaat, en op een schooltablet met weinig ruimte telt dat.
+ *
+ * Een taak die de mens bij elke uitrol moet onthouden, is een taak die vergeten wordt.
+ * Dus doet het bouwscript het nu.
+ */
+function stempelDeCacheversie() {
+  const pad = join(UIT, 'sw.js')
+  if (!existsSync(pad)) return
+  const inhoud = readFileSync(pad, 'utf8')
+  // De datum plus het tijdstip: twee zips op dezelfde dag zijn eerder regel dan
+  // uitzondering geweest, en dan moet de naam alsnog verschillen.
+  const nu = new Date().toISOString().slice(0, 16).replace('T', '-').replace(':', '')
+  const uit = inhoud.replace(/const CACHE = '[^']*'/, `const CACHE = 'schaakmaatje-${nu}'`)
+  if (uit === inhoud) {
+    console.error('Hosting-klaar: geen CACHE-regel gevonden in sw.js. Is hij hernoemd?')
+    process.exit(1)
+  }
+  writeFileSync(pad, uit)
+  console.log(`Hosting-klaar: service worker gestempeld als schaakmaatje-${nu}.`)
 }
 
 /**

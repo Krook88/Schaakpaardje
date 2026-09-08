@@ -9,10 +9,15 @@
  * eerst de cache geprobeerd voor bestanden die toch nooit veranderen (die hebben een
  * hash in hun naam), en voor pagina's het netwerk met de cache als vangnet.
  */
-// De versie hóórt bij elke uitrol te veranderen: zolang hij gelijk blijft, ruimt het
-// activate-blok hieronder nooit iets op en blijven oude _next/static-brokken staan.
-// Vervang de datum bij een release (of laat het bouwscript het doen).
-const CACHE = 'schaakmaatje-2026-09-05c'
+// Deze naam wordt bij het bouwen vervangen door de datum en het tijdstip van de
+// uitrol; zie stempelDeCacheversie() in scripts/hosting-klaar.ts. Wat hier staat is
+// dus alleen wat je in `npm run dev` ziet.
+//
+// Waarom het automatisch moet: zolang de naam gelijk blijft ruimt het activate-blok
+// hieronder nooit iets op, en blijven de _next/static-brokken van elke vorige uitrol
+// op de tablet staan. Met de hand bijwerken ging precies één keer goed — er stond op
+// schaakmaatje.nl een versie van drie zips geleden.
+const CACHE = 'schaakmaatje-dev'
 
 // Wat er sowieso in moet, ook als het kind alleen de voorpagina heeft gezien.
 const KERN = ['./', './manifest.webmanifest', './icon.svg']
