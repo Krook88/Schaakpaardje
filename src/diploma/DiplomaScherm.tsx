@@ -92,7 +92,7 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
         <p className={styles.uitgereikt}>is uitgereikt aan</p>
         <p className={styles.naam}>{profiel?.naam ?? 'een dappere schaker'}</p>
         <p className={styles.wat}>
-          {diploma.wat} — {werelden.length} werelden uitgespeeld, {sterren} sterren verdiend.
+          {diploma.wat}. {werelden.length} werelden uitgespeeld, {sterren} sterren verdiend.
         </p>
         <div className={styles.werelden}>
           {werelden.map((w) => (

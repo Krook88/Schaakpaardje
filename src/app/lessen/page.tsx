@@ -16,7 +16,7 @@ import { SITE } from '@/seo'
  * je hem zonder de app kunt lezen.
  */
 export const metadata: Metadata = {
-  title: 'Alle schaaklessen — van het bord tot het eindspel | Schaakmaatje',
+  title: 'Alle schaaklessen: van het bord tot het eindspel | Schaakmaatje',
   description:
     'Alle 48 schaaklessen van Schaakmaatje op een rij, van licht en donker tot het eindspel. Per les wat je kind erna kan. Gratis, Nederlands, voor 3 tot 10 jaar.',
   alternates: { canonical: `${SITE}/lessen/` },
@@ -49,7 +49,7 @@ export default function Lessen() {
           <p style={{ fontSize: '1.05rem', margin: 0 }}>
             {ALLE_LESSEN.length} lessen in {WERELDEN.length} werelden, in de volgorde waarin
             een kind ze tegenkomt. Bij elke les staat wat je kind erna kan. Van het bord leren
-            kennen tot het eindspel — en schaakmat komt pas in wereld tien, want daarvoor moet
+            kennen tot het eindspel. En schaakmat komt pas in wereld tien, want daarvoor moet
             je eerst weten hoe de stukken lopen.
           </p>
         </header>

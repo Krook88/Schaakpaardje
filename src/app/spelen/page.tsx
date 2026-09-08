@@ -84,7 +84,7 @@ export default function Spelen() {
               <span style={{ fontSize: 30 }} aria-hidden="true">
                 🐴
               </span>
-              <span style={{ flex: 1 }}>Nog {verborgen} tegenstanders — die denken beter na</span>
+              <span style={{ flex: 1 }}>Nog {verborgen} tegenstanders die beter nadenken</span>
             </button>
           )}
 

@@ -297,7 +297,7 @@ function OuderPaneel() {
           {schakel(
             'spraak',
             'Pip praat vanzelf',
-            'Zet uit als je in de trein zit. De luidsprekerknop bij Pip blijft het doen — een kind dat nog niet leest heeft die nodig.',
+            'Zet uit als je in de trein zit. De luidsprekerknop bij Pip blijft het doen. Een kind dat nog niet leest heeft die nodig.',
           )}
           {schakel('ondertiteling', 'Ondertiteling', 'Laat zien wat Pip zegt.')}
           {schakel('effecten', 'Geluidjes')}
@@ -339,7 +339,7 @@ function OuderPaneel() {
             <a href={KOFFIE} target="_blank" rel="noopener noreferrer">
               Een kop koffie trakteren
             </a>{' '}
-            mag, maar hoeft niet — het levert je niets extra's op.
+            mag, maar hoeft niet. Het levert je niets extra's op.
           </p>
           <button
             type="button"

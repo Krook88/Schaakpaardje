@@ -427,7 +427,7 @@ function vroegGenoemd(): { hard: Bevinding[]; zacht: string[] } {
                 `vertelfase), of vraag ernaar zonder de naam te gebruiken.`,
             })
           } else {
-            zacht.push(`${waar}: ${uitleg} — "${vraag}"`)
+            zacht.push(`${waar}: ${uitleg}: "${vraag}"`)
           }
         }
       }

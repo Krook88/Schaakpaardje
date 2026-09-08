@@ -16,11 +16,11 @@ import { KOFFIE, NAAM, OMSCHRIJVING, SITE } from '@/seo'
  * nergens buiten de app om.
  */
 export const metadata: Metadata = {
-  title: 'Over Schaakmaatje — gratis leren schaken voor kinderen van 3 tot 10',
+  title: 'Over Schaakmaatje: gratis leren schaken voor kinderen van 3 tot 10',
   description: OMSCHRIJVING,
   alternates: { canonical: `${SITE}/over/` },
   openGraph: {
-    title: 'Over Schaakmaatje — gratis leren schaken voor kinderen',
+    title: 'Over Schaakmaatje: gratis leren schaken voor kinderen',
     description: OMSCHRIJVING,
     url: `${SITE}/over/`,
   },
@@ -55,16 +55,16 @@ export default function Over() {
           </p>
           <ul>
             <li>
-              <strong>3 tot 5 jaar</strong> — nog geen schaakregels. Het bord leren kennen:
+              <strong>3 tot 5 jaar</strong>: nog geen schaakregels. Het bord leren kennen:
               licht en donker, rijen en lijnen, en één stuk tegelijk. Alles gesproken, geen
               letter nodig, tikken in plaats van slepen.
             </li>
             <li>
-              <strong>6 tot 8 jaar</strong> — alle stukken, hoe ze lopen en slaan, de eerste
+              <strong>6 tot 8 jaar</strong>: alle stukken, hoe ze lopen en slaan, de eerste
               hele partijtjes tegen een vriendelijke tegenstander.
             </li>
             <li>
-              <strong>8 tot 10 jaar</strong> — schaak, mat, rokade, en pas dan de notatie
+              <strong>8 tot 10 jaar</strong>: schaak, mat, rokade, en pas dan de notatie
               (a1, e4) en de eerste tactiek. De veldnamen staan hier standaard aan.
             </li>
           </ul>
@@ -95,11 +95,11 @@ export default function Over() {
           <h2>Wat zit erin?</h2>
           <ul>
             <li>
-              <strong>{werelden} werelden met {lessen} lessen</strong> — van het bord leren
+              <strong>{werelden} werelden met {lessen} lessen</strong>: van het bord leren
               kennen tot het eindspel. <Link href="/lessen/">Bekijk alle lessen</Link>.
             </li>
             <li>
-              <strong>Minispellen</strong> — pionnenspel, vang de vlag, torenjacht,
+              <strong>Minispellen</strong>: pionnenspel, vang de vlag, torenjacht,
               paardensprong-parcours en het hongerige paardje.
             </li>
             <li>
@@ -108,7 +108,7 @@ export default function Over() {
               één tablet.
             </li>
             <li>
-              <strong>Een stal om te verzamelen</strong> — stukken, maatjes en hoefijzers die
+              <strong>Een stal om te verzamelen</strong>: stukken, maatjes en hoefijzers die
               je verdient door verder te komen.
             </li>
             <li>
@@ -130,12 +130,12 @@ export default function Over() {
             zonder internet.
           </p>
           <p>
-            Schaakmaatje wordt in de avonduren gemaakt en betaald uit eigen zak — de stem van
+            Schaakmaatje wordt in de avonduren gemaakt en betaald uit eigen zak. De stem van
             Pip kost per ingesproken zin. Vind je het de moeite waard, dan mag je{' '}
             <a href={KOFFIE} target="_blank" rel="noopener noreferrer">
               een kop koffie trakteren
             </a>
-            . Dat hoeft niet en het levert je niets extra's op — het is een fooi, geen
+            . Dat hoeft niet en het levert je niets extra's op. Het is een fooi, geen
             aankoop.
           </p>
         </section>
@@ -144,7 +144,7 @@ export default function Over() {
           <h2>Hoe begin ik?</h2>
           <p>
             Open de app, vul een voornaam en een leeftijd in, en kies een maatje. Dat is alles
-            — er komt geen e-mailadres aan te pas. Op een telefoon of tablet kun je{' '}
+            Er komt geen e-mailadres aan te pas. Op een telefoon of tablet kun je{' '}
             {NAAM} als app op het beginscherm zetten via het deelmenu van je browser.
           </p>
           <p>
@@ -177,7 +177,7 @@ export default function Over() {
           </p>
           <h3>Werkt het op een telefoon?</h3>
           <p>
-            Ja, op telefoon, tablet en computer. Een tablet is het prettigst — het bord is dan
+            Ja, op telefoon, tablet en computer. Een tablet is het prettigst: het bord is dan
             groot genoeg voor kindervingers.
           </p>
         </section>

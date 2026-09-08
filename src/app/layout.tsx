@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   // je bij het delen van de link een grijs vlak in plaats van een voorproefje.
   metadataBase: new URL(SITE),
   title: {
-    default: 'Schaakmaatje — gratis leren schaken voor kinderen van 3 tot 10',
+    default: 'Schaakmaatje: gratis leren schaken voor kinderen van 3 tot 10',
     // Elke andere pagina zet zijn eigen titel hierin, zodat de merknaam altijd
     // meekomt zonder dat je hem overal moet overtypen.
     template: '%s | Schaakmaatje',
@@ -28,14 +28,14 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'nl_NL',
     siteName: NAAM,
-    title: 'Schaakmaatje — leer schaken met Pip het schaakpaardje',
+    title: 'Schaakmaatje: leer schaken met Pip het schaakpaardje',
     description: OMSCHRIJVING,
     url: '/',
-    images: [{ url: '/og.png', width: 1200, height: 630, alt: `${NAAM} — ${SLOGAN}` }],
+    images: [{ url: '/og.png', width: 1200, height: 630, alt: `${NAAM}: ${SLOGAN}` }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Schaakmaatje — leer schaken met Pip het schaakpaardje',
+    title: 'Schaakmaatje: leer schaken met Pip het schaakpaardje',
     description: OMSCHRIJVING,
     images: ['/og.png'],
   },
