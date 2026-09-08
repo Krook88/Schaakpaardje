@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Kop } from '@/ui/Kop'
 import { Sterren } from '@/ui/Sterren'
+import { KOFFIE } from '@/seo'
 import { WERELDEN } from '@/content'
 import {
   useGespeeld,
@@ -297,6 +298,15 @@ function OuderPaneel() {
             Alles staat op dit apparaat: een voornaam, een leeftijd en de voortgang. Er gaat
             niets naar internet, er zijn geen advertenties, geen chat en geen account. Wil je
             alles wissen, dan kan dat hier.
+          </p>
+          {/* Achter het rekenslot, dus geen kind komt hier per ongeluk. Een regel tekst
+              en geen knop: wie hem zoekt vindt hem, wie hem niet zoekt ziet hem amper. */}
+          <p className="muted" style={{ margin: 0 }}>
+            Schaakmaatje is gratis en blijft dat.{' '}
+            <a href={KOFFIE} target="_blank" rel="noopener noreferrer">
+              Een kop koffie trakteren
+            </a>{' '}
+            mag, maar hoeft niet — er komt nooit een les achter een betaling.
           </p>
           <button
             type="button"

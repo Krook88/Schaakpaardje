@@ -30,3 +30,17 @@ export const SLOGAN = 'Leer schaken met Pip het schaakpaardje'
  */
 export const OMSCHRIJVING =
   'Gratis Nederlandse schaakapp voor kinderen van 3 tot 10 jaar. Pip het schaakpaardje leest alles voor, dus lezen hoeft nog niet. Zonder account, zonder reclame.'
+
+/**
+ * Een kop koffie, als iemand daar zin in heeft.
+ *
+ * Bewust alleen op de ouderpagina's — /over/ en het ouderscherm — en nooit in het
+ * kindscherm. Een kind van vier tikt alles aan wat oplicht, en dat mag nooit ergens
+ * uitkomen waar geld ligt. Het is ook geen knop maar een regel tekst: wie hem zoekt
+ * vindt hem, wie hem niet zoekt wordt er niet toe verleid.
+ *
+ * En het verandert niets aan de app. Alles blijft gratis, er gaat geen les achter een
+ * betaling. Dat staat er ook bij, want een donatielink zonder die zin leest al snel
+ * als een voorportaal.
+ */
+export const KOFFIE = 'https://bunq.me/KRook'

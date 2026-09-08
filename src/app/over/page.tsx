@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
-import { NAAM, OMSCHRIJVING, SITE } from '@/seo'
+import { KOFFIE, NAAM, OMSCHRIJVING, SITE } from '@/seo'
 
 /**
  * De uitlegpagina, voor ouders en voor zoekmachines.
@@ -128,6 +128,15 @@ export default function Over() {
             voortgang, in de browser van je kind. Er wordt niets naar internet gestuurd, er is
             geen chat en er zijn geen volgers of vrienden. De app werkt na de eerste keer ook
             zonder internet.
+          </p>
+          <p>
+            Schaakmaatje wordt in de avonduren gemaakt en betaald uit eigen zak — de stem van
+            Pip kost per ingesproken zin. Vind je het de moeite waard, dan mag je{' '}
+            <a href={KOFFIE} target="_blank" rel="noopener noreferrer">
+              een kop koffie trakteren
+            </a>
+            . Dat hoeft niet en het verandert niets: alle lessen blijven gratis, en er komt
+            nooit iets achter een betaling te staan.
           </p>
         </section>
 
