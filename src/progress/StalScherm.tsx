@@ -6,6 +6,7 @@ import { Pip } from '@/ui/Pip'
 import { Confetti } from '@/ui/Confetti'
 import { speak } from '@/audio/voice'
 import { SOORTNAAM, type StalSoort } from '@/content/stal'
+import { STAL_VOL } from '@/content/voice'
 import { aantalBezit, perSoort, verzameling, type StalVak } from './verzameling'
 import { useProfiel, useToestandGeladen, useVerslagen, useVoortgang } from './store'
 import styles from './Stal.module.css'
@@ -38,7 +39,7 @@ export function StalScherm() {
       ? `${uitgelicht.naam}. Die heb je!`
       : `${uitgelicht.naam}. ${uitgelicht.hoe}`
     : compleet
-      ? 'Je stal is helemaal vol. Alles verzameld!'
+      ? STAL_VOL
       : `Je hebt er ${heeft} van de ${alles.length}. Tik op een leeg plekje, dan vertel ik hoe je hem krijgt.`
 
   return (

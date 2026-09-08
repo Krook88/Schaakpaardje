@@ -57,32 +57,85 @@ function bestanden(map: string): string[] {
 type Vondst = { bestand: string; regel: number; tekst: string; samengesteld: boolean }
 
 /**
- * Alles wat als gesproken tekst het scherm in gaat: `zegt=`, `setZin(` en `speak(`.
- * De aanhalingstekens mogen enkel, dubbel of backtick zijn.
+ * Ziet dit eruit als iets wat Pip zou zeggen, en niet als een sleutel of een klasse?
+ *
+ * `setZin('vraag' in opgave ? ...)` bevat het woord `vraag`; dat is geen zin. Een zin
+ * heeft een spatie en eindigt op een punt, een vraagteken of een uitroepteken.
  */
-const PATRONEN = [
-  /\bzegt=\{?\s*(['"`])((?:\\.|(?!\1)[\s\S])*?)\1/g,
-  /\bsetZin\(\s*(['"`])((?:\\.|(?!\1)[\s\S])*?)\1/g,
-  /\bspeak\(\s*(['"`])((?:\\.|(?!\1)[\s\S])*?)\1/g,
-]
+function lijktOpEenZin(tekst: string): boolean {
+  return tekst.length >= 8 && /\s/.test(tekst) && /[.!?]$/.test(tekst.trim())
+}
 
+/** De uitdrukking tussen haakjes of accolades, met de nesting mee. */
+function tussenHaakjes(inhoud: string, open: number, sluit: string): string {
+  const tegenhanger = sluit === ')' ? '(' : '{'
+  let diep = 1
+  for (let i = open + 1; i < inhoud.length; i++) {
+    const teken = inhoud[i]
+    if (teken === tegenhanger) diep++
+    else if (teken === sluit) {
+      diep--
+      if (!diep) return inhoud.slice(open + 1, i)
+    }
+  }
+  return ''
+}
+
+/**
+ * Elke zin die naar Pip gaat, letterlijk of samengesteld.
+ *
+ * Waarom dit niet meer zoekt naar "een string direct achter setZin(": dat wás de vorige
+ * aanpak, en die kon per constructie niets vinden. In deze codebase staat daar nooit een
+ * letterlijke zin maar een variabele, een ternair of een sjabloon — `setZin(HINT_GEGEVEN)`,
+ * `zegt={zin}`, `speak(`${vak.naam}. Die heb je!`)`. Het script meldde daarom bij élke
+ * draai "elke vaste zin wordt ook ingesproken", ook op de dag dat alle vijftien
+ * minispellen in de apparaatstem klonken. Een controle die altijd groen is, is erger dan
+ * geen controle: hij werd in het commentaar aangehaald als het vangnet dat er niet was.
+ *
+ * Nu pakt hij de hele uitdrukking achter `speak(`, `setZin(` en `zegt=`, volgt hem één
+ * stap terug als het een kale variabele is (`const zin = ...` in hetzelfde bestand), en
+ * haalt daar alle zinnen uit — of ze nu tussen aanhalingstekens of tussen accenten
+ * staan. Dat is nog steeds tekst lezen en geen echte ontleding, maar het vindt wél wat
+ * het belooft te vinden: nagelopen op de stal, en die komt eruit.
+ */
 function zoekZinnen(): Vondst[] {
   const uit: Vondst[] = []
+  const INGANGEN = /\b(?:speak|setZin)\s*\(|\bzegt=\{/g
+  const TEKST = /(['"])((?:\\.|(?!\1)[^\r\n])*?)\1|`((?:\\.|[^`])*?)`/g
+
   for (const bestand of bestanden(BRON)) {
     // De bron van de zinnen zelf slaan we over: die wordt per definitie ingesproken.
     if (bestand.endsWith(join('content', 'voice.ts'))) continue
     const inhoud = readFileSync(bestand, 'utf8')
-    for (const patroon of PATRONEN) {
-      patroon.lastIndex = 0
+    const regelVan = (index: number) => inhoud.slice(0, index).split('\n').length
+
+    INGANGEN.lastIndex = 0
+    let ingang: RegExpExecArray | null
+    while ((ingang = INGANGEN.exec(inhoud))) {
+      const open = ingang.index + ingang[0].length - 1
+      let expressie = tussenHaakjes(inhoud, open, ingang[0].endsWith('{') ? '}' : ')')
+
+      // Een kale variabele: één stap terugvolgen naar waar hij gemaakt wordt.
+      const kaal = expressie.trim().match(/^([A-Za-z_$][\w$]*)$/)
+      if (kaal) {
+        const maak = inhoud.indexOf(`const ${kaal[1]} =`)
+        if (maak >= 0) {
+          const eind = inhoud.indexOf('\n\n', maak)
+          expressie = inhoud.slice(maak, eind < 0 ? inhoud.length : eind)
+        }
+      }
+
+      TEKST.lastIndex = 0
       let m: RegExpExecArray | null
-      while ((m = patroon.exec(inhoud))) {
-        const tekst = m[2].trim()
-        if (tekst.length < 6) continue
+      while ((m = TEKST.exec(expressie))) {
+        const sjabloon = m[3] !== undefined
+        const tekst = (sjabloon ? m[3] : m[2]).trim()
+        if (!lijktOpEenZin(tekst)) continue
         uit.push({
           bestand: bestand.slice(BRON.length + 1),
-          regel: inhoud.slice(0, m.index).split('\n').length,
+          regel: regelVan(ingang.index),
           tekst,
-          samengesteld: tekst.includes('${'),
+          samengesteld: sjabloon && tekst.includes('${'),
         })
       }
     }

@@ -12,6 +12,7 @@ import {
   applyMove,
   controleVelden,
   fileIndex,
+  isLightSquare,
   rankOf,
   parseBoard,
   pieceMoves,
@@ -93,6 +94,20 @@ function stellingKlopt(board: BoardMap): boolean {
     return !status.over && !status.check
   } catch {
     return false
+  }
+}
+
+/**
+ * Welke zetten van dit stuk zijn volgens de échte regels toegestaan?
+ *
+ * Geeft `null` als chess.js de stelling niet eens aanneemt; de aanroeper slaat hem
+ * dan over. Wit is altijd aan zet in de minispellen.
+ */
+function legaleZetten(fen: string, van: Square): Set<Square> | null {
+  try {
+    return new Set(new Game(`${fen} w - - 0 1`).legalMoves(van).map((m) => m.to))
+  } catch {
+    return null
   }
 }
 
@@ -179,37 +194,68 @@ export const MINISPELLEN: Minispel[] = [
     id: 'vind-het-veld',
     naam: 'Vind het veld',
     emoji: '🔎',
-    uitleg: 'Tik het stuk aan dat Pip noemt.',
+    uitleg: 'Pip zegt welke stukken je moet aantikken.',
     maakOpgave(niveau, random = Math.random) {
-      // Alleen toren, dame en paard: dat zijn de stukken die wereld 0 bij naam noemt
-      // (weide-3). Loper, koning en pion komen pas in wereld 2, 5 en 6, en dit spel
-      // hoort bij wereld 0 — vanaf drie jaar.
-      const soorten: PieceType[] = ['r', 'q', 'n']
-      const aantal = Math.min(2 + niveau, 7)
-      let board: BoardMap = {}
-      const bezet: Square[] = []
-      for (let i = 0; i < aantal; i++) {
-        const sq = willekeurigVeld(random, bezet)
-        board = zet(board, sq, soorten[i % soorten.length], i % 2 === 0 ? 'w' : 'b')
-        bezet.push(sq)
+      // Dit spel hoort bij wereld 0, staat altijd open, en is vanaf drie jaar.
+      //
+      // Er stond hier "Tik alle torens aan", met als verantwoording dat wereld 0 die
+      // namen zelf noemde. Dat klopte tot weide-3 werd herschreven tot pure
+      // bordkennis: toren komt nu pas in wereld 1, dame in 3, paard in 4. Een kind van
+      // drie kreeg dus drie woorden die het nooit gehoord had, en de naam wás de hele
+      // opdracht.
+      //
+      // Nu vraagt het spel naar wat wereld 0 wél leert: licht en donker, en de rij
+      // onderaan. De stukken staan er nog gewoon, maar je hoeft niet te weten hoe ze
+      // heten — je kijkt naar het veld waar ze op staan. Precies wat de wereld belooft.
+      const aantal = Math.min(3 + niveau, 8)
+      const soorten: PieceType[] = ['r', 'q', 'n', 'b', 'p']
+
+      // Uitgeschreven zinnen, geen samengestelde: een zin die pas op het moment zelf
+      // ontstaat kan niet vooraf ingesproken worden, en dan klinkt hier ineens de
+      // apparaatstem in plaats van Pip.
+      const soortenVraag: { vraag: string; kies: (sq: Square) => boolean }[] = [
+        { vraag: 'Tik alle stukken aan die op een licht veld staan.', kies: isLightSquare },
+        { vraag: 'Tik alle stukken aan die op een donker veld staan.', kies: (sq) => !isLightSquare(sq) },
+        { vraag: 'Tik alle stukken aan die op de onderste rij staan.', kies: (sq) => rankOf(sq) === 1 },
+        { vraag: 'Tik alle stukken aan die op de bovenste rij staan.', kies: (sq) => rankOf(sq) === 8 },
+      ]
+      for (let poging = 0; poging < 60; poging++) {
+        let board: BoardMap = {}
+        const bezet: Square[] = []
+        for (let i = 0; i < aantal; i++) {
+          const sq = willekeurigVeld(random, bezet)
+          board = zet(board, sq, soorten[i % soorten.length], i % 2 === 0 ? 'w' : 'b')
+          bezet.push(sq)
+        }
+        const velden = Object.keys(board) as Square[]
+
+        // Alleen vragen waar ook echt iets op past. Nul goede velden is niet op te
+        // lossen, en álle velden goed vraagt niets. Staan bij toeval alle stukken op
+        // een lichte kleur en geen enkele op de boven- of onderrij, dan houden we
+        // niets over — vandaar dat we het bord dan opnieuw neerzetten.
+        const bruikbaar = soortenVraag
+          .map((v) => ({ ...v, correct: velden.filter(v.kies) }))
+          .filter((v) => v.correct.length > 0 && v.correct.length < velden.length)
+        if (!bruikbaar.length) continue
+
+        const gekozen = bruikbaar[Math.floor(random() * bruikbaar.length)]
+        return {
+          kind: 'tapSquares',
+          fen: bordNaarFen(board),
+          correct: gekozen.correct,
+          vraag: gekozen.vraag,
+        }
       }
-      const gezocht = soorten[Math.floor(random() * Math.min(aantal, soorten.length))]
-      const correct = Object.entries(board)
-        .filter(([, p]) => p.type === gezocht)
-        .map(([sq]) => sq)
-      // Uitgeschreven en niet `Tik alle ${naam} aan.`, want een zin die pas op het
-      // moment zelf ontstaat kan niet vooraf ingesproken worden — en dan klinkt hier
-      // ineens de apparaatstem in plaats van Pip.
-      const VRAGEN: Partial<Record<PieceType, string>> = {
-        r: 'Tik alle torens aan.',
-        q: 'Tik alle dames aan.',
-        n: 'Tik alle paarden aan.',
-      }
+
+      // Zestig keer achter elkaar pech is praktisch onmogelijk, maar een spel mag
+      // nooit met lege handen thuiskomen. d5 is licht, c5 is donker — nagerekend met
+      // isLightSquare(), niet uit het hoofd: mijn eerste poging zette het paard op c4
+      // en dat is óók licht.
       return {
         kind: 'tapSquares',
-        fen: bordNaarFen(board),
-        correct,
-        vraag: VRAGEN[gezocht]!,
+        fen: '8/8/8/2Nq4/8/8/8/8',
+        correct: ['d5'],
+        vraag: 'Tik alle stukken aan die op een licht veld staan.',
       }
     },
   },
@@ -629,16 +675,34 @@ export const MINISPELLEN: Minispel[] = [
           const raak = controleVelden(na, naar).filter((sq) => na[sq]?.color === 'b')
           return raak.length >= 2 && !aanvallersVan(na, naar, 'b').length
         })
-        if (vork.length !== 1) continue
+        if (!vork.length) continue
         // Anders dan schaak-alarm en mat-in-1-regen haalde dit spel zijn stelling
         // nooit door chess.js: koningen naast elkaar, of wit dat een vork moet spelen
         // terwijl het zelf schaak staat. Precies wat wereld 9 verbiedt.
         if (!stellingKlopt(board)) continue
+
+        // En dan de zet zelf ook nog langs chess.js.
+        //
+        // `pieceMoves` rekent meetkundig en kent geen penning. Stond het paard tussen
+        // de eigen koning en een zwarte toren, dan was de "enige goede vork" een zet
+        // die de eigen koning in schaak zet — en zei Pip er "precies goed" bij. Dat
+        // overkwam ongeveer één op de dertig stellingen. Een kind leert hier dus een
+        // zet die bij de club wordt teruggenomen.
+        //
+        // Dat is precies waar CLAUDE.md voor waarschuwt: de meetkundige motor is voor
+        // losse stukken op een leeg bord, en zodra er een koning op het bord staat
+        // gelden de echte regels.
+        const fen = bordNaarFen(board)
+        const echt = legaleZetten(fen, paard)
+        if (!echt) continue
+        const wettig = vork.filter((naar) => echt.has(naar))
+        if (wettig.length !== 1) continue
+
         return {
           kind: 'move',
-          fen: bordNaarFen(board),
+          fen,
           from: paard,
-          goed: vork,
+          goed: wettig,
           vraag: 'Val met je paard twee stukken tegelijk aan.',
           foutTip: 'Zoek een veld van waaruit je allebei kunt raken. En kijk of je er zelf veilig staat.',
         }
@@ -724,7 +788,7 @@ export const MINISPEL_ZONDER_OPNAME = ['schrijf-de-zet']
  */
 export const MINISPEL_ZINNEN: string[] = [
   // De uitleg die Pip zegt zodra een spel opent.
-  'Tik het stuk aan dat Pip noemt.',
+  'Pip zegt welke stukken je moet aantikken.',
   'Sla alle pionnen met je toren.',
   'Loop met de loper naar de ster.',
   'Zoek een weg voor de dame.',
@@ -740,9 +804,10 @@ export const MINISPEL_ZINNEN: string[] = [
   'Val met één zet twee stukken tegelijk aan.',
   'Breng je pion naar de overkant.',
   // En de vragen bij de opgaven zelf.
-  'Tik alle torens aan.',
-  'Tik alle dames aan.',
-  'Tik alle paarden aan.',
+  'Tik alle stukken aan die op een licht veld staan.',
+  'Tik alle stukken aan die op een donker veld staan.',
+  'Tik alle stukken aan die op de onderste rij staan.',
+  'Tik alle stukken aan die op de bovenste rij staan.',
   'Sla alle zwarte pionnen met je toren.',
   'Breng de loper naar de ster.',
   'Breng de dame naar de ster. Om je eigen pionnen heen!',

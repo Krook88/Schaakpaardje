@@ -139,6 +139,12 @@ export const WELKOM_TERUG = [
 export const EERSTE_KEER =
   'Welkom in mijn stal! Druk op de grote oranje knop, dan gaan we samen beginnen.'
 
+/** Bij een partijtje samen op één tablet, als er geen tegenstander gekozen is. */
+export const SAMEN_SPELEN = 'Samen spelen! Wit begint.'
+
+/** Als de hele stal vol is. De tellerzin ernaast kan niet: daar staan getallen in. */
+export const STAL_VOL = 'Je stal is helemaal vol. Alles verzameld!'
+
 export const KENNISMAKING = 'Leuk je te ontmoeten! We beginnen bij het bord.'
 export const TEGEN_WIE = 'Tegen wie wil je spelen? Begin gerust makkelijk hoor.'
 export const HINT_GEGEVEN = 'Kijk eens naar het veld dat oplicht.'

@@ -13,6 +13,7 @@ import {
   PARTIJ_GEWONNEN,
   PARTIJ_REMISE,
   PARTIJ_START,
+  SAMEN_SPELEN,
   SCHAAK_TEGEN_JOU,
   SCHAAK_VAN_JOU,
   ZET_TERUGGENOMEN,
@@ -251,7 +252,7 @@ export function PartijScherm({ botId }: { botId: string }) {
 
   useEffect(() => {
     setZin(kies(PARTIJ_START, 'start'))
-    void speak(bot ? `Je speelt tegen ${bot.naam}. ${bot.tagline}` : 'Samen spelen! Wit begint.')
+    void speak(bot ? `Je speelt tegen ${bot.naam}. ${bot.tagline}` : SAMEN_SPELEN)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
