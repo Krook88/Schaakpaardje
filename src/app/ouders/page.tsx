@@ -302,11 +302,11 @@ function OuderPaneel() {
           {/* Achter het rekenslot, dus geen kind komt hier per ongeluk. Een regel tekst
               en geen knop: wie hem zoekt vindt hem, wie hem niet zoekt ziet hem amper. */}
           <p className="muted" style={{ margin: 0 }}>
-            Schaakmaatje is gratis en blijft dat.{' '}
+            Schaakmaatje wordt in de avonduren gemaakt en betaald uit eigen zak.{' '}
             <a href={KOFFIE} target="_blank" rel="noopener noreferrer">
               Een kop koffie trakteren
             </a>{' '}
-            mag, maar hoeft niet — er komt nooit een les achter een betaling.
+            mag, maar hoeft niet — het levert je niets extra's op.
           </p>
           <button
             type="button"

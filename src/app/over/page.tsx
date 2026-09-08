@@ -135,8 +135,8 @@ export default function Over() {
             <a href={KOFFIE} target="_blank" rel="noopener noreferrer">
               een kop koffie trakteren
             </a>
-            . Dat hoeft niet en het verandert niets: alle lessen blijven gratis, en er komt
-            nooit iets achter een betaling te staan.
+            . Dat hoeft niet en het levert je niets extra's op — het is een fooi, geen
+            aankoop.
           </p>
         </section>
 

@@ -39,8 +39,11 @@ export const OMSCHRIJVING =
  * uitkomen waar geld ligt. Het is ook geen knop maar een regel tekst: wie hem zoekt
  * vindt hem, wie hem niet zoekt wordt er niet toe verleid.
  *
- * En het verandert niets aan de app. Alles blijft gratis, er gaat geen les achter een
- * betaling. Dat staat er ook bij, want een donatielink zonder die zin leest al snel
- * als een voorportaal.
+ * Het is een fooi, geen aankoop: het levert de gever niets extra's op. Dat staat er
+ * ook bij, want een donatielink zonder die zin leest al snel als een voorportaal.
+ *
+ * Er stond eerst "er komt nooit iets achter een betaling te staan". Dat is een belofte
+ * die je maar één keer kunt breken, en het is nog niet zeker dat deze app voor altijd
+ * gratis kan blijven. Wat er staat is nu waar in beide gevallen.
  */
 export const KOFFIE = 'https://bunq.me/KRook'
