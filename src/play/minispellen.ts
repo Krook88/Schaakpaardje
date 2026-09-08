@@ -197,14 +197,19 @@ export const MINISPELLEN: Minispel[] = [
       const correct = Object.entries(board)
         .filter(([, p]) => p.type === gezocht)
         .map(([sq]) => sq)
-      const namen: Record<PieceType, string> = {
-        r: 'torens', b: 'lopers', n: 'paarden', q: 'dames', k: 'koningen', p: 'pionnen',
+      // Uitgeschreven en niet `Tik alle ${naam} aan.`, want een zin die pas op het
+      // moment zelf ontstaat kan niet vooraf ingesproken worden — en dan klinkt hier
+      // ineens de apparaatstem in plaats van Pip.
+      const VRAGEN: Partial<Record<PieceType, string>> = {
+        r: 'Tik alle torens aan.',
+        q: 'Tik alle dames aan.',
+        n: 'Tik alle paarden aan.',
       }
       return {
         kind: 'tapSquares',
         fen: bordNaarFen(board),
         correct,
-        vraag: `Tik alle ${namen[gezocht]} aan.`,
+        vraag: VRAGEN[gezocht]!,
       }
     },
   },
@@ -691,3 +696,62 @@ const LEEG_BORD = '8/8/8/8/8/8/8/8'
 export function minispelMet(id: string): Minispel | undefined {
   return MINISPELLEN.find((s) => s.id === id)
 }
+
+/**
+ * Spellen waarvan de vraag pas op het moment zelf ontstaat.
+ *
+ * `schrijf-de-zet` noemt echte veldnamen ("Tik deze velden aan: c4, f7, a2.") en kan
+ * dus niet vooraf ingesproken worden: er zijn te veel combinaties om er opnames van te
+ * maken. Daar blijft de apparaatstem klinken. Dat is hier het minst erg van alle
+ * spellen — het staat met opzet aan bij de oudste groep, want het gaat juist over het
+ * lezen van veldnamen.
+ */
+export const MINISPEL_ZONDER_OPNAME = ['schrijf-de-zet']
+
+/**
+ * Elke zin die een minispel uitspreekt.
+ *
+ * Dit bestaat omdat de minispellen hun opgaven zelf maken en dus buiten `alleZinnen()`
+ * vielen: die loopt de werelden af, en de minispellen staan niet in een wereld. Het
+ * gevolg was dat élk minispel de apparaatstem gebruikte in plaats van Pip — precies de
+ * schermen waar de jongste kinderen het meest zitten.
+ *
+ * De lijst wordt met opzet uitgeschreven en niet uit `MINISPELLEN` afgeleid: de vragen
+ * zitten binnen in `maakOpgave` en zijn daar niet uit te lezen zonder het spel te
+ * spelen. Wat de lijst wél sluitend houdt is de test in `minispellen.zinnen.test.ts`:
+ * die speelt elk spel op elk niveau met honderden zaden en valt om zodra er een vraag
+ * uitkomt die hier niet staat. Vergeten kan dus wel, ongemerkt blijven niet.
+ */
+export const MINISPEL_ZINNEN: string[] = [
+  // De uitleg die Pip zegt zodra een spel opent.
+  'Tik het stuk aan dat Pip noemt.',
+  'Sla alle pionnen met je toren.',
+  'Loop met de loper naar de ster.',
+  'Zoek een weg voor de dame.',
+  'Elke sprong moet raak zijn.',
+  'Wandel met de koning naar de ster.',
+  'Wie het eerst de overkant haalt, wint.',
+  'Er valt iets te kiezen. Pak het duurste.',
+  'Je stuk staat te pakken. Breng het in veiligheid.',
+  'Geef schaak aan de zwarte koning.',
+  'Zet mat in één zet.',
+  'Rokeer, als het mag tenminste.',
+  'Pip noemt een veld, jij tikt het aan.',
+  'Val met één zet twee stukken tegelijk aan.',
+  'Breng je pion naar de overkant.',
+  // En de vragen bij de opgaven zelf.
+  'Tik alle torens aan.',
+  'Tik alle dames aan.',
+  'Tik alle paarden aan.',
+  'Sla alle zwarte pionnen met je toren.',
+  'Breng de loper naar de ster.',
+  'Breng de dame naar de ster. Om je eigen pionnen heen!',
+  'Sla alle zwarte pionnen op. Elke sprong moet raak zijn!',
+  'Loop met de koning naar de ster. Stapje voor stapje.',
+  'Breng deze pion naar de overkant. Dan wordt hij dame!',
+  'Pak het duurste stuk dat je kunt pakken.',
+  'Je toren staat te pakken. Breng hem in veiligheid.',
+  'Breng je koning in veiligheid. Rokeer!',
+  'Val met je paard twee stukken tegelijk aan.',
+  'Breng je pion naar de overkant. Dan wordt hij dame!',
+]

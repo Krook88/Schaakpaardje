@@ -20,6 +20,7 @@ import { Game } from '@/engine/game'
 import { goedeZetten } from '@/lesson/runner'
 import { geldigVeld, korstePad, slaAllesOp } from '@/engine/puzzels'
 import { WERELDEN } from './index'
+import { MINISPEL_ZINNEN } from '@/play/minispellen'
 import { alleOpgaven, vertelTekst, vertelWijzers } from './types'
 import type { Exercise, Lesson, World } from './types'
 
@@ -510,9 +511,17 @@ export function nietNagerekend(): string[] {
   return uit
 }
 
-/** Alle zinnen die ingesproken moeten worden. Gebruikt door scripts/tts-render.ts. */
+/**
+ * Alle zinnen die ingesproken moeten worden. Gebruikt door scripts/tts-render.ts.
+ *
+ * De minispellen horen er nadrukkelijk bij. Ze staan in `src/play` en niet in een
+ * wereld, en vielen daardoor buiten deze functie — met als gevolg dat alle vijftien
+ * spellen de apparaatstem gebruikten in plaats van die van Pip. Dat is een laag door
+ * elkaar heen, maar deze functie is de énige plek die antwoord geeft op "wat spreekt
+ * Pip in", en dan moet daar ook echt alles in staan.
+ */
 export function alleZinnen(): string[] {
-  const zinnen = new Set<string>()
+  const zinnen = new Set<string>(MINISPEL_ZINNEN)
   for (const wereld of WERELDEN) {
     zinnen.add(wereld.belofte)
     for (const les of wereld.lessen) {
