@@ -6,8 +6,13 @@ next-env.d.ts
 .env*.local
 .DS_Store
 public/audio/*.mp3
-!public/audio/.gitkeep
 public/sfx/*.mp3
+# Het manifest is afgeleide, net als de mp3's zelf. Het stond hier eerst wél in als
+# leeg {} — en dat overschreef bij elke `git pull` het echte manifest van wie de
+# opnames al had staan. Die spraken daarna tweehonderd zinnen opnieuw in.
+public/audio/manifest.json
+public/sfx/manifest.json
+!public/audio/.gitkeep
 !public/sfx/.gitkeep
 
 # De zip om te uploaden. Die valt uit `out/` te maken en hoort dus niet in de repo:

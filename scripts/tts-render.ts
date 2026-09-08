@@ -24,7 +24,15 @@
  * De gerenderde mp3's staan bewust NIET in git (zie .gitignore): ze horen bij de
  * release, niet bij de broncode. Zet ze bij het deployen in public/audio/.
  */
-import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, unlinkSync } from 'node:fs'
+import {
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  existsSync,
+  readdirSync,
+  statSync,
+  unlinkSync,
+} from 'node:fs'
 import { join } from 'node:path'
 import { alleZinnen } from '../src/content/validate'
 import { vertelTekst } from '../src/content/types'
@@ -219,6 +227,31 @@ async function main() {
 
   const manifest: Record<string, { tekst: string; bytes: number }> =
     existsSync(MANIFEST) && !force ? JSON.parse(readFileSync(MANIFEST, 'utf8')) : {}
+
+  /*
+   * Eerst kijken wat er gewoon op schijf ligt.
+   *
+   * De bestandsnaam ís de hash van de zin, dus een mp3 in dit mapje is het bewijs dat
+   * die zin al ingesproken is — het manifest is daar niet voor nodig. Dat is maar goed
+   * ook, want `public/audio/manifest.json` stond in git als leeg `{}` en werd bij elke
+   * `git pull` over de echte heen gezet. Wie daarna dit script draaide had tweehonderd
+   * opnames op schijf staan en sprak ze toch allemaal opnieuw in.
+   *
+   * Nu wordt het manifest hersteld uit wat er ligt. Het bestand blijft leidend, het
+   * manifest is een afgeleide.
+   */
+  let hersteld = 0
+  for (const tekst of teksten) {
+    const sleutel = zinSleutel(tekst)
+    const bestand = join(UITVOER, `${sleutel}.mp3`)
+    if (manifest[sleutel] || !existsSync(bestand)) continue
+    manifest[sleutel] = { tekst, bytes: statSync(bestand).size }
+    hersteld++
+  }
+  if (hersteld) {
+    console.log(`${hersteld} opnames teruggevonden in public/audio/ en weer in het manifest gezet.`)
+    writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2))
+  }
 
   /** Sleutels die op de server staan maar niet in dit mapje. */
   const online = new Set<string>()
