@@ -2,6 +2,9 @@ import { notFound } from 'next/navigation'
 import { DiplomaScherm } from '@/diploma/DiplomaScherm'
 import { DIPLOMAS, type DiplomaSoort } from '@/content/diplomas'
 
+/* Een scherm van de app zelf: zonder profiel valt er niets te lezen, dus noindex. */
+export const metadata = { title: 'Diploma', robots: { index: false, follow: true } }
+
 export function generateStaticParams() {
   return DIPLOMAS.map((d) => ({ soort: d.soort }))
 }

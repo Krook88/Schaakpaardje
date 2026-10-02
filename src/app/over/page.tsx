@@ -26,12 +26,66 @@ export const metadata: Metadata = {
   },
 }
 
+/**
+ * Dezelfde vragen als onderaan deze pagina, maar dan zo opgeschreven dat Google ze
+ * herkent. Een FAQPage kan in de zoekresultaten uitklapbaar worden getoond, en dat is
+ * voor een onbekende site het verschil tussen één regel en een half scherm.
+ *
+ * De antwoorden staan hier én in de pagina zelf. Dat is dubbel, en dat moet ook: een
+ * FAQPage die iets anders beweert dan de pagina laat zien, is volgens Google's eigen
+ * regels reden om hem te negeren. Verandert er een antwoord hieronder, verander het
+ * dan ook hier.
+ */
+const VRAGEN = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Kan mijn kind dit als het nog niet kan lezen?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Ja, daar is de app op gebouwd. Pip spreekt elke opdracht uit, elke knop heeft een plaatje, en bij elke tekstballon staat een luidsprekerknop om het nog eens te horen. Vanaf drie jaar is er iemand nodig die meekijkt bij het aanmaken van het profiel; daarna kan een kind zelf verder."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Vanaf welke leeftijd heeft schaken zin?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Vanaf een jaar of vier kunnen kinderen de stukken en hun bewegingen leren. Wereld nul gaat nog helemaal niet over schaken maar over het bord: kleuren, rijen, lijnen en tellen tot acht. Dat is voor een driejarige te doen."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Vervangt dit de schaakclub?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nee, en dat is ook niet de bedoeling. De winst zit in het spelen aan een echt bord, met iemand tegenover je. Deze app is de brug daarnaartoe: elke wereld eindigt met de opdracht om het met papa, mama of de juf te spelen."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Werkt het op een telefoon?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Ja, op telefoon, tablet en computer. Een tablet is het prettigst: het bord is dan groot genoeg voor kindervingers."
+      }
+    }
+  ]
+}
+
 export default function Over() {
   const lessen = ALLE_LESSEN.length
   const werelden = WERELDEN.length
 
   return (
     <main className="page">
+      <script
+        type="application/ld+json"
+        // Eigen constante hierboven, geen invoer van buiten.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(VRAGEN) }}
+      />
       <article className="stack" style={{ maxWidth: 720, margin: '0 auto' }}>
         <header className="stack" style={{ gap: 8 }}>
           <p className="muted" style={{ margin: 0 }}>

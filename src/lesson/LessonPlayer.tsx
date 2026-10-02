@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Kop } from '@/ui/Kop'
@@ -57,7 +57,16 @@ const FASE_BEELD: Record<Fase, string> = {
 }
 const FASE_VOLGORDE: Fase[] = ['kijken', 'meedoen', 'zelf', 'toets']
 
-export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
+export function LessonPlayer({
+  les,
+  wereld,
+  uitleg,
+}: {
+  les: Lesson
+  wereld: World
+  /** Wat er in de gebouwde HTML staat, voor wie de app niet draait. Zie LesUitleg. */
+  uitleg?: ReactNode
+}) {
   const [fase, setFase] = useState<Fase>('kijken')
   const [vertelIndex, setVertelIndex] = useState(0)
   /**
@@ -371,6 +380,11 @@ export function LessonPlayer({ les, wereld }: { les: Lesson; wereld: World }) {
     return (
       <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
         <Kop titel={les.titel} terug="/kaart/" />
+        {/* Dit is wat er in de geëxporteerde HTML staat, en dus wat een zoekmachine
+            en een gedeelde link te zien krijgen: de les in gewone tekst. Een kind ziet
+            het hooguit een fractie van een seconde, tot de opgeslagen voortgang
+            binnen is en het echte lesscherm hieronder het overneemt. */}
+        {uitleg}
       </div>
     )
   }

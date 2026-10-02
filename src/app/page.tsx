@@ -1,5 +1,11 @@
+import type { Metadata } from 'next'
+import { SITE } from '@/seo'
 import { Thuis } from './Thuis'
 import { Welkom } from './Welkom'
+
+export const metadata: Metadata = {
+  alternates: { canonical: `${SITE}/` },
+}
 
 /**
  * De startpagina.

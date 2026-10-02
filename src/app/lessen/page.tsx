@@ -18,12 +18,12 @@ import { SITE } from '@/seo'
 export const metadata: Metadata = {
   title: 'Alle schaaklessen: van het bord tot het eindspel | Schaakmaatje',
   description:
-    'Alle 48 schaaklessen van Schaakmaatje op een rij, van licht en donker tot het eindspel. Per les wat je kind erna kan. Gratis, Nederlands, voor 3 tot 10 jaar.',
+    `Alle ${ALLE_LESSEN.length} schaaklessen van Schaakmaatje op een rij, van licht en donker tot het eindspel. Per les wat je kind erna kan. Gratis, Nederlands, voor 3 tot 10 jaar.`,
   alternates: { canonical: `${SITE}/lessen/` },
   openGraph: {
     title: 'Alle schaaklessen van Schaakmaatje',
     description:
-      'Alle 48 lessen op een rij, van het bord leren kennen tot het eindspel. Per les wat je kind erna kan.',
+      `Alle ${ALLE_LESSEN.length} lessen op een rij, van het bord leren kennen tot het eindspel. Per les wat je kind erna kan.`,
     url: `${SITE}/lessen/`,
   },
 }

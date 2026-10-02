@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { ALLE_LESSEN, WERELDEN } from '@/content'
-import { BOTS } from '@/engine/bots'
+import { ALLE_LESSEN } from '@/content'
 import { SITE } from '@/seo'
 
 /**
@@ -23,16 +22,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority,
   })
 
+  // Alleen pagina's die ook echt iets te lezen hebben.
+  //
+  // Hier stonden ook /kaart/, /stal/, /opfrissen/, de minispellen en de bots. Die
+  // schermen zijn leeg zonder profiel, en ze erfden bovendien een canonical die naar
+  // de startpagina wees. Google kreeg dus "indexeer deze achtenzeventig" én "het zijn
+  // allemaal kopieën van de startpagina", en deed uiteindelijk geen van beide. Nu
+  // staan ze op noindex en horen ze hier niet meer thuis.
+  //
+  // De lespagina's staan er wél in: die hebben sinds LesUitleg een eigen titel, een
+  // eigen omschrijving, een eigen canonical en de uitleg van Pip in gewone tekst.
   return [
     pad('/', 1),
     pad('/over/', 0.9),
     pad('/lessen/', 0.9),
-    pad('/kaart/', 0.7),
-    pad('/spelen/', 0.6),
-    pad('/stal/', 0.4),
-    pad('/opfrissen/', 0.4),
-    ...ALLE_LESSEN.map((les) => pad(`/les/${les.id}/`, 0.5)),
-    ...WERELDEN.filter((w) => w.minispel).map((w) => pad(`/spel/${w.minispel}/`, 0.4)),
-    ...BOTS.map((bot) => pad(`/spelen/${bot.id}/`, 0.3)),
+    ...ALLE_LESSEN.map((les) => pad(`/les/${les.id}/`, 0.6)),
   ]
 }

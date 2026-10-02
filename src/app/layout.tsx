@@ -20,7 +20,16 @@ export const metadata: Metadata = {
   },
   description: OMSCHRIJVING,
   applicationName: NAAM,
-  alternates: { canonical: '/' },
+  // GEEN canonical hier.
+  //
+  // Hier stond `alternates: { canonical: '/' }`, en dat erft elke pagina die er zelf
+  // geen zet. Gevolg: tweeëntachtig van de vierentachtig pagina's vertelden Google
+  // "de echte pagina is de startpagina", terwijl de sitemap er achtenzeventig
+  // aanbood om te indexeren. Dat zijn twee tegengestelde instructies, en de uitkomst
+  // is dat er niets geïndexeerd wordt behalve die ene startpagina.
+  //
+  // Elke pagina die gevonden mag worden zet nu zijn eigen canonical. De schermen van
+  // de app zelf zetten `robots: { index: false }` en horen niet in de sitemap.
   manifest: `${BASIS}/manifest.webmanifest`,
   icons: { icon: `${BASIS}/icon.svg`, apple: `${BASIS}/icon.svg` },
   appleWebApp: { capable: true, title: 'Schaakmaatje', statusBarStyle: 'default' },
