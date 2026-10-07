@@ -1,20 +1,19 @@
-name: Publiceren naar TransIP
+name: Publiceren naar TransIP (handmatig, nu buiten gebruik)
 
-# TransIP AutoGit is geen GitHub-koppeling: het is een git-repository op het
-# hostingpakket zelf. Wat je naar de tak 'productie' van die repository pusht, komt op
-# schaakmaatje.nl te staan — precies zoals het is, want AutoGit bouwt niet.
+# LET OP: deze koppeling is er bewust uitgehaald. Schaakmaatje wordt met SFTP
+# geüpload, met de zip uit site-bouwen.yml.
 #
-# Deze workflow bouwt de app en pusht alleen het resultaat (out/):
-#   1. naar de tak 'productie' hier op GitHub, zodat je kunt zien en teruglezen wat er
-#      live staat;
-#   2. naar de repository op TransIP, zodat de site daadwerkelijk bijwerkt.
+# Daarom draait deze workflow niet meer vanzelf bij een push naar main. Dat was
+# gevaarlijk geworden: hij slaat het publiceren stilletjes over als het geheim
+# TRANSIP_SSH_KEY ontbreekt, meldt dan "de gebouwde site staat klaar in de tak
+# productie", en eindigt groen. Wie dat zag kon denken dat de site bij was, terwijl
+# er niets veranderd was. Een groene vink die niets betekent is erger dan geen vink.
 #
-# Stap 2 gebeurt alleen als het geheim TRANSIP_SSH_KEY bestaat. Zonder dat geheim
-# slaat de workflow het netjes over in plaats van te falen.
+# Hij staat er nog omdat het recept klopt: wil je de koppeling ooit terug, zet dan
+# TRANSIP_SSH_KEY als GitHub-geheim en start hem met de hand. Zonder dat geheim valt
+# hij nu om in plaats van te doen alsof.
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -70,9 +69,11 @@ jobs:
           SSH_KEY: ${{ secrets.TRANSIP_SSH_KEY }}
         run: |
           if [ -z "$SSH_KEY" ]; then
-            echo "Geen TRANSIP_SSH_KEY ingesteld — publiceren naar TransIP overgeslagen."
-            echo "De gebouwde site staat wel klaar in de tak 'productie'."
-            exit 0
+            echo "Geen TRANSIP_SSH_KEY ingesteld, dus er is niets gepubliceerd."
+            echo "De koppeling met TransIP is er bewust uitgehaald: uploaden gaat"
+            echo "met SFTP, met de zip uit site-bouwen.yml. Wil je deze weg terug,"
+            echo "zet dan eerst het geheim TRANSIP_SSH_KEY."
+            exit 1
           fi
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519

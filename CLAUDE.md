@@ -104,7 +104,8 @@ Meng ze niet. Een opgave die met schaak te maken heeft, hoort een `regelZet` te 
   het scheelt vertaalfouten in een app die zelf over Nederlandse schaaktaal gaat.
 
 ## Wat je nooit doet
-- Een release naar `main` zonder review (`main` publiceert naar schaakmaatje.nl).
+- Een release zonder review. (De zip die je uploadt is de release; `main` publiceert
+  sinds oktober niets meer, de koppeling met TransIP is er bewust uitgehaald.)
 - Mat of matbegrip eerder introduceren dan wereld 10. Het late uitstel ís de methode.
 - Een opgave met één "juist" veld waar er meerdere goede zetten zijn.
 - Een kind straffen: geen levens, geen game-over, geen nul sterren.
