@@ -178,7 +178,7 @@ export const wereld7: World = {
       geleerd: 'Nu kijk jij eerst of hij kan terugslaan.',
       vertel: [
         'Ruilen betekent: jij slaat zijn stuk, hij slaat daarna dat van jou.',
-        'Ruil je een pion tegen een dame? Dan ben jij spekkoper.',
+        'Ruil je een pion tegen een dame? Dan heb jij flink gewonnen: negen voor één.',
         'Maar geef je je dame voor een pion, dan is dat een slechte ruil. Tel dus even.',
       ],
       vertelFen: '8/8/8/3p4/8/3R4/8/8',

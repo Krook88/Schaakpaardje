@@ -164,7 +164,7 @@ export const wereld12: World = {
       toonCoordinaten: true,
       vertel: [
         'Nu je kunt opschrijven, leer je ook hoe je begint. Er zijn drie simpele regels.',
-        'Eén: pak het midden. Twee: haal je paarden en lopers naar buiten. Drie: rokeer op tijd.',
+        'Eén: pak het midden. Twee: haal je paarden en lopers naar buiten, dat heet ontwikkelen. Drie: rokeer op tijd.',
         'En eentje die je juist níet moet doen: je dame heel vroeg naar buiten. Die wordt dan opgejaagd.',
       ],
       vertelFen: START,

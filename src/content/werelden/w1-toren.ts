@@ -158,6 +158,9 @@ export const wereld1: World = {
       doel: 'Je kind slaat een vijandelijk stuk met de toren.',
       geleerd: 'Nu pak jij een stuk met je toren.',
       vertel: [
+        // Hier valt voor het eerst "zwart", en nergens werd verteld wie wit is. In wereld
+        // 0 betekende "wit" nog een veldkleur.
+        'Jouw stukken zijn wit. De stukken van de tegenstander zijn zwart.',
         {
           tekst: 'Staat er een stuk van de tegenstander in de weg? Dan mag je hem pakken!',
           wijs: pad('e4', 'e7'),

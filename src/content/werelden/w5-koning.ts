@@ -24,7 +24,7 @@ export const wereld5: World = {
       doel: 'Je kind weet dat de koning één veld per zet gaat, alle kanten op.',
       geleerd: 'Nu weet je hoe de koning loopt: één stapje, alle kanten op.',
       vertel: [
-        'Dit is de koning. Hij is de belangrijkste van allemaal.',
+        'Dit is de koning. Hij is de belangrijkste van allemaal. Waarom, dat leer je later.',
         // Eerst één enkel veld, dan de hele kring eromheen. Het verschil met de dame —
         // die dezelfde richtingen heeft maar zo ver als ze wil — zit precies in dat
         // ene stapje, en dat is hier het enige wat oplicht.

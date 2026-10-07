@@ -164,7 +164,9 @@ export const wereld9: World = {
       vertel: [
         'Sta jij schaak? Dan zijn er precies drie manieren om het op te lossen.',
         'Eén: weglopen met je koning. Twee: het aanvallende stuk slaan.',
-        'Drie: er iets tussen zetten. Precies dezelfde drie als op de Aanvalsberg!',
+        // Hier stond "Precies dezelfde drie als op de Aanvalsberg!". Niet waar: daar waren
+        // het weglopen, slaan en dekken, en dekken helpt een koning nooit.
+        'Drie: er iets tussen zetten. Weglopen en slaan ken je al van de Aanvalsberg. Dekken helpt hier niet, want een koning mag nooit geslagen worden.',
       ],
       vertelFen: 'R3r3/8/8/7k/8/2B5/8/4K3',
       vertelWijs: ['e1'],

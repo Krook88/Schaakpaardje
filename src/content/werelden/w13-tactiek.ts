@@ -95,7 +95,7 @@ export const wereld13: World = {
       vertel: [
         'Nog een truc: de penning. Je zet een stuk vast zodat het niet meer weg kan.',
         'Hoe? Je zorgt dat er iets duurders achter staat. Zijn koning bijvoorbeeld.',
-        'Gaat dat stuk opzij, dan staat de koning schaak. En dat mag niet. Dus hij zit vast.',
+        'Gaat dat stuk opzij, dan staat de koning schaak. En dat mag niet. Dus hij zit vast: hij is gepend.',
       ],
       vertelFen: '4k3/8/B1n5/8/8/8/8/7K',
       vertelWijs: ['c6', 'e8'],

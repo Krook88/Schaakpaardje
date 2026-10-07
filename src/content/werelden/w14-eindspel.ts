@@ -154,7 +154,7 @@ export const wereld14: World = {
       geleerd: 'Nu breng jij die laatste pion naar de overkant.',
       vertel: [
         'Eén pion kan een hele partij winnen. Als hij de overkant haalt tenminste.',
-        'Loop hem naar boven, stap voor stap. En laat je koning meelopen als schild.',
+        'Loop hem naar boven, stap voor stap. In een echte partij loopt je koning mee als schild.',
         'Op de laatste rij wordt hij dame. En met een dame erbij win je bijna altijd.',
       ],
       vertelFen: '4k3/8/8/8/8/8/1P6/4K3',

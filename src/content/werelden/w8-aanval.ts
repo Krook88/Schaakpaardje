@@ -41,7 +41,7 @@ export const wereld8: World = {
           correct: ['d3'],
           bedoeling: { soort: 'bedreigd', kleur: 'w' },
           vraag: 'Welk wit stuk staat te pakken? Tik het aan.',
-          foutTip: 'Kijk welke lijnen de zwarte toren bestrijkt. Wat staat daarop?',
+          foutTip: 'Kijk waar de zwarte toren allemaal heen kan. Wat staat daar?',
         },
       ],
       zelf: [
@@ -102,7 +102,7 @@ export const wereld8: World = {
       vertel: [
         'De makkelijkste redding: gewoon weglopen.',
         'Maar niet zomaar ergens heen! Kijk waar hij níet bij kan.',
-        'Zet je stuk dus op een veld dat hij niet bestrijkt.',
+        'Zet je stuk dus op een veld waar hij niet bij kan.',
       ],
       vertelFen: '8/8/8/5b2/8/3R4/8/8',
       vertelWijs: ['d3'],
@@ -145,7 +145,9 @@ export const wereld8: World = {
           goed: ['h5', 'a4', 'b3', 'f3', 'c2', 'e2'],
           bedoeling: 'veilig',
           vraag: 'Je loper wordt aangevallen door het paard. Red hem.',
-          foutTip: 'Het paard op f2 bestrijkt d1, d3, e4, g4, h3 en h1. Vermijd die velden.',
+          // Geen veldnamen: in wereld 8 staan de letters en cijfers langs het bord nog uit,
+          // en notatie komt pas in wereld 12.
+          foutTip: 'Het paard springt in een L. Tel na waar hij bij kan, en kies een veld waar hij niet komt.',
         },
       ],
       themas: ['aanval', 'verdediging'],
@@ -236,7 +238,7 @@ export const wereld8: World = {
           from: 'a1',
           goed: ['a5', 'e1'],
           vraag: 'De loper valt je paard aan. Dek het met je toren.',
-          foutTip: 'Zet je toren zo neer dat hij het paard op e5 kan bereiken: op dezelfde rij of lijn.',
+          foutTip: 'Zet je toren op dezelfde rij of lijn als je paard. Dan kan hij erbij.',
         },
       ],
       zelf: [

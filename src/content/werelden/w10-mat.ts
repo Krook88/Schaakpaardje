@@ -114,7 +114,7 @@ export const wereld10: World = {
       vertel: [
         'Nu ga je zelf mat zetten. In één zet!',
         'Zoek een zet die schaak geeft, én waarbij hij nergens meer heen kan.',
-        'Kijk dus niet alleen naar het schaak, maar ook naar zijn vluchtvelden.',
+        'Kijk dus niet alleen naar het schaak, maar ook naar de lege velden naast zijn koning. Die heten vluchtvelden.',
       ],
       vertelFen: '7k/5ppp/8/8/8/8/8/R5K1',
       meedoen: [
@@ -180,7 +180,7 @@ export const wereld10: World = {
       geleerd: 'Nu herken je pat, en weet je dat dat gelijkspel is.',
       vertel: [
         'Let op, want dit is een gemene. Soms sta je níet schaak, maar kun je ook niets.',
-        'Geen enkele zet is mogelijk. Dat heet pat, en dan is het gelijkspel.',
+        'Geen enkele zet is mogelijk. Dat heet pat, en dan is het gelijkspel. Een ander woord voor gelijkspel is remise.',
         'Dus sta je bijna te winnen? Pas op dat je hem niet per ongeluk pat zet!',
       ],
       vertelFen: '7k/5Q2/6K1/8/8/8/8/8',

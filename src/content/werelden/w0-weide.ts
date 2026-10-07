@@ -40,11 +40,16 @@ export const wereld0: World = {
           kind: 'tapSquares',
           fen: LEEG,
           correct: ['a1', 'c1', 'e1', 'g1'],
-          vraag: 'Tik de vier donkere velden op de onderste rij aan.',
+          // De allereerste opdracht van de app. Hier stond "op de onderste rij", maar het
+          // woord rij komt pas in de volgende les. Een kind van drie hoorde een woord dat
+          // het niet kende, op een leeg bord zonder één aanwijzing. Nu: gewone woorden,
+          // en het veld linksonder licht op, zoals weide-2 het al deed.
+          wijs: ['a1'],
+          vraag: 'Tik de vier donkere velden helemaal onderaan aan.',
           // Niet zeggen wát het kind aantikte: dat weet de content niet. Wie een
           // donker veld op de verkeerde rij koos, kreeg hier te horen dat het licht
           // was — en dat is gewoon onwaar.
-          foutTip: 'Zoek de groene velden, en alleen die op de onderste rij.',
+          foutTip: 'Zoek de groene velden, en alleen die helemaal onderaan.',
         },
       ],
       zelf: [
@@ -52,14 +57,15 @@ export const wereld0: World = {
           kind: 'tapSquares',
           fen: LEEG,
           correct: ['b1', 'd1', 'f1', 'h1'],
-          vraag: 'En nu de vier lichte velden op de onderste rij.',
+          vraag: 'En nu de vier lichte velden, ook helemaal onderaan.',
         },
         {
           kind: 'tapSquares',
           fen: LEEG,
           correct: ['a8', 'c8', 'e8', 'g8'],
-          vraag: 'Tik de lichte velden op de bovenste rij aan.',
-          foutTip: 'Kijk goed: bovenaan begint de rij juist met een licht veld.',
+          wijs: ['a8'],
+          vraag: 'Tik nu de lichte velden helemaal bovenaan aan.',
+          foutTip: 'Kijk goed: helemaal bovenaan begint het links juist met een licht veld.',
         },
       ],
       toets: [
