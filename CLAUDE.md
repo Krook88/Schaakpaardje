@@ -42,6 +42,7 @@ npm run check            # typecheck + tests + content + build (draai dit vóór
 npm run doorloop         # de app spelen als kind (vereist een draaiende `npx serve out`)
 npm run validate:content # alle stellingen en opgaven controleren
 npm run audio:render     # Pip inspreken (vereist ELEVENLABS_API_KEY)
+npm run live             # staat op schaakmaatje.nl wat je gebouwd hebt? (na npm run build)
 ```
 
 ### Waarom er twee controles zijn

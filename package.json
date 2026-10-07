@@ -16,7 +16,7 @@
     "sfx:render": "tsx scripts/sfx-render.ts",
     "audio:dekking": "tsx scripts/audio-dekking.ts",
     "doorloop": "node scripts/doorloop.mjs",
-    "live": "node scripts/live-check.mjs"
+    "live": "tsx scripts/live-check.ts"
   },
   "dependencies": {
     "chess.js": "^1.4.0",

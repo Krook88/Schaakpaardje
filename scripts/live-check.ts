@@ -16,14 +16,34 @@
  * verschillen tonen die niets betekenen. De tekst die een bezoeker leest hoort wél
  * precies hetzelfde te zijn.
  *
- * De opnames krijgen een eigen controle. Die staan met opzet niet in de zip (anders
- * overschrijf je wat er al staat), dus ze zijn hier niet te vergelijken. Wat hij wel
- * kan zeggen: hoeveel er op de server staan, en of dat er niet ineens veel minder zijn
- * dan de vorige keer. Nul is bijna altijd de fout waarbij een leeg manifest over het
- * echte heen is gegaan.
+ * De opnames krijgen een eigen controle, en die telt niet maar kijkt. Tellen was te
+ * zwak: 678 opnames bij 673 zinnen ziet eruit alsof alles er is, terwijl het net zo
+ * goed vijf weesbestanden plus twee ontbrekende zinnen kan zijn. De naam van een
+ * opname is een hash van de zin zelf, dus we kunnen precies nagaan welke zin geen
+ * bestand heeft. Daar gaat hij dus langs alle zinnen die Pip hoort te zeggen.
  */
 import { readdirSync, readFileSync, statSync, existsSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
+import { alleZinnen } from '../src/content/validate'
+import { zinSleutel } from '../src/audio/voice'
+import * as pip from '../src/content/voice'
+
+/**
+ * Elke zin die een opname hoort te hebben.
+ *
+ * Precies dezelfde verzameling als scripts/tts-render.ts inspreekt. Hij wordt hier
+ * opnieuw opgebouwd uit dezelfde bronnen in plaats van overgetypt, want een tweede
+ * lijst loopt altijd een keer uit de pas met de eerste.
+ */
+function teSprekenZinnen(): string[] {
+  const uit = new Set<string>(alleZinnen())
+  for (const waarde of Object.values(pip)) {
+    if (typeof waarde === 'string') uit.add(waarde)
+    else if (Array.isArray(waarde)) waarde.forEach((z) => typeof z === 'string' && uit.add(z))
+  }
+  uit.delete('Pip')
+  return [...uit]
+}
 
 const SITE = process.argv.find((a) => a.startsWith('--url='))?.slice(6) ?? 'https://schaakmaatje.nl'
 const UIT = 'out'
@@ -40,7 +60,7 @@ if (!existsSync(UIT)) {
 /* ---------------------------------------------------------------- *
  * De tekst die een bezoeker ziet, en verder niets.
  * ---------------------------------------------------------------- */
-function zichtbareTekst(html) {
+function zichtbareTekst(html: string): string {
   const body = html.includes('<body') ? html.slice(html.indexOf('<body')) : html
   return body
     .replace(/<script[\s\S]*?<\/script>/g, '')
@@ -52,13 +72,13 @@ function zichtbareTekst(html) {
     .trim()
 }
 
-const titelVan = (html) => html.match(/<title>([\s\S]*?)<\/title>/)?.[1]?.trim() ?? ''
-const canonicalVan = (html) => html.match(/<link rel="canonical" href="([^"]+)"/)?.[1] ?? ''
+const titelVan = (html: string) => html.match(/<title>([\s\S]*?)<\/title>/)?.[1]?.trim() ?? ''
+const canonicalVan = (html: string) => html.match(/<link rel="canonical" href="([^"]+)"/)?.[1] ?? ''
 
 /** Alle gebouwde pagina's, als paden zoals de browser ze opvraagt. */
-function gebouwdePaginas() {
-  const uit = []
-  const loop = (map) => {
+function gebouwdePaginas(): string[] {
+  const uit: string[] = []
+  const loop = (map: string) => {
     for (const naam of readdirSync(map)) {
       const pad = join(map, naam)
       if (statSync(pad).isDirectory()) loop(pad)
@@ -75,7 +95,9 @@ function gebouwdePaginas() {
 /* ---------------------------------------------------------------- *
  * Ophalen, met een beetje geduld.
  * ---------------------------------------------------------------- */
-async function haal(pad) {
+type Antwoord = { status: number; html: string; fout?: string }
+
+async function haal(pad: string): Promise<Antwoord> {
   const url = SITE + pad
   for (let poging = 1; poging <= 3; poging++) {
     try {
@@ -83,15 +105,16 @@ async function haal(pad) {
       const tekst = antwoord.ok ? await antwoord.text() : ''
       return { status: antwoord.status, html: tekst }
     } catch (e) {
-      if (poging === 3) return { status: 0, html: '', fout: String(e.message ?? e) }
+      if (poging === 3) return { status: 0, html: '', fout: String((e as Error).message ?? e) }
       await new Promise((los) => setTimeout(los, 400 * poging))
     }
   }
+  return { status: 0, html: '', fout: 'opgegeven' }
 }
 
 /** Een handjevol tegelijk, zodat 84 pagina's geen vijf minuten duren. */
-async function perGroep(lijst, n, werk) {
-  const uit = []
+async function perGroep<T, U>(lijst: T[], n: number, werk: (t: T) => Promise<U>): Promise<U[]> {
+  const uit: U[] = []
   for (let i = 0; i < lijst.length; i += n) {
     uit.push(...(await Promise.all(lijst.slice(i, i + n).map(werk))))
   }
@@ -104,7 +127,7 @@ async function perGroep(lijst, n, werk) {
 const paginas = gebouwdePaginas()
 console.log(`Vergelijken: ${paginas.length} pagina's op ${SITE}\n`)
 
-const klachten = []
+const klachten: [string, string][] = []
 let gelijk = 0
 
 const uitkomsten = await perGroep(paginas, TEGELIJK, async (pad) => {
@@ -128,7 +151,7 @@ for (const { pad, hier, daar } of uitkomsten) {
     // Zeg waar het uiteenloopt, niet alleen dát het uiteenloopt.
     let i = 0
     while (i < a.length && i < b.length && a[i] === b[i]) i++
-    const knip = (s) => s.slice(Math.max(0, i - 25), i + 55).trim()
+    const knip = (s: string) => s.slice(Math.max(0, i - 25), i + 55).trim()
     klachten.push([
       pad,
       `andere tekst (${b.length} tekens live, ${a.length} gebouwd)\n` +
@@ -151,41 +174,76 @@ for (const { pad, hier, daar } of uitkomsten) {
 /* ---------------------------------------------------------------- *
  * De opnames. Niet te vergelijken, wel te tellen.
  * ---------------------------------------------------------------- */
-async function opnames(soort) {
+async function manifestVan(soort: string) {
   const antwoord = await haal(`/${soort}/manifest.json`)
-  if (antwoord.status === 404) return { aantal: 0, uitleg: 'geen manifest (404)' }
-  if (antwoord.status !== 200) return { aantal: null, uitleg: `manifest geeft ${antwoord.status}` }
+  if (antwoord.status === 404) return { sleutels: null as string[] | null, uitleg: 'geen manifest (404)' }
+  if (antwoord.status !== 200) return { sleutels: null, uitleg: `manifest geeft ${antwoord.status}` }
   try {
-    return { aantal: Object.keys(JSON.parse(antwoord.html)).length, uitleg: null }
+    return { sleutels: Object.keys(JSON.parse(antwoord.html)), uitleg: null }
   } catch {
-    return { aantal: null, uitleg: 'manifest is geen geldige JSON' }
+    return { sleutels: null, uitleg: 'manifest is geen geldige JSON' }
   }
 }
 
 const vorige = existsSync(GEHEUGEN) ? JSON.parse(readFileSync(GEHEUGEN, 'utf8')) : {}
-const nu = {}
+const nu: Record<string, number | null> = {}
+
 console.log('Opnames op de server:')
-for (const soort of ['audio', 'sfx']) {
-  const { aantal, uitleg } = await opnames(soort)
-  nu[soort] = aantal
-  const eerder = vorige[soort]
-  if (aantal === null) {
-    klachten.push([`/${soort}/manifest.json`, uitleg])
-    console.log(`  ?  ${soort}: ${uitleg}`)
-  } else if (aantal === 0) {
+
+const { sleutels, uitleg } = await manifestVan('audio')
+nu.audio = sleutels?.length ?? null
+if (!sleutels) {
+  klachten.push(['/audio/manifest.json', uitleg!])
+  console.log(`  ?  audio: ${uitleg}`)
+} else if (!sleutels.length) {
+  klachten.push([
+    '/audio/',
+    'nul opnames. Waarschijnlijk is een leeg manifest over het echte heen gegaan; ' +
+      'zet public/audio/ er opnieuw bij.',
+  ])
+  console.log('  ✗  audio: nul opnames')
+} else {
+  // Niet tellen maar nagaan: welke zin heeft geen bestand?
+  const aanwezig = new Set(sleutels)
+  const zinnen = teSprekenZinnen()
+  const stil = zinnen.filter((zin) => !aanwezig.has(zinSleutel(zin)))
+  const wees = sleutels.length - (zinnen.length - stil.length)
+
+  if (stil.length) {
     klachten.push([
-      `/${soort}/`,
-      'nul opnames. Waarschijnlijk is een leeg manifest over het echte heen gegaan; ' +
-        `zet public/${soort}/ er opnieuw bij.`,
+      '/audio/',
+      `${stil.length} van de ${zinnen.length} zinnen hebben geen opname en klinken dus\n` +
+        `        in de apparaatstem. Draai: npm run audio:render -- --vanaf ${SITE}\n` +
+        stil.slice(0, 5).map((z) => `        · "${z}"`).join('\n') +
+        (stil.length > 5 ? `\n        · en nog ${stil.length - 5}` : ''),
     ])
-    console.log(`  ✗  ${soort}: nul opnames`)
-  } else if (eerder && aantal < eerder) {
-    klachten.push([`/${soort}/`, `${eerder} opnames vorige keer, nu ${aantal}. Er zijn er weg.`])
-    console.log(`  ✗  ${soort}: ${aantal} (was ${eerder})`)
+    console.log(`  ✗  audio: ${zinnen.length - stil.length} van de ${zinnen.length} zinnen ingesproken`)
   } else {
-    console.log(`  ✓  ${soort}: ${aantal} opnames${eerder ? ` (was ${eerder})` : ''}`)
+    console.log(`  ✓  audio: alle ${zinnen.length} zinnen ingesproken`)
+  }
+  // Weesbestanden zijn geen fout: een aangepaste zin krijgt een nieuwe naam en de
+  // oude blijft achter. Ze kosten alleen ruimte, dus melden en verder niets.
+  if (wees > 0) console.log(`     (${wees} opname${wees === 1 ? '' : 's'} van zinnen die niet meer bestaan)`)
+}
+
+const sfx = await manifestVan('sfx')
+nu.sfx = sfx.sleutels?.length ?? null
+if (!sfx.sleutels) {
+  klachten.push(['/sfx/manifest.json', sfx.uitleg!])
+  console.log(`  ?  sfx: ${sfx.uitleg}`)
+} else if (!sfx.sleutels.length) {
+  klachten.push(['/sfx/', 'nul bordgeluiden. Zet public/sfx/ er opnieuw bij.'])
+  console.log('  ✗  sfx: nul geluiden')
+} else {
+  const eerder = vorige.sfx
+  if (eerder && sfx.sleutels.length < eerder) {
+    klachten.push(['/sfx/', `${eerder} geluiden vorige keer, nu ${sfx.sleutels.length}. Er zijn er weg.`])
+    console.log(`  ✗  sfx: ${sfx.sleutels.length} (was ${eerder})`)
+  } else {
+    console.log(`  ✓  sfx: ${sfx.sleutels.length} geluiden`)
   }
 }
+
 writeFileSync(GEHEUGEN, JSON.stringify(nu, null, 2))
 
 /* ---------------------------------------------------------------- *
