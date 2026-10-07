@@ -72,10 +72,10 @@ plaats van naar het scherm te kijken.
 | I8 | belangrijk | `laatste-pion`: een schuine slag kan de pion laten vastlopen, zonder uitweg. | **Opgelost** `94d4e8c`: een pion die het doel niet meer haalt begint opnieuw. |
 | K1 | klein | `mat-2` fouttip "zorg dat je dame gedekt staat" is onwaar. | **Opgelost** met B2. |
 | K2 | klein | Bram "speelt altijd zijn beste zet", maar het genadeplafond geldt ook voor hem. | Open: met I3. |
-| K3 | klein | Eindspel: "laat je koning meelopen als schild", maar de koning is niet bespeelbaar. | Open: didactiekfase. |
+| K3 | klein | Eindspel: "laat je koning meelopen als schild", maar de koning is niet bespeelbaar. | **Opgelost** `8e20518`: "in een echte partij loopt je koning mee als schild". |
 | K4 | klein | Notatie zonder `x`, `+`, `O-O`. | Open: didactiekfase (= L9). |
 | K5 | klein | Pionnenspel tegen Mila kan op mat eindigen, uitleg zegt "wie de overkant haalt". | Open: volgende ronde. |
-| K6 | klein | "Vastzitten" betekent een geblokkeerde pion én een gepend stuk. | Open: tekst, didactiekfase. |
+| K6 | klein | "Vastzitten" betekent een geblokkeerde pion én een gepend stuk. | **Opgelost** `8e20518`: de penningles noemt het nu "gepend", zoals bij de club. |
 | K7 | klein | Bij `move` met `from` kost de eerste tik op een ander stuk al een fout. | Open: volgende ronde. |
 
 ## Leer-reviewer (didactiek, vergeleken met Stap 1)
@@ -83,7 +83,7 @@ plaats van naar het scherm te kijken.
 | | Ernst | Bevinding | Status |
 |---|---|---|---|
 | L1 | blokkerend | En passant onoplosbaar. | **Opgelost**, zie P1. |
-| L2 | **blokkerend** | Wereld 9: "precies dezelfde drie als op de Aanvalsberg". Niet waar: dekken helpt een koning nooit, en ertussen zetten is in wereld 8 nooit geoefend. | **Open: Kaj beslist.** Een zin die Pip uitspreekt, dus nieuwe opname; en de echte oplossing is een les "er tussen" in wereld 8. |
+| L2 | **blokkerend** | Wereld 9: "precies dezelfde drie als op de Aanvalsberg". Niet waar: dekken helpt een koning nooit, en ertussen zetten is in wereld 8 nooit geoefend. | **Zin opgelost** `8e20518`: noemt nu welke twee het kind al kent, en waarom dekken hier niet werkt. Open: een les "er tussen" in wereld 8, zodat ook de derde manier eerder geoefend is. |
 | L3 | **blokkerend** | "Uit schaak: drie manieren" kan niet fout: 100% van de zetten die het bord aanbiedt is goed. | **Open: Kaj beslist.** Vraagt een nieuwe eis per manier. |
 | L4 | belangrijk | `dame-3` laat paardsprongen narekenen, één wereld te vroeg. | Open: didactiekfase. |
 | L5 | belangrijk | Rokadevoorwaarden alleen met woorden getoetst. | Open: nieuw opgavetype `magHet`. |
@@ -108,16 +108,16 @@ plaats van naar het scherm te kijken.
 
 | | Ernst | Bevinding | Status |
 |---|---|---|---|
-| 1 | **blokkerend** | De allereerste opdracht vraagt om "de onderste rij" voor "rij" is uitgelegd, op een leeg bord zonder aanwijzing. `weide-2` lost precies dit op met `wijs`; `weide-1` niet. | **Open: Kaj beslist.** Bovenaan de didactiekfase. `wijs` kost geen opname; de zin aanpassen wel. |
-| 2 | **blokkerend** | `mat-3` toetst op "remise", een woord dat Pip nooit zegt. | **Open: Kaj beslist.** Eén zin erbij, nieuwe opname. |
+| 1 | **blokkerend** | De allereerste opdracht vraagt om "de onderste rij" voor "rij" is uitgelegd, op een leeg bord zonder aanwijzing. `weide-2` lost precies dit op met `wijs`; `weide-1` niet. | **Opgelost** `8e20518`: "helemaal onderaan" en a1 licht op; zo ook de twee opdrachten en twee fouttips erna. |
+| 2 | **blokkerend** | `mat-3` toetst op "remise", een woord dat Pip nooit zegt. | **Opgelost** `8e20518`: Pip zegt nu dat gelijkspel ook remise heet. |
 | 3 | belangrijk | De algemene fouttip zegt "kijk waar het stuk heen mag" op een leeg bord. | Open: didactiekfase. |
 | 4 | belangrijk | 42 quizzen zonder fouttip, en bij een quiz geen hulpknop. | Open: didactiekfase. |
 | 5 | belangrijk | "Wit rechts" op een bord zonder wit veld. | Open: didactiekfase. |
-| 6 | belangrijk | Dat jij wit bent wordt nergens verteld. | Open: didactiekfase. |
+| 6 | belangrijk | Dat jij wit bent wordt nergens verteld. | **Opgelost** `8e20518`: nieuwe vertelzin in `toren-3`. |
 | 7 | belangrijk | Bij één ster: "nog eentje proberen?" zonder knop daarvoor. | Open: volgende ronde, scherm. |
-| 8 | belangrijk | Fouttips in wereld 8 noemen veldnamen; de coördinaten staan daar uit. | Open: didactiekfase. |
-| 9 | belangrijk | "Bestrijkt" voor het eerst in een fouttip. | Open: hoort bij A1. |
-| 10 tot 19 | klein | "Spekkoper", "ontwikkelen", "vluchtvelden", "dekken" als antwoord voor het uitgelegd is, "aan zet" niet uitgesproken, "pat" als afleider, een wereld op slot zegt niets, "de belangrijkste" zonder waarom, "na elke zet van je tegenstander", "maatje" naast "tegenstander". | Open: didactiekfase. |
+| 8 | belangrijk | Fouttips in wereld 8 noemen veldnamen; de coördinaten staan daar uit. | **Opgelost** `8e20518`: beide tips zonder veldnamen. |
+| 9 | belangrijk | "Bestrijkt" voor het eerst in een fouttip. | **Opgelost** `8e20518`: "waar hij heen kan" en "waar hij niet bij kan". De controle die dit mechanisch vangt blijft A1. |
+| 10 tot 19 | klein | "Spekkoper", "ontwikkelen", "vluchtvelden", "dekken" als antwoord voor het uitgelegd is, "aan zet" niet uitgesproken, "pat" als afleider, een wereld op slot zegt niets, "de belangrijkste" zonder waarom, "na elke zet van je tegenstander", "maatje" naast "tegenstander". | **Opgelost** `8e20518`: spekkoper, ontwikkelen, vluchtvelden en "de belangrijkste". Open, didactiekfase: de andere zes. |
 
 ## Layout-reviewer
 
@@ -169,19 +169,16 @@ plaats van naar het scherm te kijken.
 
 ## Wat Kaj moet beslissen voor de volgende fase
 
-Vier blokkerende didactische punten, en ze raken allemaal ingesproken zinnen:
+Van de vier blokkerende didactische punten zijn er drie opgelost met andere woorden
+(`8e20518`, door Kaj gekozen). Wat open blijft:
 
-1. **`weide-1`, de allereerste opdracht**: aanwijzen waar "onderaan" is (`wijs`, geen
-   opname), en eventueel de zin zonder "rij" (wel opname).
-2. **`mat-3`**: één zin erbij die "remise" uitlegt.
-3. **Wereld 9, "precies dezelfde drie"**: de zin eerlijk maken, of een les "er tussen" in
-   wereld 8 toevoegen zodat hij waar wordt.
-4. **"Uit schaak" kan niet fout**: per manier een eigen opdracht.
-
-En één publieke belofte op `/over/` die de app niet waarmaakt (L10).
+1. **"Uit schaak" kan niet fout** (L3): per manier een eigen opdracht. Vraagt een nieuwe
+   eis in de lesmotor, geen andere woorden.
+2. **De belofte op `/over/`** (L10) dat elke wereld eindigt met een opdracht voor aan een
+   echt bord. Die opdracht bestaat niet.
 
 ## Opname nodig na deze zip
 
-Eén nieuwe zin, in `mat-2`:
-"Er zijn twee goede zetten. Geef schaak op de bovenste rij, dan kan hij nergens heen."
-Tot die is ingesproken klinkt hij in de apparaatstem. `npm run live` noemt hem.
+Negentien zinnen, samen 1508 tekens. Ingesproken met
+`npm run audio:render -- --vanaf https://schaakmaatje.nl`; tot dan klinken ze in de
+apparaatstem, en `npm run live` noemt ze bij naam.
