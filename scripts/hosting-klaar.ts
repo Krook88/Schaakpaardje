@@ -16,7 +16,8 @@
  * definitie een pad dat is opgevraagd, nooit een patroon.
  */
 import { readdirSync, renameSync, readFileSync, writeFileSync, existsSync, statSync, rmSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, type PlatformPath } from 'node:path'
+import * as pad_ from 'node:path'
 
 const UIT = join(process.cwd(), 'out')
 const TEKSTBESTANDEN = /\.(html|txt|json|webmanifest)$/
@@ -44,6 +45,25 @@ function mappenMetBlokhaken(map: string): string[] {
   return uit
 }
 
+/**
+ * Waar moet `.../[lesId]` heen, en hoe heet hij dan?
+ *
+ * Dit was een regel of drie binnen main(), en die rekende met `lastIndexOf('/')`. Op
+ * Linux klopt dat; op Windows niet, want daar levert join() backslashes op. Dan geeft
+ * lastIndexOf('/') een −1, hakt slice(0, −1) het laatste teken van het pad af, en komt
+ * er een doel uit als `out\_next\...\diploma\[soort\:\Users\kajro\...`. Het
+ * bouwen viel om met een ENOENT, en alleen bij degene die op Windows werkt.
+ *
+ * Vandaar nu dirname en basename, die weten zelf welk scheidingsteken hun systeem
+ * gebruikt. En vandaar dat `p` meegegeven kan worden: zo kan de test de Windows-variant
+ * echt naspelen, op een machine die geen Windows is.
+ */
+export function zonderBlokhaken(pad: string, p: PlatformPath = pad_) {
+  const naam = p.basename(pad)
+  const schoon = naam.slice(1, -1)
+  return { naam, schoon, doel: p.join(p.dirname(pad), schoon) }
+}
+
 function main() {
   if (!existsSync(UIT)) {
     console.error('Geen out/ gevonden. Draai eerst next build.')
@@ -52,9 +72,7 @@ function main() {
 
   const hernoemd: string[] = []
   for (const pad of mappenMetBlokhaken(UIT)) {
-    const naam = pad.slice(pad.lastIndexOf('/') + 1)
-    const schoon = naam.slice(1, -1)
-    const doel = join(pad.slice(0, pad.lastIndexOf('/')), schoon)
+    const { naam, schoon, doel } = zonderBlokhaken(pad)
     if (existsSync(doel)) {
       console.error(`Kan ${naam} niet hernoemen: ${schoon} bestaat al.`)
       process.exit(1)
@@ -171,4 +189,5 @@ function laatOpnamesMetRust() {
   }
 }
 
-main()
+// Alleen draaien als het script zelf gestart wordt, niet als de test hem importeert.
+if (process.argv[1]?.includes('hosting-klaar')) main()
