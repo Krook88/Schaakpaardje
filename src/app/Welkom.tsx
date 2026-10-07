@@ -120,6 +120,14 @@ export function Welkom() {
         <Link href="/over/">Lees meer voor ouders</Link> of bekijk{' '}
         <Link href="/lessen/">alle {lessen} lessen</Link>.
       </p>
+
+      {/* Het doel van "Beginnen →". Het stond op het formulier, maar dat is een
+          client-component en bestaat pas na hydratie: in de gebouwde HTML kwam het nul
+          keer voor. Wie meteen tikte, kreeg niets, en pas bij de tweede tik werkte het.
+          Hier staat het vanaf de eerste verf, ook zonder JavaScript. En het landt nu
+          op "Speel je weer verder?" als die er is, in plaats van eroverheen naar een
+          tweede profiel. */}
+      <span id="beginnen" style={{ scrollMarginTop: 16 }} />
     </div>
   )
 }

@@ -31,6 +31,17 @@ import {
  * weghaalt zodra er een profiel blijkt te zijn. Een kind dat de app al gebruikt krijgt
  * hem dus nooit te zien.
  */
+/**
+ * Het formulier staat onderaan de landingspagina, zo'n 1450 pixels diep. Na de tik op
+ * "Beginnen" wisselt de inhoud, maar de browser houdt de scrollpositie vast. Op een
+ * telefoon begon het allereerste scherm van een nieuw kind dus halverwege de
+ * rondleiding, met Pips "Hoi Noor!" erboven buiten beeld. Op het testformaat van
+ * 430×930 scheelde het maar 65 pixels, daarom viel het niet op.
+ */
+function naarBoven() {
+  window.scrollTo(0, 0)
+}
+
 export function Thuis({ welkom }: { welkom: ReactNode }) {
   const geladen = useToestandGeladen()
   const profielen = useProfielStore((s) => s.profielen)
@@ -41,14 +52,6 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   const stickers = useStickers()
   const verslagen = useVerslagen()
 
-  // De staat vóór de opgeslagen profielen binnen zijn.
-  //
-  // Hier stond `<main className="page" />` — een leeg vlak. Dat is precies wat een
-  // zoekmachine van de startpagina binnenkreeg: nul tekens tekst. De hele app is
-  // client-side, dus dit lege vlak was letterlijk de geëxporteerde index.html.
-  //
-  // Nu staat er wat de app is en waar je meer kunt lezen. Een kind ziet het een
-  // fractie van een seconde; een zoekmachine ziet het altijd.
   // Vóór de opgeslagen profielen binnen zijn.
   //
   // Dit is precies wat er in de geëxporteerde index.html staat, en dus wat een
@@ -69,8 +72,15 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
           {welkom}
           <NieuwProfiel
             bestaand={profielen.map((p) => ({ id: p.id, naam: p.naam, avatar: p.avatar }))}
-            onKies={kiesProfiel}
-            onMaak={maakProfiel}
+            onKies={(id) => {
+              kiesProfiel(id)
+              naarBoven()
+            }}
+            onMaak={(naam, leeftijd, avatar) => {
+              const id = maakProfiel(naam, leeftijd, avatar)
+              naarBoven()
+              return id
+            }}
           />
         </div>
       </main>
@@ -408,7 +418,7 @@ function NieuwProfiel({
         </section>
       )}
 
-      <section className="card stack" id="beginnen">
+      <section className="card stack">
         <h2 style={{ fontSize: '1.1rem' }}>Nieuw hier</h2>
         <label className="stack" style={{ gap: 6 }}>
           <span>Hoe heet je?</span>
