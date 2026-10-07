@@ -135,17 +135,26 @@ export const wereld10: World = {
           foutTip: 'Jouw koning bewaakt al zijn vluchtvelden. Geef schaak op de achterste rij.',
         },
         {
+          // Hier stond de dame op h1, en die gaf over de lange diagonaal al schaak. Met
+          // wit aan zet kan dat niet: dan had zwart zijn koning de zet ervoor in schaak
+          // laten staan. Op c3 staat hij nergens op die lijn. Nagerekend: precies twee
+          // matzetten, Qc8# en Qh8#. De oude fouttip ("zorg dat je dame gedekt staat")
+          // klopte ook al niet: met deze twee koningen gaat een gedekte matzet altijd
+          // samen met mat op de achterste rij, dus dat is wat de tip nu zegt.
           kind: 'regelZet',
-          fen: 'k7/8/1K6/8/8/8/8/7Q w - - 0 1',
+          fen: 'k7/8/1K6/8/8/2Q5/8/8 w - - 0 1',
           eis: 'matIn1',
           vraag: 'Zet mat met je dame.',
-          foutTip: 'Er zijn twee goede zetten. Zorg dat je dame gedekt staat door je koning.',
+          foutTip: 'Er zijn twee goede zetten. Geef schaak op de bovenste rij, dan kan hij nergens heen.',
         },
       ],
       toets: [
         {
+          // Hier stond een pion op g7, en die viel h8 al aan: zwart stond schaak met wit
+          // aan zet. Dat kan in geen partij. Nagerekend: één matzet, a8=Q#, en dat is ook
+          // precies wat het bord doet als het kind de pion naar a8 tikt.
           kind: 'regelZet',
-          fen: '7k/5KP1/8/8/8/8/8/8 w - - 0 1',
+          fen: '4k3/P7/4K3/8/8/8/8/8 w - - 0 1',
           eis: 'matIn1',
           vraag: 'Nog eentje: zet mat in één zet.',
           foutTip: 'Je pion staat vlak voor de overkant. Maak er een dame van!',

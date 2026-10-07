@@ -88,12 +88,32 @@ function pionOpEindrij(board: BoardMap): boolean {
  */
 function stellingKlopt(board: BoardMap): boolean {
   if (pionOpEindrij(board)) return false
+  const fen = `${toPlacement(board)} w - - 0 1`
   try {
-    const game = new Game(`${toPlacement(board)} w - - 0 1`)
-    const status = game.status()
-    return !status.over && !status.check
+    const status = new Game(fen).status()
+    return !status.over && !status.check && !wachtendeStaatSchaak(fen)
   } catch {
     return false
+  }
+}
+
+/**
+ * Staat de partij die níét aan zet is schaak? Dan kan de stelling niet bestaan: die
+ * had de zet ervoor zijn eigen koning in schaak laten staan.
+ *
+ * chess.js ziet dit niet, want het kijkt alleen naar wie er aan zet is. En de
+ * generatoren keken naar `status.check`, en dat is ook alleen wie er aan zet is. Zo
+ * stond in mat-in-1-regen in ruim een derde van de rondjes de zwarte koning al schaak
+ * terwijl het kind "zet mat" kreeg: in de wereld die juist over schaak zien gaat.
+ * Het commentaar van `stellingKlopt` hierboven beloofde deze controle al; hij stond er
+ * alleen niet.
+ */
+function wachtendeStaatSchaak(fen: string): boolean {
+  const [plaatsing, aanZet] = fen.split(' ')
+  try {
+    return new Game(`${plaatsing} ${aanZet === 'b' ? 'w' : 'b'} - - 0 1`).inCheck
+  } catch {
+    return true
   }
 }
 
@@ -347,8 +367,13 @@ export const MINISPELLEN: Minispel[] = [
       const lijn = Math.floor(random() * 8)
       let board: BoardMap = zet({}, square(lijn, 2), 'p', 'w')
       const bezet = [square(lijn, 2)]
+      // De hele lijn vrijhouden, niet alleen de eerste twee velden. Een eigen pion
+      // verderop in dezelfde lijn blokkeert voorgoed: een pion kan niet opzij en niet
+      // terug. Eén op de zes rondjes kon zo nooit, en op niveau 6 één op de vier, met
+      // een tipje dat niets aanwees. `laatste-pion` hieronder deed dit al goed.
+      const lijnVrij = [3, 4, 5, 6, 7, 8].map((r) => square(lijn, r))
       for (let i = 0; i < niveau; i++) {
-        const sq = willekeurigPionVeld(random, [...bezet, square(lijn, 3), square(lijn, 4)])
+        const sq = willekeurigPionVeld(random, [...bezet, ...lijnVrij])
         if (Number(sq[1]) >= 7) continue
         board = zet(board, sq, 'p', 'w')
         bezet.push(sq)
@@ -503,7 +528,7 @@ export const MINISPELLEN: Minispel[] = [
         try {
           const game = new Game(fen)
           const status = game.status()
-          if (status.over || status.check) continue
+          if (status.over || status.check || wachtendeStaatSchaak(fen)) continue
           // goedeZetten laat bij 'geefSchaak' alleen schaakzetten door die het stuk
           // niet weggeven — behalve als die er niet zijn, dan geeft hij alles terug.
           // Zo'n stelling willen we hier juist niet, dus we rekenen het zelf na.
@@ -562,7 +587,7 @@ export const MINISPELLEN: Minispel[] = [
         try {
           const game = new Game(fen)
           const status = game.status()
-          if (status.over || status.check) continue
+          if (status.over || status.check || wachtendeStaatSchaak(fen)) continue
           const matten = goedeZetten(game, 'matIn1')
           // Eén oplossing is een echte puzzel; bij vijf is het niet meer zoeken.
           if (!matten.length || matten.length > 2) continue
@@ -604,7 +629,7 @@ export const MINISPELLEN: Minispel[] = [
         const fen = `${bordNaarFen(board)} w KQ - 0 1`
         try {
           const game = new Game(fen)
-          if (game.status().over) continue
+          if (game.status().over || wachtendeStaatSchaak(fen)) continue
           const rokades = goedeZetten(game, 'rokeer')
           if (rokades.length !== 1) continue
           return {

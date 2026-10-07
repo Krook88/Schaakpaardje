@@ -66,6 +66,13 @@ minispel uit, tikt een quizantwoord aan. Elke regel erin is geleerd van een van
 bovenstaande fouten. **Gaat er iets stuk in dit soort gedrag, voeg dan een regel toe
 aan de doorloop in plaats van alleen de fout te repareren** — anders komt hij terug.
 
+En een soort die geen van beide zag: `tests/pip-volgen.test.ts` speelt **elke** opgave
+na als een kind dat alleen tikt wat Pip aanwijst, via dezelfde `tik()` die het scherm
+gebruikt, ook duizenden minispelrondjes. Hij bestaat omdat en passant drie releases lang
+onoplosbaar was: de contentcontrole vroeg `goedeZetten()` of er een antwoord bestond (ja),
+niemand vroeg `tik()` of het kind dat antwoord ook kon geven (nee). **Controleer de kant
+waar het kind loopt, niet alleen de kant waar het antwoord staat.**
+
 Voor de laatste soort (didactische volgorde) is er wél een mechanische regel: de
 contentcontrole weigert een aanwijsopgave die naar een stuk vraagt dat pas in een
 latere wereld wordt uitgelegd. Zie `stukkenVroegGenoemd()` in `src/content/validate.ts`.

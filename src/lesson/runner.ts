@@ -12,7 +12,7 @@ import {
   type Square,
 } from '@/engine/board'
 import { korstePad, slaAllesOp } from '@/engine/puzzels'
-import { Game } from '@/engine/game'
+import { Game, type GameMove } from '@/engine/game'
 import type { Exercise } from '@/content/types'
 
 export type OpgaveStand = {
@@ -255,9 +255,20 @@ export function tik(stand: OpgaveStand, veld: Square): { stand: OpgaveStand; uit
     const zetten = stand.zetten + 1
     const klaar = veld === o.doel
     const teVeel = !klaar && o.maxZetten !== undefined && zetten >= o.maxZetten
-    if (teVeel) {
+    // Of: het doel is vanaf hier helemaal niet meer te halen. In `laatste-pion` kon een
+    // pion schuin slaan, van zijn lijn af raken en achter een eigen pion vast komen te
+    // staan. Zonder `maxZetten` greep niets in: een dood bord, een tipje dat niets
+    // aanwees, en geen knop die het zei.
+    //
+    // Alleen een pion kan zo vastlopen. Elk ander stuk kan dezelfde weg terug, en slaan
+    // haalt alleen obstakels weg, dus wat bereikbaar was blijft bereikbaar. Daarom wordt
+    // er alleen bij een pion gezocht, en ruim, zodat een lange maar mogelijke route
+    // nooit voor doodlopend wordt aangezien.
+    const wasPion = stand.board[van]?.type === 'p'
+    const vast = !klaar && wasPion && !korstePad(board, veld, o.doel, 16)
+    if (teVeel || vast) {
       // Niet "fout", maar gewoon opnieuw beginnen: het kind heeft niets verkeerd gedaan,
-      // het lukte alleen niet binnen het aantal zetten.
+      // het lukte alleen niet zo.
       return {
         stand: { ...startOpgave(o), fouten: stand.fouten + 1, hints: stand.hints },
         uit: 'opnieuw',
@@ -346,17 +357,7 @@ function tikRegelZet(
     }
   }
 
-  const status = proef.status()
-  const gelukt =
-    o.eis === 'uitSchaak'
-      ? true // elke legale zet haalt je koning uit schaak; dat is precies het punt
-      : o.eis === 'rokeer'
-        ? gedaan.san.startsWith('O-O')
-        : o.eis === 'geefSchaak'
-          ? gedaan.isCheck || (status.over && status.reason === 'mat')
-          : status.over && status.reason === 'mat'
-
-  if (!gelukt) {
+  if (!voldoetAanEis(game, gedaan, o.eis)) {
     return {
       stand: { ...stand, misser: veld, fouten: stand.fouten + 1, geselecteerd: null },
       uit: 'fout',
@@ -377,21 +378,38 @@ function tikRegelZet(
   }
 }
 
+type Eis = Extract<Exercise, { kind: 'regelZet' }>['eis']
+
+/**
+ * Voldoet deze zet aan de eis? De enige plek waar dat beslist wordt.
+ *
+ * Er waren er twee: deze vraag stond hier voor de hint en de contentcontrole, en nog
+ * een keer als eigen keten in `tikRegelZet`, voor het kind. Toen en passant erbij kwam,
+ * kreeg alleen de eerste een tak. De contentcontrole vond de opgave dus oplosbaar, Pip
+ * wees de goede pion aan, en het kind kreeg voor precies die zet een kruisje. Drie
+ * opgaven lang, in les 24 van 49, en daarachter ging niets meer open.
+ */
+function voldoetAanEis(game: Game, zet: GameMove, eis: Eis): boolean {
+  if (eis === 'uitSchaak') return true // elke legale zet haalt je koning uit schaak; dat is het punt
+  if (eis === 'rokeer') return zet.san.startsWith('O-O')
+  if (eis === 'enPassant') return zet.isEnPassant
+  const na = game.clone()
+  na.move(zet.from, zet.to, zet.promotion)
+  const status = na.status()
+  const mat = status.over && status.reason === 'mat'
+  return eis === 'matIn1' ? mat : zet.isCheck || mat
+}
+
 /** Alle zetten die aan de eis voldoen. Ook gebruikt door de contentcontrole. */
-export function goedeZetten(
-  game: Game,
-  eis: 'geefSchaak' | 'uitSchaak' | 'matIn1' | 'rokeer' | 'enPassant',
-) {
-  const alle = game.legalMoves().filter((zet) => {
-    if (eis === 'uitSchaak') return true
-    if (eis === 'rokeer') return zet.san.startsWith('O-O')
-    if (eis === 'enPassant') return zet.isEnPassant
-    const na = game.clone()
-    na.move(zet.from, zet.to)
-    const status = na.status()
-    const mat = status.over && status.reason === 'mat'
-    return eis === 'matIn1' ? mat : zet.isCheck || mat
-  })
+export function goedeZetten(game: Game, eis: Eis) {
+  // Alleen promoveren tot dame: dat is wat het bord doet als een kind een pion naar de
+  // overkant tikt. Stonden de andere drie hier ook in, dan wees de hint soms "promoveer
+  // tot paard, dat geeft schaak" aan, maakte het bord er een dame van, en kreeg het
+  // kind een kruisje voor wat Pip net voordeed.
+  const alle = game
+    .legalMoves()
+    .filter((zet) => !zet.promotion || zet.promotion === 'q')
+    .filter((zet) => voldoetAanEis(game, zet, eis))
 
   // Schaak geven met een stuk dat daarna gratis van het bord gaat, is geen goed
   // schaak. Twee werelden eerder is "kijk of hij kan terugslaan" juist de hele les,

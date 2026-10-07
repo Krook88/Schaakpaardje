@@ -298,3 +298,15 @@ describe('een stuk noemen voor het is uitgelegd', () => {
     expect(stukkenVroegGenoemd().length).toBeLessThan(40)
   })
 })
+
+describe('een stelling moet in een echte partij kunnen staan', () => {
+  // De twee stellingen die tot de zesde review in de matles stonden. Wit aan zet, en
+  // zwart stond al schaak: van de dame over de lange diagonaal, en van de pion op g7.
+  it.each(['k7/8/1K6/8/8/8/8/7Q w - - 0 1', '7k/5KP1/8/8/8/8/8/8 w - - 0 1'])(
+    'weigert %s',
+    (fen) => {
+      const uit = controleerOpgave('test', { kind: 'regelZet', fen, eis: 'matIn1', vraag: 'Zet mat.' })
+      expect(uit.map((b) => b.probleem).join(' ')).toMatch(/niet aan zet is staat al schaak/)
+    },
+  )
+})

@@ -175,6 +175,21 @@ export function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
       if (o.eis !== 'uitSchaak' && status.check) {
         fout('de speler staat zelf schaak; dan gaat de opgave over iets anders')
       }
+      // chess.js kijkt alleen naar wie er aan zet is. Dat de ánder al schaak staat,
+      // laat het door, terwijl zo'n stelling in geen partij kan bestaan: die had zijn
+      // koning de zet ervoor in schaak laten staan. Twee keer in de matles gebeurd,
+      // en geen controle die het zag.
+      const [plaatsing, aanZet] = o.fen.split(' ')
+      let anderStaatSchaak = false
+      try {
+        anderStaatSchaak = new Game(`${plaatsing} ${aanZet === 'b' ? 'w' : 'b'} - - 0 1`).inCheck
+      } catch {
+        // Kan chess.js de stelling met de andere kant aan zet niet lezen, dan heeft
+        // de eerste poging hierboven het al gemeld.
+      }
+      if (anderStaatSchaak) {
+        fout('de partij die niet aan zet is staat al schaak; zo\'n stelling kan in geen partij bestaan')
+      }
       const opties = goedeZetten(game, o.eis)
       if (!opties.length) fout(`geen enkele zet voldoet aan de eis '${o.eis}'`)
       if (o.eis === 'geefSchaak' && opties.length === game.legalMoves().length) {

@@ -9,6 +9,7 @@ import {
   pieceMoves,
   toPlacement,
   type BoardMap,
+  type PieceType,
   type Square,
 } from './board'
 
@@ -45,49 +46,68 @@ export function korstePad(
 }
 
 /**
- * Volgorde waarin alle vijandelijke stukken geslagen kunnen worden.
+ * De kortste volgorde waarin alle vijandelijke stukken geslagen kunnen worden.
  * Met `elkeZetRaak` moet iedere zet een slagzet zijn (het spelletje "Hongerig paardje").
+ *
+ * Kortste, en dat is geen netheid. De hint van Pip vraagt dit na elke zet opnieuw en
+ * wijst dan de eerste stap aan. Zocht hij diepte-eerst, zoals hier eerst stond, dan
+ * kreeg hij wel een oplossing maar een willekeurige, en na de volgende zet weer een
+ * andere. In `toren-3` stuurde hij de toren zo eindeloos tussen g1 en h1 heen en weer:
+ * een kind dat op "Help me even" bleef drukken, kwam er nooit uit. Een kortste route
+ * wordt na elke stap op die route één korter, dus wie Pip volgt is altijd klaar.
  */
 export function slaAllesOp(
   board: BoardMap,
   from: Square,
   elkeZetRaak = false,
 ): Square[] | null {
-  const eigenKleur = board[from]?.color
-  if (!eigenKleur) return null
-  const vijanden = () => (b: BoardMap) =>
-    Object.entries(b).filter(([, p]) => p.color !== eigenKleur).length
+  const stuk = board[from]
+  if (!stuk) return null
+  const vijanden = Object.keys(board).filter((sq) => board[sq].color !== stuk.color)
+  if (!vijanden.length) return []
 
-  const telVijanden = vijanden()
+  // Er beweegt maar één stuk, en vijanden verdwijnen alleen. De hele toestand is dus:
+  // waar staat mijn stuk, wat is het (een pion kan dame worden), en wie staat er nog.
+  // Dat laatste als bitmasker. Eerst kopieerde elke stap het hele bord en maakte er
+  // een tekst van; breedte-eerst was zo 240 keer trager dan diepte-eerst, en dat
+  // merk je op een goedkope tablet bij elk tipje.
+  const vast: BoardMap = {}
+  for (const [sq, p] of Object.entries(board)) if (sq !== from && p.color === stuk.color) vast[sq] = p
+  const bordVoor = (op: Square, soort: PieceType, over: number): BoardMap => {
+    const b: BoardMap = { ...vast }
+    vijanden.forEach((sq, i) => {
+      if (over & (1 << i)) b[sq] = board[sq]
+    })
+    b[op] = { type: soort, color: stuk.color }
+    return b
+  }
 
-  type Knoop = { board: BoardMap; op: Square; pad: Square[] }
-  const gezien = new Set<string>()
-  const stapel: Knoop[] = [{ board, op: from, pad: [] }]
+  type Knoop = { op: Square; soort: PieceType; over: number; pad: Square[] }
+  const alle = (1 << vijanden.length) - 1
+  const gezien = new Set<string>([`${from}${stuk.type}${alle}`])
+  let rand: Knoop[] = [{ op: from, soort: stuk.type, over: alle, pad: [] }]
   let stappen = 0
 
-  while (stapel.length && stappen < 200000) {
-    stappen++
-    const knoop = stapel.pop()!
-    if (telVijanden(knoop.board) === 0) return knoop.pad
-    const sleutel = `${toPlacement(knoop.board)}|${knoop.op}`
-    if (gezien.has(sleutel)) continue
-    gezien.add(sleutel)
-
-    const zetten = pieceMoves(knoop.board, knoop.op)
-    const kandidaten = elkeZetRaak ? zetten.captures : zetten.all
-    // Slagzetten eerst: dat vindt de oplossing meestal meteen.
-    const geordend = [...kandidaten].sort((a, b) => {
-      const aSlag = zetten.captures.includes(a) ? 1 : 0
-      const bSlag = zetten.captures.includes(b) ? 1 : 0
-      return aSlag - bSlag
-    })
-    for (const naar of geordend) {
-      stapel.push({
-        board: applyMove(knoop.board, knoop.op, naar),
-        op: naar,
-        pad: [...knoop.pad, naar],
-      })
+  while (rand.length && stappen < 200000) {
+    const volgende: Knoop[] = []
+    for (const k of rand) {
+      stappen++
+      const zetten = pieceMoves(bordVoor(k.op, k.soort, k.over), k.op)
+      for (const naar of elkeZetRaak ? zetten.captures : zetten.all) {
+        const i = vijanden.indexOf(naar)
+        const over = i >= 0 ? k.over & ~(1 << i) : k.over
+        const pad = [...k.pad, naar]
+        if (over === 0) return pad
+        // Zelfde regel als applyMove: een pion op de eindrij wordt dame.
+        const eindrij = naar[1] === '8' || naar[1] === '1'
+        const soort: PieceType = k.soort === 'p' && eindrij ? 'q' : k.soort
+        const sleutel = `${naar}${soort}${over}`
+        if (gezien.has(sleutel)) continue
+        gezien.add(sleutel)
+        volgende.push({ op: naar, soort, over, pad })
+      }
     }
+    rand = volgende
   }
   return null
 }
