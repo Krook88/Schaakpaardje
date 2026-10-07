@@ -171,6 +171,8 @@ for (const { pad, hier, daar } of uitkomsten) {
   }
   gelijk++
 }
+/** Hoeveel klachten over pagina's gaan; wat hierna komt gaat over opnames. */
+const paginaKlachten = klachten.length
 
 /* ---------------------------------------------------------------- *
  * De opnames. Niet te vergelijken, wel te tellen.
@@ -256,9 +258,20 @@ if (!klachten.length) {
   process.exit(0)
 }
 
-console.log(`${gelijk} van de ${paginas.length} pagina's kloppen. ${klachten.length} niet:\n`)
+// Pagina's en opnames apart tellen. Er stond "84 van de 84 pagina's kloppen. 1 niet",
+// terwijl die ene een ontbrekende opname was en geen pagina.
+console.log(
+  paginaKlachten
+    ? `${gelijk} van de ${paginas.length} pagina's kloppen, ${paginaKlachten} niet.`
+    : `Alle ${gelijk} pagina's kloppen.`,
+)
+const overig = klachten.length - paginaKlachten
+if (overig) console.log(`${overig === 1 ? 'Eén ding' : `${overig} dingen`} met de opnames:`)
+console.log()
 for (const [pad, waarom] of klachten) console.log(`  ✗ ${pad}\n        ${waarom}`)
-console.log(`\n${welkeKantLooptAchter()}`)
+// Welke kant oud is, speelt alleen bij een pagina die verschilt. Bij een opname die
+// ontbreekt staat erboven al precies wat je moet doen.
+if (paginaKlachten) console.log(`\n${welkeKantLooptAchter()}`)
 process.exit(1)
 
 /**
