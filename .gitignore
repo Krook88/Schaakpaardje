@@ -25,4 +25,9 @@ schaakmaatje-site.zip
 # bewijsmateriaal voor één vraag en geen onderhouden gereedschap, dus het blijft buiten
 # de repo. Blijkt zo'n probe blijvend nuttig, dan krijgt hij een echte naam, een regel
 # in package.json en een test, en verdwijnt het liggende streepje.
-scripts/_*.ts
+scripts/_*
+
+# En hun schermafbeeldingen en meetscriptjes. De layout-reviewer bouwt de app, zet hem
+# neer en fotografeert hem op zes formaten in twee thema's; dat is tientallen megabytes
+# bewijs voor één oordeel, en het oordeel staat in docs/reviews/.
+.review-tmp/
