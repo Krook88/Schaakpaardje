@@ -181,7 +181,20 @@ function laadManifest(): Promise<void> {
   return manifestBelofte
 }
 
+/**
+ * De lopende controle "is de apparaatstem gaan praten?", zodat stoppen hem kan afbreken.
+ *
+ * Zonder dit liep hij na stopSpeaking() gewoon door, zag dat er niet gepraat werd (want
+ * cancel()), en zette de zin klaar voor de volgende tik. Wie binnen 400 ms van scherm
+ * wisselde, hoorde op het nieuwe scherm de zin van het oude.
+ */
+let stilteControle: ReturnType<typeof setTimeout> | null = null
+
 export function stopSpeaking() {
+  if (stilteControle) {
+    clearTimeout(stilteControle)
+    stilteControle = null
+  }
   geblokkeerdeZin = null
   klaarMetSpreken()
   if (huidigeAudio) {
@@ -301,7 +314,8 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
   // Eén keer, en niet vaker: anders herhaalt een zin zich bij elke tik op een apparaat
   // dat helemaal geen stem heeft, en dat is erger dan de stilte die we repareren.
   if (!alGeprobeerd.has(tekst)) {
-    setTimeout(() => {
+    stilteControle = setTimeout(() => {
+      stilteControle = null
       const praat = window.speechSynthesis.speaking || window.speechSynthesis.pending
       if (begonnen || praat || mijnBeurt !== beurt) return
       alGeprobeerd.add(tekst)

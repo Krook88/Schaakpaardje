@@ -314,4 +314,22 @@ describe('als het apparaat de stem inslikt', () => {
     // Eén keer gezegd, één keer herhaald. Niet elf keer.
     expect(aantalKeer('Welkom in mijn stal!')).toBe(2)
   })
+
+  it('zegt een afgebroken zin niet alsnog op het volgende scherm', async () => {
+    // Pip begint aan "Hoppa!", het kind tikt binnen 400 ms op "Naar de kaart", en het
+    // lesscherm roept bij het afsluiten stopSpeaking() aan. De controle van 400 ms
+    // liep toch door, zag dat er niet gepraat werd (logisch: cancel()), en zette de
+    // zin klaar. De eerste tik op de kaart sprak dan de zin uit de vorige les uit.
+    vi.resetModules()
+    stilleBrowser()
+    const { speak, stopSpeaking, setVoiceConfig } = await import('@/audio/voice')
+    setVoiceConfig({ spraak: true, tempo: 1, ondertiteling: false })
+
+    await speak('Hoppa! Precies goed.')
+    stopSpeaking()
+    await wacht(600)
+    tikOpHetScherm()
+    await wacht(20)
+    expect(aantalKeer('Hoppa! Precies goed.')).toBe(1)
+  })
 })

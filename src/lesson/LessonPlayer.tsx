@@ -310,7 +310,7 @@ export function LessonPlayer({
         case 'opnieuw':
           if (instellingen.effecten) sfx.fout()
           setStemming('moedigt')
-          zegTip(kies(OPNIEUW_PROBEREN, 'opnieuw'), 'vraag' in opgave ? opgave.vraag : '')
+          zegTip(kies(OPNIEUW_PROBEREN, 'opnieuw'), 'vraag' in r.stand.opgave ? r.stand.opgave.vraag : '')
           if (fase === 'toets') setToetsFouten((n) => n + 1)
           break
       }
