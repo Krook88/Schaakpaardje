@@ -19,3 +19,10 @@ public/sfx/manifest.json
 # hem meecommitten is een miljoen bytes bouwsel bewaren die morgen alweer verlopen is.
 schaakmaatje-site.zip
 .live-check.json
+
+# Wegwerpscripts. Een reviewer die iets wil weten over de content schrijft daar soms
+# een scriptje voor: dump alle lessen, zoek waar een woord voor het eerst valt. Dat is
+# bewijsmateriaal voor één vraag en geen onderhouden gereedschap, dus het blijft buiten
+# de repo. Blijkt zo'n probe blijvend nuttig, dan krijgt hij een echte naam, een regel
+# in package.json en een test, en verdwijnt het liggende streepje.
+scripts/_*.ts
