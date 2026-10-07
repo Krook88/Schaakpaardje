@@ -22,6 +22,7 @@
  * opname is een hash van de zin zelf, dus we kunnen precies nagaan welke zin geen
  * bestand heeft. Daar gaat hij dus langs alle zinnen die Pip hoort te zeggen.
  */
+import { execSync } from 'node:child_process'
 import { readdirSync, readFileSync, statSync, existsSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { alleZinnen } from '../src/content/validate'
@@ -257,9 +258,37 @@ if (!klachten.length) {
 
 console.log(`${gelijk} van de ${paginas.length} pagina's kloppen. ${klachten.length} niet:\n`)
 for (const [pad, waarom] of klachten) console.log(`  ✗ ${pad}\n        ${waarom}`)
-console.log(
-  '\nMeestal betekent dit dat de zip nog niet (helemaal) is uitgepakt.' +
-    '\nIs hij dat wel, probeer dan een harde herlaadbeurt: de service worker kan' +
-    '\neen oude pagina vasthouden.',
-)
+console.log(`\n${welkeKantLooptAchter()}`)
 process.exit(1)
+
+/**
+ * Wie loopt er achter: de server, of de build op deze computer?
+ *
+ * Hier stond altijd "de zip is nog niet uitgepakt". Op 7 oktober was het precies
+ * andersom: de server had de nieuwe tekst en de eigen kopie was zonder `git pull`
+ * gebouwd. Het advies stuurde dan naar een upload die al gelukt was. Een build die
+ * achterloopt op GitHub is na te vragen, dus dat doen we eerst.
+ */
+function welkeKantLooptAchter(): string {
+  try {
+    execSync('git fetch --quiet', { stdio: 'ignore', timeout: 15000 })
+    const achter = Number(
+      execSync('git rev-list --count HEAD..@{u}', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(),
+    )
+    if (achter > 0) {
+      return (
+        `Je eigen kopie loopt ${achter} ${achter === 1 ? 'commit' : 'commits'} achter op GitHub.\n` +
+        'Dan is het de build hier die oud is, niet de server. Doe eerst:\n' +
+        '    git pull\n    npm run build\n    npm run live'
+      )
+    }
+  } catch {
+    // Geen git, geen netwerk of geen upstream: dan weten we het niet, en zeggen we
+    // hieronder wat je zelf kunt bekijken.
+  }
+  return (
+    'Kijk hierboven welke kant de oude tekst heeft.\n' +
+    '  live is oud     : de zip staat nog niet (helemaal) op de server.\n' +
+    '  gebouwd is oud  : deze build mist de laatste wijzigingen. git pull en opnieuw bouwen.'
+  )
+}
