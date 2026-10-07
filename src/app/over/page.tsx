@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
-import { KOFFIE, NAAM, OMSCHRIJVING, SITE } from '@/seo'
+import { KOFFIE, NAAM, SITE, deelkaart } from '@/seo'
+
+const OVER_OMSCHRIJVING =
+  'Wat Schaakmaatje is, voor welke leeftijd, wat het kost en waar de gegevens blijven. Gratis, zonder account, zonder reclame. Alles blijft op het apparaat.'
 
 /**
  * De uitlegpagina, voor ouders en voor zoekmachines.
@@ -17,13 +20,15 @@ import { KOFFIE, NAAM, OMSCHRIJVING, SITE } from '@/seo'
  */
 export const metadata: Metadata = {
   title: 'Over Schaakmaatje: gratis leren schaken voor kinderen van 3 tot 10',
-  description: OMSCHRIJVING,
+  // Een eigen zin, niet die van de startpagina. Deze pagina beantwoordt een andere
+  // vraag: niet "wat is dit" maar "mag mijn kind hierop".
+  description: OVER_OMSCHRIJVING,
   alternates: { canonical: `${SITE}/over/` },
-  openGraph: {
-    title: 'Over Schaakmaatje: gratis leren schaken voor kinderen',
-    description: OMSCHRIJVING,
+  ...deelkaart({
+    titel: 'Over Schaakmaatje: gratis leren schaken voor kinderen',
+    omschrijving: OVER_OMSCHRIJVING,
     url: `${SITE}/over/`,
-  },
+  }),
 }
 
 /**
@@ -197,7 +202,7 @@ export default function Over() {
         <section className="card stack">
           <h2>Hoe begin ik?</h2>
           <p>
-            Open de app, vul een voornaam en een leeftijd in, en kies een maatje. Dat is alles
+            Open de app, vul een voornaam en een leeftijd in, en kies een maatje. Dat is alles.
             Er komt geen e-mailadres aan te pas. Op een telefoon of tablet kun je{' '}
             {NAAM} als app op het beginscherm zetten via het deelmenu van je browser.
           </p>

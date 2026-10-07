@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import '@/ui/globals.css'
 import { Instellingen } from '@/ui/Instellingen'
 import { ServiceWorker } from '@/ui/ServiceWorker'
-import { NAAM, OMSCHRIJVING, SITE, SLOGAN } from '@/seo'
+import { NAAM, OMSCHRIJVING, SITE, SLOGAN, deelkaart } from '@/seo'
 
 /** Zelfde afspraak als in voice.ts en ServiceWorker.tsx: leeg = domeinwortel. */
 const BASIS = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
@@ -33,21 +33,11 @@ export const metadata: Metadata = {
   manifest: `${BASIS}/manifest.webmanifest`,
   icons: { icon: `${BASIS}/icon.svg`, apple: `${BASIS}/icon.svg` },
   appleWebApp: { capable: true, title: 'Schaakmaatje', statusBarStyle: 'default' },
-  openGraph: {
-    type: 'website',
-    locale: 'nl_NL',
-    siteName: NAAM,
-    title: 'Schaakmaatje: leer schaken met Pip het schaakpaardje',
-    description: OMSCHRIJVING,
-    url: '/',
-    images: [{ url: '/og.png', width: 1200, height: 630, alt: `${NAAM}: ${SLOGAN}` }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Schaakmaatje: leer schaken met Pip het schaakpaardje',
-    description: OMSCHRIJVING,
-    images: ['/og.png'],
-  },
+  ...deelkaart({
+    titel: 'Schaakmaatje: leer schaken met Pip het schaakpaardje',
+    omschrijving: OMSCHRIJVING,
+    url: `${SITE}/`,
+  }),
   robots: { index: true, follow: true },
   /*
    * Het bewijs voor Google Search Console, als tweede route naast het DNS-record.

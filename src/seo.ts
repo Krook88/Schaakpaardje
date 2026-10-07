@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+
 /**
  * Alles wat met vindbaarheid te maken heeft, op één plek.
  *
@@ -47,3 +49,44 @@ export const OMSCHRIJVING =
  * gratis kan blijven. Wat er staat is nu waar in beide gevallen.
  */
 export const KOFFIE = 'https://bunq.me/KRook'
+
+/**
+ * De deelkaart van een pagina: wat WhatsApp, Facebook en LinkedIn tonen als iemand de
+ * link deelt.
+ *
+ * Next.js voegt het `openGraph`-blok van een pagina niet samen met dat van de layout,
+ * het vervangt het. Elke pagina die een eigen titel voor de kaart zette, verloor
+ * daarmee het plaatje, het type en de taal: 51 van de 52 pagina's die gevonden mogen
+ * worden. Stuurde een ouder `/over/` door in de appgroep van school, dan verscheen er
+ * een kale regel tekst. En deze app wordt eerder doorgegeven dan gezocht. De
+ * Twitter-kaart erfde intussen wél, en noemde dus op elke lespagina de titel van de
+ * startpagina. Twee verhalen in één `<head>`.
+ *
+ * Daarom bouwt elke pagina zijn kaart hier, compleet, in plaats van een stukje te
+ * zetten en te hopen dat de rest blijft staan.
+ */
+export function deelkaart(kaart: {
+  titel: string
+  omschrijving: string
+  /** Volledige URL van de pagina zelf. */
+  url: string
+}): Pick<Metadata, 'openGraph' | 'twitter'> {
+  const plaatje = { url: '/og.png', width: 1200, height: 630, alt: `${NAAM}: ${SLOGAN}` }
+  return {
+    openGraph: {
+      type: 'website',
+      locale: 'nl_NL',
+      siteName: NAAM,
+      title: kaart.titel,
+      description: kaart.omschrijving,
+      url: kaart.url,
+      images: [plaatje],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: kaart.titel,
+      description: kaart.omschrijving,
+      images: [plaatje.url],
+    },
+  }
+}

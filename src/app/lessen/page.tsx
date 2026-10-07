@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
-import { SITE } from '@/seo'
+import { SITE, deelkaart } from '@/seo'
 
 /**
  * Alle lessen op één statische pagina.
@@ -16,16 +16,17 @@ import { SITE } from '@/seo'
  * je hem zonder de app kunt lezen.
  */
 export const metadata: Metadata = {
-  title: 'Alle schaaklessen: van het bord tot het eindspel | Schaakmaatje',
+  // Zonder "| Schaakmaatje": dat zet het sjabloon in layout.tsx er al achter. Hier stond
+  // het ook, dus de titel werd "… | Schaakmaatje | Schaakmaatje".
+  title: 'Alle schaaklessen: van het bord tot het eindspel',
   description:
     `Alle ${ALLE_LESSEN.length} schaaklessen van Schaakmaatje op een rij, van licht en donker tot het eindspel. Per les wat je kind erna kan. Gratis, Nederlands, voor 3 tot 10 jaar.`,
   alternates: { canonical: `${SITE}/lessen/` },
-  openGraph: {
-    title: 'Alle schaaklessen van Schaakmaatje',
-    description:
-      `Alle ${ALLE_LESSEN.length} lessen op een rij, van het bord leren kennen tot het eindspel. Per les wat je kind erna kan.`,
+  ...deelkaart({
+    titel: 'Alle schaaklessen van Schaakmaatje',
+    omschrijving: `Alle ${ALLE_LESSEN.length} lessen op een rij, van het bord leren kennen tot het eindspel. Per les wat je kind erna kan.`,
     url: `${SITE}/lessen/`,
-  },
+  }),
 }
 
 const LEEFTIJD: Record<number, string> = {
