@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
+import { GeluidKnop } from '@/ui/GeluidKnop'
 import { alGetikt, kies } from '@/audio/voice'
 import { EERSTE_KEER, WELKOM, pipZinnen } from '@/content/voice'
 import { lesMet, WERELDEN } from '@/content'
@@ -108,8 +109,8 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   return (
     <main className="page">
       <div className="stack">
-        <div className="row" style={{ justifyContent: 'space-between' }}>
-          <div className="row">
+        <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
+          <div className="row" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
             <span style={{ fontSize: 34 }} aria-hidden="true">
               {profiel.avatar}
             </span>
@@ -124,9 +125,12 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
               </p>
             </div>
           </div>
-          <Link href="/ouders/" className="btn btn--ghost" aria-label="Voor ouders">
-            ⚙️
-          </Link>
+          <div className="row" style={{ gap: 6, flexWrap: 'nowrap', flexShrink: 0 }}>
+            <GeluidKnop />
+            <Link href="/ouders/" className="btn btn--ghost" aria-label="Voor ouders">
+              ⚙️
+            </Link>
+          </div>
         </div>
 
         <Pip
