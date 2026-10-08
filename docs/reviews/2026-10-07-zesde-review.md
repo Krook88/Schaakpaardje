@@ -84,7 +84,7 @@ plaats van naar het scherm te kijken.
 |---|---|---|---|
 | L1 | blokkerend | En passant onoplosbaar. | **Opgelost**, zie P1. |
 | L2 | **blokkerend** | Wereld 9: "precies dezelfde drie als op de Aanvalsberg". Niet waar: dekken helpt een koning nooit, en ertussen zetten is in wereld 8 nooit geoefend. | **Zin opgelost** `8e20518`: noemt nu welke twee het kind al kent, en waarom dekken hier niet werkt. Open: een les "er tussen" in wereld 8, zodat ook de derde manier eerder geoefend is. |
-| L3 | **blokkerend** | "Uit schaak: drie manieren" kan niet fout: 100% van de zetten die het bord aanbiedt is goed. | **Open: Kaj beslist.** Vraagt een nieuwe eis per manier. |
+| L3 | **blokkerend** | "Uit schaak: drie manieren" kan niet fout: 100% van de zetten die het bord aanbiedt is goed. | **Opgelost**, Kaj koos per manier een opgave: drie nieuwe eisen (`wegLopen`, `slaAanvaller`, `ertussen`), elke opgave vraagt één manier in een stelling waar ook een andere kan. De contentcontrole weigert een opgave waarin elke zet de gevraagde manier is. Test: `tests/uit-schaak.test.ts`. |
 | L4 | belangrijk | `dame-3` laat paardsprongen narekenen, één wereld te vroeg. | Open: didactiekfase. |
 | L5 | belangrijk | Rokadevoorwaarden alleen met woorden getoetst. | Open: nieuw opgavetype `magHet`. |
 | L6 | belangrijk | Ruilen nergens aan een bord; minispel "weegschaal" heeft geen weegschaal. | Open: didactiekfase. |

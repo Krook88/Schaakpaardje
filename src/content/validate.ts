@@ -166,13 +166,22 @@ export function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
         fout(`de partij is hier al afgelopen (${status.reason}), dus er valt niets te zetten`)
         break
       }
-      if (o.eis === 'uitSchaak' && !status.check) {
+      const uitSchaakEis = ['uitSchaak', 'wegLopen', 'slaAanvaller', 'ertussen'].includes(o.eis)
+      if (uitSchaakEis && !status.check) {
         fout('de eis is uit schaak gaan, maar er staat helemaal geen schaak')
+      }
+      // Vraagt de opgave één bepaalde manier, dan moet er ook een andere manier
+      // kunnen. Anders toetst hij niets: het kind kan alleen maar goed zitten.
+      if (o.eis === 'wegLopen' || o.eis === 'slaAanvaller' || o.eis === 'ertussen') {
+        const goed = goedeZetten(game, o.eis).length
+        if (goed && goed === game.legalMoves().length) {
+          fout(`elke zet is hier ${o.eis}; dan kun je niet de verkeerde manier kiezen`)
+        }
       }
       if (o.eis === 'rokeer' && !game.legalMoves().some((z) => z.san.startsWith('O-O'))) {
         fout('rokeren kan hier helemaal niet')
       }
-      if (o.eis !== 'uitSchaak' && status.check) {
+      if (!uitSchaakEis && status.check) {
         fout('de speler staat zelf schaak; dan gaat de opgave over iets anders')
       }
       // chess.js kijkt alleen naar wie er aan zet is. Dat de ánder al schaak staat,

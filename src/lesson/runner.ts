@@ -391,6 +391,12 @@ type Eis = Extract<Exercise, { kind: 'regelZet' }>['eis']
  */
 function voldoetAanEis(game: Game, zet: GameMove, eis: Eis): boolean {
   if (eis === 'uitSchaak') return true // elke legale zet haalt je koning uit schaak; dat is het punt
+  if (eis === 'wegLopen' || eis === 'slaAanvaller' || eis === 'ertussen') {
+    const slaatAanvaller = game.schaakgevers().includes(zet.to)
+    if (eis === 'slaAanvaller') return slaatAanvaller
+    if (eis === 'wegLopen') return zet.stuk === 'k' && !slaatAanvaller
+    return zet.stuk !== 'k' && !slaatAanvaller
+  }
   if (eis === 'rokeer') return zet.san.startsWith('O-O')
   if (eis === 'enPassant') return zet.isEnPassant
   const na = game.clone()

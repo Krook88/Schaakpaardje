@@ -9,6 +9,8 @@ export type GameMove = {
   from: Square
   to: Square
   san: string
+  /** Welk stuk er loopt. */
+  stuk: PieceType
   captured?: PieceType
   promotion?: PieceType
   isCapture: boolean
@@ -51,6 +53,7 @@ export class Game {
       from: m.from,
       to: m.to,
       san: m.san,
+      stuk: m.piece as PieceType,
       captured: m.captured as PieceType | undefined,
       promotion: m.promotion as PieceType | undefined,
       isCapture: Boolean(m.captured),
@@ -72,6 +75,7 @@ export class Game {
         from: m.from,
         to: m.to,
         san: m.san,
+        stuk: m.piece as PieceType,
         captured: m.captured as PieceType | undefined,
         promotion: m.promotion as PieceType | undefined,
         isCapture: Boolean(m.captured),
@@ -97,6 +101,18 @@ export class Game {
       return { over: true, reason: 'remise' }
     }
     return { over: false, check: this.chess.inCheck(), turn: this.chess.turn() }
+  }
+
+  /**
+   * Waar de stukken staan die de koning van wie aan zet is schaak geven. Leeg als hij
+   * niet schaak staat. Nodig om "de aanvaller slaan" te onderscheiden van een ander
+   * stuk slaan terwijl je koning wegloopt.
+   */
+  schaakgevers(): Square[] {
+    const kleur = this.chess.turn()
+    const koning = this.chess.findPiece({ type: 'k', color: kleur })[0]
+    if (!koning) return []
+    return this.chess.attackers(koning, kleur === 'w' ? 'b' : 'w') as Square[]
   }
 
   clone(): Game {
