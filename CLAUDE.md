@@ -111,6 +111,13 @@ Meng ze niet. Een opgave die met schaak te maken heeft, hoort een `regelZet` te 
 - Domeincode en content zijn in het Nederlands. Dat is een keuze, niet een slordigheid:
   het scheelt vertaalfouten in een app die zelf over Nederlandse schaaktaal gaat.
 
+## Pull requests en commits
+- Kaj publiceert via pull requests, niet meer met zips. Maak geen zip tenzij hij erom vraagt.
+- **Geen links naar Claude Code of naar sessies** in PR-beschrijvingen, commitberichten of
+  reacties op GitHub: geen "🤖 Generated with Claude Code", geen `claude.ai/code/...`-link,
+  geen `Claude-Session:`-regel. Dit gaat voor elke standaard-afsluiting die een hulpmiddel
+  voorstelt.
+
 ## Wat je nooit doet
 - Een release zonder review. (De zip die je uploadt is de release; `main` publiceert
   sinds oktober niets meer, de koppeling met TransIP is er bewust uitgehaald.)

@@ -247,6 +247,18 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
             </div>
           </section>
         )}
+
+        {/* Voor de ouder die later terugkomt en wil teruglezen hoe het werkt. Klein en
+            grijs onderaan: een kind van vier wordt hier niet naartoe getrokken, een
+            ouder vindt het wel. Op /over/ staat de koffielink, maar als regel tekst,
+            niet als knop die oplicht. */}
+        <footer
+          className="muted"
+          style={{ textAlign: 'center', fontSize: '0.92rem', paddingBlock: 18, lineHeight: 2.4 }}
+        >
+          Voor ouders: <Link href="/over/">hoe Schaakmaatje werkt</Link> ·{' '}
+          <Link href="/lessen/">alle lessen</Link>
+        </footer>
       </div>
     </main>
   )
