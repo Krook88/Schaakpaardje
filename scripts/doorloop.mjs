@@ -255,12 +255,66 @@ async function pipZwijgtBijBinnenkomst() {
   meld(naam, terugkomst === 0, terugkomst === 0 ? '' : `bij terugkomst praatte Pip vanzelf (${terugkomst} keer)`)
 }
 
+/* ------------------------------------------------------------------ *
+ * 7. Een zet die niet mag, krijgt geen fouttip over een zet die wel mag.
+ *
+ * In "uit schaak: drie manieren" stapte een kind met zijn koning opzij, op de rij van
+ * de toren. Dat mag niet, maar Pip zei "Dat was er iets tussen zetten" of zelfs "Je
+ * koning is veilig". De fouttip van een opgave gaat over een zet die wél mag en de
+ * verkeerde manier is. Zevende review, door alle drie de reviewers gevonden.
+ * ------------------------------------------------------------------ */
+async function onmogelijkeZetKrijgtRegelzin() {
+  const naam = 'een zet waarna je nog schaak staat, krijgt de regel en niet de fouttip'
+  await page.goto(`${URL}/les/schaak-3/`, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(600)
+  // Door de uitleg heen: "Verder" tot de knop naar Meedoen er staat.
+  for (let i = 0; i < 10 && !(await page.getByRole('button', { name: /Ik ga het proberen/ }).count()); i++) {
+    await page.getByRole('button', { name: /Verder/ }).first().click().catch(() => {})
+    await page.waitForTimeout(400)
+  }
+  await page.getByRole('button', { name: /Ik ga het proberen/ }).click()
+  await page.waitForTimeout(600)
+  // Meedoen: toren op a1 geeft schaak aan de koning op e1. Kd1 mag niet.
+  await page.locator('[data-square="e1"]').click()
+  await page.waitForTimeout(200)
+  await page.locator('[data-square="d1"]').click()
+  await page.waitForTimeout(500)
+  const zin = await ballon()
+  meld(naam, /nog steeds schaak/.test(zin), /nog steeds schaak/.test(zin) ? '' : `Pip zei "${zin}"`)
+}
+
+/* ------------------------------------------------------------------ *
+ * 8. Na een tipje komt de opdracht terug.
+ *
+ * In "Vind het veld" verving het tipje de opdracht, en die kwam het hele rondje niet
+ * meer terug. Het kind moest nog twee stukken vinden zonder te weten welke.
+ * ------------------------------------------------------------------ */
+async function opdrachtKomtTerugNaTipje() {
+  const naam = 'opdracht komt terug na een tipje'
+  await page.goto(`${URL}/spel/vind-het-veld/`, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(900)
+  const opdracht = await ballon()
+  await page.getByRole('button', { name: /Tipje/ }).click()
+  await page.waitForTimeout(300)
+  const veld = await page.locator('[class*=glow]').first().getAttribute('data-square').catch(() => null)
+  if (!veld) return meld(naam, false, 'het tipje wees niets aan')
+  await page.locator(`[data-square="${veld}"]`).click()
+  await page.waitForTimeout(5000)
+  const terug = await ballon()
+  // Was dit het laatste veld, dan is het rondje klaar en mag er iets anders staan.
+  const klaar = await page.getByRole('button', { name: /Nog een keer/ }).count()
+  const goed = klaar > 0 || terug === opdracht
+  meld(naam, goed, goed ? '' : `"${terug}" in plaats van "${opdracht}"`)
+}
+
 console.log(`Doorloop tegen ${URL}\n`)
 await pipZwijgtBijBinnenkomst()
 await nieuwProfiel()
 await opdrachtKomtTerug()
 await minispelEindigt()
 await quizRekentGoedGoed()
+await onmogelijkeZetKrijgtRegelzin()
+await opdrachtKomtTerugNaTipje()
 await altijdEenUitweg()
 
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))

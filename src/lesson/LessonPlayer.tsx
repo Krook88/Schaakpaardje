@@ -24,6 +24,7 @@ import {
   sterrenVoor,
   tik,
   type OpgaveStand,
+  foutZin,
 } from './runner'
 import {
   useInstellingen,
@@ -295,8 +296,7 @@ export function LessonPlayer({
           // opnieuw als het kind twee keer hetzelfde verkeerde veld aantikt.
           setShake(null)
           setTimeout(() => setShake(veld), 0)
-          const tip = 'foutTip' in r.stand.opgave ? r.stand.opgave.foutTip : undefined
-          reageer(false, false, tip)
+          reageer(false, false, foutZin(r.stand, r.reden))
           if (fase === 'toets') setToetsFouten((n) => n + 1)
           break
         }
@@ -518,7 +518,9 @@ export function LessonPlayer({
 
   return (
     <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
-      <Kop titel={`${les.titel} · ${FASE_NAAM[fase]}`} terug="/kaart/" />
+      {/* Zonder "· Meedoen": de fase staat al in de stappenrij eronder, en op een smal
+          scherm duwde die toevoeging de titel naar vijf regels. */}
+      <Kop titel={les.titel} terug="/kaart/" />
       <WereldBand wereld={wereld} />
       <FaseBalk
         nu={fase}

@@ -174,7 +174,9 @@ export function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
       // kunnen. Anders toetst hij niets: het kind kan alleen maar goed zitten.
       if (o.eis === 'wegLopen' || o.eis === 'slaAanvaller' || o.eis === 'ertussen') {
         const goed = goedeZetten(game, o.eis).length
-        if (goed && goed === game.legalMoves().length) {
+        // Net als goedeZetten: alleen promoveren tot dame telt, want dat doet het bord.
+        const mogelijk = game.legalMoves().filter((z) => !z.promotion || z.promotion === 'q').length
+        if (goed && goed === mogelijk) {
           fout(`elke zet is hier ${o.eis}; dan kun je niet de verkeerde manier kiezen`)
         }
       }

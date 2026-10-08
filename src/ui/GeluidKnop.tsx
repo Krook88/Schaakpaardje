@@ -13,8 +13,12 @@ import { useInstellingen, useProfielStore } from '@/progress/store'
  *
  * De luidspreker bij Pip blijft het doen: wie toch wil horen wat er staat, tikt daar.
  * Apart instellen (Pip uit, geluidjes aan) kan in het ouderscherm.
+ *
+ * Een bel en geen luidspreker: de luidspreker staat al in Pips ballon en betekent daar
+ * "zeg het nog eens", bijna het omgekeerde. Twee keer hetzelfde plaatje met een
+ * tegengestelde betekenis, en een kind dat Pip wil horen zet alles uit.
  */
-export function GeluidKnop() {
+export function GeluidKnop({ className = '' }: { className?: string }) {
   const { spraak, effecten } = useInstellingen()
   const zetInstelling = useProfielStore((s) => s.zetInstelling)
   const actief = useProfielStore((s) => s.actiefId)
@@ -23,7 +27,7 @@ export function GeluidKnop() {
   return (
     <button
       type="button"
-      className="btn btn--ghost"
+      className={`btn btn--ghost ${className}`}
       aria-pressed={aan}
       aria-label={aan ? 'Geluid uitzetten' : 'Geluid aanzetten'}
       title={aan ? 'Geluid uitzetten' : 'Geluid aanzetten'}
@@ -31,9 +35,9 @@ export function GeluidKnop() {
         zetInstelling('spraak', !aan)
         zetInstelling('effecten', !aan)
       }}
-      style={{ minHeight: 48, minWidth: 48, padding: '0 12px' }}
+      style={{ minWidth: 56 }}
     >
-      <span aria-hidden="true">{aan ? '🔊' : '🔇'}</span>
+      <span aria-hidden="true">{aan ? '🔔' : '🔕'}</span>
     </button>
   )
 }
