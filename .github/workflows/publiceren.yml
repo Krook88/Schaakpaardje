@@ -1,34 +1,47 @@
-name: Publiceren naar TransIP (handmatig, nu buiten gebruik)
+name: Publiceren naar schaakmaatje.nl
 
-# LET OP: deze koppeling is er bewust uitgehaald. Schaakmaatje wordt met SFTP
-# geüpload, met de zip uit site-bouwen.yml.
+# Bouwt de site en zet hem met SFTP op TransIP. Alleen met de hand te starten, in het
+# tabblad Actions, of door Claude na een geslaagde controle.
 #
-# Daarom draait deze workflow niet meer vanzelf bij een push naar main. Dat was
-# gevaarlijk geworden: hij slaat het publiceren stilletjes over als het geheim
-# TRANSIP_SSH_KEY ontbreekt, meldt dan "de gebouwde site staat klaar in de tak
-# productie", en eindigt groen. Wie dat zag kon denken dat de site bij was, terwijl
-# er niets veranderd was. Een groene vink die niets betekent is erger dan geen vink.
+# Drie regels die hier niet mogen veranderen:
 #
-# Hij staat er nog omdat het recept klopt: wil je de koppeling ooit terug, zet dan
-# TRANSIP_SSH_KEY als GitHub-geheim en start hem met de hand. Zonder dat geheim valt
-# hij nu om in plaats van te doen alsof.
+# 1. Er wordt nooit iets verwijderd op de server. De opnames van Pip (audio/) en de
+#    bordgeluiden (sfx/) staan niet in git, alleen op de server, en zijn met credits
+#    betaald. De vorige versie pushte met --force naar TransIP AutoGit, en of die de
+#    hele map vervangt was nooit nagegaan. Dus: alleen toevoegen en vervangen, en
+#    audio/ en sfx/ worden helemaal overgeslagen.
+# 2. Standaard is het een proefrun: hij maakt verbinding en laat zien wat hij zou
+#    uploaden, zonder iets te veranderen. Pas met "proef" uit gaat er iets online.
+# 3. Zonder het geheim TRANSIP_SSH_KEY valt hij om. Een groene vink die niets heeft
+#    gepubliceerd is erger dan een rode.
+#
+# De openbare helft van de sleutel staat bij TransIP, de privé-helft als geheim hier.
+# Intrekken: verwijder de openbare helft bij TransIP.
 
 on:
   workflow_dispatch:
+    inputs:
+      proef:
+        description: 'Proefrun: alleen laten zien wat er geüpload zou worden'
+        type: boolean
+        default: true
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: publiceren
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
-  TRANSIP_HOST: schabr.ssh.transip.me
-  TRANSIP_REPO: schaakmaatjenl@schabr.ssh.transip.me:auto.git
+  # Geen geheimen: dit staat ook in elk SFTP-programma. Nagaan bij TransIP.
+  SFTP_HOST: schabr.ssh.transip.me
+  SFTP_USER: schaakmaatjenl
+  # De map op de server waar index.html van schaakmaatje.nl staat.
+  SFTP_MAP: www
 
 jobs:
-  bouwen-en-publiceren:
+  publiceren:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,46 +52,39 @@ jobs:
 
       - run: npm ci
 
-      - name: Controles
-        run: |
-          npm run typecheck
-          npm test
-          npm run validate:content
+      - name: Controles en bouwen
+        run: npm run check
 
-      - name: Bouwen
-        run: npm run build
-
-      - name: Er een git-repository van maken
-        run: |
-          cd out
-          git init -q -b productie
-          git config user.name "Schaakmaatje bouwrobot"
-          git config user.email "noreply@schaakmaatje.nl"
-          git add -A
-          git commit -q -m "Build van ${GITHUB_SHA::7}"
-
-      - name: Bewaren op GitHub (tak productie)
-        run: |
-          cd out
-          git push -q --force \
-            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" \
-            productie
-
-      - name: Publiceren naar TransIP
+      - name: Sleutel klaarzetten
         env:
           SSH_KEY: ${{ secrets.TRANSIP_SSH_KEY }}
         run: |
           if [ -z "$SSH_KEY" ]; then
             echo "Geen TRANSIP_SSH_KEY ingesteld, dus er is niets gepubliceerd."
-            echo "De koppeling met TransIP is er bewust uitgehaald: uploaden gaat"
-            echo "met SFTP, met de zip uit site-bouwen.yml. Wil je deze weg terug,"
-            echo "zet dan eerst het geheim TRANSIP_SSH_KEY."
             exit 1
           fi
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H "$TRANSIP_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          cd out
-          git push --force "$TRANSIP_REPO" productie
-          echo "Gepubliceerd naar schaakmaatje.nl"
+          ssh-keyscan -H "$SFTP_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          sudo apt-get install -y -qq lftp > /dev/null
+
+      - name: Uploaden (of proef)
+        env:
+          PROEF: ${{ inputs.proef }}
+        run: |
+          # mirror -R: van hier naar de server. Geen --delete: er gaat nooit iets weg.
+          # --exclude: audio/ en sfx/ blijven op de server precies zoals ze zijn.
+          OPTIES="--reverse --verbose --parallel=4 --exclude-glob audio/ --exclude-glob sfx/ --exclude ^audio/ --exclude ^sfx/"
+          if [ "$PROEF" = "true" ]; then
+            OPTIES="$OPTIES --dry-run"
+            echo "PROEFRUN: er wordt niets veranderd."
+          fi
+          lftp -u "$SFTP_USER," \
+            -e "set sftp:connect-program 'ssh -a -x -i ~/.ssh/id_ed25519'; set net:max-retries 2; mirror $OPTIES out/ $SFTP_MAP/; bye" \
+            "sftp://$SFTP_HOST"
+          if [ "$PROEF" = "true" ]; then
+            echo "Proef geslaagd. Start opnieuw met proef uit om echt te publiceren."
+          else
+            echo "Gepubliceerd naar schaakmaatje.nl."
+          fi
