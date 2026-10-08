@@ -100,7 +100,7 @@ export const wereld5: World = {
       geleerd: 'Nu pakt jouw koning zelf een stuk.',
       vertel: [
         {
-          tekst: 'De koning is niet bang. Staat er een stuk vlak naast hem? Dan pakt hij het.',
+          tekst: 'De koning is niet bang. Staat er een stuk van de tegenstander vlak naast hem? Dan mag hij het pakken.',
           wijs: ['d5'],
         },
         // De hele kring om de koning heen, zodat "vlak ernaast" een vorm krijgt.
@@ -140,7 +140,7 @@ export const wereld5: World = {
           kind: 'captureAll',
           fen: '8/8/8/8/8/1p6/1K6/8',
           from: 'b2',
-          vraag: 'Pak deze pion op.',
+          vraag: 'Pak deze pion met je koning.',
         },
         {
           kind: 'quiz',

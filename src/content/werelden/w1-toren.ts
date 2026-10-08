@@ -126,7 +126,7 @@ export const wereld1: World = {
           fen: '8/8/4P3/8/2P1R3/8/8/8',
           from: 'e4',
           goed: ['e5'],
-          vraag: 'Zet de toren zo dicht mogelijk naar de pion boven hem toe.',
+          vraag: 'Zet de toren zo dicht mogelijk bij de pion boven hem.',
           foutTip: 'Zo dicht mogelijk: het veld vlak vóór de pion.',
         },
       ],
@@ -181,7 +181,7 @@ export const wereld1: World = {
           from: 'e4',
           goed: ['e7'],
           vraag: 'Pak de zwarte pion die boven de toren staat.',
-          foutTip: 'Je gaat naar het veld waar de pion staat, en hij is van het bord.',
+          foutTip: 'Je gaat naar het veld waar de pion staat, en hij gaat van het bord.',
         },
       ],
       zelf: [

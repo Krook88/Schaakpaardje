@@ -217,7 +217,7 @@ export const wereld10: World = {
         },
         {
           kind: 'quiz',
-          vraag: 'Je hebt een dame meer en zet hem per ongeluk pat. Wat is de uitslag?',
+          vraag: 'Je hebt een dame meer, maar je zet zijn koning per ongeluk pat. Wat is de uitslag?',
           opties: [
             { label: 'gelijkspel, ook al stond je veel beter', emoji: '😤', goed: true },
             { label: 'je wint alsnog', emoji: '🏆' },

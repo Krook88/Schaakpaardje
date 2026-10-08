@@ -103,8 +103,8 @@ export const wereld14: World = {
           kind: 'regelZet',
           fen: '5K2/7k/8/Q7/8/8/8/8 w - - 0 1',
           eis: 'matIn1',
-          vraag: 'Zet mat met je dame. Je koning dekt de vluchtvelden al.',
-          foutTip: 'Zijn koning kan nog naar boven en naar beneden. Kom op zijn lijn, dan dek je ook g6.',
+          vraag: 'Zet mat met je dame. Je koning bewaakt de vluchtvelden al.',
+          foutTip: 'Zijn koning kan nog naar boven en naar beneden. Kom op zijn lijn, dan bewaak je ook g6.',
         },
       ],
       zelf: [
@@ -131,7 +131,7 @@ export const wereld14: World = {
           fen: '2Q5/8/8/8/8/6K1/8/6k1 w - - 0 1',
           eis: 'matIn1',
           vraag: 'Maak het af: mat in één.',
-          foutTip: 'Jouw koning dekt de velden erboven al. Geef schaak op de onderste rij.',
+          foutTip: 'Jouw koning bewaakt de velden erboven al. Geef schaak op de onderste rij.',
         },
         {
           kind: 'quiz',

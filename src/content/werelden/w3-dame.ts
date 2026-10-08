@@ -156,7 +156,7 @@ export const wereld3: World = {
         // De sprong van het paard naar de dame, in twee stappen: dít is de weg waarlangs
         // ze gepakt wordt. Een kind dat de paardsprong nog niet ziet, ziet hem hier.
         {
-          tekst: 'Als jij haar naast een stuk van de tegenstander zet, kan hij haar zomaar pakken.',
+          tekst: 'Zet je haar op een veld waar een stuk van de tegenstander bij kan? Dan pakt hij haar zomaar.',
           wijs: ['c3', 'd5'],
         },
         'Kijk dus altijd even: staat ze veilig?',

@@ -215,7 +215,7 @@ export const wereld12: World = {
             { label: 'het midden pakken', emoji: '🎯' },
             { label: 'op tijd rokeren', emoji: '🏯' },
           ],
-          foutTip: 'Een vroege dame wordt opgejaagd door zijn kleine stukken. Dat kost je tijd.',
+          foutTip: 'Een vroege dame wordt opgejaagd door de kleine stukken van de tegenstander. Dat kost je tijd.',
         },
         {
           kind: 'move',

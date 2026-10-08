@@ -178,7 +178,7 @@ export const wereld0: World = {
           // lijnopdracht, en tellen tot drie in een rij van acht is voor een kind van
           // vier een andere les dan deze.
           wijs: ['c1'],
-          vraag: 'Nog één lijn. Tik alles aan wat recht boven het derde vakje ligt.',
+          vraag: 'Nog één lijn. Begin bij het veld dat oplicht en tik alles aan, recht omhoog.',
           foutTip: 'Een lijn gaat recht omhoog. Begin onderaan en klim naar boven.',
         },
       ],

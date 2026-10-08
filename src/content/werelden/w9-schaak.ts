@@ -185,7 +185,7 @@ export const wereld9: World = {
           fen: '4r2k/8/8/8/8/8/R7/4K3 w - - 0 1',
           eis: 'uitSchaak',
           vraag: 'Schaak! Zoek een uitweg. Er is er meer dan één.',
-          foutTip: 'Je kunt weglopen, maar je toren kan er ook tussen springen.',
+          foutTip: 'Je kunt weglopen, maar je toren kan er ook tussen gaan staan.',
         },
         {
           kind: 'regelZet',
