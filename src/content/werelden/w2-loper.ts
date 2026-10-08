@@ -146,7 +146,9 @@ export const wereld2: World = {
       doel: 'Je kind slaat met de loper over een diagonaal.',
       geleerd: 'Nu sla jij een stuk met je loper.',
       vertel: [
-        'Slaan doet de loper ook schuin. Hoe kan het ook anders.',
+        // Hier stond "Hoe kan het ook anders." Bedoeld als "natuurlijk", maar de stem las
+        // er een echte vraag in: hoe kan het anders? Een uitroep laat geen twijfel.
+        'Slaan doet de loper ook schuin. Hij loopt toch altijd schuin!',
         { tekst: 'Hij glijdt over de diagonaal tot hij bij het stuk is, en pakt het.', wijs: pad('f1', 'c4') },
         // Het spoor stopt op het paard; de pion op a6 licht niet op. Dat is precies
         // het verschil tussen "erachter" en "erop".
