@@ -52,8 +52,10 @@
 @media (min-width: 760px) { .strook { grid-template-columns: 1fr 260px; } }
 
 /* Een echt bord, met CSS getekend: geen plaatje, past zich aan het thema aan */
-.bord { display: grid; grid-template-columns: repeat(8, 1fr); aspect-ratio: 1; width: min(260px, 100%); justify-self: center; border-radius: 12px; overflow: hidden; border: 3px solid var(--line); box-shadow: var(--shadow); }
-.bord span { background: var(--light-sq); display: grid; place-items: center; font-size: clamp(16px, 4.6vw, 26px); line-height: 1; color: #1b1b17; }
+/* Rijen expliciet even hoog: anders drukt Firefox de vier lege rijen in het midden plat,
+   want een rij zonder inhoud krijgt daar geen hoogte. Het bord in de app doet dit al zo. */
+.bord { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); aspect-ratio: 1; width: min(260px, 100%); justify-self: center; border-radius: 12px; overflow: hidden; border: 3px solid var(--line); box-shadow: var(--shadow); }
+.bord span { min-width: 0; min-height: 0; background: var(--light-sq); display: grid; place-items: center; font-size: clamp(16px, 4.6vw, 26px); line-height: 1; color: #1b1b17; }
 .bord span:nth-child(16n+2), .bord span:nth-child(16n+4), .bord span:nth-child(16n+6), .bord span:nth-child(16n+8),
 .bord span:nth-child(16n+9), .bord span:nth-child(16n+11), .bord span:nth-child(16n+13), .bord span:nth-child(16n+15) { background: var(--dark-sq); }
 .bord span { color: #2b2823; -webkit-text-stroke: 1.2px #efe7d6; paint-order: stroke fill; }
