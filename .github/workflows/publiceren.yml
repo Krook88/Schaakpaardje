@@ -15,6 +15,14 @@ name: Publiceren naar schaakmaatje.nl
 # 3. Zonder het geheim TRANSIP_SSH_KEY valt hij om. Een groene vink die niets heeft
 #    gepubliceerd is erger dan een rode.
 #
+# Inspreken: met ELEVENLABS_API_KEY als geheim spreekt hij eerst de zinnen in die nog
+# geen opname op de server hebben (tts-render --vanaf leest het manifest van de site),
+# tot hoogstens "budget" tekens. Daarna gaan alleen die nieuwe mp3's en het
+# bijgewerkte manifest naar audio/, ook hier zonder iets te verwijderen. Het manifest
+# dat het script schrijft bevat de oude opnames én de nieuwe; lukt het ophalen van het
+# manifest van de site niet, dan stopt het script, zodat er nooit een half manifest
+# online komt.
+#
 # De openbare helft van de sleutel staat bij TransIP, de privé-helft als geheim hier.
 # Intrekken: verwijder de openbare helft bij TransIP.
 
@@ -22,9 +30,17 @@ on:
   workflow_dispatch:
     inputs:
       proef:
-        description: 'Proefrun: alleen laten zien wat er geüpload zou worden'
+        description: 'Proefrun: alleen laten zien wat er geüpload en ingesproken zou worden'
         type: boolean
         default: true
+      inspreken:
+        description: 'Nieuwe zinnen van Pip inspreken (alleen wat nog niet op de server staat)'
+        type: boolean
+        default: true
+      budget:
+        description: 'Hoogstens zoveel tekens inspreken (1 teken is ongeveer 1 credit)'
+        type: string
+        default: '3000'
 
 permissions:
   contents: read
@@ -68,6 +84,32 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SFTP_HOST" >> ~/.ssh/known_hosts 2>/dev/null
           sudo apt-get install -y -qq lftp > /dev/null
+
+      - name: Inspreken (of tellen)
+        if: ${{ inputs.inspreken }}
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          PROEF: ${{ inputs.proef }}
+          BUDGET: ${{ inputs.budget }}
+        run: |
+          if [ "$PROEF" = "true" ]; then
+            npx tsx scripts/tts-render.ts --vanaf https://schaakmaatje.nl --budget "$BUDGET" --dry
+          else
+            if [ -z "$ELEVENLABS_API_KEY" ]; then
+              echo "Geen ELEVENLABS_API_KEY ingesteld. Zet hem als geheim, of start met inspreken uit."
+              exit 1
+            fi
+            npx tsx scripts/tts-render.ts --vanaf https://schaakmaatje.nl --budget "$BUDGET"
+          fi
+
+      - name: Opnames uploaden
+        if: ${{ inputs.inspreken && !inputs.proef }}
+        run: |
+          # Alleen wat het inspreken net heeft gemaakt: nieuwe mp3's en het manifest.
+          # Geen --delete, dus de bestaande opnames blijven staan.
+          lftp -u "$SFTP_USER," \
+            -e "set sftp:connect-program 'ssh -a -x -i ~/.ssh/id_ed25519'; set net:max-retries 2; mirror --reverse --verbose --exclude-glob .gitkeep public/audio/ $SFTP_MAP/audio/; bye" \
+            "sftp://$SFTP_HOST"
 
       - name: Uploaden (of proef)
         env:
