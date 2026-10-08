@@ -384,7 +384,7 @@ export function LessonPlayer({
             en een gedeelde link te zien krijgen: de les in gewone tekst. Een kind ziet
             het hooguit een fractie van een seconde, tot de opgeslagen voortgang
             binnen is en het echte lesscherm hieronder het overneemt. */}
-        {uitleg}
+        <div className={styles.tekstversie}>{uitleg}</div>
       </div>
     )
   }
