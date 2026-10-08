@@ -170,29 +170,40 @@ export const wereld9: World = {
       ],
       vertelFen: 'R3r3/8/8/7k/8/2B5/8/4K3',
       vertelWijs: ['e1'],
+      // Eerst keurde elke opgave hier elke uitweg goed (eis `uitSchaak`). Dan kan de
+      // les niet fout gaan: een kind dat alleen maar met zijn koning wegloopt, haalde
+      // drie sterren voor "drie manieren". Nu vraagt elke opgave één manier, in een
+      // stelling waar ook een andere kan. De contentcontrole bewaakt dat laatste.
       meedoen: [
         {
           kind: 'regelZet',
-          fen: '7k/8/8/8/8/8/4r3/4K3 w - - 0 1',
-          eis: 'uitSchaak',
-          vraag: 'Je staat schaak. Los het op.',
-          foutTip: 'Die zet mag niet: dan sta je nog steeds schaak. Loop weg, of sla die toren.',
+          fen: '7k/8/8/8/8/8/3B4/r3K3 w - - 0 1',
+          eis: 'wegLopen',
+          vraag: 'Je staat schaak. Manier één: loop weg met je koning.',
+          foutTip: 'Dat was er iets tussen zetten. Nu vragen we weglopen: tik op je koning.',
         },
       ],
       zelf: [
         {
           kind: 'regelZet',
+          fen: '7k/8/8/8/4r3/8/2B5/4K3 w - - 0 1',
+          eis: 'slaAanvaller',
+          vraag: 'Manier twee: sla het stuk dat schaak geeft.',
+          foutTip: 'Je koning is veilig, maar nu vragen we slaan. Welk stuk van jou kan die toren pakken?',
+        },
+        {
+          kind: 'regelZet',
           fen: '4r2k/8/8/8/8/8/R7/4K3 w - - 0 1',
-          eis: 'uitSchaak',
-          vraag: 'Schaak! Zoek een uitweg. Er is er meer dan één.',
-          foutTip: 'Je kunt weglopen, maar je toren kan er ook tussen gaan staan.',
+          eis: 'ertussen',
+          vraag: 'Manier drie: zet een stuk tussen de toren en je koning.',
+          foutTip: 'Weglopen mag ook, maar nu vragen we ertussen. Welk stuk kan in de weg gaan staan?',
         },
         {
           kind: 'regelZet',
           fen: 'R3r3/8/8/7k/8/2B5/8/4K3 w - - 0 1',
-          eis: 'uitSchaak',
-          vraag: 'Hier kunnen alle drie de manieren. Kies er eentje.',
-          foutTip: 'Slaan met de toren, ertussen met de loper, of gewoon een stapje opzij.',
+          eis: 'slaAanvaller',
+          vraag: 'Hier kunnen alle drie de manieren. Kies slaan.',
+          foutTip: 'Dat kan ook, maar we vroegen slaan. Welk stuk kan die zwarte toren pakken?',
         },
         {
           kind: 'quiz',
@@ -207,9 +218,10 @@ export const wereld9: World = {
       toets: [
         {
           kind: 'regelZet',
-          fen: '7k/8/8/8/8/8/4r3/4K3 w - - 0 1',
-          eis: 'uitSchaak',
-          vraag: 'Laatste keer: haal je koning uit het schaak.',
+          fen: '6k1/8/8/8/8/2N5/5PP1/r5K1 w - - 0 1',
+          eis: 'ertussen',
+          vraag: 'Laatste keer: zet er iets tussen.',
+          foutTip: 'Je koning kan weg, maar we vroegen ertussen. Welk stuk kan in de weg gaan staan?',
         },
         {
           // Deze toets vroeg eerst naar mat. Dat is de les van wereld 10, en die komt

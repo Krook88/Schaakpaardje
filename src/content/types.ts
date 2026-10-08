@@ -66,7 +66,20 @@ export type Exercise =
       kind: 'regelZet'
       /** Volledige FEN, inclusief wie er aan zet is. */
       fen: Fen
-      eis: 'geefSchaak' | 'uitSchaak' | 'matIn1' | 'rokeer' | 'enPassant'
+      /**
+       * Wat de zet moet bereiken. `uitSchaak` keurt elke uitweg goed; de drie
+       * daaronder vragen één bepaalde manier. Zonder die drie kon de les "uit schaak:
+       * drie manieren" niet fout gaan: elke zet die het bord toeliet was goed.
+       */
+      eis:
+        | 'geefSchaak'
+        | 'uitSchaak'
+        | 'wegLopen'
+        | 'slaAanvaller'
+        | 'ertussen'
+        | 'matIn1'
+        | 'rokeer'
+        | 'enPassant'
       vraag: string
       foutTip?: string
     }

@@ -128,8 +128,9 @@ describe('vangrails uit de tweede review', () => {
         if (opgave.kind !== 'regelZet') continue
         const game = new Game(opgave.fen)
         const status = game.status()
-        // uitSchaak is de ene eis die schaak juist nódig heeft.
-        if (!status.over && status.check && opgave.eis !== 'uitSchaak') {
+        // De uit-schaak-eisen zijn de enige die schaak juist nódig hebben.
+        const uitSchaak = ['uitSchaak', 'wegLopen', 'slaAanvaller', 'ertussen'].includes(opgave.eis)
+        if (!status.over && status.check && !uitSchaak) {
           fout.push(`${les.id}: wit staat schaak in ${opgave.fen}`)
         }
       }
