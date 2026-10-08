@@ -1,0 +1,96 @@
+/*
+ * /over/ als pagina met een eigen gezicht in plaats van zes gelijke kaarten.
+ * Ontwerp uit de zesde review: de pagina oogde mat omdat elke sectie dezelfde doos
+ * was, zonder beeld en zonder hoogtepunt. Alleen bestaande tokens, geen JS nodig.
+ */
+
+/* Ritme: secties ademen met 56px, binnen een sectie 16px. Niet elke sectie is een kaart:
+   kaarten zijn voor dingen die je naast elkaar vergelijkt. */
+.pagina { max-width: 1040px; margin: 0 auto; padding: 18px 18px 96px; display: flex; flex-direction: column; gap: clamp(40px, 7vw, 72px); }
+.terug { color: var(--muted); font-size: 0.95rem; display: inline-block; padding-block: 12px; }
+
+/* 1. Opening: tekst en een echt scherm naast elkaar */
+.held { display: grid; gap: 28px; align-items: center; }
+@media (min-width: 760px) { .held { grid-template-columns: 1.15fr 0.85fr; gap: 48px; } }
+.oogje { font-size: 0.85rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+.held h1 { font-size: clamp(1.9rem, 6.2vw, 3rem); line-height: 1.05; }
+.held h1 em { font-style: normal; color: var(--accent); }
+.lead { font-size: 1.15rem; margin-top: 14px; max-width: 34ch; }
+.knoppen { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; margin-top: 22px; }
+.feiten { list-style: none; padding: 0; margin: 22px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.feiten li { background: var(--grass-soft); color: var(--ink); border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 0.95rem; }
+.feiten li::before { content: '✓\FE0E'; color: var(--grass); margin-right: 6px; }
+.scherm { position: relative; justify-self: center; width: min(300px, 78vw); }
+.scherm img { width: 100%; height: auto; display: block; border-radius: 22px; border: 2px solid var(--line); box-shadow: var(--shadow), 0 30px 60px -40px rgba(0,0,0,.55); background: var(--surface); rotate: 2deg; }
+.pipkop { flex: 0 0 56px; height: 56px; border-radius: 50%; background: var(--grass-soft); border: 3px solid var(--line); display: grid; place-items: center; font-size: 30px; box-shadow: var(--shadow); }
+
+/* Sectiekop met een stuk als beeldmerk */
+.kop { display: flex; gap: 14px; align-items: center; margin-bottom: 18px; }
+.stuk { flex: 0 0 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font-size: 34px; line-height: 1; background: var(--accent-soft); color: var(--accent); }
+.tekst { max-width: 64ch; display: flex; flex-direction: column; gap: 14px; }
+
+/* 2. Leeftijden: drie kaarten, op telefoon onder elkaar */
+.drie { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+@media (min-width: 720px) { .drie { grid-template-columns: repeat(3, 1fr); } }
+.band { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 8px; }
+.band b { font-size: 1.5rem; line-height: 1; }
+.band .glyph { font-size: 40px; line-height: 1; color: var(--grass); }
+
+/* 3. Vier stappen: een pad met genummerde bollen, net als de kaart in de app */
+.stappen { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; counter-reset: stap; }
+@media (min-width: 720px) { .stappen { grid-template-columns: repeat(4, 1fr); } }
+.stappen li { counter-increment: stap; display: flex; gap: 12px; align-items: flex-start; }
+@media (min-width: 720px) { .stappen li { flex-direction: column; } }
+.stappen li::before { content: counter(stap); flex: 0 0 auto; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: var(--surface); border: 3px solid var(--grass); color: var(--grass); }
+.stappen strong { display: block; }
+
+/* Het ene feit dat deze app anders maakt, groot */
+.uitspraak { border-left: 6px solid var(--accent); padding: 6px 0 6px 18px; font-size: clamp(1.25rem, 3.6vw, 1.6rem); font-weight: 800; line-height: 1.25; max-width: 30ch; }
+
+/* Band over de hele breedte, voor het rustpunt halverwege */
+.strook { background: var(--surface-2); border-radius: 28px; padding: clamp(22px, 5vw, 44px); display: grid; gap: 28px; align-items: center; }
+@media (min-width: 760px) { .strook { grid-template-columns: 1fr 260px; } }
+
+/* Een echt bord, met CSS getekend: geen plaatje, past zich aan het thema aan */
+.bord { display: grid; grid-template-columns: repeat(8, 1fr); aspect-ratio: 1; width: min(260px, 100%); justify-self: center; border-radius: 12px; overflow: hidden; border: 3px solid var(--line); box-shadow: var(--shadow); }
+.bord span { background: var(--light-sq); display: grid; place-items: center; font-size: clamp(16px, 4.6vw, 26px); line-height: 1; color: #1b1b17; }
+.bord span:nth-child(16n+2), .bord span:nth-child(16n+4), .bord span:nth-child(16n+6), .bord span:nth-child(16n+8),
+.bord span:nth-child(16n+9), .bord span:nth-child(16n+11), .bord span:nth-child(16n+13), .bord span:nth-child(16n+15) { background: var(--dark-sq); }
+.bord span { color: #2b2823; -webkit-text-stroke: 1.2px #efe7d6; paint-order: stroke fill; }
+.wit { color: #fcf8ef !important; -webkit-text-stroke: 1.5px #33302a !important; }
+
+/* Wat zit erin: tegels */
+.tegels { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.tegels li { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 16px; }
+.tegels .ico { font-size: 28px; display: block; margin-bottom: 6px; }
+.tegels strong { display: block; }
+
+/* Privacy: twee grote nullen */
+.nullen { display: grid; gap: 14px; }
+@media (min-width: 720px) { .nullen { grid-template-columns: 1fr 1fr; } }
+.nul { background: var(--grass-soft); border-radius: var(--radius); padding: 20px; }
+.nul b { display: block; font-size: clamp(2rem, 7vw, 2.6rem); line-height: 1; color: var(--grass); margin-bottom: 6px; }
+.fooi { color: var(--muted); max-width: 64ch; font-size: 0.98rem; }
+
+/* Vragen: uitklapbaar zonder JavaScript */
+.vragen { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+.vragen details { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); }
+.vragen summary { cursor: pointer; list-style: none; padding: 16px 52px 16px 18px; font-weight: 800; position: relative; min-height: 64px; display: flex; align-items: center; }
+.vragen summary::-webkit-details-marker { display: none; }
+.vragen summary::after { content: '+'; position: absolute; right: 18px; top: 50%; translate: 0 -50%; font-size: 1.5rem; color: var(--accent); }
+.vragen details[open] summary::after { content: '−'; }
+.vragen summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: var(--radius); }
+.vragen details p { padding: 0 18px 18px; }
+
+/* Slot */
+.slot { text-align: center; background: var(--accent-soft); border-radius: 28px; padding: clamp(28px, 6vw, 48px) 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.slot .pipkop { width: 84px; height: 84px; flex-basis: 84px; font-size: 46px; }
+
+/* Hoe lang per dag: één grote kernzin */
+.duur { display: grid; gap: 18px; align-items: start; }
+@media (min-width: 720px) { .duur { grid-template-columns: 240px 1fr; gap: 36px; } }
+.duur b { display: block; font-size: clamp(2rem, 7vw, 2.6rem); line-height: 1.05; color: var(--grass); }
+.tijden { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.tijden strong { display: inline-block; min-width: 9ch; }
+.thuis { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 10px; }
+.klein { color: var(--muted); font-size: 0.95rem; }

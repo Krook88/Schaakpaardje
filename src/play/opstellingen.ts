@@ -27,8 +27,8 @@ export const OPSTELLING: Record<string, Opstelling> = {
   },
   bas: { uitleg: 'Een gewone partij met alle stukken. Bas kijkt een zetje vooruit.' },
   fien: { uitleg: 'Volledig bord. Fien geeft niet zomaar iets weg.' },
-  oscar: { uitleg: 'Volledig bord. Oscar denkt drie zetten vooruit.' },
-  bram: { uitleg: 'Volledig bord, en Bram speelt altijd zijn beste zet.' },
+  oscar: { uitleg: 'Volledig bord. Oscar maakt bijna nooit een slordige zet.' },
+  bram: { uitleg: 'Volledig bord, en Bram denkt het verst vooruit.' },
   samen: {
     uitleg: 'Een gewone partij, samen op één tablet.',
   },
