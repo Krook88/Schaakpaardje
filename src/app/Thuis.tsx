@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
-import { kies } from '@/audio/voice'
+import { alGetikt, kies } from '@/audio/voice'
 import { EERSTE_KEER, WELKOM, pipZinnen } from '@/content/voice'
 import { lesMet, WERELDEN } from '@/content'
 import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
@@ -51,6 +51,11 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   const voortgang = useVoortgang()
   const stickers = useStickers()
   const verslagen = useVerslagen()
+  // Praat Pip hier vanzelf? Alleen als er al getikt was toen dit scherm verscheen,
+  // dus als je terugkomt van een les. Wie de site net opent, schrikt anders bij de
+  // eerste tik van een pratend paardje. Eén keer vastgelegd: anders gaat hij alsnog
+  // praten zodra er later iets op dit scherm verandert.
+  const [vanzelf] = useState(alGetikt)
 
   // Vóór de opgeslagen profielen binnen zijn.
   //
@@ -136,6 +141,9 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
               : kies(pipZinnen(profiel.modus === 'schaker').WELKOM_TERUG, 'welkom')
           }
           stemming="blij"
+          // Wie de site net opent, hoort Pip pas als hij op hem tikt. Wie terugkomt van
+          // een les, heeft al getikt en hoort hem wel vanzelf. Zie `vanzelf` hierboven.
+          vanzelf={vanzelf}
         />
 
         {/* De rondleiding, alleen zolang er nog niets gedaan is.

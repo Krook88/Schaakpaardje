@@ -241,10 +241,18 @@ async function pipZwijgtBijBinnenkomst() {
   await p.getByRole('button', { name: /Beginnen/ }).click()
   await p.waitForTimeout(1200)
   const naBeginnen = await gezegd()
+  // En wie later terugkomt, schrikt ook niet: de site opnieuw openen met het profiel
+  // er al, en dan ergens op tikken. Ook gemeld door Kaj: "ik schrik iedere keer".
+  await p.reload({ waitUntil: 'networkidle' })
+  await p.waitForTimeout(800)
+  await p.getByRole('heading', { name: /Hoi Testkind/ }).click()
+  await p.waitForTimeout(800)
+  const terugkomst = await gezegd()
   await ctx.close()
   if (vooraf > 0) return meld(naam, false, `Pip praatte al ${vooraf} keer voordat er iets gevraagd werd`)
   if (naLuidspreker === 0) return meld(naam, false, 'de luidspreker deed niets')
-  meld(naam, naBeginnen > naLuidspreker, naBeginnen > naLuidspreker ? '' : 'na Beginnen zei Pip niets')
+  if (naBeginnen <= naLuidspreker) return meld(naam, false, 'na Beginnen zei Pip niets')
+  meld(naam, terugkomst === 0, terugkomst === 0 ? '' : `bij terugkomst praatte Pip vanzelf (${terugkomst} keer)`)
 }
 
 console.log(`Doorloop tegen ${URL}\n`)
