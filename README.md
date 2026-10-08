@@ -4,8 +4,10 @@ Nederlandse leer-app waarin kinderen van 3 tot 10 jaar leren schaken, met Pip he
 schaakpaardje als sprekende mascotte, een modulepad in spelvorm en oefenpartijen op
 verschillende niveaus.
 
-> **Status:** fase 1 draait. Werelden 0 t/m 6 (bord, toren, loper, dame, paard, koning,
-> pion) zijn speelbaar, met minispellen, drie tegenstanders, profielen en een ouderscherm.
+> **Status:** het hele curriculum is speelbaar — alle 15 werelden, van het bord tot het
+> eindspel. 47 lessen, 15 minispellen, drie tegenstanders, profielen en een ouderscherm.
+> Zeven tegenstanders, drie printbare diploma's, en na het eerste bezoek werkt alles
+> offline. Wat nog moet: Pip inspreken (de pijplijn staat klaar) en de release-review.
 
 ## Aan de slag
 

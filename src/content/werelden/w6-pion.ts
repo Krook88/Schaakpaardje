@@ -1,4 +1,5 @@
-import { type World } from '../types'
+import { START, type World } from '../types'
+import { rij } from '../velden'
 
 /**
  * Wereld 6 — Pionnenveld.
@@ -11,6 +12,7 @@ export const wereld6: World = {
   nummer: 6,
   naam: 'Pionnenveld',
   emoji: '🌱',
+  toon: 105,
   belofte: 'Klein maar dapper. En hij kan dame worden!',
   minLeeftijd: 6,
   minispel: 'pionnenspel',
@@ -20,13 +22,16 @@ export const wereld6: World = {
       id: 'pion-1',
       wereldId: 'pion',
       titel: 'Altijd vooruit',
+      icoon: '⬆️',
       doel: 'Je kind weet dat de pion één veld vooruit loopt en nooit terug.',
+      geleerd: 'Nu weet je dat een pion alleen vooruit gaat en nooit terug.',
       vertel: [
         'Dit is de pion. Het kleinste stukje, maar wel dapper.',
-        'Hij loopt één veld vooruit. Nooit opzij, nooit achteruit.',
-        'Een pion gaat altijd door. Terug kan hij niet meer.',
+        { tekst: 'Hij loopt één veld vooruit. Nooit opzij, nooit achteruit.', wijs: ['e6'] },
+        // Het spoor loopt door naar boven: die kant op, en alleen die kant op.
+        { tekst: 'Een pion gaat altijd door. Terug kan hij niet meer.', wijs: ['e6', 'e7', 'e8'] },
       ],
-      vertelFen: '8/8/8/8/8/8/4P3/8',
+      vertelFen: '8/8/8/4P3/8/8/8/8',
       meedoen: [
         {
           kind: 'tapMoves',
@@ -56,19 +61,19 @@ export const wereld6: World = {
       toets: [
         {
           kind: 'tapMoves',
-          fen: '8/8/8/8/8/3n4/4P3/8',
-          from: 'e2',
-          vraag: 'Er staat een paard schuin voor hem. Waar kan de pion allemaal heen?',
+          fen: '8/8/8/8/2P5/8/8/8',
+          from: 'c4',
+          vraag: 'Deze pion is al onderweg. Waar kan hij heen?',
         },
         {
           kind: 'quiz',
-          vraag: 'Een stuk staat pal voor je pion. Wat kan de pion doen?',
+          vraag: 'Welke kant loopt jouw pion op?',
           opties: [
-            { label: 'niets, hij zit vast', emoji: '🛑', goed: true },
-            { label: 'het stuk slaan', emoji: '⚔️' },
-            { label: 'eromheen lopen', emoji: '↪️' },
+            { label: 'recht vooruit, naar boven', emoji: '⬆️', goed: true },
+            { label: 'opzij', emoji: '↔️' },
+            { label: 'alle kanten op', emoji: '🌈' },
           ],
-          foutTip: 'Recht vooruit slaat een pion nooit. Hij zit dus echt vast.',
+          foutTip: 'De pion loopt recht vooruit. Opzij en achteruit kan hij niet.',
         },
       ],
       themas: ['pion', 'bordvisie'],
@@ -77,11 +82,16 @@ export const wereld6: World = {
       id: 'pion-2',
       wereldId: 'pion',
       titel: 'De eerste keer twee',
+      icoon: '⏩',
       doel: 'Je kind kent de dubbelstap vanaf de startrij.',
+      geleerd: 'Nu ken je de dubbele stap van de pion.',
       vertel: [
         'Eén ding mag een pion maar één keer in zijn leven.',
-        'Vanaf zijn startplek mag hij twee velden vooruit. Een lekkere sprint.',
-        'Daarna is het weer één stapje per keer.',
+        {
+          tekst: 'Vanaf zijn startplek mag hij twee velden vooruit. Een lekkere sprint.',
+          wijs: ['e3', 'e4'],
+        },
+        { tekst: 'Daarna is het weer één stapje per keer.', wijs: ['e5'] },
       ],
       vertelFen: '8/8/8/8/8/8/4P3/8',
       meedoen: [
@@ -102,9 +112,9 @@ export const wereld6: World = {
         },
         {
           kind: 'tapMoves',
-          fen: '8/8/8/8/8/3p4/2P5/8',
+          fen: '8/8/8/8/2n5/8/2P5/8',
           from: 'c2',
-          vraag: 'Er staat een zwarte pion schuin voor hem. Waar kan hij allemaal heen?',
+          vraag: 'Er staat iets op zijn tweede veld. Waar kan hij nu heen?',
         },
       ],
       toets: [
@@ -130,14 +140,17 @@ export const wereld6: World = {
       id: 'pion-3',
       wereldId: 'pion',
       titel: 'Lopen is niet slaan',
+      icoon: '✂️',
       doel: 'Je kind weet dat de pion recht loopt maar schuin slaat.',
+      geleerd: 'Nu weet je het gekste van de pion: recht lopen, schuin slaan.',
       vertel: [
         'Nu het gekste van de pion. Let goed op.',
-        'Hij loopt recht vooruit. Maar hij slaat schuin!',
+        // Eerst het veld waar hij naartoe loopt, dan de twee waar hij slaat. Dat
+        // onderscheid is het hele punt van deze les, en in die volgorde zie je het.
+        { tekst: 'Hij loopt recht vooruit. Maar hij slaat schuin!', wijs: ['e5', 'd5', 'f5'] },
         'Dus: recht is lopen, schuin is pakken. Bij alle andere stukken is dat hetzelfde.',
       ],
       vertelFen: '8/8/8/3p1p2/4P3/8/8/8',
-      vertelWijs: ['d5', 'f5'],
       meedoen: [
         {
           kind: 'tapMoves',
@@ -180,7 +193,17 @@ export const wereld6: World = {
           kind: 'captureAll',
           fen: '8/8/8/8/8/1p6/P7/8',
           from: 'a2',
-          vraag: 'Sla de zwarte pion op.',
+          vraag: 'Sla de zwarte pion met jouw pion.',
+        },
+        {
+          kind: 'quiz',
+          vraag: 'Een stuk staat pal voor je pion. Wat kan de pion doen?',
+          opties: [
+            { label: 'niets, hij zit vast', emoji: '🛑', goed: true },
+            { label: 'het stuk slaan', emoji: '⚔️' },
+            { label: 'eromheen lopen', emoji: '↪️' },
+          ],
+          foutTip: 'Recht vooruit slaat een pion nooit. Hij zit dus echt vast.',
         },
       ],
       themas: ['pion', 'slaan'],
@@ -189,10 +212,15 @@ export const wereld6: World = {
       id: 'pion-4',
       wereldId: 'pion',
       titel: 'Pion wordt dame',
+      icoon: '👑',
       doel: 'Je kind promoveert een pion op de overkant.',
+      geleerd: 'Nu maak jij van een pion een dame!',
       vertel: [
         'En nu het mooiste van de pion.',
-        'Haalt hij de overkant? Dan wordt hij een dame! Zomaar, midden in de partij.',
+        {
+          tekst: 'Haalt hij de overkant? Dan wordt hij een dame! Zomaar, midden in de partij.',
+          wijs: ['e8'],
+        },
         "Daarom is zo'n klein pionnetje toch heel gevaarlijk.",
       ],
       vertelFen: '8/4P3/8/8/8/8/8/8',
@@ -241,6 +269,171 @@ export const wereld6: World = {
         },
       ],
       themas: ['pion', 'promotie'],
+    },
+    {
+      // De laatste pionregel. Hij stond er niet, maar de bots speelden hem wél: Kiki
+      // en Rens pakken een gratis pion en het kind ziet er eentje verdwijnen door een
+      // zet die volgens alles wat het geleerd heeft niet kan. Deze les gebruikt
+      // 'regelZet', want en passant is een echte regel — de meetkundige motor kent
+      // hem niet, en kan hem ook niet kennen: hij hangt af van de vorige zet.
+      id: 'pion-5',
+      wereldId: 'pion',
+      titel: 'In het voorbijgaan',
+      icoon: '💨',
+      doel: 'Je kind slaat een pion en passant.',
+      geleerd: 'Nu ken je en passant, de laatste rare regel van de pion.',
+      vertel: [
+        'Nog één rare regel van de pion. Deze heet en passant, dat is Frans voor "in het voorbijgaan".',
+        {
+          tekst:
+            'Staat jouw pion al ver vooruit, en springt zijn pion er met een dubbelstap langs? Dan mag je hem toch pakken.',
+          // De sprong die net gemaakt is, van d7 over d6 naar d5.
+          wijs: ['d7', 'd6', 'd5'],
+        },
+        // En dan de zet zelf: schuin, naar het lege veld waar hij overheen sprong.
+        {
+          tekst:
+            'Je slaat schuin, naar het lege veld waar hij overheen sprong. En dat mag alleen meteen, anders is de kans weg.',
+          wijs: ['d6'],
+        },
+      ],
+      vertelFen: '4k3/8/8/3pP3/8/8/8/4K3',
+      meedoen: [
+        {
+          kind: 'regelZet',
+          fen: '4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1',
+          eis: 'enPassant',
+          vraag: 'Zijn pion sprong er net langs. Pak hem in het voorbijgaan!',
+          foutTip: 'Sla schuin naar het lege veld waar hij overheen sprong. Hij gaat er alsnog af.',
+        },
+      ],
+      zelf: [
+        {
+          kind: 'regelZet',
+          fen: '4k3/8/8/5pP1/8/8/8/4K3 w - f6 0 1',
+          eis: 'enPassant',
+          vraag: 'Nog een keer. Sla en passant.',
+          foutTip: 'Schuin naar het lege veld erachter. Zijn pion staat ernaast, maar je gaat er niet heen.',
+        },
+        {
+          kind: 'quiz',
+          vraag: 'Wanneer mag je en passant slaan?',
+          opties: [
+            { label: 'meteen, of nooit meer', emoji: '⏱️', goed: true },
+            { label: 'wanneer je maar wilt', emoji: '♾️' },
+            { label: 'alleen met een dame', emoji: '👑' },
+          ],
+          foutTip: 'Je hebt precies één zet de tijd. Doe je iets anders, dan is de kans voorbij.',
+        },
+      ],
+      toets: [
+        {
+          kind: 'regelZet',
+          fen: '4k3/8/8/1pP5/8/8/8/4K3 w - b6 0 1',
+          eis: 'enPassant',
+          vraag: 'Laatste keer: sla zijn pion in het voorbijgaan.',
+        },
+        {
+          kind: 'quiz',
+          vraag: 'Welk stuk kan en passant slaan?',
+          opties: [
+            { label: 'alleen een pion', emoji: '\u265f\ufe0f', goed: true },
+            { label: 'elk stuk', emoji: '\ud83c\udf08' },
+            { label: 'alleen de dame', emoji: '\ud83d\udc51' },
+          ],
+          foutTip: 'Het is een pionregel. Alleen een pion kan een pion in het voorbijgaan pakken.',
+        },
+      ],
+      themas: ['pion', 'en passant'],
+    },
+    {
+      /*
+       * Het bord opzetten hoort hier, niet in wereld 0.
+       *
+       * Deze les stond eerst als "Wit rechtsonder" in De Weide, en vroeg daar om de
+       * dame, de torens en de paarden — stukken die pas in wereld 3, 1 en 4 worden
+       * uitgelegd. Wereld 0 is er voor kinderen van drie en bevat met opzet geen enkele
+       * schaakregel; een kind zag daar een vol bord en een opdracht over iets waarvan
+       * het het woord nog nooit gehoord had.
+       *
+       * Hier klopt het wel. Pionnenveld is de laatste stukkenwereld: na deze les ken je
+       * de toren, de loper, de dame, het paard, de koning en de pion. Het bord opzetten
+       * is dan geen nieuwe stof maar een samenvatting — je zet alles neer wat je hebt
+       * leren kennen, en je verdient er het bronzen hoefijzer mee.
+       *
+       * Alle antwoorden worden nagerekend uit de stelling (`bedoeling`), zoals de
+       * afspraak in CLAUDE.md wil: geen overgetypte veldnamen.
+       */
+      id: 'opstelling',
+      wereldId: 'pion',
+      titel: 'Zet het bord op',
+      icoon: '🧩',
+      doel: 'Je kind zet alle stukken op hun juiste plek en weet dat de dame op haar eigen kleur staat.',
+      geleerd: 'Nu zet jij het hele bord zelf op. Alle stukken op hun eigen plek!',
+      vertel: [
+        'Je kent nu alle stukken. Dan kun je het bord ook helemaal zelf opzetten.',
+        { tekst: 'Wit rechts: het veld rechtsonder is licht.', wijs: ['h1'] },
+        { tekst: 'De torens in de hoeken, daarnaast de paarden, dan de lopers.', wijs: ['a1', 'h1', 'b1', 'g1', 'c1', 'f1'] },
+        { tekst: 'De dame op haar eigen kleur, en de koning naast haar.', wijs: ['d1', 'e1'] },
+        { tekst: 'En de pionnen staan er in een rij voor.', wijs: rij(2) },
+      ],
+      vertelFen: START,
+      meedoen: [
+        {
+          kind: 'tapSquares',
+          fen: START,
+          correct: ['a1', 'h1'],
+          bedoeling: { soort: 'stuk', type: 'r', kleur: 'w' },
+          vraag: 'Tik de twee witte torens aan. Die staan in de hoeken.',
+          foutTip: 'De torens staan helemaal in de hoeken van de onderste rij.',
+        },
+      ],
+      zelf: [
+        {
+          kind: 'tapSquares',
+          fen: START,
+          correct: ['b1', 'g1'],
+          bedoeling: { soort: 'stuk', type: 'n', kleur: 'w' },
+          vraag: 'Tik de twee witte paarden aan. Die staan naast de torens.',
+          foutTip: 'Zoek naast elke hoek eentje.',
+        },
+        {
+          kind: 'tapSquares',
+          fen: START,
+          correct: ['d1'],
+          bedoeling: { soort: 'stuk', type: 'q', kleur: 'w' },
+          vraag: 'Tik de witte dame aan. Zij staat op haar eigen kleur.',
+          foutTip: 'De witte dame staat op een licht veld, naast de koning.',
+        },
+        {
+          kind: 'tapSquares',
+          fen: START,
+          correct: ['c1', 'f1'],
+          bedoeling: { soort: 'stuk', type: 'b', kleur: 'w' },
+          vraag: 'Tik de twee witte lopers aan. Die staan naast de paarden.',
+          foutTip: 'Eentje op een licht veld, eentje op een donker veld.',
+        },
+      ],
+      toets: [
+        {
+          kind: 'quiz',
+          vraag: 'De witte dame staat op...',
+          opties: [
+            { label: 'een licht veld', veld: 'licht', goed: true },
+            { label: 'een donker veld', veld: 'donker' },
+          ],
+          foutTip: 'De dame staat op haar eigen kleur. De witte dame is licht.',
+        },
+        {
+          kind: 'tapSquares',
+          fen: START,
+          correct: ['e1'],
+          bedoeling: { soort: 'stuk', type: 'k', kleur: 'w' },
+          vraag: 'Tik de witte koning aan. Hij staat naast de dame.',
+          foutTip: 'De koning heeft een kruisje op zijn kroon.',
+        },
+      ],
+      themas: ['bord', 'opstelling'],
     },
   ],
 }

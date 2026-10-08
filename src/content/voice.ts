@@ -81,7 +81,15 @@ export const BLUNDER_WAARSCHUWING = [
   'Pas op, daar kan hij hem slaan.',
 ] as const
 
-export const SCHAAK = ['Schaak! Je koning wordt aangevallen.'] as const
+export const SCHAAK_TEGEN_JOU = [
+  'Schaak! Je koning wordt aangevallen.',
+  'Pas op, schaak! Los het eerst op.',
+] as const
+
+export const SCHAAK_VAN_JOU = [
+  'Schaak! Jij valt zijn koning aan.',
+  'Mooi, schaak! Nu moet hij wat.',
+] as const
 export const MAT_VOOR_JOU = ['Mat! De koning kan nergens meer heen.'] as const
 
 /** Wordt gebruikt als er geen specifieke fout-tip in de opgave staat. */
@@ -96,3 +104,144 @@ export function foutTipVoorStuk(stuk: string): string {
   }
   return tips[stuk] ?? 'Kijk nog eens hoe dit stuk loopt.'
 }
+
+
+/* ---------------------------------------------------------------------------
+ * Zinnen die in een scherm thuishoorden maar niet in de content stonden.
+ *
+ * Ze werden wél uitgesproken en dus niet ingesproken: precies die zinnen kwamen er
+ * straks in de stem van de tablet uit, tussen alle andere zinnen die Pip zelf zegt.
+ * Dat hoor je meteen. `npm run audio:dekking` vindt ze nu voordat er credits doorheen
+ * gaan, en alles wat hier staat wordt automatisch meegenomen bij het inspreken.
+ * ------------------------------------------------------------------------- */
+
+/** Het allereerste wat een kind ooit hoort. */
+export const WELKOM = 'Hoi! Ik ben Pip, het schaakpaardje. Hoe heet jij?'
+
+/**
+ * Vroeger stond hier de naam van het kind in. Een zin die per kind verschilt kan nooit
+ * ingesproken worden — de tekst staat pas vast op het moment zelf — dus die viel altijd
+ * terug op de apparaatstem. De naam staat toch al groot boven aan het scherm.
+ */
+export const WELKOM_TERUG = [
+  'Leuk dat je er bent! Zullen we verder gaan waar je gebleven was?',
+  'Daar ben je weer. Zullen we verder?',
+] as const
+
+/**
+ * Wat Pip zegt als je voor het eerst binnenkomt.
+ *
+ * Zonder dit stond een kind na "Beginnen" ineens voor een scherm met vier knoppen en
+ * een lege stal, zonder dat iemand vertelde wat het was. Gemeld met "ik val zo plots in
+ * het spel zonder enige uitleg". De zin wijst één ding aan, de grote knop, en verder
+ * niets: wie voor het eerst ergens is, kan één opdracht onthouden, geen drie.
+ *
+ * En geen kleur erbij. Hier stond "de grote oranje knop", en dat is hij alleen in het
+ * donkere thema: --accent is daar #e2903f, maar in het lichte thema #b35c14, en dat
+ * leest als bruin. Een kleurwoord kan hier dus per definitie niet kloppen. Groot is
+ * hij in allebei, en er is er maar één.
+ */
+export const EERSTE_KEER =
+  'Welkom in mijn stal! Druk op de grote knop, dan gaan we samen beginnen.'
+
+/** Bij een partijtje samen op één tablet, als er geen tegenstander gekozen is. */
+export const SAMEN_SPELEN = 'Samen spelen! Wit begint.'
+
+/** Als de hele stal vol is. De tellerzin ernaast kan niet: daar staan getallen in. */
+export const STAL_VOL = 'Je stal is helemaal vol. Alles verzameld!'
+
+export const KENNISMAKING = 'Leuk je te ontmoeten! We beginnen bij het bord.'
+export const TEGEN_WIE = 'Tegen wie wil je spelen? Begin gerust makkelijk hoor.'
+export const HINT_GEGEVEN = 'Kijk eens naar het veld dat oplicht.'
+export const OPNIEUW_PROBEREN = [
+  'Dat lukte net niet binnen de zetten. We beginnen gewoon opnieuw.',
+  'Net niet binnen de zetten. We proberen het nog een keer.',
+] as const
+export const ZET_TERUGGENOMEN = 'Geeft niet, we doen die zet gewoon nog een keer.'
+export const BLUNDER_AFGEWEND = 'Goed gekeken. Zoek maar een andere zet.'
+export const OPFRISSER_KLAAR = 'Alles nog paraat. Mooi zo!'
+export const OPFRISSER_LEEG = 'Er is nog niets om op te frissen. Ga eerst maar lekker verder.'
+export const OPFRISSER_START = 'Even kijken of je het nog weet.'
+export const WEET_JE_HET_NOG = 'Weet je het nog?'
+
+
+/* ---------------------------------------------------------------------------
+ * Dezelfde zinnen, maar dan voor de oudste groep.
+ *
+ * "Hoppa! Precies goed." en "Nee joh, niet erg" zijn precies goed voor een vierjarige
+ * en precies verkeerd voor een tienjarige: die hoort er iemand in die hem te jong
+ * inschat, en dan telt het compliment niet meer. Warm blijven, alleen zonder
+ * kleuterstem — geen "hoor", geen "joh", geen "hoppa".
+ *
+ * Alleen de categorieën die wringen krijgen een variant. De lesteksten zelf blijven één
+ * versie: die gaan over het schaken, en daar verandert de leeftijd niets aan. Dat
+ * scheelt ook driemaal inspreken van dertigduizend tekens.
+ * ------------------------------------------------------------------------- */
+
+export const PRIJS_OUDER = [
+  'Goed gezien.',
+  'Klopt precies.',
+  'Ja, die is het.',
+  'Netjes.',
+  'Helemaal goed.',
+] as const
+
+export const PRIJS_LAATSTE_OUDER = [
+  'Alles gevonden. Netjes.',
+  'Compleet, en alles goed.',
+  'Dat was de laatste.',
+] as const
+
+export const BIJNA_OUDER = [
+  'Nog niet. Kijk nog eens.',
+  'Die kan niet. Kijk waar het stuk heen mag.',
+  'Net niet. Probeer een ander veld.',
+] as const
+
+export const AANMOEDIGING_OUDER = ['Rustig kijken.', 'Neem de tijd.', 'Je komt er wel.'] as const
+
+export const STER1_OUDER = ['Eén ster. Nog een keer proberen?'] as const
+export const STER2_OUDER = ['Twee sterren. De volgende les staat open.'] as const
+export const STER3_OUDER = ['Drie sterren, en een sticker erbij.'] as const
+
+export const WERELD_AF_OUDER = [
+  'Deze wereld is uit. Goed bezig.',
+  'Wereld uitgespeeld. Hoefijzer verdiend.',
+] as const
+
+export const WELKOM_TERUG_OUDER = [
+  'Daar ben je weer. Verder waar je gebleven was?',
+  'Welkom terug. Zullen we verder?',
+] as const
+
+export const PARTIJ_VERLOREN_OUDER = [
+  'Deze ging naar de ander. Kijk even terug waar het misging.',
+  'Verloren. Er zaten wel goede zetten bij.',
+] as const
+
+/** Op het spelersscherm: de oudste groep hoeft niet aangemoedigd te worden om makkelijk te beginnen. */
+export const TEGEN_WIE_OUDER = 'Tegen wie wil je spelen?'
+
+/**
+ * De zinnen die bij deze speler horen.
+ *
+ * `ouder` is waar in de schaker-modus (8-10). Bewust een boolean en niet de modus zelf:
+ * de content weet niets van profielen, en dat moet zo blijven.
+ */
+export function pipZinnen(ouder: boolean) {
+  return {
+    PRIJS: ouder ? PRIJS_OUDER : PRIJS,
+    PRIJS_LAATSTE: ouder ? PRIJS_LAATSTE_OUDER : PRIJS_LAATSTE,
+    BIJNA: ouder ? BIJNA_OUDER : BIJNA,
+    AANMOEDIGING: ouder ? AANMOEDIGING_OUDER : AANMOEDIGING,
+    STER1: ouder ? STER1_OUDER : STER1,
+    STER2: ouder ? STER2_OUDER : STER2,
+    STER3: ouder ? STER3_OUDER : STER3,
+    WERELD_AF: ouder ? WERELD_AF_OUDER : WERELD_AF,
+    WELKOM_TERUG: ouder ? WELKOM_TERUG_OUDER : WELKOM_TERUG,
+    PARTIJ_VERLOREN: ouder ? PARTIJ_VERLOREN_OUDER : PARTIJ_VERLOREN,
+  } satisfies Record<string, readonly string[]>
+}
+
+/** Als een minispel na zes rondjes uit is. Zonder deze zin had het spel geen einde. */
+export const SPEL_UIT = 'Alle rondjes gehaald! Wil je er nog een doen?'

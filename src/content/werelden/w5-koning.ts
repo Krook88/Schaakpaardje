@@ -11,6 +11,7 @@ export const wereld5: World = {
   nummer: 5,
   naam: 'Koningskasteel',
   emoji: '🤴',
+  toon: 45,
   belofte: 'De koning is de baas, maar hij loopt langzaam.',
   minLeeftijd: 6,
   minispel: 'koningsloop',
@@ -19,11 +20,19 @@ export const wereld5: World = {
       id: 'koning-1',
       wereldId: 'koning',
       titel: 'Eén stapje tegelijk',
+      icoon: '👣',
       doel: 'Je kind weet dat de koning één veld per zet gaat, alle kanten op.',
+      geleerd: 'Nu weet je hoe de koning loopt: één stapje, alle kanten op.',
       vertel: [
-        'Dit is de koning. Hij is de belangrijkste van allemaal.',
-        'Maar hij is ook een beetje traag: één stapje per zet.',
-        'Wel alle kanten op: recht, schuin, vooruit en achteruit.',
+        'Dit is de koning. Hij is de belangrijkste van allemaal. Waarom, dat leer je later.',
+        // Eerst één enkel veld, dan de hele kring eromheen. Het verschil met de dame —
+        // die dezelfde richtingen heeft maar zo ver als ze wil — zit precies in dat
+        // ene stapje, en dat is hier het enige wat oplicht.
+        { tekst: 'Maar hij is ook een beetje traag: één stapje per zet.', wijs: ['e5'] },
+        {
+          tekst: 'Wel alle kanten op: recht, schuin, vooruit en achteruit.',
+          wijs: ['e5', 'f5', 'f4', 'f3', 'e3', 'd3', 'd4', 'd5'],
+        },
       ],
       vertelFen: '8/8/8/8/4K3/8/8/8',
       meedoen: [
@@ -65,6 +74,20 @@ export const wereld5: World = {
           from: 'd2',
           vraag: 'Tik alle velden van deze koning aan.',
         },
+        {
+          // 🌈 stond zes keer in de app en was zes keer het foute antwoord ("alle
+          // kanten op", "overal", "iedereen"). Een kind dat niet leest, leerde daar
+          // "de regenboog is nooit goed" van in plaats van schaken. Bij de koning ís
+          // alle kanten op het juiste antwoord, dus hier hoort de vraag thuis.
+          kind: 'quiz',
+          vraag: 'Welke kanten op mag de koning?',
+          opties: [
+            { label: 'alle kanten op', emoji: '🌈', goed: true },
+            { label: 'alleen recht', emoji: '➕' },
+            { label: 'alleen schuin', emoji: '↗️' },
+          ],
+          foutTip: 'De koning mag recht én schuin. Alleen niet ver: één stapje.',
+        },
       ],
       themas: ['koning', 'bordvisie'],
     },
@@ -72,14 +95,23 @@ export const wereld5: World = {
       id: 'koning-2',
       wereldId: 'koning',
       titel: 'De koning pakt ook',
+      icoon: '😋',
       doel: 'Je kind slaat met de koning een stuk dat ernaast staat.',
+      geleerd: 'Nu pakt jouw koning zelf een stuk.',
       vertel: [
-        'De koning is niet bang. Staat er een stuk vlak naast hem? Dan pakt hij het.',
-        'Wel alleen op de velden waar hij bij kan. Dus vlak ernaast.',
+        {
+          tekst: 'De koning is niet bang. Staat er een stuk van de tegenstander vlak naast hem? Dan mag hij het pakken.',
+          wijs: ['d5'],
+        },
+        // De hele kring om de koning heen, zodat "vlak ernaast" een vorm krijgt.
+        {
+          tekst: 'Wel alleen op de velden waar hij bij kan. Dus vlak ernaast.',
+          wijs: ['d5', 'e5', 'e4', 'e3', 'd3', 'c3'],
+        },
+        // De eigen pion licht níet op. Dat is de zin, zonder woorden.
         'En zijn eigen stukken laat hij natuurlijk staan.',
       ],
       vertelFen: '8/8/8/3p4/2PK4/8/8/8',
-      vertelWijs: ['d5'],
       meedoen: [
         {
           kind: 'move',
@@ -108,7 +140,7 @@ export const wereld5: World = {
           kind: 'captureAll',
           fen: '8/8/8/8/8/1p6/1K6/8',
           from: 'b2',
-          vraag: 'Pak deze pion op.',
+          vraag: 'Pak deze pion met je koning.',
         },
         {
           kind: 'quiz',
@@ -126,10 +158,16 @@ export const wereld5: World = {
       id: 'koning-3',
       wereldId: 'koning',
       titel: 'Koningen blijven van elkaar af',
+      icoon: '↔️',
       doel: 'Je kind weet dat twee koningen nooit naast elkaar mogen staan.',
+      geleerd: 'Nu weet je dat twee koningen altijd een veld tussen zich houden.',
       vertel: [
         'Nog één regel over de koning. Een grappige.',
-        'Twee koningen mogen nooit naast elkaar staan. Er blijft altijd een veld tussen.',
+        // Het veld tússen de twee koningen licht op: dat is waar het om gaat.
+        {
+          tekst: 'Twee koningen mogen nooit naast elkaar staan. Er blijft altijd een veld tussen.',
+          wijs: ['d4'],
+        },
         'Ze kunnen elkaar dus nooit pakken. Handig om te weten.',
       ],
       vertelFen: '8/8/8/3k4/8/3K4/8/8',
@@ -139,7 +177,7 @@ export const wereld5: World = {
           vraag: 'Mag de witte koning naast de zwarte koning gaan staan?',
           opties: [
             { label: 'nee', emoji: '🚫', goed: true },
-            { label: 'ja', emoji: '✅' },
+            { label: 'ja', emoji: '🤝' },
           ],
           foutTip: 'Er blijft altijd minstens één veld tussen de twee koningen.',
         },
@@ -158,7 +196,7 @@ export const wereld5: World = {
           vraag: 'Kan een koning een andere koning slaan?',
           opties: [
             { label: 'nee, nooit', emoji: '🚫', goed: true },
-            { label: 'ja, dan win je', emoji: '🏆' },
+            { label: 'ja, dan win je', emoji: '👑' },
           ],
         },
       ],

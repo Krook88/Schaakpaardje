@@ -5,14 +5,28 @@
  * verkeerd overgetypte stelling is precies het soort fout dat je pas ontdekt als een
  * kind vastloopt. Geen enkele opgave komt in main als hij hier niet doorheen komt.
  */
-import { parseBoard, pieceMoves, type Square } from '@/engine/board'
+import {
+  aanvallersVan,
+  bedreigdeStukken,
+  parseBoard,
+  pieceMoves,
+  veiligeVelden,
+  PIECE_VALUE,
+  type BoardMap,
+  type Color,
+  type Square,
+} from '@/engine/board'
+import { Game } from '@/engine/game'
+import { goedeZetten } from '@/lesson/runner'
 import { geldigVeld, korstePad, slaAllesOp } from '@/engine/puzzels'
 import { WERELDEN } from './index'
+import { MINISPEL_ZINNEN } from '@/play/minispellen'
+import { alleOpgaven, vertelTekst, vertelWijzers } from './types'
 import type { Exercise, Lesson, World } from './types'
 
 export type Bevinding = { waar: string; probleem: string }
 
-function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
+export function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
   const uit: Bevinding[] = []
   const fout = (probleem: string) => uit.push({ waar, probleem })
 
@@ -36,6 +50,68 @@ function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
     case 'tapSquares': {
       if (!o.correct.length) fout('geen goede velden opgegeven')
       for (const sq of o.correct) if (!geldigVeld(sq)) fout(`onbekend veld ${sq}`)
+      // Een foutTip mag niets beweren over het veld dat het kind aantikte: welk veld
+      // dat was weet de content niet. "Die is licht" klopt alleen als het kind
+      // toevallig een licht veld koos, en is anders ronduit onwaar — een kind leert
+      // dan dat een groen veld licht is. Beschrijf waar het naar op zoek moet.
+      if (o.foutTip && /\b(die|dat|deze)\s+(is|zijn)\s+\w/i.test(o.foutTip)) {
+        fout(`de foutTip beweert iets over het aangetikte veld: "${o.foutTip}"`)
+      }
+      // Een hele lijn of rij op een leeg bord: welke wordt bedoeld?
+      //
+      // Hier zat een echte fout in. "Nu een lijn: tik alles aan van beneden naar boven"
+      // accepteerde alleen de e-lijn, terwijl alle acht goed zijn — een kind dat de
+      // c-lijn koos kreeg acht kruisjes voor een goed antwoord, zonder enige manier om
+      // te weten welke lijn bedoeld was: de vraag zegt het niet en het kind leest niet.
+      // Dus: of elke lijn is goed (varianten), of er licht er eentje op (wijs), of er
+      // staat een stuk op het bord dat hem aanwijst.
+      if (!o.varianten && !o.wijs?.length && o.correct.length === 8) {
+        const eenLijn = new Set(o.correct.map((sq) => sq[0])).size === 1
+        const eenRij = new Set(o.correct.map((sq) => sq[1])).size === 1
+        if ((eenLijn || eenRij) && !Object.keys(parseBoard(o.fen)).length) {
+          fout('een hele lijn of rij op een leeg bord, zonder varianten of een veld dat oplicht: het kind kan niet weten welke bedoeld wordt')
+        }
+      }
+      for (const sq of o.wijs ?? []) {
+        if (!geldigVeld(sq)) fout(`onbekend veld in wijs: ${sq}`)
+        else if (!o.correct.includes(sq) && !(o.varianten ?? []).some((v) => v.includes(sq))) {
+          // Een gegeven dat niet in het antwoord zit wijst het kind de verkeerde kant op.
+          fout(`het veld ${sq} licht op maar hoort niet bij het antwoord`)
+        }
+      }
+      if (o.varianten) {
+        if (o.varianten.length < 2) fout('varianten met minder dan twee antwoorden is geen keuze')
+        const eerste = [...o.correct].sort().join(' ')
+        const gezien = new Set<string>()
+        o.varianten.forEach((variant, i) => {
+          for (const sq of variant) if (!geldigVeld(sq)) fout(`onbekend veld ${sq} in variant ${i + 1}`)
+          // Even groot, anders klopt "3 van de 8 gevonden" niet meer zodra het kind
+          // een ander antwoord kiest dan het eerste.
+          if (variant.length !== o.correct.length) {
+            fout(`variant ${i + 1} heeft ${variant.length} velden, het antwoord ${o.correct.length}`)
+          }
+          const sleutel = [...variant].sort().join(' ')
+          if (gezien.has(sleutel)) fout(`variant ${i + 1} staat er twee keer in`)
+          gezien.add(sleutel)
+        })
+        if (!gezien.has(eerste)) fout('het antwoord in correct staat niet tussen de varianten')
+        if (o.bedoeling) fout('varianten en een bedoeling gaan niet samen: de bedoeling rekent één antwoord uit')
+      }
+      if (o.bedoeling) {
+        const verwacht = tapAntwoord(parseBoard(o.fen), o.bedoeling)
+        const verschil = vergelijk(o.correct, verwacht)
+        if (verschil) fout(`het antwoord klopt niet met de stelling: ${verschil}`)
+        // Tweede motor erbij halen: zie schaakVolgensRegels.
+        if (o.bedoeling.soort === 'schaak' || o.bedoeling.soort === 'geenSchaak') {
+          const hoort = o.bedoeling.soort === 'schaak'
+          for (const sq of o.correct) {
+            const volgensRegels = schaakVolgensRegels(o.fen, sq)
+            if (volgensRegels !== null && volgensRegels !== hoort) {
+              fout(`chess.js zegt iets anders over ${sq}: schaak=${volgensRegels}`)
+            }
+          }
+        }
+      }
       break
     }
     case 'move': {
@@ -48,6 +124,11 @@ function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
       for (const doel of o.goed) {
         if (!geldigVeld(doel)) fout(`onbekend veld ${doel}`)
         else if (!mogelijk.includes(doel)) fout(`${from} kan niet naar ${doel}`)
+      }
+      if (o.bedoeling) {
+        const verwacht = zetAntwoord(board, from, o.bedoeling)
+        const verschil = vergelijk(o.goed, verwacht)
+        if (verschil) fout(`het antwoord klopt niet met de stelling: ${verschil}`)
       }
       break
     }
@@ -73,14 +154,164 @@ function controleerOpgave(waar: string, o: Exercise): Bevinding[] {
       if (!oplossing) fout('deze opgave is niet op te lossen')
       break
     }
+    case 'regelZet': {
+      let game: Game
+      try {
+        game = new Game(o.fen)
+      } catch (e) {
+        return [{ waar, probleem: `chess.js weigert deze stelling: ${(e as Error).message}` }]
+      }
+      const status = game.status()
+      if (status.over) {
+        fout(`de partij is hier al afgelopen (${status.reason}), dus er valt niets te zetten`)
+        break
+      }
+      if (o.eis === 'uitSchaak' && !status.check) {
+        fout('de eis is uit schaak gaan, maar er staat helemaal geen schaak')
+      }
+      if (o.eis === 'rokeer' && !game.legalMoves().some((z) => z.san.startsWith('O-O'))) {
+        fout('rokeren kan hier helemaal niet')
+      }
+      if (o.eis !== 'uitSchaak' && status.check) {
+        fout('de speler staat zelf schaak; dan gaat de opgave over iets anders')
+      }
+      // chess.js kijkt alleen naar wie er aan zet is. Dat de ánder al schaak staat,
+      // laat het door, terwijl zo'n stelling in geen partij kan bestaan: die had zijn
+      // koning de zet ervoor in schaak laten staan. Twee keer in de matles gebeurd,
+      // en geen controle die het zag.
+      const [plaatsing, aanZet] = o.fen.split(' ')
+      let anderStaatSchaak = false
+      try {
+        anderStaatSchaak = new Game(`${plaatsing} ${aanZet === 'b' ? 'w' : 'b'} - - 0 1`).inCheck
+      } catch {
+        // Kan chess.js de stelling met de andere kant aan zet niet lezen, dan heeft
+        // de eerste poging hierboven het al gemeld.
+      }
+      if (anderStaatSchaak) {
+        fout('de partij die niet aan zet is staat al schaak; zo\'n stelling kan in geen partij bestaan')
+      }
+      const opties = goedeZetten(game, o.eis)
+      if (!opties.length) fout(`geen enkele zet voldoet aan de eis '${o.eis}'`)
+      if (o.eis === 'geefSchaak' && opties.length === game.legalMoves().length) {
+        fout('elke zet geeft schaak; dan valt er niets te zoeken')
+      }
+      break
+    }
     case 'quiz': {
       if (o.opties.length < 2) fout('een quiz heeft minstens twee opties nodig')
       const goede = o.opties.filter((op) => op.goed).length
       if (goede !== 1) fout(`quiz heeft ${goede} goede antwoorden, dat moet er precies één zijn`)
+      // Een kind van vier leest de labels niet: het kiest op het plaatje. Dus moet
+      // elke optie er eentje hebben, en moeten ze binnen één vraag van elkaar
+      // verschillen — drie keer 🔢 naast elkaar is voor een niet-lezer geen keuze.
+      const beeldVan = (op: (typeof o.opties)[number]) => op.emoji ?? (op.veld ? `veld:${op.veld}` : undefined)
+      const zonder = o.opties.filter((op) => !beeldVan(op)).length
+      if (zonder) fout(`${zonder} van de ${o.opties.length} opties hebben geen plaatje`)
+      const beelden = o.opties.map(beeldVan).filter(Boolean)
+      const dubbel = beelden.filter((e, i) => beelden.indexOf(e) !== i)
+      if (dubbel.length) fout(`opties delen hetzelfde plaatje: ${[...new Set(dubbel)].join(' ')}`)
       break
     }
   }
   return uit
+}
+
+/** Wat het antwoord op een tik-opgave hoort te zijn, uitgerekend uit de stelling zelf. */
+function tapAntwoord(board: BoardMap, bedoeling: NonNullable<Extract<Exercise, { kind: 'tapSquares' }>['bedoeling']>): Square[] {
+  const stukken = Object.entries(board)
+  switch (bedoeling.soort) {
+    case 'stuk':
+      return stukken
+        .filter(([, p]) => p.type === bedoeling.type && (!bedoeling.kleur || p.color === bedoeling.kleur))
+        .map(([sq]) => sq)
+    case 'waarde':
+      return stukken
+        .filter(([, p]) => PIECE_VALUE[p.type] === bedoeling.waarde && (!bedoeling.kleur || p.color === bedoeling.kleur))
+        .map(([sq]) => sq)
+    case 'bedreigd':
+      return bedreigdeStukken(board, bedoeling.kleur)
+    case 'buurvelden': {
+      const f = 'abcdefgh'.indexOf(bedoeling.van[0])
+      const r = Number(bedoeling.van[1])
+      const rondom: Square[] = []
+      for (const df of [-1, 0, 1]) {
+        for (const dr of [-1, 0, 1]) {
+          if (!df && !dr) continue
+          const nf = f + df
+          const nr = r + dr
+          if (nf < 0 || nf > 7 || nr < 1 || nr > 8) continue
+          rondom.push(`${'abcdefgh'[nf]}${nr}`)
+        }
+      }
+      const filter = bedoeling.filter ?? 'alles'
+      return rondom.filter((sq) => {
+        const stuk = board[sq]
+        if (filter === 'bezet') return Boolean(stuk) && (!bedoeling.kleur || stuk.color === bedoeling.kleur)
+        if (filter === 'leeg') return !stuk
+        return true
+      })
+    }
+    case 'schaak':
+    case 'geenSchaak': {
+      const koningen = stukken.filter(([, p]) => p.type === 'k')
+      return koningen
+        .filter(([sq, p]) => {
+          const onderVuur = aanvallersVan(board, sq, p.color === 'w' ? 'b' : 'w').length > 0
+          return bedoeling.soort === 'schaak' ? onderVuur : !onderVuur
+        })
+        .map(([sq]) => sq)
+    }
+  }
+}
+
+/**
+ * Kruiscontrole op schaak: dezelfde vraag nog eens, maar dan door chess.js.
+ *
+ * tapAntwoord rekent meetkundig, en die motor kent geen beurt en geen legaliteit — een
+ * stelling waarin beide koningen schaak staan komt er ongehinderd doorheen. Dit is de
+ * enige plek in de contentcontrole waar de twee motoren hetzelfde moeten zeggen; zeggen
+ * ze iets anders, dan deugt de stelling niet en niet het antwoord.
+ */
+function schaakVolgensRegels(fen: string, veld: Square): boolean | null {
+  const kleur = parseBoard(fen)[veld]?.color
+  if (!kleur) return null
+  try {
+    // De koning die we onderzoeken aan zet zetten: inCheck geldt altijd voor de beurt.
+    const game = new Game(`${fen.split(' ')[0]} ${kleur} - - 0 1`)
+    return game.inCheck
+  } catch {
+    // chess.js weigert de stelling (geen twee koningen, pion op de eindrij, ...).
+    // Dat is zelf een bevinding, maar niet eentje die deze functie kan melden.
+    return null
+  }
+}
+
+/** Wat de goede zet(ten) horen te zijn, uitgerekend uit de stelling zelf. */
+function zetAntwoord(board: BoardMap, from: Square, bedoeling: 'veilig' | 'duurste' | 'aanvaller'): Square[] {
+  const kleur: Color = board[from]?.color ?? 'w'
+  const vijand: Color = kleur === 'w' ? 'b' : 'w'
+  if (bedoeling === 'veilig') return veiligeVelden(board, from)
+  if (bedoeling === 'aanvaller') {
+    const aanvallers = aanvallersVan(board, from, vijand)
+    return aanvallers.filter((sq) => pieceMoves(board, from).captures.includes(sq))
+  }
+  const slag = pieceMoves(board, from).captures
+  if (!slag.length) return []
+  const hoogste = Math.max(...slag.map((sq) => PIECE_VALUE[board[sq].type]))
+  return slag.filter((sq) => PIECE_VALUE[board[sq].type] === hoogste)
+}
+
+/** Beschrijft het verschil tussen twee verzamelingen velden, of niets als ze gelijk zijn. */
+function vergelijk(gegeven: Square[], verwacht: Square[]): string | null {
+  const a = [...new Set(gegeven)].sort()
+  const b = [...new Set(verwacht)].sort()
+  if (a.join(' ') === b.join(' ')) return null
+  const teveel = a.filter((sq) => !b.includes(sq))
+  const tekort = b.filter((sq) => !a.includes(sq))
+  const delen = []
+  if (teveel.length) delen.push(`hoort er niet bij: ${teveel.join(' ')}`)
+  if (tekort.length) delen.push(`ontbreekt: ${tekort.join(' ')}`)
+  return delen.join('; ')
 }
 
 function controleerLes(les: Lesson, wereld: World): Bevinding[] {
@@ -88,6 +319,16 @@ function controleerLes(les: Lesson, wereld: World): Bevinding[] {
   const waar = `${wereld.naam} / ${les.titel}`
   if (les.wereldId !== wereld.id) uit.push({ waar, probleem: 'les hoort bij een andere wereld' })
   if (!les.vertel.length) uit.push({ waar, probleem: 'Pip vertelt niets in de kijkfase' })
+  les.vertel.forEach((z, i) => {
+    if (!vertelTekst(z).trim()) uit.push({ waar, probleem: `vertelzin ${i + 1} is leeg` })
+    const wijzers = vertelWijzers(z)
+    for (const sq of wijzers) {
+      if (!geldigVeld(sq)) uit.push({ waar, probleem: `onbekend veld in vertelzin ${i + 1}: ${sq}` })
+    }
+    if (new Set(wijzers).size !== wijzers.length) {
+      uit.push({ waar, probleem: `vertelzin ${i + 1} wijst een veld twee keer aan` })
+    }
+  })
   if (!les.doel.trim()) uit.push({ waar, probleem: 'geen leerdoel voor het ouderscherm' })
   for (const [fase, opgaven] of [
     ['meedoen', les.meedoen],
@@ -115,8 +356,125 @@ function controleerLes(les: Lesson, wereld: World): Bevinding[] {
   return uit
 }
 
+/**
+ * Welke wereld een stuk introduceert. De sleutel is de wereld-id uit de content zelf,
+ * dus dit blijft kloppen als de volgorde ooit verandert.
+ */
+const STUK_WERELD: Record<string, string> = {
+  toren: 'toren',
+  loper: 'loper',
+  dame: 'dame',
+  paard: 'paard',
+  koning: 'koning',
+  pion: 'pion',
+}
+
+/** Alle vormen waarin een stuk in een zin kan opduiken. */
+const STUK_WOORDEN: Record<string, RegExp> = {
+  toren: /\btorens?\b/i,
+  loper: /\blopers?\b/i,
+  dame: /\bdames?\b/i,
+  paard: /\bpaard(en|je|jes)?\b/i,
+  koning: /\bkoningen?\b/i,
+  pion: /\bpionn?(en|etje|etjes)?\b/i,
+}
+
+/**
+ * Noemt een opgave een stuk dat het kind nog nooit heeft gezien?
+ *
+ * Dit was een echte fout, en een die niemand ving. In "Wit rechtsonder" — de derde
+ * les van wereld nul — werd gevraagd om "de twee witte torens" en om de paarden.
+ * De toren wordt pas in wereld 1 uitgelegd en het paard pas in wereld 4, dus voor een
+ * kind dat netjes bij het begin begint vielen die namen uit de lucht. Het zag een vol
+ * bord, hoorde een woord dat het nooit geleerd had, en kon niets.
+ *
+ * Alle achtenveertig lessen en alle tests kwamen er ongehinderd doorheen: de stelling
+ * klopte, de velden bestonden, het antwoord was juist. Alleen de vólgorde van het
+ * onderwijs deugde niet, en daar keek niets naar.
+ *
+ * De uitzondering is belangrijk: Pip mag een stuk best eerder noemen, als hij het in
+ * diezelfde les ook introduceert. Precies dat is de oplossing die weide-3 nu gebruikt —
+ * hij wijst de stukken eerst aan terwijl hij ze noemt. Wat niet mag, is een naam in een
+ * opgave die nergens in de les is uitgelegd.
+ */
+/**
+ * Noemt Pip dit stuk in de vertelfase én wijst hij het daarbij aan?
+ *
+ * Alleen zeggen is niet genoeg. Voor een kind dat niet leest is een naam zonder een
+ * vinger erbij geen introductie maar een klank.
+ */
+function verteldMetWijzer(les: Lesson, patroon: RegExp): boolean {
+  return les.vertel.some((zin) => patroon.test(vertelTekst(zin)) && vertelWijzers(zin).length > 0)
+}
+
+function vroegGenoemd(): { hard: Bevinding[]; zacht: string[] } {
+  const hard: Bevinding[] = []
+  const zacht: string[] = []
+  const wereldIndex = new Map(WERELDEN.map((w, i) => [w.id, i]))
+
+  for (const [i, wereld] of WERELDEN.entries()) {
+    for (const les of wereld.lessen) {
+      for (const opgave of alleOpgaven(les)) {
+        const vraag = 'vraag' in opgave ? opgave.vraag : ''
+        if (!vraag) continue
+        for (const [stuk, patroon] of Object.entries(STUK_WOORDEN)) {
+          if (!patroon.test(vraag)) continue
+          const thuis = wereldIndex.get(STUK_WERELD[stuk])
+          if (thuis === undefined || i >= thuis) continue
+          // Pip introduceert het stuk zelf in deze les: dan mag het — maar dan moet hij
+          // het ook echt aanwíjzen.
+          //
+          // De eerste versie van deze regel eiste alleen dat het woord ergens in de les
+          // viel. Dat keurde de les goed waar een kind alsnog op vastliep: Pip noemde
+          // "de dame" één keer in de kijkfase, en drie schermen later in "zelf doen"
+          // had het kind daar niets meer aan. Een regel die met een losse vermelding
+          // tevreden is, lijkt streng en is het niet.
+          if (verteldMetWijzer(les, patroon)) continue
+          const waar = `${wereld.naam} / ${les.titel}`
+          const uitleg = `"${stuk}" wordt pas uitgelegd in ${WERELDEN[thuis].naam}`
+          if (opgave.kind === 'tapSquares') {
+            hard.push({
+              waar,
+              probleem:
+                `de opgave vraagt het kind een ${stuk} aan te wijzen, maar ${uitleg}. ` +
+                `De naam ís hier de opdracht, dus zonder die naam kan het kind niets. ` +
+                `Laat Pip het stuk in deze les eerst aanwijzen (met \`wijs\` in de ` +
+                `vertelfase), of vraag ernaar zonder de naam te gebruiken.`,
+            })
+          } else {
+            zacht.push(`${waar}: ${uitleg}: "${vraag}"`)
+          }
+        }
+      }
+    }
+  }
+  return { hard, zacht }
+}
+
+/**
+ * Stukken die genoemd worden vóór hun eigen wereld, maar niet blokkerend zijn.
+ *
+ * Het onderscheid zit in de vraag of de naam de opdracht ís. "Tik de twee witte torens
+ * aan" kan een kind niet zonder te weten wat een toren is: dat is blokkerend, en het
+ * was ook de echte fout die dit vond. Maar "Pak de zwarte pion die boven de toren
+ * staat" in Torenburcht is iets anders — daar speel je met de toren die je net geleerd
+ * hebt, en de pion is het doelwit, aangewezen met een plek en een kleur. Je kunt niet
+ * leren slaan zonder iets om te slaan.
+ *
+ * Die tweede soort wordt dus geteld en getoond, niet geweigerd. Wie de content schrijft
+ * kan er zelf naar kijken; de contentcontrole gaat er niet over oordelen waar hij het
+ * niet zeker weet.
+ */
+export function stukkenVroegGenoemd(): string[] {
+  return vroegGenoemd().zacht
+}
+
+function controleerVolgorde(): Bevinding[] {
+  return vroegGenoemd().hard
+}
+
 export function controleerContent(): Bevinding[] {
-  const uit: Bevinding[] = []
+  const uit: Bevinding[] = [...controleerVolgorde()]
   const lesIds = new Set<string>()
   const wereldIds = new Set<string>()
 
@@ -124,6 +482,13 @@ export function controleerContent(): Bevinding[] {
     if (wereldIds.has(wereld.id)) uit.push({ waar: wereld.naam, probleem: 'dubbele wereld-id' })
     wereldIds.add(wereld.id)
     if (!wereld.lessen.length) uit.push({ waar: wereld.naam, probleem: 'wereld zonder lessen' })
+    // Twee lessen in dezelfde wereld met hetzelfde beeld zijn op de kaart niet uit
+    // elkaar te houden voor een kind dat de titels niet leest.
+    const iconen = wereld.lessen.map((l) => l.icoon)
+    const dubbel = iconen.filter((e, i) => iconen.indexOf(e) !== i)
+    if (dubbel.length) {
+      uit.push({ waar: wereld.naam, probleem: `lessen delen een icoon: ${[...new Set(dubbel)].join(' ')}` })
+    }
     for (const les of wereld.lessen) {
       if (lesIds.has(les.id)) uit.push({ waar: les.titel, probleem: `dubbele les-id ${les.id}` })
       lesIds.add(les.id)
@@ -133,13 +498,49 @@ export function controleerContent(): Bevinding[] {
   return uit
 }
 
-/** Alle zinnen die ingesproken moeten worden. Gebruikt door scripts/tts-render.ts. */
+/**
+ * Opgaven waarvan het antwoord met de hand is ingetypt.
+ *
+ * `bedoeling` is optioneel, en dat is met opzet: lang niet elk antwoord volgt uit de
+ * stelling. Maar zolang overslaan onzichtbaar is, glipt de volgende fout er net zo
+ * makkelijk doorheen als de negen die de contentcontrole bij wereld 0 tot en met 6
+ * vond. Dus tellen we ze, en zetten we het getal onder elke controle.
+ */
+export function nietNagerekend(): string[] {
+  const uit: string[] = []
+  for (const wereld of WERELDEN) {
+    for (const les of wereld.lessen) {
+      for (const [fase, lijst] of [
+        ['meedoen', les.meedoen],
+        ['zelf', les.zelf],
+        ['toets', les.toets],
+      ] as const) {
+        lijst.forEach((o, i) => {
+          if ((o.kind === 'tapSquares' || o.kind === 'move') && !o.bedoeling) {
+            uit.push(`${les.id}/${fase}[${i}] (${o.kind})`)
+          }
+        })
+      }
+    }
+  }
+  return uit
+}
+
+/**
+ * Alle zinnen die ingesproken moeten worden. Gebruikt door scripts/tts-render.ts.
+ *
+ * De minispellen horen er nadrukkelijk bij. Ze staan in `src/play` en niet in een
+ * wereld, en vielen daardoor buiten deze functie — met als gevolg dat alle vijftien
+ * spellen de apparaatstem gebruikten in plaats van die van Pip. Dat is een laag door
+ * elkaar heen, maar deze functie is de énige plek die antwoord geeft op "wat spreekt
+ * Pip in", en dan moet daar ook echt alles in staan.
+ */
 export function alleZinnen(): string[] {
-  const zinnen = new Set<string>()
+  const zinnen = new Set<string>(MINISPEL_ZINNEN)
   for (const wereld of WERELDEN) {
     zinnen.add(wereld.belofte)
     for (const les of wereld.lessen) {
-      les.vertel.forEach((z) => zinnen.add(z))
+      les.vertel.forEach((z) => zinnen.add(vertelTekst(z)))
       for (const o of [...les.meedoen, ...les.zelf, ...les.toets]) {
         if ('vraag' in o) zinnen.add(o.vraag)
         if ('foutTip' in o && o.foutTip) zinnen.add(o.foutTip)

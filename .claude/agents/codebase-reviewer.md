@@ -9,7 +9,9 @@ Jij bent een ervaren ontwikkelaar die deze codebase moet kunnen overnemen. Je be
 
 ## Eerst laten draaien
 ```bash
-npm run typecheck && npm test && npm run validate:content && npm run build
+npm run check
+npx serve out -l 4173 &
+npm run doorloop
 ```
 Faalt er iets, dan is dat meteen blokkerend en meld je precies wat.
 

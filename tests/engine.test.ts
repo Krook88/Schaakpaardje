@@ -9,6 +9,7 @@ import {
 } from '@/engine/board'
 import { Game, materialBalance } from '@/engine/game'
 import { BOTS, KidBot } from '@/engine/bots'
+import { waardeer, zoek } from '@/engine/zoeker'
 
 const LEEG = '8/8/8/8/8/8/8/8'
 
@@ -152,7 +153,9 @@ describe('echte partijen (chess.js)', () => {
 
 describe('de bots', () => {
   it('spelen alleen legale zetten en maken een partij af', () => {
-    for (const bot of BOTS) {
+    // Alleen de eenvoudige bots: die spelen instant. De zoekende bots hebben hun
+    // eigen, kortere test verderop — een hele partij op zoekdiepte 3 duurt minuten.
+    for (const bot of BOTS.filter((b) => ['mila', 'kiki', 'rens'].includes(b.id))) {
       const g = new Game()
       let zetten = 0
       while (!g.status().over && zetten < 120) {
@@ -186,5 +189,61 @@ describe('de bots', () => {
         expect(g.move(zet!.from, zet!.to)).not.toBeNull()
       }
     }
+  })
+})
+
+describe('de zoeker', () => {
+  it('waardeert de beginstelling als gelijk', () => {
+    expect(waardeer(new Game().fen)).toBe(0)
+  })
+
+  it('vindt mat in één', () => {
+    expect(zoek(new Game('7k/5ppp/8/8/8/8/8/R5K1 w - - 0 1'), 3).zet).toEqual({
+      from: 'a1',
+      to: 'a8',
+    })
+  })
+
+  it('pakt een stuk dat gratis staat', () => {
+    expect(zoek(new Game('4k3/8/3q4/8/8/8/8/3RK3 w - - 0 1'), 2).zet).toEqual({
+      from: 'd1',
+      to: 'd6',
+    })
+  })
+
+  it('geeft zijn dame niet zomaar weg', () => {
+    // Wit kan met de dame een pion slaan, maar dan staat zij te pakken voor de toren.
+    const zet = zoek(new Game('3rk3/8/8/8/8/3p4/8/3QK3 w - - 0 1'), 2).zet
+    expect(zet).not.toEqual({ from: 'd1', to: 'd3' })
+  })
+
+  it('blijft binnen zijn knopenbudget', () => {
+    const r = zoek(new Game('r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1'), 3, 500)
+    expect(r.knopen).toBeLessThan(1200)
+    expect(r.zet).not.toBeNull()
+  })
+
+  it('de sterkere bots spelen legale zetten', () => {
+    // Zes zetten per bot is genoeg om te zien dat er niets illegaals uit komt. Een
+    // hele partij op zoekdiepte 3 kost minuten, en die tijd is een testronde niet waard;
+    // dat de zoeker goede zetten kiest, staat in de tests hierboven.
+    for (const id of ['bas', 'fien', 'oscar', 'bram']) {
+      const bot = BOTS.find((b) => b.id === id)!
+      const g = new Game()
+      let zetten = 0
+      while (!g.status().over && zetten < 6) {
+        const zet = bot.kies(g, Math.random)
+        expect(zet, `${bot.naam} vond geen zet`).not.toBeNull()
+        expect(g.move(zet!.from, zet!.to), `${bot.naam} speelde iets illegaals`).not.toBeNull()
+        zetten++
+      }
+      expect(zetten).toBe(6)
+    }
+  }, 60000)
+
+  it('de ladder loopt op in speelsterkte', () => {
+    const elos = BOTS.map((b) => b.elo).filter((e): e is number => e !== null)
+    expect(elos).toEqual([...elos].sort((a, b) => a - b))
+    expect(BOTS).toHaveLength(7)
   })
 })

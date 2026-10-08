@@ -1,0 +1,34 @@
+.rij {
+  letter-spacing: 2px;
+  line-height: 1;
+  display: inline-flex;
+  gap: 2px;
+}
+
+/* Op de kaart en in het minispel staan de sterren er gewoon. Op het beloningsscherm
+   komen ze één voor één binnenvliegen: dat is het moment waar een kind een hele les
+   voor heeft gewerkt, en dat mag je niet stilzwijgend voorbij laten gaan. */
+.vier .ster {
+  animation: sterIn 0.5s cubic-bezier(0.18, 1.4, 0.4, 1) backwards;
+}
+.vier .ster:nth-child(1) { animation-delay: 0.15s; }
+.vier .ster:nth-child(2) { animation-delay: 0.45s; }
+.vier .ster:nth-child(3) { animation-delay: 0.75s; }
+
+@keyframes sterIn {
+  0% { transform: scale(0) rotate(-140deg); opacity: 0; }
+  70% { transform: scale(1.25) rotate(8deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.ster {
+  display: inline-block;
+  transform-origin: center;
+}
+
+/* Zonder animatie moet het eindbeeld gewoon kloppen: sterren zichtbaar, niets halverwege. */
+@media (prefers-reduced-motion: reduce) {
+  .vier .ster {
+    animation: none;
+  }
+}

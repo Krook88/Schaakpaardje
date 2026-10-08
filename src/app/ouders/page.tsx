@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Kop } from '@/ui/Kop'
 import { Sterren } from '@/ui/Sterren'
+import { KOFFIE } from '@/seo'
 import { WERELDEN } from '@/content'
 import {
   useGespeeld,
@@ -11,7 +12,9 @@ import {
   useProfiel,
   useProfielStore,
   useVoortgang,
+  modusVoorLeeftijd,
   type Instellingen,
+  type Modus,
 } from '@/progress/store'
 
 /**
@@ -19,17 +22,70 @@ import {
  * voorkomt dat een kind per ongeluk instellingen omzet, en het is wat Apple en Google
  * van een kinder-app verwachten.
  */
+const MODI: { id: Modus; naam: string; uitleg: string }[] = [
+  {
+    id: 'pip',
+    naam: 'Pip · 3-5',
+    uitleg:
+      'Begint bij de eerste les en werkt het pad af. Drie tegenstanders in beeld, Pip praat rustig en waarschuwt voor een blunder.',
+  },
+  {
+    id: 'ontdekker',
+    naam: 'Ontdekker · 6-8',
+    uitleg:
+      'De Weide, Torenburcht en Loperbos staan meteen open, dus wachten hoeft niet. Vijf tegenstanders in beeld.',
+  },
+  {
+    id: 'schaker',
+    naam: 'Schaker · 8-10',
+    uitleg:
+      'Alle werelden tot en met Waardevallei staan meteen open. Alle tegenstanders in beeld, velden krijgen hun naam (a1, e4), geen blunderwaarschuwing, en Pip praat wat volwassener.',
+  },
+]
+
+type Som = { a: number; b: number; antwoord: number }
+
+/**
+ * De som voor het rekenslot.
+ *
+ * Twee cijfers maal één, en met opzet geen tafeltjessom: 6 × 7 lost een kind van negen
+ * zo op, en dan is de drempel er niet meer. Twee cijfers maal één leert een kind pas op
+ * de basisschool in groep zes of zeven, en dan nog op papier.
+ *
+ * Wat wél is bijgesteld: de eenheden botsen niet meer. 32 × 9 vraagt onthouden en
+ * overdragen — dat is voor een ouder geen drempel maar een klusje, en dat was precies
+ * de klacht. Nu is het cijfer achter de tien altijd zo klein dat er niets overloopt:
+ * 31 × 9 splits je in 270 en 9 en ben je klaar. Voor een kind dat de bewerking niet
+ * kent verandert er niets — die kan hem sowieso niet.
+ *
+ * En als het toch een keer tegenzit, is er de knop "Andere som".
+ */
+function nieuweSom(): Som {
+  const b = 3 + Math.floor(Math.random() * 7)
+  // Eenheden die met b vermenigvuldigd onder de tien blijven, dus zonder overdracht.
+  const eenheid = 1 + Math.floor(Math.random() * Math.floor(9 / b))
+  // Vanaf twintig: 11 × 7 is voor een kind van negen nog wel te doen, 41 × 7 niet.
+  const tiental = 2 + Math.floor(Math.random() * 4)
+  const a = tiental * 10 + eenheid
+  return { a, b, antwoord: a * b }
+}
+
 export default function Ouders() {
   const [open, setOpen] = useState(false)
   // De som wordt pas in de browser gekozen: willekeur tijdens het prerenderen geeft
   // een hydratieverschil.
-  const [som, setSom] = useState<{ a: number; b: number; antwoord: number } | null>(null)
-  useEffect(() => {
-    const a = 3 + Math.floor(Math.random() * 6)
-    const b = 2 + Math.floor(Math.random() * 7)
-    setSom({ a, b, antwoord: a * b })
-  }, [])
+  const [som, setSom] = useState<Som | null>(null)
+  useEffect(() => setSom(nieuweSom()), [])
   const [invoer, setInvoer] = useState('')
+  const [misgelukt, setMisgelukt] = useState(false)
+
+  /** Een andere som, en met een schone lei. */
+  const andereSom = () => {
+    setSom(nieuweSom())
+    setInvoer('')
+    setMisgelukt(false)
+    document.getElementById('rekenslot')?.focus()
+  }
 
   if (!open) {
     if (!som) return <main className="page" />
@@ -40,22 +96,46 @@ export default function Ouders() {
           <h2>Even voor de grote mensen</h2>
           <p className="muted">Hoeveel is {som.a} × {som.b}?</p>
           <input
+            id="rekenslot"
             inputMode="numeric"
             value={invoer}
-            onChange={(e) => setInvoer(e.target.value)}
+            onChange={(e) => {
+              setInvoer(e.target.value)
+              setMisgelukt(false)
+            }}
             aria-label={`Hoeveel is ${som.a} maal ${som.b}`}
+            aria-invalid={misgelukt}
             style={{
               font: 'inherit', padding: '14px 16px', borderRadius: 12, minHeight: 56,
-              border: '2px solid var(--line)', background: 'var(--surface)', color: 'var(--ink)',
+              border: `2px solid ${misgelukt ? 'var(--berry)' : 'var(--line)'}`,
+              background: 'var(--surface)', color: 'var(--ink)',
             }}
           />
-          <button
-            type="button"
-            className="btn btn--primary btn--big"
-            onClick={() => setOpen(Number(invoer) === som.antwoord)}
-          >
-            Verder
-          </button>
+          {misgelukt && (
+            <p style={{ color: 'var(--berry)', margin: 0 }} role="alert">
+              Dat klopt niet helemaal. Probeer het nog eens.
+            </p>
+          )}
+          <div className="rij" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn btn--primary btn--big"
+              onClick={() => {
+                if (Number(invoer) === som.antwoord) {
+                  setOpen(true)
+                  return
+                }
+                setMisgelukt(true)
+                setInvoer('')
+                document.getElementById('rekenslot')?.focus()
+              }}
+            >
+              Verder
+            </button>
+            <button type="button" className="btn btn--big" onClick={andereSom}>
+              ↻ Andere som
+            </button>
+          </div>
         </div>
       </main>
     )
@@ -69,6 +149,9 @@ function OuderPaneel() {
   const voortgang = useVoortgang()
   const instellingen = useInstellingen()
   const zetInstelling = useProfielStore((s) => s.zetInstelling)
+  const zetModus = useProfielStore((s) => s.zetModus)
+  const zetLeeftijd = useProfielStore((s) => s.zetLeeftijd)
+  const herstelInstellingen = useProfielStore((s) => s.herstelInstellingen)
   const verwijderProfiel = useProfielStore((s) => s.verwijderProfiel)
   const gespeeld = useGespeeld()
 
@@ -90,7 +173,7 @@ function OuderPaneel() {
         type="checkbox"
         checked={Boolean(instellingen[sleutel])}
         onChange={(e) => zetInstelling(sleutel, e.target.checked as never)}
-        style={{ width: 28, height: 28 }}
+        style={{ width: 44, height: 44, flexShrink: 0 }}
       />
     </label>
   )
@@ -131,9 +214,91 @@ function OuderPaneel() {
           </ul>
         </section>
 
+        {/* De leeftijdsmodus doet nu iets, dus hoort hij hier te staan.
+            Hij werd bij het aanmaken van het profiel uit de leeftijd berekend en daarna
+            nooit meer gelezen: een driejarige en een tienjarige kregen letterlijk
+            hetzelfde scherm. Nu bepaalt hij drie dingen, en dus moet een ouder hem
+            kunnen verzetten — een achtjarige die nog nooit geschaakt heeft is hier
+            beter af op Ontdekker. */}
         <section className="card stack">
-          <h2>Instellingen</h2>
-          {schakel('spraak', 'Pip praat', 'Zet uit als je in de trein zit.')}
+          <h2>Leeftijd</h2>
+          <p className="muted" style={{ margin: 0 }}>
+            Bepaalt waar {profiel?.naam ?? 'je kind'} mag beginnen op de kaart, hoeveel
+            tegenstanders er meteen te zien zijn, en hoe Pip praat. Het verandert niets aan de
+            lessen zelf, en niets aan wat er al gehaald is.
+          </p>
+          {/* De leeftijd werd één keer gevraagd bij het aanmaken en daarna nooit meer:
+              een kind dat jarig was bleef voorgoed vijf. Verzetten schuift de modus mee,
+              want daar is de leeftijd voor — en wie het daar niet mee eens is, kiest
+              hieronder gewoon iets anders. */}
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            {[3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+              <button
+                key={n}
+                type="button"
+                className="btn"
+                onClick={() => zetLeeftijd(n)}
+                aria-pressed={profiel?.leeftijd === n}
+                aria-label={`${n} jaar`}
+                style={{
+                  minHeight: 52,
+                  minWidth: 52,
+                  padding: '0 12px',
+                  borderColor: profiel?.leeftijd === n ? 'var(--accent)' : undefined,
+                  background: profiel?.leeftijd === n ? 'var(--accent-soft)' : undefined,
+                }}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+
+          <p className="muted" style={{ margin: 0, fontSize: '0.9rem' }}>
+            Bij {profiel?.leeftijd ?? 6} jaar hoort{' '}
+            <strong>{MODI.find((m) => m.id === modusVoorLeeftijd(profiel?.leeftijd ?? 6))?.naam}</strong>.
+            Klopt dat niet voor jouw kind, kies dan zelf:
+          </p>
+          <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+            {MODI.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                className="btn"
+                onClick={() => zetModus(m.id)}
+                aria-pressed={profiel?.modus === m.id}
+                style={{
+                  minHeight: 56,
+                  padding: '0 16px',
+                  borderColor: profiel?.modus === m.id ? 'var(--accent)' : undefined,
+                  background: profiel?.modus === m.id ? 'var(--accent-soft)' : undefined,
+                }}
+              >
+                {m.naam}
+              </button>
+            ))}
+          </div>
+          <small className="muted">{MODI.find((m) => m.id === profiel?.modus)?.uitleg}</small>
+        </section>
+
+        <section className="card stack">
+          <div className="row" style={{ justifyContent: 'space-between', gap: 12 }}>
+            <h2 style={{ margin: 0 }}>Instellingen</h2>
+            {/* Van modus wisselen laat deze schuifjes expres staan — het kunnen jouw
+                keuzes zijn. Maar dan moet er wel een weg terug zijn. */}
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={herstelInstellingen}
+              style={{ minHeight: 44, fontSize: '0.9rem' }}
+            >
+              ↺ Standaard voor {MODI.find((m) => m.id === profiel?.modus)?.naam.split(' ·')[0]}
+            </button>
+          </div>
+          {schakel(
+            'spraak',
+            'Pip praat vanzelf',
+            'Zet uit als je in de trein zit. De luidsprekerknop bij Pip blijft het doen. Een kind dat nog niet leest heeft die nodig.',
+          )}
           {schakel('ondertiteling', 'Ondertiteling', 'Laat zien wat Pip zegt.')}
           {schakel('effecten', 'Geluidjes')}
           {schakel('coordinaten', 'Velden benoemen (a1, e4)', 'Handig vanaf een jaar of acht.')}
@@ -167,6 +332,15 @@ function OuderPaneel() {
             niets naar internet, er zijn geen advertenties, geen chat en geen account. Wil je
             alles wissen, dan kan dat hier.
           </p>
+          {/* Achter het rekenslot, dus geen kind komt hier per ongeluk. Een regel tekst
+              en geen knop: wie hem zoekt vindt hem, wie hem niet zoekt ziet hem amper. */}
+          <p className="muted" style={{ margin: 0 }}>
+            Schaakmaatje wordt in de avonduren gemaakt en betaald uit eigen zak.{' '}
+            <a href={KOFFIE} target="_blank" rel="noopener noreferrer">
+              Een kop koffie trakteren
+            </a>{' '}
+            mag, maar hoeft niet. Het levert je niets extra's op.
+          </p>
           <button
             type="button"
             className="btn"
@@ -178,6 +352,20 @@ function OuderPaneel() {
           >
             Profiel wissen
           </button>
+        </section>
+
+        {/* De uitleg voor ouders: hoe de app werkt, hoe lang per dag, tips voor thuis.
+            Alleen hier en op de landingspagina, niet op het kindscherm: op /over/ staat
+            de koffielink, en die hoort achter het rekenslot te blijven. */}
+        <section className="card stack">
+          <h2>Meer weten?</h2>
+          <p className="muted" style={{ margin: 0 }}>
+            Hoe een les werkt, hoe lang per dag genoeg is, tips om thuis aan een echt bord
+            mee te doen, en hoe de app zich verhoudt tot de Stappenmethode.
+          </p>
+          <Link href="/over/" className="btn">
+            Over Schaakmaatje
+          </Link>
         </section>
 
         <Link href="/" className="btn btn--primary btn--big">

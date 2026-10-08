@@ -1,0 +1,104 @@
+name: Site bouwen (zip om te uploaden)
+
+# Voor wie geen zin heeft in een terminal.
+#
+# Je drukt op GitHub op "Run workflow", wacht een paar minuten, en downloadt onderaan
+# een zip met de complete site. Die pak je uit in je webmap. Verder hoef je niets:
+# er wordt niets naar je hosting gestuurd en er staat niets op je eigen computer.
+#
+# Is het geheim ELEVENLABS_API_KEY ingesteld, dan spreekt hij Pip onderweg in en haalt
+# hij de bordgeluiden op. Zo niet, dan bouwt hij de site gewoon zonder — de app valt
+# dan terug op de stem van het apparaat en de gesynthetiseerde piepjes.
+#
+# De sleutel staat als GitHub-geheim, dus hij komt nergens in de repo terecht en jij
+# hoeft hem nooit ergens te plakken behalve dat ene invulveld.
+
+on:
+  workflow_dispatch:
+    inputs:
+      stem:
+        description: 'Pip inspreken? (kost ongeveer 30.700 ElevenLabs-credits)'
+        type: choice
+        options: ['nee', 'alleen de zes proefzinnen', 'ja, alles']
+        default: 'nee'
+      geluiden:
+        description: 'Bordgeluiden ophalen? (9 aanroepen, spotgoedkoop)'
+        type: boolean
+        default: false
+
+jobs:
+  bouwen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Controles
+        run: |
+          npm run typecheck
+          npm test
+          npm run validate:content
+
+      - name: Pip inspreken
+        if: inputs.stem != 'nee'
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: |
+          if [ -z "$ELEVENLABS_API_KEY" ]; then
+            echo "::warning::Geen ELEVENLABS_API_KEY ingesteld — Pip blijft de stem van het apparaat gebruiken."
+            exit 0
+          fi
+          if [ "${{ inputs.stem }}" = "alleen de zes proefzinnen" ]; then
+            npm run audio:render -- --proef
+          else
+            npm run audio:render
+          fi
+
+      - name: Bordgeluiden ophalen
+        if: inputs.geluiden
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: |
+          if [ -z "$ELEVENLABS_API_KEY" ]; then
+            echo "::warning::Geen ELEVENLABS_API_KEY ingesteld — de piepjes blijven."
+            exit 0
+          fi
+          npm run sfx:render
+
+      - name: Bouwen
+        run: npm run build
+
+      # Ook de losse audio apart, zodat je opnames kunt terugluisteren en bewaren
+      # zonder de hele site uit te pakken.
+      - name: Audio apart bewaren
+        if: inputs.stem != 'nee' || inputs.geluiden
+        uses: actions/upload-artifact@v4
+        with:
+          name: schaakmaatje-audio
+          path: |
+            public/audio
+            public/sfx
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: De site om te uploaden
+        uses: actions/upload-artifact@v4
+        with:
+          name: schaakmaatje-site
+          path: out
+          retention-days: 30
+
+      - name: Wat je nu moet doen
+        run: |
+          echo "### Klaar" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Onderaan deze pagina staat bij **Artifacts** het bestand \`schaakmaatje-site\`." >> $GITHUB_STEP_SUMMARY
+          echo "Download dat, pak het uit, en zet de inhoud in je webmap op de hosting." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Maak de webmap eerst leeg, en let erop dat je SFTP-programma verborgen" >> $GITHUB_STEP_SUMMARY
+          echo "bestanden meeneemt — anders mis je de \`.htaccess\`." >> $GITHUB_STEP_SUMMARY

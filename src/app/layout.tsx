@@ -1,13 +1,54 @@
 import type { Metadata, Viewport } from 'next'
 import '@/ui/globals.css'
+import { Instellingen } from '@/ui/Instellingen'
+import { ServiceWorker } from '@/ui/ServiceWorker'
+import { NAAM, OMSCHRIJVING, SITE, SLOGAN, deelkaart } from '@/seo'
+
+/** Zelfde afspraak als in voice.ts en ServiceWorker.tsx: leeg = domeinwortel. */
+const BASIS = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
 export const metadata: Metadata = {
-  title: 'Schaakmaatje — leer schaken met Pip',
-  description:
-    'Leer schaken op z’n Nederlands. Voor kinderen van 3 tot 10 jaar, met Pip het schaakpaardje die alles voorleest.',
-  manifest: '/manifest.webmanifest',
-  icons: { icon: '/icon.svg', apple: '/icon.svg' },
+  // metadataBase maakt van elk relatief pad hieronder een volledige URL. Zonder dit
+  // levert og:image een relatief pad op, en dat weigeren WhatsApp en Facebook: dan zie
+  // je bij het delen van de link een grijs vlak in plaats van een voorproefje.
+  metadataBase: new URL(SITE),
+  title: {
+    default: 'Schaakmaatje: gratis leren schaken voor kinderen van 3 tot 10',
+    // Elke andere pagina zet zijn eigen titel hierin, zodat de merknaam altijd
+    // meekomt zonder dat je hem overal moet overtypen.
+    template: '%s | Schaakmaatje',
+  },
+  description: OMSCHRIJVING,
+  applicationName: NAAM,
+  // GEEN canonical hier.
+  //
+  // Hier stond `alternates: { canonical: '/' }`, en dat erft elke pagina die er zelf
+  // geen zet. Gevolg: tweeëntachtig van de vierentachtig pagina's vertelden Google
+  // "de echte pagina is de startpagina", terwijl de sitemap er achtenzeventig
+  // aanbood om te indexeren. Dat zijn twee tegengestelde instructies, en de uitkomst
+  // is dat er niets geïndexeerd wordt behalve die ene startpagina.
+  //
+  // Elke pagina die gevonden mag worden zet nu zijn eigen canonical. De schermen van
+  // de app zelf zetten `robots: { index: false }` en horen niet in de sitemap.
+  manifest: `${BASIS}/manifest.webmanifest`,
+  icons: { icon: `${BASIS}/icon.svg`, apple: `${BASIS}/icon.svg` },
   appleWebApp: { capable: true, title: 'Schaakmaatje', statusBarStyle: 'default' },
+  ...deelkaart({
+    titel: 'Schaakmaatje: leer schaken met Pip het schaakpaardje',
+    omschrijving: OMSCHRIJVING,
+    url: `${SITE}/`,
+  }),
+  robots: { index: true, follow: true },
+  /*
+   * Het bewijs voor Google Search Console, als tweede route naast het DNS-record.
+   *
+   * Dit is geen geheim: een verificatiecode hoort juist openbaar in de HTML of in het
+   * DNS te staan, en hij geeft niemand toegang tot iets. Hij staat hier omdat een
+   * DNS-record uren kan duren en soms bij de verkeerde naam belandt, terwijl deze
+   * regel meteen werkt zodra de site online staat. Twee routes naar dezelfde
+   * verificatie, en beide mogen blijven staan.
+   */
+  verification: { google: '6CXFPUgzbTPIMzBI-UpGnp4hfkB25KwvvITfUPIdLUI' },
 }
 
 export const viewport: Viewport = {
@@ -17,10 +58,70 @@ export const viewport: Viewport = {
   themeColor: '#4e7a54',
 }
 
+/**
+ * Wat deze site ís, in de taal die zoekmachines lezen (schema.org).
+ *
+ * Twee dingen tegelijk: een WebSite met een naam, en een SoftwareApplication die gratis
+ * is en voor kinderen bedoeld. Dat laatste is het belangrijkste stukje — "gratis" en
+ * "3 tot 10 jaar" zijn precies waar een ouder op filtert, en dit is de enige manier om
+ * dat als feit door te geven in plaats van als zin in een alinea.
+ */
+const GEGEVENS = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE}/#site`,
+      name: NAAM,
+      url: SITE,
+      inLanguage: 'nl-NL',
+      description: OMSCHRIJVING,
+    },
+    {
+      '@type': 'SoftwareApplication',
+      '@id': `${SITE}/#app`,
+      name: NAAM,
+      alternateName: SLOGAN,
+      url: SITE,
+      applicationCategory: 'EducationalApplication',
+      applicationSubCategory: 'Schaken',
+      operatingSystem: 'Web, iOS, Android',
+      inLanguage: 'nl-NL',
+      description: OMSCHRIJVING,
+      image: `${SITE}/og.png`,
+      isAccessibleForFree: true,
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+      audience: {
+        '@type': 'PeopleAudience',
+        suggestedMinAge: 3,
+        suggestedMaxAge: 10,
+      },
+      educationalUse: 'Schaakles',
+      teaches: 'Schaken: het bord, de stukken, schaak, mat, rokade, notatie en eindspel',
+    },
+  ],
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="nl">
-      <body>{children}</body>
+      <body>
+        {/*
+          Gestructureerde gegevens: hiermee weet een zoekmachine wát dit is in plaats van
+          alleen wélke woorden erop staan. Dat levert de rijkere weergave in de
+          resultaten op — de naam, dat het gratis is, en de leeftijd waarvoor het bedoeld
+          is. Het staat in de HTML zelf en heeft dus geen JavaScript nodig, wat hier het
+          hele punt is: de rest van de app rendert pas ná het laden.
+        */}
+        <script
+          type="application/ld+json"
+          // De inhoud is een vaste constante uit onze eigen code, geen invoer van buiten.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(GEGEVENS) }}
+        />
+        <Instellingen />
+        {children}
+        <ServiceWorker />
+      </body>
     </html>
   )
 }

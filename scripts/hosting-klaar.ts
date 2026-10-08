@@ -1,0 +1,193 @@
+/**
+ * Blokhaken uit de gebouwde bestandsnamen halen.
+ *
+ * Next.js noemt de map van een dynamische route naar het routepatroon zelf, dus de
+ * uitvoer bevat mappen als `_next/static/chunks/app/les/[lesId]`. De browser vraagt die
+ * op als `%5BlesId%5D`, en dáár struikelt gewone gedeelde hosting over: Apache met
+ * mod_security weigert zulke URL's, en menig SFTP-programma weigert de map überhaupt te
+ * uploaden. Het resultaat op schaakmaatje.nl was een wit scherm met ChunkLoadError.
+ *
+ * Vercel heeft er geen last van; onze eigen hosting wel. Dus hernoemen we na het bouwen
+ * `[lesId]` naar `lesId` en schrijven we de verwijzingen in de HTML bij.
+ *
+ * Let op wat we NIET aanraken: `_ssgManifest.js` bevat `/les/[lesId]` als routepatroon,
+ * niet als bestandspad. Dat heeft de router nodig om te weten welke routes dynamisch
+ * zijn. Daarom vervangen we alleen de URL-gecodeerde vorm (%5B…%5D), want dat is per
+ * definitie een pad dat is opgevraagd, nooit een patroon.
+ */
+import { readdirSync, renameSync, readFileSync, writeFileSync, existsSync, statSync, rmSync } from 'node:fs'
+import { join, type PlatformPath } from 'node:path'
+import * as pad_ from 'node:path'
+
+const UIT = join(process.cwd(), 'out')
+const TEKSTBESTANDEN = /\.(html|txt|json|webmanifest)$/
+
+/** Alle bestanden onder een map, plat. */
+function alleBestanden(map: string): string[] {
+  const uit: string[] = []
+  for (const naam of readdirSync(map)) {
+    const pad = join(map, naam)
+    if (statSync(pad).isDirectory()) uit.push(...alleBestanden(pad))
+    else uit.push(pad)
+  }
+  return uit
+}
+
+/** Mappen met blokhaken in hun naam, diepste eerst zodat hernoemen geen pad breekt. */
+function mappenMetBlokhaken(map: string): string[] {
+  const uit: string[] = []
+  for (const naam of readdirSync(map)) {
+    const pad = join(map, naam)
+    if (!statSync(pad).isDirectory()) continue
+    uit.push(...mappenMetBlokhaken(pad))
+    if (/^\[.+\]$/.test(naam)) uit.push(pad)
+  }
+  return uit
+}
+
+/**
+ * Waar moet `.../[lesId]` heen, en hoe heet hij dan?
+ *
+ * Dit was een regel of drie binnen main(), en die rekende met `lastIndexOf('/')`. Op
+ * Linux klopt dat; op Windows niet, want daar levert join() backslashes op. Dan geeft
+ * lastIndexOf('/') een −1, hakt slice(0, −1) het laatste teken van het pad af, en komt
+ * er een doel uit als `out\_next\...\diploma\[soort\:\Users\kajro\...`. Het
+ * bouwen viel om met een ENOENT, en alleen bij degene die op Windows werkt.
+ *
+ * Vandaar nu dirname en basename, die weten zelf welk scheidingsteken hun systeem
+ * gebruikt. En vandaar dat `p` meegegeven kan worden: zo kan de test de Windows-variant
+ * echt naspelen, op een machine die geen Windows is.
+ */
+export function zonderBlokhaken(pad: string, p: PlatformPath = pad_) {
+  const naam = p.basename(pad)
+  const schoon = naam.slice(1, -1)
+  return { naam, schoon, doel: p.join(p.dirname(pad), schoon) }
+}
+
+function main() {
+  if (!existsSync(UIT)) {
+    console.error('Geen out/ gevonden. Draai eerst next build.')
+    process.exit(1)
+  }
+
+  const hernoemd: string[] = []
+  for (const pad of mappenMetBlokhaken(UIT)) {
+    const { naam, schoon, doel } = zonderBlokhaken(pad)
+    if (existsSync(doel)) {
+      console.error(`Kan ${naam} niet hernoemen: ${schoon} bestaat al.`)
+      process.exit(1)
+    }
+    renameSync(pad, doel)
+    hernoemd.push(schoon)
+  }
+
+  let aangepast = 0
+  if (hernoemd.length) {
+    for (const bestand of alleBestanden(UIT)) {
+      if (!TEKSTBESTANDEN.test(bestand)) continue
+      const oud = readFileSync(bestand, 'utf8')
+      let nieuw = oud
+      for (const naam of hernoemd) nieuw = nieuw.replaceAll(`%5B${naam}%5D`, naam)
+      if (nieuw !== oud) {
+        writeFileSync(bestand, nieuw)
+        aangepast++
+      }
+    }
+  }
+
+  // Narekenen in plaats van hopen: blijft er ergens een blokhaak staan, dan is de
+  // reparatie half gelukt en krijgt een kind straks alsnog een wit scherm.
+  const restMappen = mappenMetBlokhaken(UIT)
+  const restVerwijzingen = alleBestanden(UIT).filter(
+    (b) => TEKSTBESTANDEN.test(b) && /%5B[^%]+%5D/.test(readFileSync(b, 'utf8')),
+  )
+  if (restMappen.length || restVerwijzingen.length) {
+    console.error('Er staan nog blokhaken in de uitvoer:')
+    restMappen.forEach((m) => console.error(`  map: ${m}`))
+    restVerwijzingen.slice(0, 5).forEach((b) => console.error(`  verwijzing in: ${b}`))
+    process.exit(1)
+  }
+
+  console.log(
+    hernoemd.length
+      ? `Hosting-klaar: ${hernoemd.length} mappen hernoemd (${hernoemd.join(', ')}), ${aangepast} bestanden bijgewerkt.`
+      : 'Hosting-klaar: geen blokhaken gevonden.',
+  )
+
+  laatOpnamesMetRust()
+  stempelDeCacheversie()
+}
+
+/**
+ * Zet de datum van deze uitrol in de service worker.
+ *
+ * In `public/sw.js` stond `const CACHE = 'schaakmaatje-...'` met een datum erin en het
+ * verzoek eronder om die met de hand bij te werken. Dat is precies één keer goed
+ * gegaan: de versie die op schaakmaatje.nl staat is van 5 september, terwijl er sinds
+ * die dag drie keer een nieuwe zip overheen is gegaan.
+ *
+ * Zolang die naam gelijk blijft, ruimt het activate-blok van de service worker niets
+ * op en blijven alle oude `_next/static`-brokken van elke vorige uitrol op de tablet
+ * van het kind staan. De app zelf raakt niet achterop — pagina's worden netwerk-eerst
+ * opgehaald en de brokken hebben een hash in hun naam — maar het is rommel die nooit
+ * meer weggaat, en op een schooltablet met weinig ruimte telt dat.
+ *
+ * Een taak die de mens bij elke uitrol moet onthouden, is een taak die vergeten wordt.
+ * Dus doet het bouwscript het nu.
+ */
+function stempelDeCacheversie() {
+  const pad = join(UIT, 'sw.js')
+  if (!existsSync(pad)) return
+  const inhoud = readFileSync(pad, 'utf8')
+  // De datum plus het tijdstip: twee zips op dezelfde dag zijn eerder regel dan
+  // uitzondering geweest, en dan moet de naam alsnog verschillen.
+  const nu = new Date().toISOString().slice(0, 16).replace('T', '-').replace(':', '')
+  const uit = inhoud.replace(/const CACHE = '[^']*'/, `const CACHE = 'schaakmaatje-${nu}'`)
+  if (uit === inhoud) {
+    console.error('Hosting-klaar: geen CACHE-regel gevonden in sw.js. Is hij hernoemd?')
+    process.exit(1)
+  }
+  writeFileSync(pad, uit)
+  console.log(`Hosting-klaar: service worker gestempeld als schaakmaatje-${nu}.`)
+}
+
+/**
+ * Haal lege audiomappen uit de uitvoer, zodat ze de opnames op de server niet slopen.
+ *
+ * De mp3's staan met opzet niet in git — ze horen bij de release, niet bij de broncode.
+ * Maar `public/audio/manifest.json` staat er wél in, als leeg `{}`, en die kwam dus in
+ * elke zip terecht. Wie de zip over zijn webmap uitpakte, overschreef daarmee het
+ * manifest van de opnames die er al stonden: de app dacht vanaf dat moment dat er niets
+ * ingesproken was en viel terug op de stem van het apparaat. Twee minuten uploaden om
+ * negenduizend credits aan opnames onbruikbaar te maken.
+ *
+ * Is er niets ingesproken, dan hoort er ook niets in de zip te zitten. Ontbreekt het
+ * manifest, dan valt de app netjes terug op de apparaatstem — precies wat hij zonder
+ * opnames toch al doet. Staan er wél opnames, dan blijft alles staan en gaat het
+ * gewoon mee.
+ */
+function laatOpnamesMetRust() {
+  for (const map of ['audio', 'sfx']) {
+    const pad = join(UIT, map)
+    const manifest = join(pad, 'manifest.json')
+    if (!existsSync(manifest)) continue
+    let leeg = false
+    try {
+      leeg = Object.keys(JSON.parse(readFileSync(manifest, 'utf8'))).length === 0
+    } catch {
+      leeg = true
+    }
+    if (!leeg) {
+      console.log(`Hosting-klaar: ${map}/ bevat opnames en gaat mee.`)
+      continue
+    }
+    rmSync(pad, { recursive: true, force: true })
+    console.log(
+      `Hosting-klaar: ${map}/ was leeg en is uit de uitvoer gehaald, zodat het ` +
+        `de opnames op de server niet overschrijft.`,
+    )
+  }
+}
+
+// Alleen draaien als het script zelf gestart wordt, niet als de test hem importeert.
+if (process.argv[1]?.includes('hosting-klaar')) main()

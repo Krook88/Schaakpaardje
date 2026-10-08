@@ -16,6 +16,28 @@ soorten fout, en niemand ziet ze alle drie tegelijk.
 De definities staan in `.claude/agents/`. Ze zijn met opzet smal gehouden: een reviewer
 die overal iets van vindt, wordt niet meer serieus genomen.
 
+## Wanneer: na elke fase, niet aan het eind
+
+Een review hoort bij het afronden van een fase, niet bij het afronden van het project.
+Een fase is een samenhangend brok: een paar werelden, een nieuw opgavetype, een nieuw
+scherm, of een technische laag zoals de zoeker of de offline-modus.
+
+Waarom zo strikt: bij het bouwen van de werelden 7 tot en met 14 zijn vier fasen op
+elkaar gestapeld voordat er één keer gereviewd werd. Dat maakt van een review een
+archeologische opgraving in plaats van een correctie, en de kans dat er dan nog iets mee
+gebeurt is klein. Fouten die je meteen na een fase vindt, kosten tien minuten; dezelfde
+fout drie fasen later zit inmiddels in de content, de tests en de teksten van Pip.
+
+## En dan: de feedback verwerken
+
+Een rapport dat in `docs/reviews/` blijft liggen is weggegooid werk. Na elke review:
+
+1. Bevindingen afwerken van **blokkerend** naar **klein**.
+2. Wat je niet oplost, krijgt een regel in het rapport met de reden. Stilzwijgend
+   overslaan mag niet — de volgende review moet kunnen zien wat er bewust is blijven liggen.
+3. Achter elke afgehandelde bevinding zetten wat je gedaan hebt.
+4. Pas daarna begint de volgende fase.
+
 ## Hoe je hem draait
 
 ```

@@ -256,3 +256,108 @@ export function findPieces(board: BoardMap, type: PieceType, color?: Color): Squ
     .filter(([, p]) => p.type === type && (!color || p.color === color))
     .map(([sq]) => sq)
 }
+
+/* ------------------------------------------------------------------------- *
+ * Aanval en verdediging (wereld 8)
+ *
+ * "Waar kan een stuk heen" is iets anders dan "welke velden bestrijkt het".
+ * Een toren die achter zijn eigen pion staat kán niet naar dat veld, maar hij
+ * dekt het wel. En een pion bestrijkt juist de twee velden schuin voor zich,
+ * ook als daar niets staat. Vandaar deze aparte berekening.
+ * ------------------------------------------------------------------------- */
+
+/** De velden die dit stuk bestrijkt: waar het zou kunnen slaan. */
+export function controleVelden(board: BoardMap, from: Square): Square[] {
+  const piece = board[from]
+  if (!piece) return []
+  const f = fileIndex(from)
+  const r = rankOf(from)
+  const uit: Square[] = []
+
+  const stap = (df: number, dr: number) => {
+    if (onBoard(f + df, r + dr)) uit.push(square(f + df, r + dr))
+  }
+  const straal = (rays: readonly (readonly number[])[]) => {
+    for (const [df, dr] of rays) {
+      let tf = f + df
+      let tr = r + dr
+      while (onBoard(tf, tr)) {
+        uit.push(square(tf, tr))
+        // Een stuk in de weg stopt de straal, maar het veld zelf wordt wél bestreken.
+        if (board[square(tf, tr)]) break
+        tf += df
+        tr += dr
+      }
+    }
+  }
+
+  switch (piece.type) {
+    case 'n':
+      for (const [df, dr] of KNIGHT_STEPS) stap(df, dr)
+      break
+    case 'k':
+      for (const [df, dr] of KING_STEPS) stap(df, dr)
+      break
+    case 'r':
+      straal(ROOK_RAYS)
+      break
+    case 'b':
+      straal(BISHOP_RAYS)
+      break
+    case 'q':
+      straal([...ROOK_RAYS, ...BISHOP_RAYS])
+      break
+    case 'p': {
+      const dir = piece.color === 'w' ? 1 : -1
+      stap(-1, dir)
+      stap(1, dir)
+      break
+    }
+  }
+  return uit
+}
+
+/** Alle velden die één kleur bestrijkt. */
+export function aangevallenVelden(board: BoardMap, doorKleur: Color): Set<Square> {
+  const uit = new Set<Square>()
+  for (const [sq, p] of Object.entries(board)) {
+    if (p.color !== doorKleur) continue
+    for (const veld of controleVelden(board, sq)) uit.add(veld)
+  }
+  return uit
+}
+
+/** Staat dit veld onder vuur van de opgegeven kleur? */
+export function wordtAangevallen(board: BoardMap, veld: Square, doorKleur: Color): boolean {
+  return aangevallenVelden(board, doorKleur).has(veld)
+}
+
+/** Welke van mijn stukken staan te pakken? */
+export function bedreigdeStukken(board: BoardMap, kleur: Color): Square[] {
+  const vuur = aangevallenVelden(board, kleur === 'w' ? 'b' : 'w')
+  return Object.entries(board)
+    .filter(([sq, p]) => p.color === kleur && vuur.has(sq))
+    .map(([sq]) => sq)
+}
+
+/**
+ * Waar kan dit stuk heen zonder daar geslagen te worden?
+ * De stelling wordt per zet echt uitgevoerd: door weg te lopen verandert het bord,
+ * en een veld dat eerst veilig leek kan dat daarna niet meer zijn.
+ */
+export function veiligeVelden(board: BoardMap, from: Square): Square[] {
+  const piece = board[from]
+  if (!piece) return []
+  const vijand = piece.color === 'w' ? 'b' : 'w'
+  return pieceMoves(board, from).all.filter((naar) => {
+    const na = applyMove(board, from, naar)
+    return !aangevallenVelden(na, vijand).has(naar)
+  })
+}
+
+/** Welke vijandelijke stukken vallen dit veld aan? */
+export function aanvallersVan(board: BoardMap, veld: Square, doorKleur: Color): Square[] {
+  return Object.entries(board)
+    .filter(([sq, p]) => p.color === doorKleur && controleVelden(board, sq).includes(veld))
+    .map(([sq]) => sq)
+}

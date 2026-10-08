@@ -6,4 +6,28 @@ next-env.d.ts
 .env*.local
 .DS_Store
 public/audio/*.mp3
+public/sfx/*.mp3
+# Het manifest is afgeleide, net als de mp3's zelf. Het stond hier eerst wél in als
+# leeg {} — en dat overschreef bij elke `git pull` het echte manifest van wie de
+# opnames al had staan. Die spraken daarna tweehonderd zinnen opnieuw in.
+public/audio/manifest.json
+public/sfx/manifest.json
 !public/audio/.gitkeep
+!public/sfx/.gitkeep
+
+# De zip om te uploaden. Die valt uit `out/` te maken en hoort dus niet in de repo:
+# hem meecommitten is een miljoen bytes bouwsel bewaren die morgen alweer verlopen is.
+schaakmaatje-site.zip
+.live-check.json
+
+# Wegwerpscripts. Een reviewer die iets wil weten over de content schrijft daar soms
+# een scriptje voor: dump alle lessen, zoek waar een woord voor het eerst valt. Dat is
+# bewijsmateriaal voor één vraag en geen onderhouden gereedschap, dus het blijft buiten
+# de repo. Blijkt zo'n probe blijvend nuttig, dan krijgt hij een echte naam, een regel
+# in package.json en een test, en verdwijnt het liggende streepje.
+scripts/_*
+
+# En hun schermafbeeldingen en meetscriptjes. De layout-reviewer bouwt de app, zet hem
+# neer en fotografeert hem op zes formaten in twee thema's; dat is tientallen megabytes
+# bewijs voor één oordeel, en het oordeel staat in docs/reviews/.
+.review-tmp/

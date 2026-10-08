@@ -21,6 +21,14 @@ ErrorDocument 404 /404.html
   <FilesMatch "\.html$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
+  # De twee manifesten wijzen naar de opnames en veranderen bij elke nieuwe zin die
+  # Pip inspreekt. Zou een browser er eentje vasthouden, dan hoort een kind de stem
+  # van het apparaat terwijl de opname er allang staat — en dat verschil hoor je.
+  # De service worker haalt ze met opzet al netwerk-eerst op; dit is dezelfde regel,
+  # maar dan voor de browser ervoor.
+  <FilesMatch "^manifest\.json$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
 </IfModule>
 
 # Zonder dit serveren sommige hosts het webmanifest als platte tekst.

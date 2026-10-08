@@ -5,14 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && tsx scripts/hosting-klaar.ts",
     "start": "npx serve out",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "validate:content": "tsx scripts/validate-content.ts",
     "audio:render": "tsx scripts/tts-render.ts",
-    "check": "npm run typecheck && npm run test && npm run build"
+    "check": "npm run typecheck && npm run test && npm run validate:content && npm run audio:dekking && npm run build",
+    "sfx:render": "tsx scripts/sfx-render.ts",
+    "audio:dekking": "tsx scripts/audio-dekking.ts",
+    "doorloop": "node scripts/doorloop.mjs",
+    "live": "tsx scripts/live-check.ts"
   },
   "dependencies": {
     "chess.js": "^1.4.0",
@@ -29,5 +33,8 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
+  },
+  "overrides": {
+    "postcss": "^8.5.28"
   }
 }

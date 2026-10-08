@@ -20,10 +20,115 @@ type Config = { spraak: boolean; tempo: number; ondertiteling: boolean }
 const config: Config = { spraak: true, tempo: 1, ondertiteling: true }
 
 let manifest: Record<string, unknown> | null = null
-let manifestGeladen = false
+/**
+ * De lopende ophaalactie, niet een simpele "al gedaan"-vlag.
+ *
+ * Met een vlag zette de eerste aanroep hem meteen op waar, waarna een tweede aanroep
+ * die er vlak achteraan kwam meteen doorliep — met een manifest dat nog leeg was. Die
+ * zin viel dan terug op de apparaatstem terwijl er een opname voor bestond. Door de
+ * belofte zelf te bewaren wacht iedereen netjes op dezelfde ophaalactie.
+ */
+let manifestBelofte: Promise<void> | null = null
+
+/**
+ * Welke zin de laatste is. Elke aanroep neemt een nummertje.
+ *
+ * speak() breekt aan het begin de vorige zin af, maar daarna staat er een await: het
+ * manifest ophalen. Twee zinnen die vlak na elkaar beginnen kwamen daardoor allebei
+ * voorbij dat afbreken heen, want de eerste had zijn geluid nog niet geregistreerd
+ * toen de tweede het probeerde te stoppen. Resultaat: twee of drie stemmen door elkaar.
+ * Wie na een await merkt dat er alweer iemand anders aan de beurt is, houdt op.
+ */
+let beurt = 0
+
+/**
+ * Een opname die niet mocht spelen omdat het kind nog niets had aangeraakt.
+ *
+ * Browsers weigeren geluid tot de eerste tik — een terechte regel tegen sites die
+ * ongevraagd beginnen te schreeuwen. De apparaatstem valt níet onder die regel, en
+ * daardoor deed de app precies het verkeerde: hij sloeg de opname over en zette de
+ * robot in. Nu wachten we op de eerste aanraking en spelen dan alsnog Pip af.
+ */
+/**
+ * Lost op zodra de huidige zin is uitgesproken.
+ *
+ * De lesmotor schakelde na een vaste 1300 ms door naar de volgende opgave, en die
+ * vraagt dan meteen om een nieuwe zin — waarmee Pip zichzelf midden in "Hoppa! Precies
+ * goed" afkapte. Een langere vaste wachttijd lost dat niet op: de ene zin is drie keer
+ * zo lang als de andere, en dan zit een kind bij de korte zinnen te wachten op niets.
+ *
+ * Lost altijd op, ook als er niets speelt of als het geluid stukloopt: liever een keer
+ * te vroeg doorschakelen dan een scherm dat blijft hangen.
+ */
+let uitgesprokenBelofte: Promise<void> = Promise.resolve()
+let uitgesprokenKlaar: (() => void) | null = null
+
+function beginTeSpreken() {
+  uitgesprokenKlaar?.()
+  uitgesprokenBelofte = new Promise<void>((los) => {
+    uitgesprokenKlaar = los
+  })
+}
+
+function klaarMetSpreken() {
+  uitgesprokenKlaar?.()
+  uitgesprokenKlaar = null
+}
+
+/**
+ * Wacht tot Pip is uitgesproken, maar nooit langer dan `maxMs`.
+ *
+ * Die bovengrens is er omdat een browser niet altijd meldt dat hij klaar is — bij de
+ * apparaatstem gebeurt dat op sommige toestellen gewoon niet. Zonder grens blijft het
+ * lesscherm dan voorgoed op dezelfde opgave staan, en dat is erger dan een afgekapte zin.
+ */
+export function wachtTotUitgesproken(maxMs = 6000): Promise<void> {
+  return Promise.race([
+    uitgesprokenBelofte,
+    new Promise<void>((los) => setTimeout(los, maxMs)),
+  ])
+}
+
+/** Hoe lang we de apparaatstem de tijd geven om te beginnen voor we hem opgeven. */
+const GEEN_GELUID_MS = 400
+
+/** Zinnen die we al een keer opnieuw hebben aangeboden. Nooit twee keer. */
+const alGeprobeerd = new Set<string>()
+
+let geblokkeerdeZin: string | null = null
+let geblokkeerdeBeurt = 0
+let luistertNaarTik = false
+
+function wachtOpEersteTik() {
+  if (luistertNaarTik || typeof window === 'undefined') return
+  luistertNaarTik = true
+  const los = () => {
+    window.removeEventListener('pointerdown', los)
+    window.removeEventListener('keydown', los)
+    luistertNaarTik = false
+    const zin = geblokkeerdeZin
+    const vanBeurt = geblokkeerdeBeurt
+    geblokkeerdeZin = null
+    // Alleen als er ondertussen niets nieuwers gevraagd is. Anders overstemt een
+    // begroeting van drie schermen terug wat er nú op het scherm staat.
+    if (zin && vanBeurt === beurt) void speak(zin, true)
+  }
+  window.addEventListener('pointerdown', los, { once: true })
+  window.addEventListener('keydown', los, { once: true })
+}
 let huidigeAudio: HTMLAudioElement | null = null
 let ondertitelListener: ((tekst: string | null) => void) | null = null
 let stemmenGeladen = false
+/**
+ * Zijn de instellingen van het profiel al toegepast?
+ *
+ * Ze komen uit localStorage en dus pas ná de eerste render binnen. Tot dat moment
+ * stond hier de standaard "spraak aan", en die won: een kind van wie de ouder Pip had
+ * uitgezet, kreeg bij binnenkomst op een les alsnog de eerste zin te horen. We houden
+ * de zin daarom vast tot we weten wat er mag.
+ */
+let configToegepast = false
+let wachtendeZin: string | null = null
 
 /** Waar de app gehost wordt. Leeg = domeinwortel; zet NEXT_PUBLIC_BASE_PATH als de
  *  app in een submap staat. Zonder dit zoekt de browser audio onder de huidige route. */
@@ -41,7 +146,14 @@ export function zinSleutel(tekst: string): string {
 
 export function setVoiceConfig(next: Partial<Config>) {
   Object.assign(config, next)
-  if (!config.spraak) stopSpeaking()
+  const eerdereKeer = configToegepast
+  configToegepast = true
+  const zin = wachtendeZin
+  wachtendeZin = null
+  if (!config.spraak && eerdereKeer) stopSpeaking()
+  // De vastgehouden zin alsnog aanbieden: speak() past nu de echte regels toe, en die
+  // bepalen of hij te horen is, alleen te lezen, of geen van beide.
+  if (zin) void speak(zin)
 }
 
 export function getVoiceConfig(): Config {
@@ -52,18 +164,39 @@ export function onSubtitle(fn: ((tekst: string | null) => void) | null) {
   ondertitelListener = fn
 }
 
-async function laadManifest() {
-  if (manifestGeladen) return
-  manifestGeladen = true
-  try {
-    const res = await fetch(`${BASIS}/audio/manifest.json`, { cache: 'force-cache' })
-    if (res.ok) manifest = await res.json()
-  } catch {
-    manifest = null // nog niets ingesproken: we gebruiken de stem van het apparaat
-  }
+function laadManifest(): Promise<void> {
+  if (manifestBelofte) return manifestBelofte
+  manifestBelofte = (async () => {
+    try {
+      // Geen force-cache: de service worker doet voor dit bestand al netwerk-eerst
+      // (public/sw.js), en force-cache pakt de HTTP-cache ook als die verlopen is.
+      // Dan blijft een kind na een nieuwe opname op het oude manifest hangen en valt
+      // elke nieuwe zin terug op de apparaatstem.
+      const res = await fetch(`${BASIS}/audio/manifest.json`, { cache: 'no-cache' })
+      if (res.ok) manifest = await res.json()
+    } catch {
+      manifest = null // nog niets ingesproken: we gebruiken de stem van het apparaat
+    }
+  })()
+  return manifestBelofte
 }
 
+/**
+ * De lopende controle "is de apparaatstem gaan praten?", zodat stoppen hem kan afbreken.
+ *
+ * Zonder dit liep hij na stopSpeaking() gewoon door, zag dat er niet gepraat werd (want
+ * cancel()), en zette de zin klaar voor de volgende tik. Wie binnen 400 ms van scherm
+ * wisselde, hoorde op het nieuwe scherm de zin van het oude.
+ */
+let stilteControle: ReturnType<typeof setTimeout> | null = null
+
 export function stopSpeaking() {
+  if (stilteControle) {
+    clearTimeout(stilteControle)
+    stilteControle = null
+  }
+  geblokkeerdeZin = null
+  klaarMetSpreken()
   if (huidigeAudio) {
     huidigeAudio.pause()
     huidigeAudio = null
@@ -94,28 +227,58 @@ export function kies(varianten: readonly string[], groep = 'algemeen'): string {
 /**
  * Spreekt een zin uit. Breekt een lopende zin netjes af — wat het kind nú doet is
  * altijd belangrijker dan wat Pip nog aan het zeggen was.
+ *
+ * `opVerzoek` is voor de luidsprekerknop: de instelling "Pip praat" zet het
+ * automatische voorlezen uit, maar een kind dat zélf op de luidspreker tikt vraagt er
+ * om. Zonder dit onderscheid was die knop dood voor precies het kind dat hem nodig
+ * heeft — een van vier, dat de tekst eronder niet kan lezen.
  */
-export async function speak(tekst: string): Promise<void> {
+export async function speak(tekst: string, opVerzoek = false): Promise<void> {
   if (!tekst) return
+  const mijnBeurt = ++beurt
   stopSpeaking()
+  if (typeof window === 'undefined') return
+  // Eerst de vraag "mag dit al?", pas daarna de ondertitel. Andersom verscheen de
+  // ondertitel met de standaardinstelling in beeld voordat bekend was wat de ouder
+  // had gekozen — dezelfde race die voor de stem al gerepareerd was.
+  if (!opVerzoek && !configToegepast) {
+    wachtendeZin = tekst
+    return
+  }
   if (config.ondertiteling) ondertitelListener?.(tekst)
-  if (!config.spraak || typeof window === 'undefined') return
+  if (!opVerzoek && !config.spraak) return
 
   await laadManifest()
+  // Tijdens het ophalen kan er alweer een nieuwe zin gestart zijn.
+  if (mijnBeurt !== beurt) return
   const sleutel = zinSleutel(tekst)
 
   if (manifest && sleutel in manifest) {
+    const audio = new Audio(`${BASIS}/audio/${sleutel}.mp3`)
+    audio.playbackRate = config.tempo
+    huidigeAudio = audio
+    audio.addEventListener('ended', klaarMetSpreken, { once: true })
+    audio.addEventListener('error', klaarMetSpreken, { once: true })
     try {
-      const audio = new Audio(`${BASIS}/audio/${sleutel}.mp3`)
-      audio.playbackRate = config.tempo
-      huidigeAudio = audio
+      beginTeSpreken()
       await audio.play()
       return
-    } catch {
-      // val door naar de stem van het apparaat
+    } catch (e) {
+      if (huidigeAudio === audio) huidigeAudio = null
+      // Geweigerd omdat er nog niet getikt is? Dan niet de robot erin gooien, maar
+      // wachten tot het kind iets aanraakt en dan alsnog Pip laten praten.
+      klaarMetSpreken()
+      if ((e as DOMException)?.name === 'NotAllowedError') {
+        geblokkeerdeZin = tekst
+        geblokkeerdeBeurt = mijnBeurt
+        wachtOpEersteTik()
+        return
+      }
+      // Iets anders mis met het bestand: dan is de apparaatstem beter dan stilte.
     }
   }
 
+  if (mijnBeurt !== beurt) return
   if (!('speechSynthesis' in window)) return
   if (!stemmenGeladen) {
     // Safari en Chrome leveren de stemmenlijst pas asynchroon aan.
@@ -128,7 +291,40 @@ export async function speak(tekst: string): Promise<void> {
   zin.pitch = 1.15
   const stem = nederlandseStem()
   if (stem) zin.voice = stem
+  beginTeSpreken()
+  let begonnen = false
+  zin.onstart = () => {
+    begonnen = true
+  }
+  zin.onend = klaarMetSpreken
+  zin.onerror = klaarMetSpreken
   window.speechSynthesis.speak(zin)
+
+  // Hetzelfde vangnet als bij de opnames, maar dan voor de apparaatstem.
+  //
+  // Een browser weigert geluid tot er getikt is. Bij een opname zegt hij dat met een
+  // NotAllowedError en vangen we dat hierboven af; speechSynthesis.speak() zégt niets
+  // en gooit niets, hij doet gewoon niets. Het gevolg is stilte, en voor een kind dat
+  // niet leest is stilte hetzelfde als een leeg scherm.
+  //
+  // Er is geen nette manier om te vragen "is het gelukt", dus we kijken even later of
+  // hij aan het praten is of nog in de wachtrij staat. Zo niet, dan is de zin
+  // verdampt en zetten we hem klaar voor de eerstvolgende aanraking.
+  //
+  // Eén keer, en niet vaker: anders herhaalt een zin zich bij elke tik op een apparaat
+  // dat helemaal geen stem heeft, en dat is erger dan de stilte die we repareren.
+  if (!alGeprobeerd.has(tekst)) {
+    stilteControle = setTimeout(() => {
+      stilteControle = null
+      const praat = window.speechSynthesis.speaking || window.speechSynthesis.pending
+      if (begonnen || praat || mijnBeurt !== beurt) return
+      alGeprobeerd.add(tekst)
+      klaarMetSpreken()
+      geblokkeerdeZin = tekst
+      geblokkeerdeBeurt = mijnBeurt
+      wachtOpEersteTik()
+    }, GEEN_GELUID_MS)
+  }
 }
 
 /** Spreekt één willekeurige variant uit een lijstje uit. */

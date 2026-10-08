@@ -7,10 +7,12 @@ import {
   applyMove,
   parseBoard,
   pieceMoves,
+  PIECE_VALUE,
   type BoardMap,
   type Square,
 } from '@/engine/board'
 import { korstePad, slaAllesOp } from '@/engine/puzzels'
+import { Game, type GameMove } from '@/engine/game'
 import type { Exercise } from '@/content/types'
 
 export type OpgaveStand = {
@@ -20,6 +22,15 @@ export type OpgaveStand = {
   gevonden: Square[]
   /** Velden die het kind fout heeft aangetikt (blijven kort staan). */
   misser: Square | null
+  /**
+   * De antwoorden die nog open staan bij een opgave met meerdere goede antwoorden.
+   *
+   * Bij "tik een hele lijn aan" staan hier eerst alle acht de lijnen in. De eerste tik
+   * bepaalt welke het wordt: alle verzamelingen zonder dat veld vallen af. Zo is elk
+   * goed antwoord goed, en blijft het na de eerste tik één opgave in plaats van een
+   * wolk van goede velden.
+   */
+  varianten: Square[][] | null
   geselecteerd: Square | null
   /** Waar staat het stuk waarmee we bezig zijn (verandert bij reach/captureAll). */
   actiefStuk: Square | null
@@ -28,6 +39,8 @@ export type OpgaveStand = {
   hints: number
   klaar: boolean
   laatsteZet: [Square, Square] | null
+  /** Alleen bij 'regelZet': de partij met alle echte schaakregels erin. */
+  game?: Game
 }
 
 export type TikUitkomst =
@@ -50,8 +63,52 @@ export function doelVelden(opgave: Exercise): Square[] {
   return []
 }
 
-export function startOpgave(opgave: Exercise): OpgaveStand {
+/**
+ * De velden die nu nog goed zijn, gegeven wat het kind al aangetikt heeft.
+ *
+ * Zonder varianten is dat gewoon het antwoord. Met varianten is het de vereniging van
+ * alle antwoorden die nog open staan — vóór de eerste tik dus alle acht de lijnen,
+ * daarna alleen die ene.
+ */
+export function doelVeldenNu(stand: OpgaveStand): Square[] {
+  if (!stand.varianten) return doelVelden(stand.opgave)
+  const uit = new Set<Square>()
+  for (const variant of stand.varianten) variant.forEach((v) => uit.add(v))
+  return [...uit]
+}
+
+/**
+ * Zet de antwoorden van een quiz in een vaste, maar niet-voorspelbare volgorde.
+ *
+ * In alle 94 quizzen van de app stond het goede antwoord op de eerste plek. Een kind
+ * dat niet leest — en dat is de hele doelgroep van de eerste werelden — haalt dan drie
+ * sterren op élke quiz door steeds de bovenste knop te tikken, zonder één schaakregel
+ * te kennen. De volgorde hangt af van de vraagtekst zelf, dus hij is voor iedereen
+ * hetzelfde en verandert niet tussen serveren en tekenen (anders klaagt React over
+ * hydratie), maar hij verschilt wél per vraag.
+ */
+function husselOpties(opgave: Exercise): Exercise {
+  if (opgave.kind !== 'quiz') return opgave
+  let zaad = 5381
+  for (let i = 0; i < opgave.vraag.length; i++) {
+    zaad = ((zaad << 5) + zaad + opgave.vraag.charCodeAt(i)) >>> 0
+  }
+  const volgende = () => {
+    zaad = (zaad * 1103515245 + 12345) % 2147483648
+    return zaad / 2147483648
+  }
+  const opties = [...opgave.opties]
+  for (let i = opties.length - 1; i > 0; i--) {
+    const j = Math.floor(volgende() * (i + 1))
+    ;[opties[i], opties[j]] = [opties[j], opties[i]]
+  }
+  return { ...opgave, opties }
+}
+
+export function startOpgave(ruwe: Exercise): OpgaveStand {
+  const opgave = husselOpties(ruwe)
   const board = opgave.kind === 'quiz' ? {} : parseBoard(opgave.fen)
+  const game = opgave.kind === 'regelZet' ? new Game(opgave.fen) : undefined
   const actiefStuk =
     opgave.kind === 'reach' || opgave.kind === 'captureAll'
       ? opgave.from
@@ -63,6 +120,8 @@ export function startOpgave(opgave: Exercise): OpgaveStand {
     board,
     gevonden: [],
     misser: null,
+    varianten:
+      opgave.kind === 'tapSquares' && opgave.varianten?.length ? opgave.varianten : null,
     geselecteerd: null,
     actiefStuk,
     zetten: 0,
@@ -70,7 +129,18 @@ export function startOpgave(opgave: Exercise): OpgaveStand {
     hints: 0,
     klaar: false,
     laatsteZet: null,
+    game,
   }
+}
+
+/**
+ * De velden waar het aangetikte stuk heen mag. Bij de gewone opgaven is dat meetkundig,
+ * bij een regelZet vraagt hij het aan chess.js — die weet ook dat je je koning niet in
+ * schaak mag laten staan.
+ */
+export function mogelijkeVelden(stand: OpgaveStand, veld: Square): Square[] {
+  if (stand.opgave.kind === 'regelZet') return stand.game?.destinations(veld) ?? []
+  return pieceMoves(stand.board, veld).all
 }
 
 function vijandenOver(board: BoardMap, kleur: 'w' | 'b'): number {
@@ -85,10 +155,29 @@ export function tik(stand: OpgaveStand, veld: Square): { stand: OpgaveStand; uit
   const o = stand.opgave
   if (stand.klaar || o.kind === 'quiz') return { stand, uit: 'genegeerd' }
 
+  /* ---- zet volgens de echte regels ---- */
+  if (o.kind === 'regelZet') return tikRegelZet(stand, veld, o)
+
   /* ---- tik-opgaven: velden aanwijzen ---- */
   if (o.kind === 'tapSquares' || o.kind === 'tapMoves') {
-    const doelen = doelVelden(o)
     if (stand.gevonden.includes(veld)) return { stand, uit: 'genegeerd' }
+
+    // Met varianten kiest de tik welk antwoord het wordt: alles waar dit veld niet in
+    // zit valt af. Blijft er niets over, dan was de tik fout.
+    if (stand.varianten) {
+      const nog = stand.varianten.filter((v) => v.includes(veld))
+      if (nog.length) {
+        const gevonden = [...stand.gevonden, veld]
+        const klaar = gevonden.length === nog[0].length
+        return {
+          stand: { ...stand, gevonden, varianten: nog, misser: null, klaar },
+          uit: klaar ? 'klaar' : 'goed',
+        }
+      }
+      return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1 }, uit: 'fout' }
+    }
+
+    const doelen = doelVelden(o)
     if (doelen.includes(veld)) {
       const gevonden = [...stand.gevonden, veld]
       const klaar = gevonden.length === doelen.length
@@ -119,6 +208,18 @@ export function tik(stand: OpgaveStand, veld: Square): { stand: OpgaveStand; uit
 
   const van = stand.geselecteerd
   if (veld === van) return { stand: { ...stand, geselecteerd: null }, uit: 'genegeerd' }
+
+  // Een ander eigen stuk aantikken is van gedachten veranderen, geen fout. Een kind dat
+  // de toren pakt, zich bedenkt en de koning aantikt, deed precies wat de les vraagt —
+  // dat mag geen ster kosten. Blijkt de nieuwe keuze verkeerd, dan merkt het kind dat
+  // vanzelf bij de zet zelf.
+  //
+  // Bij 'reach' en 'captureAll' kan dat niet: daar hoort de hele opgave bij één stuk,
+  // en met een ander stuk zetten zou de puzzel stukmaken.
+  const eigenKleur = stand.board[van]?.color
+  if (o.kind === 'move' && stuk && stuk.color === eigenKleur) {
+    return { stand: { ...stand, geselecteerd: veld, misser: null }, uit: 'geselecteerd' }
+  }
 
   const mogelijk = pieceMoves(stand.board, van)
   if (!mogelijk.all.includes(veld)) {
@@ -154,9 +255,20 @@ export function tik(stand: OpgaveStand, veld: Square): { stand: OpgaveStand; uit
     const zetten = stand.zetten + 1
     const klaar = veld === o.doel
     const teVeel = !klaar && o.maxZetten !== undefined && zetten >= o.maxZetten
-    if (teVeel) {
+    // Of: het doel is vanaf hier helemaal niet meer te halen. In `laatste-pion` kon een
+    // pion schuin slaan, van zijn lijn af raken en achter een eigen pion vast komen te
+    // staan. Zonder `maxZetten` greep niets in: een dood bord, een tipje dat niets
+    // aanwees, en geen knop die het zei.
+    //
+    // Alleen een pion kan zo vastlopen. Elk ander stuk kan dezelfde weg terug, en slaan
+    // haalt alleen obstakels weg, dus wat bereikbaar was blijft bereikbaar. Daarom wordt
+    // er alleen bij een pion gezocht, en ruim, zodat een lange maar mogelijke route
+    // nooit voor doodlopend wordt aangezien.
+    const wasPion = stand.board[van]?.type === 'p'
+    const vast = !klaar && wasPion && !korstePad(board, veld, o.doel, 16)
+    if (teVeel || vast) {
       // Niet "fout", maar gewoon opnieuw beginnen: het kind heeft niets verkeerd gedaan,
-      // het lukte alleen niet binnen het aantal zetten.
+      // het lukte alleen niet zo.
       return {
         stand: { ...startOpgave(o), fouten: stand.fouten + 1, hints: stand.hints },
         uit: 'opnieuw',
@@ -203,6 +315,139 @@ export function tik(stand: OpgaveStand, veld: Square): { stand: OpgaveStand; uit
   return { stand, uit: 'genegeerd' }
 }
 
+/**
+ * Eén tik in een regelZet-opgave. Wat "goed" is, hangt af van wat de zet bereikt,
+ * niet van welk veld het is: uit schaak gaan mag op drie manieren.
+ */
+function tikRegelZet(
+  stand: OpgaveStand,
+  veld: Square,
+  o: Extract<Exercise, { kind: 'regelZet' }>,
+): { stand: OpgaveStand; uit: TikUitkomst } {
+  const game = stand.game
+  if (!game) return { stand, uit: 'genegeerd' }
+
+  if (!stand.geselecteerd) {
+    const stuk = stand.board[veld]
+    if (!stuk || stuk.color !== game.turn) return { stand, uit: 'genegeerd' }
+    if (!game.destinations(veld).length) {
+      // Dit stuk kan geen enkele legale zet doen — meestal omdat de koning schaak staat.
+      return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1 }, uit: 'fout' }
+    }
+    return { stand: { ...stand, geselecteerd: veld, misser: null }, uit: 'geselecteerd' }
+  }
+
+  const van = stand.geselecteerd
+  if (veld === van) return { stand: { ...stand, geselecteerd: null }, uit: 'genegeerd' }
+
+  // Ook hier: een ander eigen stuk kiezen is geen fout maar een andere gedachte.
+  const ander = stand.board[veld]
+  if (ander && ander.color === game.turn) {
+    return { stand: { ...stand, geselecteerd: veld, misser: null }, uit: 'geselecteerd' }
+  }
+
+  const proef = game.clone()
+  const gedaan = proef.move(van, veld)
+  if (!gedaan) {
+    // chess.js weigert alles wat niet mag. Precies daar zit de les: een zet die je
+    // koning schaak laat staan, bestaat niet.
+    return {
+      stand: { ...stand, misser: veld, fouten: stand.fouten + 1, geselecteerd: null },
+      uit: 'fout',
+    }
+  }
+
+  if (!voldoetAanEis(game, gedaan, o.eis)) {
+    return {
+      stand: { ...stand, misser: veld, fouten: stand.fouten + 1, geselecteerd: null },
+      uit: 'fout',
+    }
+  }
+
+  return {
+    stand: {
+      ...stand,
+      game: proef,
+      board: parseBoard(proef.fen),
+      geselecteerd: null,
+      zetten: stand.zetten + 1,
+      laatsteZet: [van, veld],
+      klaar: true,
+    },
+    uit: 'klaar',
+  }
+}
+
+type Eis = Extract<Exercise, { kind: 'regelZet' }>['eis']
+
+/**
+ * Voldoet deze zet aan de eis? De enige plek waar dat beslist wordt.
+ *
+ * Er waren er twee: deze vraag stond hier voor de hint en de contentcontrole, en nog
+ * een keer als eigen keten in `tikRegelZet`, voor het kind. Toen en passant erbij kwam,
+ * kreeg alleen de eerste een tak. De contentcontrole vond de opgave dus oplosbaar, Pip
+ * wees de goede pion aan, en het kind kreeg voor precies die zet een kruisje. Drie
+ * opgaven lang, in les 24 van 49, en daarachter ging niets meer open.
+ */
+function voldoetAanEis(game: Game, zet: GameMove, eis: Eis): boolean {
+  if (eis === 'uitSchaak') return true // elke legale zet haalt je koning uit schaak; dat is het punt
+  if (eis === 'rokeer') return zet.san.startsWith('O-O')
+  if (eis === 'enPassant') return zet.isEnPassant
+  const na = game.clone()
+  na.move(zet.from, zet.to, zet.promotion)
+  const status = na.status()
+  const mat = status.over && status.reason === 'mat'
+  return eis === 'matIn1' ? mat : zet.isCheck || mat
+}
+
+/** Alle zetten die aan de eis voldoen. Ook gebruikt door de contentcontrole. */
+export function goedeZetten(game: Game, eis: Eis) {
+  // Alleen promoveren tot dame: dat is wat het bord doet als een kind een pion naar de
+  // overkant tikt. Stonden de andere drie hier ook in, dan wees de hint soms "promoveer
+  // tot paard, dat geeft schaak" aan, maakte het bord er een dame van, en kreeg het
+  // kind een kruisje voor wat Pip net voordeed.
+  const alle = game
+    .legalMoves()
+    .filter((zet) => !zet.promotion || zet.promotion === 'q')
+    .filter((zet) => voldoetAanEis(game, zet, eis))
+
+  // Schaak geven met een stuk dat daarna gratis van het bord gaat, is geen goed
+  // schaak. Twee werelden eerder is "kijk of hij kan terugslaan" juist de hele les,
+  // dus zo'n zet mogen we hier niet met een sterretje belonen.
+  // Blijft er niets over — dan bestaat er in deze stelling geen veilig schaak — dan
+  // keuren we ze alsnog allemaal goed: het kind mag nooit vastlopen op een opgave
+  // waarin geen goed antwoord bestaat.
+  if (eis !== 'geefSchaak') return alle
+  const veilig = alle.filter((zet) => materieelSaldo(game, zet) >= 0)
+  return veilig.length ? veilig : alle
+}
+
+/**
+ * Wat kost deze zet, als beide kanten daarna één keer het slaan afmaken?
+ * Een miniatuur-ruilrekening: wat we pakken, min wat we kwijtraken, plus wat we
+ * terugpakken. Genoeg om "dame weggeven" van "toren winnen" te onderscheiden.
+ */
+function materieelSaldo(game: Game, zet: { from: Square; to: Square }): number {
+  const na = game.clone()
+  const gedaan = na.move(zet.from, zet.to)
+  if (!gedaan) return 0
+  const gepakt = gedaan.captured ? PIECE_VALUE[gedaan.captured] : 0
+  const onsStuk = PIECE_VALUE[gedaan.promotion ?? parseBoard(game.fen)[zet.from].type]
+
+  const terugslagen = na.legalMoves().filter((z) => z.to === zet.to)
+  if (!terugslagen.length) return gepakt
+
+  let slechtste = Infinity
+  for (const slag of terugslagen) {
+    const naSlag = na.clone()
+    const slagStuk = PIECE_VALUE[parseBoard(na.fen)[slag.from].type]
+    naSlag.move(slag.from, slag.to)
+    const heroveren = naSlag.legalMoves().some((z) => z.to === zet.to)
+    slechtste = Math.min(slechtste, gepakt - onsStuk + (heroveren ? slagStuk : 0))
+  }
+  return slechtste
+}
+
 /** Antwoord op een meerkeuzevraag. */
 export function antwoordQuiz(stand: OpgaveStand, index: number): { stand: OpgaveStand; goed: boolean } {
   const o = stand.opgave
@@ -215,18 +460,32 @@ export function antwoordQuiz(stand: OpgaveStand, index: number): { stand: Opgave
 }
 
 /**
- * De hint van Pip: één veld, nooit het hele antwoord. Bij zetopgaven wijst hij het
- * volgende veld van de route aan, bij tik-opgaven een veld dat nog niet gevonden is.
+ * De hint van Pip. Vraag je er nog eens om, dan wordt hij concreter.
+ *
+ * Dat laatste ontbrak: bij een zetopgave wees hij altijd hetzelfde stuk aan, hoe vaak
+ * je ook drukte. Een kind dat de matzet niet ziet, kwam er dus nooit uit — de enige
+ * uitweg was de les verlaten. Voor deze doelgroep is dat het moment waarop de tablet
+ * dichtgaat.
+ *
+ * De regel is nu: eerst een duwtje, daarna het antwoord. Liever een kind dat het met
+ * hulp goed doet dan een kind dat vastloopt; de sterren regelen de rest al.
  */
 export function hint(stand: OpgaveStand): { stand: OpgaveStand; velden: Square[] } {
   const o = stand.opgave
   const nieuw = { ...stand, hints: stand.hints + 1 }
 
   if (o.kind === 'tapSquares' || o.kind === 'tapMoves') {
-    const rest = doelVelden(o).filter((sq) => !stand.gevonden.includes(sq))
+    // Bij varianten wijst de hint een veld aan dat nog open staat. Vóór de eerste tik
+    // is dat er één uit de eerste variant: hij kiest dus een antwoord, en dat is
+    // precies wat een kind dat vastloopt nodig heeft.
+    const open = stand.varianten ? stand.varianten[0] : doelVelden(o)
+    const rest = open.filter((sq) => !stand.gevonden.includes(sq))
     return { stand: nieuw, velden: rest.slice(0, 1) }
   }
   if (o.kind === 'move') {
+    const van = o.from ?? Object.keys(stand.board).find((sq) => stand.board[sq].color === 'w')
+    // Eerste keer het stuk, daarna waar het heen moet.
+    if (stand.hints === 0) return { stand: nieuw, velden: van ? [van] : [] }
     return { stand: nieuw, velden: o.goed.slice(0, 1) }
   }
   if (o.kind === 'reach') {
@@ -238,6 +497,13 @@ export function hint(stand: OpgaveStand): { stand: OpgaveStand; velden: Square[]
     const van = stand.actiefStuk ?? o.from
     const pad = slaAllesOp(stand.board, van, o.elkeZetRaak)
     return { stand: nieuw, velden: pad?.slice(0, 1) ?? [] }
+  }
+  if (o.kind === 'regelZet' && stand.game) {
+    const zet = goedeZetten(stand.game, o.eis)[0]
+    if (!zet) return { stand: nieuw, velden: [] }
+    // Eerste keer het stuk, daarna ook het veld waar het heen moet.
+    if (stand.hints === 0) return { stand: nieuw, velden: [zet.from] }
+    return { stand: nieuw, velden: [zet.from, zet.to] }
   }
   return { stand: nieuw, velden: [] }
 }

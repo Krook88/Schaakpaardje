@@ -96,8 +96,17 @@ Vier bewuste afwijkingen van het plan, gemaakt tijdens het bouwen:
 4. **localStorage in plaats van Dexie.** De voortgang van één kind is een paar kilobyte.
    IndexedDB is pas nodig als er partijgeschiedenis en puzzelstatistiek bij komen.
 
-Nog niet gebouwd (staat op de roadmap voor fase 2): Stockfish, Rive-animaties,
-de werelden 7 tot en met 14, en de ingesproken audio (zie hieronder).
+5. **Een eigen zoeker in plaats van Stockfish.** Voor de niveaus die deze app nodig
+   heeft is Stockfish kanonnen op muggen: een megabyte WebAssembly, een worker, plus een
+   laag die de engine kunstmatig dommer moet maken. `src/engine/zoeker.ts` is een negamax
+   met alfa-bèta, stukwaarden en positietabellen — een paar kilobyte, exact te doseren op
+   zoekdiepte, en getest. Diepte 3 kost ongeveer 800 ms; diepte 4 acht seconden, en dat
+   is te veel voor de hoofdthread. Wil je echt hoge speelsterkte (de Draak van niveau 8),
+   dan komt Stockfish erbij achter dezelfde `kies(game)`-interface, of gaat de zoeker
+   naar een web worker.
+
+Nog niet gebouwd: Rive-animaties voor Pip, de ingesproken audio (zie hieronder), en de
+tegenstanders boven de 1500.
 
 ## 5.6 Stand van de audio
 

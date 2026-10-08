@@ -59,6 +59,55 @@ speelbaar zonder te kunnen lezen; vanaf 7 mag lichte tekst.
 - **Les 4.4 — "Parcours"**: bereik het doelveld in exact N sprongen (mini knight's tour).
 - **Toets**: 8 gemengde opgaven → hoefijzer-diploma "Paardenmeester".
 
+## 3.4b Wat er nu gebouwd is
+
+Alle 15 werelden staan in de app (`src/content/werelden/`), samen 47 lessen en 15 minispellen.
+
+Wereld 7 en 8 zijn didactisch een breuk met de eerste zeven: daar paste een kind een
+regel toe, hier moet het **kiezen**. Twee zetten mogen allebei, maar eentje is beter.
+Daarom zijn de antwoorden in die werelden niet met de hand ingetypt maar door de engine
+berekend — `veiligeVelden`, `bedreigdeStukken` en `aanvallersVan` in `src/engine/board.ts`
+zeggen precies welke velden veilig zijn en wie er aanvalt. `tests/wereld78.test.ts`
+rekent het bij elke testronde opnieuw na, dus een gewijzigde stelling met een verouderd
+antwoord valt meteen om.
+
+Wereld 8 leert drie manieren om een aangevallen stuk te redden: weglopen, de aanvaller
+slaan, en dekken. Dat zijn dezelfde drie die straks bij schaak terugkomen — dat is precies
+waarom deze wereld vóór wereld 9 staat.
+
+### Wereld 9 en het punt waarop de regels erbij komen
+
+Tot en met wereld 8 rekende de app meetkundig: waar mag dit stuk heen. Bij schaak kan
+dat niet meer — dan telt ook wat er ná de zet gebeurt, en bestaat een zet die je koning
+in het schaak laat staan simpelweg niet. Daarvoor is het opgavetype `regelZet`
+toegevoegd, dat op chess.js draait.
+
+Het beoordeelt een zet op **wat hij bereikt**, niet op welk veld het is. Dat moest wel:
+uit schaak gaan kan op drie manieren (weglopen, de aanvaller slaan, ertussen zetten) en
+die zijn alle drie goed. Een opgave met één "juist" veld zou hier fout onderwijs zijn.
+
+Mooie bijvangst: het bord toont bij een regelZet alleen de zetten die écht mogen. Een
+kind dat zijn koning naar een aangevallen veld wil zetten, ziet dat veld niet oplichten —
+de regel legt zichzelf uit.
+
+### Wereld 10 tot en met 14
+
+- **10 Matklif** — mat, mat in 1, pat en remise. Mat komt hier pas, na tien werelden. Dat
+  uitstel is de kern van de methode: een kind dat hier aankomt weet al dat een aangevallen
+  stuk drie uitwegen heeft, en snapt mat daardoor als "alle drie zitten dicht" in plaats
+  van als een truc.
+- **11 Rokadehaven** — de enige zet met twee stukken tegelijk, en vier voorwaarden. Het
+  bord doet hier het uitleggen: mag de rokade niet, dan licht hij niet op.
+- **12 Notatie-eiland** — veldnamen, zetten opschrijven, openingsprincipes. Deze lessen
+  zetten de coördinaten altijd aan (`toonCoordinaten`), ook als de ouder ze uit heeft staan.
+- **13 Tactiekgrot** — dubbele aanval en penning. De stellingen zijn niet verzonnen maar
+  gezocht: een script heeft het bord afgezocht naar posities waar precies één zet werkt.
+- **14 Eindspelduinen** — de koning als sterk stuk, mat met dame en toren, en de laatste
+  pion naar de overkant.
+
+Alle stellingen met schaak, mat of rokade zijn met chess.js nagerekend, en
+`tests/wereld10-14.test.ts` doet dat bij elke testronde opnieuw.
+
 ## 3.5 Diploma's
 Drie interne diploma's, met een printbaar/deelbaar certificaat met de naam van het kind:
 - **Hoefijzer Brons** — werelden 0–6 (alle stukken en regels behalve mat).
