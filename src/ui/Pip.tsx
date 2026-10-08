@@ -55,11 +55,20 @@ export function Pip({
   zegt,
   stemming = 'blij',
   klein = false,
+  vanzelf = true,
   onKlaar,
 }: {
   zegt?: string
   stemming?: PipStemming
   klein?: boolean
+  /**
+   * Zegt Pip zijn zin zodra hij in beeld komt? Op de welkomstpagina niet: daar komt
+   * een ouder voor het eerst binnen, en een paardje dat ineens begint te praten (of,
+   * omdat de browser geluid tegenhoudt, bij de eerste tik op wat dan ook) laat
+   * schrikken. Daar staat de zin in de ballon en spreekt Pip pas als je op hem of op
+   * de luidspreker tikt.
+   */
+  vanzelf?: boolean
   onKlaar?: () => void
 }) {
   const [ondertitel, setOndertitel] = useState<string | null>(null)
@@ -83,7 +92,7 @@ export function Pip({
   }, [zegt, stemming])
 
   useEffect(() => {
-    if (!zegt) return
+    if (!zegt || !vanzelf) return
     let actueel = true
     setPratend(true)
     void speak(zegt)
@@ -95,7 +104,7 @@ export function Pip({
       setPratend(false)
       stopSpeaking()
     }
-  }, [zegt])
+  }, [zegt, vanzelf])
 
   const tekst = ondertitel ?? zegt ?? null
 

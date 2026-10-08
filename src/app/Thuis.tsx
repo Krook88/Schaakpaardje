@@ -415,7 +415,15 @@ function NieuwProfiel({
           stond ook. Dat blok was tekst zonder beeld en het verscheen pas na hydratie,
           dus een zoekmachine zag er niets van. Wat er nu boven staat is dezelfde uitleg
           met echte schermafbeeldingen, en die staat wél in de gebouwde HTML. */}
-      <Pip zegt={WELKOM} stemming="blij" />
+      {/* Niet vanzelf praten: dit is het eerste wat een nieuwe bezoeker ziet. Eerst
+          vertellen dat Pip praat, dan mag je hem zelf aanzetten. Na "Beginnen" praat hij
+          wel uit zichzelf, want dan is er gekozen om te starten. */}
+      <Pip zegt={WELKOM} stemming="blij" vanzelf={false} />
+      <p className="muted" style={{ margin: 0 }}>
+        Pip leest alles voor, dus lezen hoeft nog niet. Zet het geluid van je apparaat
+        aan en tik op de luidspreker <span aria-hidden="true">🔊</span> om hem te horen. Na
+        &ldquo;Beginnen&rdquo; praat hij vanzelf.
+      </p>
 
       {bestaand.length > 0 && (
         <section className="card stack">

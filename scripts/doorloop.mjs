@@ -199,7 +199,56 @@ async function altijdEenUitweg() {
   meld('elk scherm heeft een uitweg', zonder.length === 0, zonder.join(', '))
 }
 
+/* ------------------------------------------------------------------ *
+ * 0. Een nieuwe bezoeker schrikt niet van een pratend paardje.
+ *
+ * Op de welkomstpagina begon Pip vanzelf te praten. Omdat de browser geluid
+ * tegenhoudt tot er getikt is, gebeurde dat bij de eerste tik op wat dan ook: in
+ * het naamveld, op een plaatje. Nu zwijgt hij daar tot je op de luidspreker tikt,
+ * en praat hij pas vanzelf na "Beginnen". Gemeld door Kaj.
+ * ------------------------------------------------------------------ */
+async function pipZwijgtBijBinnenkomst() {
+  const naam = 'nieuwe bezoeker hoort Pip pas als hij erom vraagt'
+  const ctx = await browser.newContext({ viewport: { width: 420, height: 950 } })
+  // Tel alles wat Pip zegt, via de apparaatstem én via opnames.
+  await ctx.addInitScript(() => {
+    window.__gezegd = []
+    const s = window.speechSynthesis
+    if (s) {
+      const echt = s.speak.bind(s)
+      s.speak = (u) => {
+        window.__gezegd.push(u.text)
+        echt(u)
+      }
+    }
+    const play = HTMLMediaElement.prototype.play
+    HTMLMediaElement.prototype.play = function () {
+      window.__gezegd.push(this.src)
+      return play.call(this)
+    }
+  })
+  const p = await ctx.newPage()
+  const gezegd = () => p.evaluate(() => window.__gezegd.length)
+  await p.goto(URL, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(800)
+  await p.getByRole('textbox').first().click()
+  await p.getByRole('textbox').first().fill('Testkind')
+  await p.waitForTimeout(800)
+  const vooraf = await gezegd()
+  await p.getByRole('button', { name: 'Zeg het nog eens' }).first().click()
+  await p.waitForTimeout(500)
+  const naLuidspreker = await gezegd()
+  await p.getByRole('button', { name: /Beginnen/ }).click()
+  await p.waitForTimeout(1200)
+  const naBeginnen = await gezegd()
+  await ctx.close()
+  if (vooraf > 0) return meld(naam, false, `Pip praatte al ${vooraf} keer voordat er iets gevraagd werd`)
+  if (naLuidspreker === 0) return meld(naam, false, 'de luidspreker deed niets')
+  meld(naam, naBeginnen > naLuidspreker, naBeginnen > naLuidspreker ? '' : 'na Beginnen zei Pip niets')
+}
+
 console.log(`Doorloop tegen ${URL}\n`)
+await pipZwijgtBijBinnenkomst()
 await nieuwProfiel()
 await opdrachtKomtTerug()
 await minispelEindigt()
