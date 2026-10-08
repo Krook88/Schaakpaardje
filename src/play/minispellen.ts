@@ -335,7 +335,7 @@ export const MINISPELLEN: Minispel[] = [
         fen,
         from,
         elkeZetRaak: true,
-        vraag: 'Sla alle zwarte pionnen op. Elke sprong moet raak zijn!',
+        vraag: 'Sla alle zwarte pionnen met je paard. Elke sprong moet raak zijn!',
       }
     },
   },
@@ -836,7 +836,7 @@ export const MINISPEL_ZINNEN: string[] = [
   'Sla alle zwarte pionnen met je toren.',
   'Breng de loper naar de ster.',
   'Breng de dame naar de ster. Om je eigen pionnen heen!',
-  'Sla alle zwarte pionnen op. Elke sprong moet raak zijn!',
+  'Sla alle zwarte pionnen met je paard. Elke sprong moet raak zijn!',
   'Loop met de koning naar de ster. Stapje voor stapje.',
   'Breng deze pion naar de overkant. Dan wordt hij dame!',
   'Pak het duurste stuk dat je kunt pakken.',

@@ -193,7 +193,7 @@ export const wereld6: World = {
           kind: 'captureAll',
           fen: '8/8/8/8/8/1p6/P7/8',
           from: 'a2',
-          vraag: 'Sla de zwarte pion op.',
+          vraag: 'Sla de zwarte pion met jouw pion.',
         },
         {
           kind: 'quiz',

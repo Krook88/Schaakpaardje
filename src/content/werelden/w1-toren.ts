@@ -204,7 +204,7 @@ export const wereld1: World = {
           kind: 'captureAll',
           fen: '8/8/2p5/8/2R2p2/8/8/8',
           from: 'c4',
-          vraag: 'Twee pionnen. Sla ze allebei op.',
+          vraag: 'Er staan twee zwarte pionnen. Sla ze allebei met je toren: eerst de ene, dan de andere.',
         },
         {
           kind: 'quiz',
