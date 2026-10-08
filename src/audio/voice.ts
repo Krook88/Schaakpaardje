@@ -95,6 +95,28 @@ const GEEN_GELUID_MS = 400
 /** Zinnen die we al een keer opnieuw hebben aangeboden. Nooit twee keer. */
 const alGeprobeerd = new Set<string>()
 
+/**
+ * Heeft iemand in deze pagina al ergens op getikt?
+ *
+ * Wie de site opent, komt binnen op het beginscherm, en daar begon Pip vanzelf te
+ * praten. Omdat de browser geluid tegenhoudt tot er getikt is, gebeurde dat bij de
+ * eerste tik op wat dan ook, en dat laat schrikken, elke keer weer. Wie al in de app
+ * bezig is en terugkomt van een les, heeft wél getikt en verwacht Pip juist.
+ */
+let alGetiktVlag = false
+if (typeof window !== 'undefined') {
+  const getikt = () => {
+    alGetiktVlag = true
+    window.removeEventListener('pointerdown', getikt, true)
+    window.removeEventListener('keydown', getikt, true)
+  }
+  window.addEventListener('pointerdown', getikt, true)
+  window.addEventListener('keydown', getikt, true)
+}
+export function alGetikt(): boolean {
+  return alGetiktVlag
+}
+
 let geblokkeerdeZin: string | null = null
 let geblokkeerdeBeurt = 0
 let luistertNaarTik = false

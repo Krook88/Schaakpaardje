@@ -3,7 +3,8 @@
 import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
-import { kies } from '@/audio/voice'
+import { GeluidKnop } from '@/ui/GeluidKnop'
+import { alGetikt, kies } from '@/audio/voice'
 import { EERSTE_KEER, WELKOM, pipZinnen } from '@/content/voice'
 import { lesMet, WERELDEN } from '@/content'
 import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
@@ -51,6 +52,11 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   const voortgang = useVoortgang()
   const stickers = useStickers()
   const verslagen = useVerslagen()
+  // Praat Pip hier vanzelf? Alleen als er al getikt was toen dit scherm verscheen,
+  // dus als je terugkomt van een les. Wie de site net opent, schrikt anders bij de
+  // eerste tik van een pratend paardje. Eén keer vastgelegd: anders gaat hij alsnog
+  // praten zodra er later iets op dit scherm verandert.
+  const [vanzelf] = useState(alGetikt)
 
   // Vóór de opgeslagen profielen binnen zijn.
   //
@@ -103,8 +109,8 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   return (
     <main className="page">
       <div className="stack">
-        <div className="row" style={{ justifyContent: 'space-between' }}>
-          <div className="row">
+        <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
+          <div className="row" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
             <span style={{ fontSize: 34 }} aria-hidden="true">
               {profiel.avatar}
             </span>
@@ -119,9 +125,12 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
               </p>
             </div>
           </div>
-          <Link href="/ouders/" className="btn btn--ghost" aria-label="Voor ouders">
-            ⚙️
-          </Link>
+          <div className="row" style={{ gap: 6, flexWrap: 'nowrap', flexShrink: 0 }}>
+            <GeluidKnop />
+            <Link href="/ouders/" className="btn btn--ghost" aria-label="Voor ouders">
+              ⚙️
+            </Link>
+          </div>
         </div>
 
         <Pip
@@ -136,6 +145,9 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
               : kies(pipZinnen(profiel.modus === 'schaker').WELKOM_TERUG, 'welkom')
           }
           stemming="blij"
+          // Wie de site net opent, hoort Pip pas als hij op hem tikt. Wie terugkomt van
+          // een les, heeft al getikt en hoort hem wel vanzelf. Zie `vanzelf` hierboven.
+          vanzelf={vanzelf}
         />
 
         {/* De rondleiding, alleen zolang er nog niets gedaan is.

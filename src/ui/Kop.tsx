@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { stopSpeaking } from '@/audio/voice'
+import { GeluidKnop } from './GeluidKnop'
 
 /** Bovenbalk: altijd een weg terug, en altijd de knop om Pip stil te zetten. */
 export function Kop({ titel, terug = '/' }: { titel: string; terug?: string }) {
@@ -27,6 +28,7 @@ export function Kop({ titel, terug = '/' }: { titel: string; terug?: string }) {
         ← Terug
       </button>
       <h2 style={{ fontSize: '1.15rem', textAlign: 'center', flex: 1 }}>{titel}</h2>
+      <GeluidKnop />
       <Link
         href="/ouders/"
         className="btn btn--ghost"
