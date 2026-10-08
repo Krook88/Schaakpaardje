@@ -14,7 +14,7 @@ import {
 import { korstePad, slaAllesOp } from '@/engine/puzzels'
 import { Game, type GameMove } from '@/engine/game'
 import type { Exercise } from '@/content/types'
-import { NOG_STEEDS_SCHAAK, ZET_MAG_NIET } from '@/content/voice'
+import { NOG_STEEDS_SCHAAK, STUK_KAN_NIET, ZET_MAG_NIET } from '@/content/voice'
 
 export type OpgaveStand = {
   opgave: Exercise
@@ -152,6 +152,8 @@ function vijandenOver(board: BoardMap, kleur: 'w' | 'b'): number {
  * Eén tik van het kind. Geeft de nieuwe stand terug plus wat er gebeurde, zodat het
  * scherm het juiste geluid en de juiste zin van Pip kan kiezen.
  */
+export type FoutReden = 'nogSchaak' | 'magNiet' | 'stukVast'
+
 export type TikResultaat = {
   stand: OpgaveStand
   uit: TikUitkomst
@@ -160,8 +162,16 @@ export type TikResultaat = {
    * mocht hij wel maar deed hij niet wat er gevraagd werd? Het verschil is de hele
    * les. De fouttip van een opgave gaat over het tweede; zei Pip hem ook bij het
    * eerste, dan hoorde een kind dat nog schaak stond "Je koning is veilig".
+   *
+   * - `nogSchaak`: de koning stapt naar een veld waar hij schaak staat.
+   * - `magNiet`: een ander stuk doet een zet die niet bestaat.
+   * - `stukVast`: dit stuk kan nu helemaal geen zet doen.
+   *
+   * "Nog steeds schaak" alleen bij de koning: bij een loper die recht vooruit gaat is
+   * de reden dat een loper zo niet loopt, en dan was die zin onwaar. Herreview van de
+   * zevende review.
    */
-  reden?: 'magNiet'
+  reden?: FoutReden
 }
 
 export function tik(stand: OpgaveStand, veld: Square): TikResultaat {
@@ -345,7 +355,7 @@ function tikRegelZet(
     if (!stuk || stuk.color !== game.turn) return { stand, uit: 'genegeerd' }
     if (!game.destinations(veld).length) {
       // Dit stuk kan geen enkele legale zet doen — meestal omdat de koning schaak staat.
-      return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1 }, uit: 'fout', reden: 'magNiet' }
+      return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1 }, uit: 'fout', reden: 'stukVast' }
     }
     return { stand: { ...stand, geselecteerd: veld, misser: null }, uit: 'geselecteerd' }
   }
@@ -367,7 +377,7 @@ function tikRegelZet(
     return {
       stand: { ...stand, misser: veld, fouten: stand.fouten + 1, geselecteerd: null },
       uit: 'fout',
-      reden: 'magNiet',
+      reden: koningStaptInSchaak(stand, van, veld) ? 'nogSchaak' : 'magNiet',
     }
   }
 
@@ -427,8 +437,22 @@ function voldoetAanEis(game: Game, zet: GameMove, eis: Eis): boolean {
  * Wat Pip zegt na een fout. Bij een onmogelijke zet een vaste zin over de regels, en
  * nooit de fouttip van de opgave: die gaat over een zet die wél mag.
  */
-export function foutZin(stand: OpgaveStand, reden?: 'magNiet'): string | undefined {
-  if (reden === 'magNiet') return stand.game?.inCheck ? NOG_STEEDS_SCHAAK : ZET_MAG_NIET
+/**
+ * Stapt de koning één veld en blijft (of komt) hij daar schaak te staan? Alleen dan
+ * klopt "nog steeds schaak". Een koning die twee velden springt, staat niet schaak:
+ * die loopt gewoon niet zo.
+ */
+function koningStaptInSchaak(stand: OpgaveStand, van: Square, naar: Square): boolean {
+  if (stand.board[van]?.type !== 'k' || !stand.game?.inCheck) return false
+  const df = Math.abs(van.charCodeAt(0) - naar.charCodeAt(0))
+  const dr = Math.abs(Number(van[1]) - Number(naar[1]))
+  return df <= 1 && dr <= 1
+}
+
+export function foutZin(stand: OpgaveStand, reden?: FoutReden): string | undefined {
+  if (reden === 'stukVast') return STUK_KAN_NIET
+  if (reden === 'nogSchaak') return NOG_STEEDS_SCHAAK
+  if (reden === 'magNiet') return ZET_MAG_NIET
   return 'foutTip' in stand.opgave ? stand.opgave.foutTip : undefined
 }
 

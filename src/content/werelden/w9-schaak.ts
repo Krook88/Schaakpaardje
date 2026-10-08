@@ -170,7 +170,7 @@ export const wereld9: World = {
         // als "dan is schaak dus ongevaarlijk". Zevende review.
         'Drie: er iets tussen zetten. Weglopen en slaan ken je al van de Aanvalsberg. Dekken helpt hier niet: je koning mag nooit aangevallen blijven staan.',
         // De fout die kinderen het vaakst maken: opzij stappen, maar op dezelfde lijn.
-        'Let op bij weglopen: blijf je op de lijn van de toren, dan kan hij je nog steeds raken.',
+        'Let op bij weglopen: blijf je op de rij of lijn van de toren, dan kan hij je nog steeds raken.',
       ],
       vertelFen: 'R3r3/8/8/7k/8/2B5/8/4K3',
       vertelWijs: ['e1'],

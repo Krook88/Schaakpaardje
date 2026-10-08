@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { Game } from '@/engine/game'
 import { foutZin, goedeZetten, startOpgave, tik } from '@/lesson/runner'
 import { ALLE_LESSEN } from '@/content'
-import { NOG_STEEDS_SCHAAK } from '@/content/voice'
+import { NOG_STEEDS_SCHAAK, STUK_KAN_NIET, ZET_MAG_NIET } from '@/content/voice'
 import type { Exercise } from '@/content/types'
 import type { Square } from '@/engine/board'
 
@@ -71,17 +71,18 @@ describe('uit schaak, aan de kant van het kind (via tik)', () => {
     const koning = (['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const)
       .flatMap((f) => [1, 2, 3, 4, 5, 6, 7, 8].map((r) => `${f}${r}` as Square))
       .find((v) => startOpgave(o).board[v]?.type === 'k' && startOpgave(o).board[v]?.color === game.turn)!
-    const mag = new Set(game.legalMoves().map((z) => z.to))
+    const mag = new Set(game.legalMoves().filter((z) => z.from === koning).map((z) => z.to))
     const naast = [-1, 0, 1].flatMap((df) => [-1, 0, 1].map((dr) => [df, dr]))
       .filter(([df, dr]) => df || dr)
       .map(([df, dr]) => String.fromCharCode(koning.charCodeAt(0) + df) + (Number(koning[1]) + dr))
       .filter((v) => /^[a-h][1-8]$/.test(v) && !mag.has(v as Square) && !startOpgave(o).board[v as Square]) as Square[]
+    expect(naast.length, 'geen enkel verboden koningsveld om te proberen').toBeGreaterThan(0)
     for (const doel of naast) {
       let stand = startOpgave(o)
       stand = tik(stand, koning).stand
       const r = tik(stand, doel)
       expect(r.uit, `${koning}-${doel}`).toBe('fout')
-      expect(r.reden).toBe('magNiet')
+      expect(r.reden).toBe('nogSchaak')
       expect(foutZin(r.stand, r.reden)).toBe(NOG_STEEDS_SCHAAK)
     }
   })
@@ -93,5 +94,23 @@ describe('en passant', () => {
   it('slaan via en passant telt als de aanvaller slaan', () => {
     expect(sans('slaAanvaller', fen)).toContain('exd6')
     expect(sans('ertussen', fen)).not.toContain('exd6')
+  })
+})
+
+describe('de regelzin is nooit onwaar', () => {
+  // Achtste review: een loper die recht vooruit loopt, terwijl je schaak staat, kreeg
+  // "Dan sta je nog steeds schaak". Maar dat is niet de reden: een loper loopt zo niet.
+  it('een stuk dat zo niet kan lopen: "die zet mag niet"', () => {
+    const o: Exercise = { kind: 'regelZet', fen: ALLE_DRIE, eis: 'ertussen', vraag: '' }
+    let stand = tik(startOpgave(o), 'c3').stand
+    const r = tik(stand, 'c4')
+    expect(r.reden).toBe('magNiet')
+    expect(foutZin(r.stand, r.reden)).toBe(ZET_MAG_NIET)
+  })
+  it('een stuk zonder enige zet: "dit stuk kan nu nergens heen"', () => {
+    const o: Exercise = { kind: 'regelZet', fen: '6k1/8/8/8/8/2N5/5PP1/r5K1 w - - 0 1', eis: 'ertussen', vraag: '' }
+    const r = tik(startOpgave(o), 'f2')
+    expect(r.reden).toBe('stukVast')
+    expect(foutZin(r.stand, r.reden)).toBe(STUK_KAN_NIET)
   })
 })

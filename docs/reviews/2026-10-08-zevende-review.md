@@ -31,7 +31,7 @@ speelt en `'fout'` verwacht.
 | | Bevinding | Status |
 |---|---|---|
 | I1 | En passant die de schaakgevende pion slaat telt als `ertussen`, niet als `slaAanvaller` (`zet.to` is het lege veld). Nu nog geen opgave die het raakt. | **Opgelost**: bij en passant wordt het veld van de geslagen pion vergeleken. Test erbij. |
-| I2 | Nergens geoefend dat de koning niet weg kan langs de lijn of rij van de aanvaller. | **Opgelost**: vertelzin "blijf je op de lijn van de toren, dan kan hij je nog steeds raken", en de onmogelijke koningszet krijgt nu de regelzin. |
+| I2 | Nergens geoefend dat de koning niet weg kan langs de lijn of rij van de aanvaller. | **Deels opgelost**: vertelzin "blijf je op de rij of lijn van de toren...", en de onmogelijke koningszet krijgt de regelzin. Een eigen zelf-opgave die het afdwingt ontbreekt nog: volgende ronde. |
 | I3 | Doel is "alle drie de manieren", de toets toetst er een. | **Opgelost**: de toets heeft drie bordopgaven, een per manier. |
 | I4 | Vind het veld: na Tipje verdwijnt de opdracht voor de rest van de ronde, en Pip zegt "Helemaal goed" bij 1 van de 3. | **Opgelost**: tipje en een goede tik gaan via `zegTip`, dus de opdracht komt terug. Doorloopregel 8. |
 | I5 | Kop op 360 px te vol sinds de geluidsknop: "Terug" breekt, lestitel tot 5 regels, bord 60 px lager. | **Opgelost**: "· Meedoen" uit de lestitel, Terug onder 400 px alleen een pijl (woord voor de schermlezer). Gemeten op 360: titel 2 regels, knoppen 56×56. |
@@ -61,3 +61,16 @@ speelt en `'fout'` verwacht.
 - Dubbelschaak en promotie-ertussen goed ingedeeld.
 - Welkomstpagina: Pip zegt niets, in alle vier de combinaties nagemeten.
 - Hintring in donker duidelijk zichtbaar. Geen horizontaal scrollen, geen consolefouten, geen netwerkverkeer naar buiten.
+
+## Herreview (na `a76503c`)
+
+Schaakmeester en codebase-reviewer: allebei **GO**, niets blokkerends.
+
+| | Bevinding | Status |
+|---|---|---|
+| H1 | belangrijk: "Dan sta je nog steeds schaak" ook bij een zet die het stuk niet kan doen (loper recht vooruit). | **Opgelost**: drie redenen. `nogSchaak` alleen als de koning een stap zet en schaak blijft staan; een ander onmogelijke zet krijgt "Die zet mag niet"; een stuk zonder zetten krijgt "Dit stuk kan nu nergens heen". Tests erbij. |
+| H2 | klein: vertelzin zegt "lijn", maar in meedoen en toets 3 geeft de toren schaak langs een rij. | **Opgelost**: "rij of lijn". |
+| H3 | klein: weglopen komt niet terug in zelf. | Open: hoort bij I2, volgende ronde. |
+| H4 | klein: de test voor onmogelijke koningszetten toetste bij een opgave niets. | **Opgelost**: alleen koningszetten, en een eis dat er iets te proberen is. |
+| H5 | klein: MinispelScherm gebruikt `foutZin` niet. | Open: geen minispel staat schaak; bij een minispel met uit schaak meenemen. |
+| H6 | klein: geluidsknop op Thuis 20 px breder door de standaard-padding. | Open: bewust, hij is nu even groot als het tandwiel. |
