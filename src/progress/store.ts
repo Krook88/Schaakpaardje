@@ -371,9 +371,20 @@ export const useProfielStore = create<State>()(
  * diploma. Zonder deze vlag ziet een kind dat even, en gooit React de boom daarna weg —
  * met een hydratieklacht erbij. Elk scherm dat de voortgang leest, wacht hierop.
  */
+/**
+ * Is de opgeslagen toestand er al? Bij het openen van de site pas na de eerste render.
+ *
+ * Wie daarna binnen de app naar een ander scherm gaat, heeft hem al: dan meteen `true`.
+ * Anders flitste bij elke stap van beginscherm naar les eerst de tekstversie van de
+ * les in beeld (zie LesUitleg), honderd tot vierhonderd milliseconden lang.
+ */
+let alGeladen = false
 export function useToestandGeladen(): boolean {
-  const [geladen, setGeladen] = useState(false)
-  useEffect(() => setGeladen(true), [])
+  const [geladen, setGeladen] = useState(alGeladen)
+  useEffect(() => {
+    alGeladen = true
+    setGeladen(true)
+  }, [])
   return geladen
 }
 

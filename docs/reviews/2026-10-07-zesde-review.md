@@ -125,11 +125,11 @@ plaats van naar het scherm te kijken.
 |---|---|---|---|
 | 1 | blokkerend | Na "Beginnen" blijft de scrollpositie staan; het kind begint halverwege. | **Opgelost** `52ee33c`. Nagemeten: 1785 naar 0. |
 | 2 | belangrijk | Ankerlink "Beginnen" werkt pas na hydratie. | **Opgelost** `52ee33c`. Werkt nu ook zonder JavaScript. |
-| 3 | belangrijk | De lesuitleg flitst 100 tot 420 ms in beeld. | Open: volgende ronde. Een lesskelet in plaats van een ander scherm. |
+| 3 | belangrijk | De lesuitleg flitst 100 tot 420 ms in beeld. | **Opgelost**: binnen de app geen flits meer (de toestand is er al), en bij een verse pagina verschijnt de tekstversie pas na 0,6 s. |
 | 4 | belangrijk | Rondleiding tussen Pip en de knop; "0 van de 147 sterren" (A12). | Open: volgende ronde. |
-| 5 | belangrijk | Hintring in het donkere thema 1,3 tot 1,9:1; `--sel` niet gezet in donker. | Open: volgende ronde, eerste kandidaat. Alleen CSS. |
+| 5 | belangrijk | Hintring in het donkere thema 1,3 tot 1,9:1; `--sel` niet gezet in donker. | **Opgelost**: oker ring met een donkere rand erbinnen, zichtbaar op elk veld in beide thema's. |
 | 6 | belangrijk | Minispel open op de kaart terwijl de lessen ervoor op slot zitten. | Open: volgende ronde. |
-| 7 | belangrijk | Lege naam wordt stilletjes "Schaker". | Open: volgende ronde. |
+| 7 | belangrijk | Lege naam wordt stilletjes "Schaker". | **Opgelost**: de eerste tik vraagt om een naam, een tweede tik gaat door als Schaker. |
 | 8 tot 15 | klein | Luidsprekerknop 46 px, geen `h1`/`main`, focusring op de stalkaart, blauwe vinkjes, ongelijke knoppenrijen, `/lessen/` met tikdoelen van 19 px, de lege stal, witte schermafbeeldingen in donker thema. | Open: volgende ronde. |
 
 ## Codebase-reviewer
@@ -138,7 +138,7 @@ plaats van naar het scherm te kijken.
 |---|---|---|---|
 | 1 | belangrijk | Afgebroken zin galmt na op het volgende scherm. | **Opgelost** `c7ba081`, met test. |
 | 2 | belangrijk | De SEO-constructie heeft geen vangrail. | Open: volgende ronde, regel in de doorloop. |
-| 3 | belangrijk | Wie alles af heeft, wordt naar les 1 gestuurd. | Open: vraagt een afgerond-scherm, dus een ontwerpkeuze. |
+| 3 | belangrijk | Wie alles af heeft, wordt naar les 1 gestuurd. | **Opgelost**: met alles op twee sterren of meer wordt de grote knop "Alle lessen gehaald! Speel een partij" naar /spelen/. |
 | 4 | belangrijk | "Welke zinnen worden ingesproken" op drie plekken, drie getallen. | Open: volgende ronde. |
 | 5 | belangrijk | `audio-dekking` kan uit 3 van de 52 aanroepen een zin halen. | Open: volgende ronde. |
 | 6 | belangrijk | FAQ met de hand dubbel bijgehouden. | Open: volgende ronde. |

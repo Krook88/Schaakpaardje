@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
 import { GeluidKnop } from '@/ui/GeluidKnop'
@@ -103,6 +103,9 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   const opfrissen = kiesOpfrisopgaven(voortgang).length
   // Nog geen enkele les gedaan: dan is dit het allereerste scherm dat dit kind ziet.
   const eersteKeer = Object.keys(voortgang).length === 0
+  // Elke les met minstens twee sterren: dan is er geen "volgende les" meer, en
+  // `volgendeOpenLes` valt terug op de allereerste.
+  const allesAf = WERELDEN.flatMap((w) => w.lessen).every((l) => (voortgang[l.id]?.sterren ?? 0) >= 2)
   const stalVakken = verzameling(voortgang, verslagen)
   const inStal = aantalBezit(stalVakken)
 
@@ -173,6 +176,22 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
           {/* De grootste knop van de app. Voor een niet-lezer moet hij op één beeld
               te herkennen zijn: het driehoekje van "start", plus het plaatje van
               precies die les. De tekst is er voor de ouder. */}
+          {/* Alles gehaald: dan stuurde deze knop je terug naar les 1, alsof je nog
+              moest beginnen. Nu wijst hij naar wat er na de lessen komt: echt spelen. */}
+          {allesAf ? (
+            <Link
+              href="/spelen/"
+              className="btn btn--primary btn--big"
+              style={{ padding: 18, gap: 14, minHeight: 88 }}
+            >
+              <span aria-hidden="true" style={{ fontSize: 38, lineHeight: 1 }}>
+                🏆
+              </span>
+              <span style={{ flex: 1, textAlign: 'left' }}>
+                Alle lessen gehaald! Speel een partij tegen een maatje
+              </span>
+            </Link>
+          ) : (
           <Link
             href={`/les/${verder.id}/`}
             className="btn btn--primary btn--big"
@@ -189,6 +208,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
               {eersteKeer ? 'De eerste les' : 'Verder leren'}: {verder.titel}
             </span>
           </Link>
+          )}
           {opfrissen > 0 && (
             <Link
               href="/opfrissen/"
@@ -418,6 +438,11 @@ function NieuwProfiel({
   onMaak: (naam: string, leeftijd: number, avatar: string) => string
 }) {
   const [naam, setNaam] = useState('')
+  // Zonder naam werd je stilletjes "Schaker", en dan stond er "Hoi Schaker!" boven een
+  // kind dat gewoon vergeten was te typen. Nu vraagt de eerste tik om een naam; wie
+  // echt geen naam wil (of nog niet kan typen) tikt nog een keer en heet Schaker.
+  const [vraagNaam, setVraagNaam] = useState(false)
+  const naamVeld = useRef<HTMLInputElement>(null)
   const [leeftijd, setLeeftijd] = useState(6)
   const [avatar, setAvatar] = useState<string>(AVATARS[0])
 
@@ -456,8 +481,10 @@ function NieuwProfiel({
           <span>Hoe heet je?</span>
           <input
             value={naam}
+            ref={naamVeld}
             onChange={(e) => setNaam(e.target.value)}
             placeholder="Je naam"
+            aria-describedby={vraagNaam ? 'naam-vraag' : undefined}
             maxLength={16}
             style={{
               font: 'inherit', padding: '14px 16px', borderRadius: 12,
@@ -465,6 +492,11 @@ function NieuwProfiel({
               minHeight: 56,
             }}
           />
+          {vraagNaam && !naam.trim() && (
+            <small id="naam-vraag" style={{ color: 'var(--accent)' }}>
+              Typ hier je naam. Of tik nog een keer op Beginnen, dan noemt Pip je Schaker.
+            </small>
+          )}
         </label>
 
         <fieldset style={{ border: 0, padding: 0, margin: 0 }} className="stack">
@@ -519,6 +551,12 @@ function NieuwProfiel({
             // Alleen het profiel aanmaken, niets zeggen: de stal die hierna verschijnt
             // begroet het kind zelf. Zeiden ze allebei iets, dan praatten er twee
             // zinnen door elkaar heen.
+            if (!naam.trim() && !vraagNaam) {
+              setVraagNaam(true)
+              naamVeld.current?.focus()
+              naamVeld.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+              return
+            }
             onMaak(naam, leeftijd, avatar)
           }}
         >
