@@ -27,6 +27,7 @@ import {
   startOpgave,
   tik,
   type OpgaveStand,
+  foutZin,
 } from '@/lesson/runner'
 import { kiesOpfrisopgaven, type Opfrisopgave } from '@/lesson/opfrisser'
 import { useInstellingen, useModus, useProfielStore, useToestandGeladen, useVoortgang } from '@/progress/store'
@@ -136,8 +137,7 @@ export function OpfrisScherm() {
           if (instellingen.effecten) sfx.fout()
           setShake(null)
           setTimeout(() => setShake(veld), 0)
-          const tip = 'foutTip' in r.stand.opgave ? r.stand.opgave.foutTip : undefined
-          zegTip(tip ?? kies(zinnen.BIJNA, 'bijna'), opdracht)
+          zegTip(foutZin(r.stand, r.reden) ?? kies(zinnen.BIJNA, 'bijna'), opdracht)
           setStemming('moedigt')
           break
         }

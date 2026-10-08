@@ -1,0 +1,19 @@
+/* De bovenbalk. Op een smal scherm (360 px) stonden hier "← Terug", een titel, de
+   geluidsknop en het tandwiel naast elkaar: "Terug" brak over twee regels en een
+   lestitel kreeg 97 px en vijf regels. Onder 400 px is Terug daarom alleen een pijl,
+   met het woord nog wel voor de schermlezer. Zevende review. */
+.kop {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 0 16px; justify-content: space-between;
+}
+.titel { font-size: 1.15rem; text-align: center; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.knop { min-height: 56px; min-width: 56px; padding: 0 14px; }
+.woord { margin-left: 6px; }
+@media (max-width: 399px) {
+  .knop { padding: 0 10px; }
+  .woord {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; margin: 0;
+  }
+  .titel { font-size: 1.02rem; }
+}

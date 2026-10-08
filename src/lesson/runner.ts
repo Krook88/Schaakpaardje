@@ -14,6 +14,7 @@ import {
 import { korstePad, slaAllesOp } from '@/engine/puzzels'
 import { Game, type GameMove } from '@/engine/game'
 import type { Exercise } from '@/content/types'
+import { NOG_STEEDS_SCHAAK, ZET_MAG_NIET } from '@/content/voice'
 
 export type OpgaveStand = {
   opgave: Exercise
@@ -151,7 +152,19 @@ function vijandenOver(board: BoardMap, kleur: 'w' | 'b'): number {
  * Eén tik van het kind. Geeft de nieuwe stand terug plus wat er gebeurde, zodat het
  * scherm het juiste geluid en de juiste zin van Pip kan kiezen.
  */
-export function tik(stand: OpgaveStand, veld: Square): { stand: OpgaveStand; uit: TikUitkomst } {
+export type TikResultaat = {
+  stand: OpgaveStand
+  uit: TikUitkomst
+  /**
+   * Alleen bij een fout in een regelZet-opgave: was de zet onmogelijk (`magNiet`), of
+   * mocht hij wel maar deed hij niet wat er gevraagd werd? Het verschil is de hele
+   * les. De fouttip van een opgave gaat over het tweede; zei Pip hem ook bij het
+   * eerste, dan hoorde een kind dat nog schaak stond "Je koning is veilig".
+   */
+  reden?: 'magNiet'
+}
+
+export function tik(stand: OpgaveStand, veld: Square): TikResultaat {
   const o = stand.opgave
   if (stand.klaar || o.kind === 'quiz') return { stand, uit: 'genegeerd' }
 
@@ -323,7 +336,7 @@ function tikRegelZet(
   stand: OpgaveStand,
   veld: Square,
   o: Extract<Exercise, { kind: 'regelZet' }>,
-): { stand: OpgaveStand; uit: TikUitkomst } {
+): TikResultaat {
   const game = stand.game
   if (!game) return { stand, uit: 'genegeerd' }
 
@@ -332,7 +345,7 @@ function tikRegelZet(
     if (!stuk || stuk.color !== game.turn) return { stand, uit: 'genegeerd' }
     if (!game.destinations(veld).length) {
       // Dit stuk kan geen enkele legale zet doen — meestal omdat de koning schaak staat.
-      return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1 }, uit: 'fout' }
+      return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1 }, uit: 'fout', reden: 'magNiet' }
     }
     return { stand: { ...stand, geselecteerd: veld, misser: null }, uit: 'geselecteerd' }
   }
@@ -354,6 +367,7 @@ function tikRegelZet(
     return {
       stand: { ...stand, misser: veld, fouten: stand.fouten + 1, geselecteerd: null },
       uit: 'fout',
+      reden: 'magNiet',
     }
   }
 
@@ -392,7 +406,10 @@ type Eis = Extract<Exercise, { kind: 'regelZet' }>['eis']
 function voldoetAanEis(game: Game, zet: GameMove, eis: Eis): boolean {
   if (eis === 'uitSchaak') return true // elke legale zet haalt je koning uit schaak; dat is het punt
   if (eis === 'wegLopen' || eis === 'slaAanvaller' || eis === 'ertussen') {
-    const slaatAanvaller = game.schaakgevers().includes(zet.to)
+    // Bij en passant staat de geslagen pion niet op het doelveld maar ernaast: op de
+    // lijn van het doelveld, de rij van het beginveld.
+    const geslagen = zet.isEnPassant ? ((zet.to[0] + zet.from[1]) as Square) : zet.to
+    const slaatAanvaller = game.schaakgevers().includes(geslagen)
     if (eis === 'slaAanvaller') return slaatAanvaller
     if (eis === 'wegLopen') return zet.stuk === 'k' && !slaatAanvaller
     return zet.stuk !== 'k' && !slaatAanvaller
@@ -404,6 +421,15 @@ function voldoetAanEis(game: Game, zet: GameMove, eis: Eis): boolean {
   const status = na.status()
   const mat = status.over && status.reason === 'mat'
   return eis === 'matIn1' ? mat : zet.isCheck || mat
+}
+
+/**
+ * Wat Pip zegt na een fout. Bij een onmogelijke zet een vaste zin over de regels, en
+ * nooit de fouttip van de opgave: die gaat over een zet die wél mag.
+ */
+export function foutZin(stand: OpgaveStand, reden?: 'magNiet'): string | undefined {
+  if (reden === 'magNiet') return stand.game?.inCheck ? NOG_STEEDS_SCHAAK : ZET_MAG_NIET
+  return 'foutTip' in stand.opgave ? stand.opgave.foutTip : undefined
 }
 
 /** Alle zetten die aan de eis voldoen. Ook gebruikt door de contentcontrole. */

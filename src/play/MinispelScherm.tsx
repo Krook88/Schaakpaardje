@@ -91,8 +91,9 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
           break
         case 'goed':
           if (instellingen.effecten) sfx.goed()
-          afbreken()
-          setZin(kies(zinnen.PRIJS, 'prijs'))
+          // Daarna de opdracht weer terug: er moeten er nog meer gevonden worden, en
+          // een kind dat niet leest heeft geen andere plek om dat terug te vinden.
+          zegTip(kies(zinnen.PRIJS, 'prijs'), opdracht)
           setStemming('juicht')
           break
         case 'sla':
@@ -216,7 +217,8 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
               const r = geefHint(stand)
               setStand(r.stand)
               setHintVelden(r.velden)
-              setZin(HINT_GEGEVEN)
+              // Niet setZin: dan was de opdracht de rest van het rondje weg. Zevende review.
+              zegTip(HINT_GEGEVEN, opdracht)
             }}
             disabled={stand.klaar}
           >

@@ -166,7 +166,11 @@ export const wereld9: World = {
         'Eén: weglopen met je koning. Twee: het aanvallende stuk slaan.',
         // Hier stond "Precies dezelfde drie als op de Aanvalsberg!". Niet waar: daar waren
         // het weglopen, slaan en dekken, en dekken helpt een koning nooit.
-        'Drie: er iets tussen zetten. Weglopen en slaan ken je al van de Aanvalsberg. Dekken helpt hier niet, want een koning mag nooit geslagen worden.',
+        // Hier stond "want een koning mag nooit geslagen worden". Dat kan een kind lezen
+        // als "dan is schaak dus ongevaarlijk". Zevende review.
+        'Drie: er iets tussen zetten. Weglopen en slaan ken je al van de Aanvalsberg. Dekken helpt hier niet: je koning mag nooit aangevallen blijven staan.',
+        // De fout die kinderen het vaakst maken: opzij stappen, maar op dezelfde lijn.
+        'Let op bij weglopen: blijf je op de lijn van de toren, dan kan hij je nog steeds raken.',
       ],
       vertelFen: 'R3r3/8/8/7k/8/2B5/8/4K3',
       vertelWijs: ['e1'],
@@ -201,9 +205,9 @@ export const wereld9: World = {
         {
           kind: 'regelZet',
           fen: 'R3r3/8/8/7k/8/2B5/8/4K3 w - - 0 1',
-          eis: 'slaAanvaller',
-          vraag: 'Hier kunnen alle drie de manieren. Kies slaan.',
-          foutTip: 'Dat kan ook, maar we vroegen slaan. Welk stuk kan die zwarte toren pakken?',
+          eis: 'ertussen',
+          vraag: 'Hier kunnen alle drie de manieren. Kies ertussen zetten.',
+          foutTip: 'Dat kan ook, maar we vroegen ertussen. Welk stuk kan in de weg gaan staan?',
         },
         {
           kind: 'quiz',
@@ -215,12 +219,29 @@ export const wereld9: World = {
           ],
         },
       ],
+      // Drie bordopgaven, één per manier, want het doel is "alle drie de manieren".
+      // En niet alleen torens: hier geven een loper en een paard schaak. Bij een paard
+      // kan er niets tussen, en dat ziet een kind hier vanzelf.
       toets: [
+        {
+          kind: 'regelZet',
+          fen: '7k/8/8/8/8/3n4/2P5/4K3 w - - 0 1',
+          eis: 'wegLopen',
+          vraag: 'Het paard geeft schaak. Loop weg met je koning.',
+          foutTip: 'Slaan mag ook, maar we vroegen weglopen. Tik op je koning.',
+        },
+        {
+          kind: 'regelZet',
+          fen: '7k/8/8/8/1b6/8/2P5/1R2K3 w - - 0 1',
+          eis: 'slaAanvaller',
+          vraag: 'Nu geeft de loper schaak. Sla hem.',
+          foutTip: 'Dat mag ook, maar we vroegen slaan. Welk stuk kan die loper pakken?',
+        },
         {
           kind: 'regelZet',
           fen: '6k1/8/8/8/8/2N5/5PP1/r5K1 w - - 0 1',
           eis: 'ertussen',
-          vraag: 'Laatste keer: zet er iets tussen.',
+          vraag: 'En als laatste: zet er iets tussen.',
           foutTip: 'Je koning kan weg, maar we vroegen ertussen. Welk stuk kan in de weg gaan staan?',
         },
         {

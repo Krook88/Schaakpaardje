@@ -157,6 +157,9 @@ export const OPNIEUW_PROBEREN = [
   'Dat lukte net niet binnen de zetten. We beginnen gewoon opnieuw.',
   'Net niet binnen de zetten. We proberen het nog een keer.',
 ] as const
+/** Na een zet die volgens de regels niet bestaat. Zie `foutZin` in de lesmotor. */
+export const NOG_STEEDS_SCHAAK = 'Dan sta je nog steeds schaak. Dat mag niet, probeer een andere zet.'
+export const ZET_MAG_NIET = 'Die zet mag niet. Probeer een andere.'
 export const ZET_TERUGGENOMEN = 'Geeft niet, we doen die zet gewoon nog een keer.'
 export const BLUNDER_AFGEWEND = 'Goed gekeken. Zoek maar een andere zet.'
 export const OPFRISSER_KLAAR = 'Alles nog paraat. Mooi zo!'
