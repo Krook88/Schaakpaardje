@@ -58,7 +58,7 @@
 .bord span { min-width: 0; min-height: 0; background: var(--light-sq); display: grid; place-items: center; font-size: clamp(16px, 4.6vw, 26px); line-height: 1; color: #1b1b17; }
 .bord span:nth-child(16n+2), .bord span:nth-child(16n+4), .bord span:nth-child(16n+6), .bord span:nth-child(16n+8),
 .bord span:nth-child(16n+9), .bord span:nth-child(16n+11), .bord span:nth-child(16n+13), .bord span:nth-child(16n+15) { background: var(--dark-sq); }
-.bord span { color: #2b2823; -webkit-text-stroke: 1.2px #efe7d6; paint-order: stroke fill; }
+.bord span { font-family: 'Schaakstukken', sans-serif; font-variant-emoji: text; color: #2b2823; -webkit-text-stroke: 1.2px #efe7d6; paint-order: stroke fill; }
 .wit { color: #fcf8ef !important; -webkit-text-stroke: 1.5px #33302a !important; }
 
 /* Wat zit erin: tegels */

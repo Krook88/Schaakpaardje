@@ -38,6 +38,7 @@
      Zonder dit wordt de pion op iOS een zwarte emoji en is wit niet meer van zwart te
      onderscheiden. */
   font-variant-emoji: text;
+  font-family: 'Schaakstukken', sans-serif;
   font-size: min(9.5vw, 44px); line-height: 1; user-select: none;
   transition: transform 0.14s ease;
   filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.28));

@@ -71,6 +71,18 @@
   --shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 10px 26px -18px #000;
 }
 
+/* Eigen lettertype voor de schaakstukken: alleen de twaalf tekens, 2,4 kB, uit DejaVu
+   Sans (vrije licentie, zie public/fonts/LICENSE-DejaVu.txt). Zonder dit tekent elk
+   apparaat de stukken met zijn eigen lettertype, en op de iPhone stonden ze daardoor
+   te laag in hun vakje. Nu staan ze overal hetzelfde. Van de eigen server, dus geen
+   verzoek naar buiten. */
+@font-face {
+  font-family: 'Schaakstukken';
+  src: url('/fonts/schaakstukken.woff2') format('woff2');
+  unicode-range: U+2654-265F, U+FE0E;
+  font-display: block;
+}
+
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {
