@@ -1,10 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { AVATARS, useProfiel, useProfielStore } from '@/progress/store'
+import { AVATARS, useProfiel, useProfielStore, useToestandGeladen } from '@/progress/store'
 
 /** Wie er aan het bord zit bij samen spelen. `profielId` alleen als het een kind van dit apparaat is. */
 export type Speler = { naam: string; avatar: string; profielId?: string }
+
+/**
+ * De naam van een plaatje, voor wie geen profiel heeft. Nooit "Wit" of "Zwart": na
+ * "andersom" stond er anders "Zwart is aan zet (wit)".
+ */
+const PLAATJE_NAAM: Record<string, string> = {
+  '🐴': 'Paard', '🦊': 'Vos', '🐻': 'Beer', '🐰': 'Konijn',
+  '🦉': 'Uil', '🐢': 'Schildpad', '🐝': 'Bij', '🦄': 'Eenhoorn',
+}
 
 /**
  * Met wie speel je?
@@ -23,9 +32,21 @@ export function SamenKiezer({ onKies }: { onKies: (wit: Speler, zwart: Speler) =
   const [gastAvatar, setGastAvatar] = useState<string>(
     AVATARS.find((a) => a !== ik?.avatar) ?? AVATARS[1],
   )
+  // Wacht op de opgeslagen profielen: anders stond in de voorgerenderde HTML "Wit" met
+  // een paardje, en sprong dat daarna om naar de echte naam.
+  const geladen = useToestandGeladen()
   const wit: Speler = ik
     ? { naam: ik.naam, avatar: ik.avatar, profielId: ik.id }
-    : { naam: 'Wit', avatar: AVATARS[0] }
+    : { naam: PLAATJE_NAAM[AVATARS[0]], avatar: AVATARS[0] }
+
+  if (!geladen) return <div className="stack" aria-busy="true" />
+  // Plaatjes die al van iemand op dit apparaat zijn, kan de gast niet kiezen: het plaatje
+  // is voor een kind dat niet leest het enige teken van wie er aan zet is.
+  const bezet = new Set([wit.avatar, ...anderen.map((p) => p.avatar)])
+  const vrij = AVATARS.filter((a) => !bezet.has(a))
+  const keuzes = vrij.length ? vrij : AVATARS.filter((a) => a !== wit.avatar)
+  // De begin-keuze werd gemaakt voor de profielen er waren; pas hem aan als hij bezet is.
+  const gekozen = keuzes.includes(gastAvatar as (typeof AVATARS)[number]) ? gastAvatar : keuzes[0]
 
   return (
     <div className="stack">
@@ -55,19 +76,19 @@ export function SamenKiezer({ onKies }: { onKies: (wit: Speler, zwart: Speler) =
       <div className="card stack">
         <p style={{ margin: 0 }}>{anderen.length ? 'Of iemand anders. Kies een plaatje:' : 'Kies een plaatje voor zwart:'}</p>
         <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-          {AVATARS.filter((a) => a !== wit.avatar).map((a) => (
+          {keuzes.map((a) => (
             <button
               key={a}
               type="button"
               className="btn"
               onClick={() => setGastAvatar(a)}
-              aria-pressed={gastAvatar === a}
+              aria-pressed={gekozen === a}
               aria-label={`Kies ${a}`}
               style={{
                 fontSize: 26,
                 minWidth: 58,
-                borderColor: gastAvatar === a ? 'var(--accent)' : undefined,
-                background: gastAvatar === a ? 'var(--accent-soft)' : undefined,
+                borderColor: gekozen === a ? 'var(--accent)' : undefined,
+                background: gekozen === a ? 'var(--accent-soft)' : undefined,
               }}
             >
               {a}
@@ -77,7 +98,7 @@ export function SamenKiezer({ onKies }: { onKies: (wit: Speler, zwart: Speler) =
         <button
           type="button"
           className="btn btn--primary btn--big"
-          onClick={() => onKies(wit, { naam: 'Zwart', avatar: gastAvatar })}
+          onClick={() => onKies(wit, { naam: PLAATJE_NAAM[gekozen] ?? 'Gast', avatar: gekozen })}
         >
           Beginnen
         </button>

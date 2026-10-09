@@ -131,3 +131,40 @@ export function materialBalance(fen: string): number {
   }
   return score
 }
+
+/**
+ * Hoeveel kost deze zet netto, als de tegenstander het beste slaat en wij daarna het
+ * beste terugslaan? Gerekend vanuit wie er zet, in pionnen.
+ *
+ * Alleen kijken naar wat de ander kan pakken is niet genoeg: dan gaat een waarschuwing
+ * ook af bij een eerlijke ruil (paard voor paard), en leert een kind dat ruilen eng is.
+ * Daarom telt de herovering mee, precies zoals wereld 7 het uitlegt.
+ *
+ * Vanuit wie er zet, want `materialBalance` kijkt altijd vanuit wit. Daardoor stond de
+ * blunderwaarschuwing bij samen spelen voor zwart verkeerd om: een weggegeven dame
+ * telde als winst (zesde review, I5). Hij woonde in het partijscherm, waar geen test
+ * bij kon; hier wel.
+ */
+export function blunderVerlies(game: Game, van: string, naar: string): number {
+  const kant = game.turn === 'w' ? 1 : -1
+  const balans = (f: string) => kant * materialBalance(f)
+  const proef = game.clone()
+  if (!proef.move(van as never, naar as never)) return 0
+  const balansNa = balans(proef.fen)
+  let ergste = 0
+  for (const reactie of proef.legalMoves()) {
+    if (!reactie.isCapture) continue
+    const na = proef.clone()
+    na.move(reactie.from, reactie.to)
+    let besteHerovering = balans(na.fen)
+    for (const terug of na.legalMoves()) {
+      if (!terug.isCapture) continue
+      const daarna = na.clone()
+      daarna.move(terug.from, terug.to)
+      besteHerovering = Math.max(besteHerovering, balans(daarna.fen))
+    }
+    const verlies = balansNa - besteHerovering
+    if (verlies > ergste) ergste = verlies
+  }
+  return ergste
+}

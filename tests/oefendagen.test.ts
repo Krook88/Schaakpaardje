@@ -73,6 +73,18 @@ describe('dagen geoefend', () => {
     expect(useProfielStore.getState().oefendagen[id]).toBeUndefined()
   })
 
+  it('een partij voor een ander profiel raakt het actieve kind niet', () => {
+    const ik = useProfielStore.getState().actiefId!
+    const ander = useProfielStore.getState().maakProfiel('Daan', 7, '🦉')
+    useProfielStore.getState().kiesProfiel(ik)
+    useProfielStore.getState().bewaarPartij('gewonnen', ander)
+    const s = useProfielStore.getState()
+    expect(s.gespeeld[ander]).toEqual({ gewonnen: 1, verloren: 0, remise: 0 })
+    expect(s.gespeeld[ik] ?? { gewonnen: 0, verloren: 0, remise: 0 }).toEqual({ gewonnen: 0, verloren: 0, remise: 0 })
+    expect(s.oefendagen[ander]?.aantal).toBe(1)
+    expect(s.oefendagen[ik]).toBeUndefined()
+  })
+
   it('werkt ook met opslag van voor deze teller (zonder oefendagen)', () => {
     // Zo ziet de toestand eruit bij een kind dat al speelde voordat de teller bestond:
     // de sleutel ontbreekt helemaal.
