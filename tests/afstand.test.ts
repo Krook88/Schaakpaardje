@@ -36,6 +36,19 @@ describe('schaken op afstand: de partij in een link', () => {
     expect(terug.game.fen.startsWith('rnbqkbN')).toBe(true)
   })
 
+  it('alleen plaatjes uit de app, geen ander teken', () => {
+    expect(leesIn(codeer({ zetten: [], wit: '💩', zwart: null }))).toBeNull()
+    expect(leesIn(codeer({ zetten: [], wit: '\u202e', zwart: null }))).toBeNull()
+  })
+
+  it('één partij heeft één link: een overbodig promotieteken wordt geweigerd', () => {
+    expect(leesIn(codeer({ zetten: ['e2e4q'], wit: '🐴', zwart: null }))).toBeNull()
+  })
+
+  it('een enorme link wordt niet eens geprobeerd', () => {
+    expect(leesIn('A'.repeat(7000))).toBeNull()
+  })
+
   it('rommel levert null op, geen fout', () => {
     expect(leesIn('dit-is-geen-partij')).toBeNull()
     expect(leesIn('')).toBeNull()

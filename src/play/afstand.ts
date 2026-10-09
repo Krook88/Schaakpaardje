@@ -1,4 +1,5 @@
 import { Game } from '@/engine/game'
+import { AVATARS } from '@/progress/store'
 
 /**
  * Schaken op afstand, zoals schaken per brief.
@@ -36,6 +37,9 @@ export function codeer(p: AfstandPartij): string {
  * of die half is overgekomen, levert `null` op in plaats van een onmogelijke stelling.
  */
 export function leesIn(code: string): { partij: AfstandPartij; game: Game } | null {
+  // Een echte partij past ruim in een paar duizend tekens. Langer is rommel, en een
+  // enorme link zou een oude tablet even laten hangen.
+  if (!code || code.length > 6000) return null
   try {
     const bin = atob(code.replace(/-/g, '+').replace(/_/g, '/'))
     const ruw = new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)))
@@ -44,15 +48,21 @@ export function leesIn(code: string): { partij: AfstandPartij; game: Game } | nu
     const zetten = zettenTekst ? zettenTekst.split(' ').filter(Boolean) : []
     if (zetten.length > 600) return null
     const game = new Game()
+    // De zetten opnieuw opschrijven zoals wij ze zelf zouden schrijven: anders kon één
+    // partij meerdere links hebben ("e2e4" en "e2e4q"), en dan telde hij dubbel.
+    const netjes: string[] = []
     for (const z of zetten) {
       if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(z)) return null
       const gedaan = game.move(z.slice(0, 2) as never, z.slice(2, 4) as never, (z[4] ?? 'q') as never)
       if (!gedaan) return null
+      if (z.length === 5 && !gedaan.promotion) return null
+      netjes.push(zetCode(gedaan.from, gedaan.to, gedaan.promotion))
     }
-    // Plaatjes zijn één emoji, geen tekst: een link mag geen naam of boodschap dragen.
-    const isPlaatje = (s: string) => s.length > 0 && s.length <= 4 && !/[\p{L}\p{N}]/u.test(s)
+    // Alleen de plaatjes uit de app. Een aangepaste link kon anders elk teken bij een
+    // kind op het scherm zetten, ook een grof plaatje of tekst die achterstevoren loopt.
+    const isPlaatje = (s: string) => (AVATARS as readonly string[]).includes(s)
     if (!isPlaatje(wit) || (zwart && !isPlaatje(zwart))) return null
-    return { partij: { zetten, wit, zwart: zwart || null }, game }
+    return { partij: { zetten: netjes, wit, zwart: zwart || null }, game }
   } catch {
     return null
   }

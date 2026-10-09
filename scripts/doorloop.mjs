@@ -414,6 +414,11 @@ async function opAfstandSpelen() {
   await page.locator('[data-square="e4"]').click()
   await page.waitForTimeout(300)
   if (!(await page.locator('[data-square="d2"]').isDisabled())) return meld(naam, false, 'na de zet kon er nog een zet bij')
+  // Verversen (iOS doet dat zelf bij het wisselen van app) mag het slot niet opheffen:
+  // anders deed het kind ook de zet van het vriendje.
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForTimeout(600)
+  if (!(await page.locator('[data-square="d2"]').isDisabled())) return meld(naam, false, 'na verversen kon het kind ook de zet van het vriendje doen')
   await page.getByRole('button', { name: /Zet versturen/ }).click()
   await page.waitForTimeout(300)
   const som = await page.getByText(/Hoeveel is \d+ × \d+/).innerText().catch(() => '')
@@ -424,8 +429,10 @@ async function opAfstandSpelen() {
   await page.waitForTimeout(400)
   const link = await page.getByRole('textbox', { name: 'Link met de zet' }).inputValue().catch(() => '')
   if (!/\/spelen\/afstand\/#[A-Za-z0-9_-]+$/.test(link)) return meld(naam, false, `geen bruikbare link ("${link}")`)
-  // Aan de andere kant: een nieuw tabblad, zoals het vriendje dat de link opent.
-  const ander = await page.context().newPage()
+  // Aan de andere kant: een aparte browser met eigen opslag, zoals een tweede apparaat.
+  // Een tabblad in dezelfde browser deelt de opslag, en herkent de link als eigen link.
+  const anderApparaat = await browser.newContext({ viewport: { width: 420, height: 950 } })
+  const ander = await anderApparaat.newPage()
   await ander.goto(link.replace(/^https?:\/\/[^/]+/, URL), { waitUntil: 'networkidle' })
   await ander.waitForTimeout(600)
   const beurt = await ander.locator('p.muted[aria-live=polite]').innerText().catch(() => '')
@@ -434,7 +441,7 @@ async function opAfstandSpelen() {
   await ander.goto(`${URL}/spelen/afstand/#rommel`, { waitUntil: 'networkidle' })
   await ander.waitForTimeout(400)
   const uitweg = await ander.getByRole('link', { name: /nieuwe partij/ }).count()
-  await ander.close()
+  await anderApparaat.close()
   const goed = /\(zwart\)/.test(beurt) && omgedraaid && e4 && uitweg > 0
   meld(naam, goed, goed ? '' : `beurt "${beurt}", gedraaid ${omgedraaid}, e4 ${e4}, uitweg ${uitweg}`)
 }

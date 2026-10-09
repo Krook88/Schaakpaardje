@@ -27,17 +27,18 @@ import { codeer, leesIn, zetCode, type AfstandPartij } from './afstand'
 
 /** Welke afgelopen partijen dit apparaat al heeft meegeteld, zodat er niets dubbel telt. */
 const GETELD = 'schaakmaatje-afstand-geteld'
-function alGeteld(code: string): boolean {
+/** Per kind: twee broertjes op één tablet tellen elk hun eigen partij. */
+function alGeteld(profielId: string, code: string): boolean {
   try {
-    return (JSON.parse(localStorage.getItem(GETELD) ?? '[]') as string[]).includes(code)
+    return (JSON.parse(localStorage.getItem(GETELD) ?? '[]') as string[]).includes(`${profielId}:${code}`)
   } catch {
     return false
   }
 }
-function markeerGeteld(code: string) {
+function markeerGeteld(profielId: string, code: string) {
   try {
     const lijst = JSON.parse(localStorage.getItem(GETELD) ?? '[]') as string[]
-    localStorage.setItem(GETELD, JSON.stringify([...lijst.slice(-49), code]))
+    localStorage.setItem(GETELD, JSON.stringify([...lijst.slice(-49), `${profielId}:${code}`]))
   } catch {
     /* geen opslag: dan telt hij hooguit nog eens */
   }
@@ -136,9 +137,9 @@ export function AfstandScherm() {
       } else if (status.over) {
         // Een afgelopen partij: wie de link opent, deed de laatste zet niet. Bij mat is
         // dat de verliezer; tel hem één keer mee.
-        if (!alGeteld(code)) {
+        if (profiel && !alGeteld(profiel.id, code)) {
           bewaarPartij(status.reason === 'mat' ? 'verloren' : 'remise')
-          markeerGeteld(code)
+          markeerGeteld(profiel.id, code)
         }
         setZin(status.reason === 'mat' ? AFSTAND_VRIENDJE_WINT : PARTIJ_REMISE[0])
       } else if (!status.over && status.check) {
@@ -157,7 +158,7 @@ export function AfstandScherm() {
       }
     }
     setFen(gameRef.current.fen)
-  }, [bewaarPartij, mijnPlaatje])
+  }, [bewaarPartij, mijnPlaatje, profiel])
 
   useEffect(() => {
     if (!geladen) return
@@ -178,6 +179,7 @@ export function AfstandScherm() {
         const gedaan = game.move(geselecteerd, veld)
         if (!gedaan) return
         if (instellingen.effecten) (gedaan.isCapture ? sfx.slaan : sfx.zet)()
+        if (gedaan.promotion && instellingen.effecten) sfx.promotie()
         // Zwart krijgt zijn plaatje bij zijn eerste zet. Hetzelfde plaatje als wit kan
         // niet: dan weet niemand meer wie wie is.
         const zwart =
@@ -201,9 +203,9 @@ export function AfstandScherm() {
         bewaarOefendag()
         const na = game.status()
         if (na.over) {
-          if (!alGeteld(code)) {
+          if (profiel && !alGeteld(profiel.id, code)) {
             bewaarPartij(na.reason === 'mat' ? 'gewonnen' : 'remise')
-            markeerGeteld(code)
+            markeerGeteld(profiel.id, code)
           }
           setZin(na.reason === 'mat' ? AFSTAND_GEWONNEN : PARTIJ_REMISE[0])
           setStemming('trots')
@@ -219,7 +221,7 @@ export function AfstandScherm() {
         if (instellingen.effecten) sfx.tik()
       } else setGeselecteerd(null)
     },
-    [partij, gezet, status.over, kapot, geselecteerd, instellingen.effecten, mijnPlaatje, bewaarOefendag, bewaarPartij],
+    [partij, gezet, status.over, kapot, geselecteerd, instellingen.effecten, mijnPlaatje, bewaarOefendag, bewaarPartij, profiel],
   )
 
   const neemTerug = () => {
@@ -237,7 +239,7 @@ export function AfstandScherm() {
 
   const verstuur = async () => {
     if (!partij) return
-    const url = `${location.origin}/spelen/afstand/#${codeer(partij)}`
+    const url = `${location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/spelen/afstand/#${codeer(partij)}`
     setLink(url)
     try {
       if (navigator.share) {
@@ -311,7 +313,9 @@ export function AfstandScherm() {
             <button type="button" className="btn btn--primary btn--big" onClick={() => setSlot(true)}>
               📨 Zet versturen
             </button>
-            {vorige && (
+            {/* Na een uitslag geen andere zet meer: dan kon een overwinning blijven staan
+                of dubbel tellen. */}
+            {vorige && !status.over && (
               <button type="button" className="btn" onClick={neemTerug}>
                 ↩︎ Andere zet
               </button>
