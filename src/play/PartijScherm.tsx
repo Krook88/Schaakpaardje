@@ -279,9 +279,11 @@ export function PartijScherm({ botId }: { botId: string }) {
     setUitslag(null)
     setSamenWinnaar(null)
     setZetten((n) => Math.max(0, n - 1))
-    setZin(ZET_TERUGGENOMEN)
-    setStemming('moedigt')
-  }, [samen, stopDenken])
+    // Na een uitslag is terugnemen geen troost waard: dan troostte Pip de winnaar, alsof
+    // winnen een fout was. Herreview negende review.
+    setZin(uitslag ? kies(PARTIJ_START, 'start') : ZET_TERUGGENOMEN)
+    setStemming(uitslag ? 'blij' : 'moedigt')
+  }, [samen, stopDenken, uitslag])
 
   const opnieuw = useCallback(() => {
     // Zonder dit bleef de oude denk-timer lopen: die deed daarna een zet op de nieuwe

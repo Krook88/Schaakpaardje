@@ -7,7 +7,7 @@ schaakmeester (GO), codebase-reviewer (GO), layout-reviewer (**NO-GO**).
 
 **NO-GO** door de layout-reviewer: het bord draaide direct na een zet, en een kind
 dat nog eens tikte deed zo de zet van het andere kind. Dat en alle belangrijke punten
-zijn opgelost (`zie statuskolom`); de layout-reviewer kijkt opnieuw.
+zijn opgelost (zie statuskolom). De herreview van de layout-reviewer (na `20d360d`) is **GO**.
 
 ## Layout
 
@@ -43,3 +43,15 @@ zijn opgelost (`zie statuskolom`); de layout-reviewer kijkt opnieuw.
 | 3 | klein: "N zetten" telde halve zetten. | **Opgelost**: geen aantal meer op de uitslagkaart. |
 | 4 | klein: "daar kan hij hem slaan" bij samen spelen. | **Opgelost**: bij samen alleen de eerste zin, zonder "hij". |
 | 5 | klein: blunderreparatie zonder test. | **Opgelost**, zie codebase B2. |
+
+## Herreview layout (na `20d360d`): GO
+
+B1, I1, I2, K1, K2 en K3 opgelost, nagespeeld (bord draait na 910 ms, tweede tik binnen
+80 ms doet niets). De pauze van 0,9 s voelt goed.
+
+| | Bevinding | Status |
+|---|---|---|
+| H1 | klein: focus valt tijdens het slot naar de pagina (toetsenbord). | Open: gebeurt ook al als de bot denkt; samen oplossen in de toegankelijkheidsronde. |
+| H2 | klein: Pip zegt "Zwart heeft gewonnen", de kaart "Vos wint". | Open: een zin met naam is niet in te spreken; de kaart toont plaatje en naam. |
+| H3 | klein: "Vos wint!" staat twee keer (regel en kaart). | Open, bewust: de regel staat altijd in beeld, ook als de kaart onder de vouw valt (K5). |
+| H4 | klein: na terugnemen van een mat troostte Pip de winnaar. | **Opgelost**: na een uitslag een gewone startzin in plaats van de troostzin. |
