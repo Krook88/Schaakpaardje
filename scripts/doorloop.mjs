@@ -419,7 +419,10 @@ async function opAfstandSpelen() {
   await page.reload({ waitUntil: 'networkidle' })
   await page.waitForTimeout(600)
   if (!(await page.locator('[data-square="d2"]').isDisabled())) return meld(naam, false, 'na verversen kon het kind ook de zet van het vriendje doen')
-  await page.getByRole('button', { name: /Zet versturen/ }).click()
+  // En dan staat er dat je moet wachten, niet nog eens "versturen" als opdracht.
+  const wacht = await page.locator('p.muted[aria-live=polite]').innerText().catch(() => '')
+  if (!/Wachten op/.test(wacht)) return meld(naam, false, `na verversen geen wachtstand ("${wacht}")`)
+  await page.getByRole('button', { name: /versturen/ }).click()
   await page.waitForTimeout(300)
   const som = await page.getByText(/Hoeveel is \d+ × \d+/).innerText().catch(() => '')
   const m = som.match(/(\d+) × (\d+)/)

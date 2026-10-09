@@ -15,6 +15,7 @@ import {
   AFSTAND_JOUW_BEURT,
   AFSTAND_KAPOT,
   AFSTAND_VERSTUREN,
+  AFSTAND_WACHTEN,
   PARTIJ_REMISE,
   SCHAAK_TEGEN_JOU,
   SCHAAK_VAN_JOU,
@@ -94,6 +95,10 @@ export function AfstandScherm() {
   const [stemming, setStemming] = useState<PipStemming>('blij')
   const [slot, setSlot] = useState(false)
   const [link, setLink] = useState<string | null>(null)
+  /** Hoe de link de deur uit ging, om de ouder precies te zeggen wat er gebeurde. */
+  const [hoe, setHoe] = useState<'gedeeld' | 'gekopieerd' | 'zelf' | null>(null)
+  /** Na versturen (of bij het openen van een eigen link): wachten op het vriendje. */
+  const [wachten, setWachten] = useState(false)
   /** De partij van voor mijn zet, om hem terug te kunnen nemen. */
   const [vorige, setVorige] = useState<AfstandPartij | null>(null)
 
@@ -103,6 +108,8 @@ export function AfstandScherm() {
     setGezet(false)
     setSlot(false)
     setLink(null)
+    setHoe(null)
+    setWachten(false)
     setGeselecteerd(null)
     if (!code) {
       gameRef.current = new Game()
@@ -131,8 +138,11 @@ export function AfstandScherm() {
       setKapot(false)
       const status = gelezen.game.status()
       if (eigen) {
+        // Een eigen link: die is (waarschijnlijk) al verstuurd. Dus wachten, met de
+        // mogelijkheid hem nog eens te sturen.
         setGezet(true)
-        setZin(status.over && status.reason === 'mat' ? AFSTAND_GEWONNEN : status.over ? PARTIJ_REMISE[0] : AFSTAND_VERSTUREN)
+        setWachten(!status.over)
+        setZin(status.over && status.reason === 'mat' ? AFSTAND_GEWONNEN : status.over ? PARTIJ_REMISE[0] : AFSTAND_WACHTEN)
         setStemming('trots')
       } else if (status.over) {
         // Een afgelopen partij: wie de link opent, deed de laatste zet niet. Bij mat is
@@ -241,14 +251,38 @@ export function AfstandScherm() {
     if (!partij) return
     const url = `${location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/spelen/afstand/#${codeer(partij)}`
     setLink(url)
+    setSlot(false)
+    let gelukt: 'gedeeld' | 'gekopieerd' | 'zelf' = 'zelf'
     try {
       if (navigator.share) {
         await navigator.share({ title: 'Schaakmaatje', text: 'Jouw beurt! ♟️', url })
-        return
+        gelukt = 'gedeeld'
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url)
+        gelukt = 'gekopieerd'
       }
-      await navigator.clipboard?.writeText(url)
     } catch {
-      /* geannuleerd of geen klembord: de link staat hieronder om over te nemen */
+      /* geannuleerd of geen klembord: de link staat in beeld om over te nemen */
+    }
+    setHoe(gelukt)
+    if (gelukt !== 'zelf' && !gameRef.current.status().over) {
+      setWachten(true)
+      setZin(AFSTAND_WACHTEN)
+      setStemming('blij')
+    }
+  }
+
+  const kopieer = async () => {
+    if (!link) return
+    try {
+      await navigator.clipboard.writeText(link)
+      setHoe('gekopieerd')
+      if (!gameRef.current.status().over) {
+        setWachten(true)
+        setZin(AFSTAND_WACHTEN)
+      }
+    } catch {
+      setHoe('zelf')
     }
   }
 
@@ -303,49 +337,62 @@ export function AfstandScherm() {
             ? status.reason === 'mat'
               ? `🏆 ${plaatje(aanZet === 'w' ? 'b' : 'w')} wint!`
               : 'Gelijkspel'
-            : gezet
-              ? `Je zet staat klaar. Daarna is ${plaatje(aanZet)} aan de beurt.`
-              : `${plaatje(aanZet)} is aan zet (${aanZet === 'w' ? 'wit' : 'zwart'}) · zet ${Math.floor(partij.zetten.length / 2) + 1}`}
+            : wachten
+              ? `⏳ Wachten op ${plaatje(aanZet)}. Je ziet de zet als de link terugkomt.`
+              : gezet
+                ? `Je zet staat klaar. Daarna is ${plaatje(aanZet)} aan de beurt.`
+                : `${plaatje(aanZet)} Jij bent aan zet (${aanZet === 'w' ? 'wit' : 'zwart'}) · zet ${Math.floor(partij.zetten.length / 2) + 1}`}
         </p>
 
         {gezet && !slot && (
           <div className="row" style={{ justifyContent: 'center' }}>
-            <button type="button" className="btn btn--primary btn--big" onClick={() => setSlot(true)}>
-              📨 Zet versturen
+            <button
+              type="button"
+              className={wachten ? 'btn btn--big' : 'btn btn--primary btn--big'}
+              onClick={() => setSlot(true)}
+            >
+              📨 {wachten ? 'Nog een keer versturen' : 'Zet versturen'}
             </button>
             {/* Na een uitslag geen andere zet meer: dan kon een overwinning blijven staan
                 of dubbel tellen. */}
-            {vorige && !status.over && (
-              <button type="button" className="btn" onClick={neemTerug}>
+            {vorige && !status.over && !wachten && (
+              <button type="button" className="btn btn--big" onClick={neemTerug}>
                 ↩︎ Andere zet
               </button>
             )}
           </div>
         )}
 
-        {gezet && slot && !link && (
+        {gezet && slot && (
           <Rekenslot
+            onAnnuleer={() => setSlot(false)}
             titel="Zet versturen"
             uitleg="De zet gaat als link naar het vriendje, bijvoorbeeld via WhatsApp. In de link staan alleen de zetten en twee plaatjes, geen naam."
             onOpen={() => void verstuur()}
           />
         )}
 
-        {link && (
+        {link && !slot && (
           <div className="card stack">
             <p style={{ margin: 0 }}>
-              Gedeeld of gekopieerd. Lukte dat niet? Kopieer dan deze link en stuur hem zelf:
+              {hoe === 'gedeeld'
+                ? 'Gedeeld. Lukte het toch niet? Kopieer de link en stuur hem zelf:'
+                : hoe === 'gekopieerd'
+                  ? 'De link is gekopieerd. Plak hem in WhatsApp of een mail aan het vriendje:'
+                  : 'Kopieer deze link en stuur hem naar het vriendje:'}
             </p>
             <input
               readOnly
               value={link}
               onFocus={(e) => e.currentTarget.select()}
               aria-label="Link met de zet"
-              style={{ font: 'inherit', padding: '12px 14px', borderRadius: 12, border: '2px solid var(--line)', background: 'var(--surface)', color: 'var(--ink)', width: '100%' }}
+              style={{ font: 'inherit', padding: '12px 14px', borderRadius: 12, border: '2px solid var(--line)', background: 'var(--surface)', color: 'var(--ink)', width: '100%', minHeight: 64 }}
             />
-            <button type="button" className="btn" onClick={() => void verstuur()}>
-              Nog een keer delen
-            </button>
+            <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+              <button type="button" className="btn btn--big" onClick={() => void kopieer()}>
+                📋 Kopieer
+              </button>
+            </div>
           </div>
         )}
 

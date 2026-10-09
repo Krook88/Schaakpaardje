@@ -2,7 +2,7 @@
 
 Scope: schaken op afstand (commits `fa0682b`, `813c5c3` en volgende, PR #11).
 Reviewers: schaakmeester (GO), codebase-reviewer (GO onder voorwaarde van punt 1 en 2),
-layout-reviewer (eerste poging afgebroken door een limiet; opnieuw gestart).
+layout-reviewer (GO, na een eerste poging die door een limiet werd afgebroken).
 
 ## Schaakmeester: GO
 
@@ -28,3 +28,13 @@ layout-reviewer (eerste poging afgebroken door een limiet; opnieuw gestart).
 | 7 | klein: tellen per apparaat in plaats van per kind. | **Opgelost**: per profiel, en alleen met profiel. |
 | 8 | klein: link negeerde de basePath. | **Opgelost**. |
 | 9 | klein: tests dekten alleen het gelukkige pad. | **Opgelost**: promotie, plaatjes, normalisatie, lengte; doorloop ververst. |
+
+## Layout: GO
+
+| | Bevinding | Status |
+|---|---|---|
+| 1 | belangrijk: na versturen geen wachtstand; het scherm bleef "versturen" roepen. | **Opgelost**: Pip zegt "Verstuurd! Nu is je vriendje aan de beurt. Even wachten maar.", de regel zegt "⏳ Wachten op ...", de knop heet dan "Nog een keer versturen". Een eigen link opent in die wachtstand. Na versturen geen "Andere zet" meer. |
+| 2 | klein: de beurtregel zei niet "jij". | **Opgelost**: "🦊 Jij bent aan zet (zwart)". |
+| 3 | klein: in het rekenslot geen weg terug. | **Opgelost**: knop "Toch niet". |
+| 4 | klein: onduidelijk of de link gedeeld of gekopieerd is. | **Opgelost**: de kaart zegt precies wat er gebeurde, met een knop "📋 Kopieer". |
+| 5 | klein: raakvlakken onder 64 px; bordvelden op 360 px. | Deels: "Andere zet", "Kopieer" en het linkveld zijn 64 px. Bordvelden: bestaand punt (zevende review K12). |

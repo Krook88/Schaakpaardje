@@ -38,10 +38,13 @@ export function Rekenslot({
   titel = 'Even voor de grote mensen',
   uitleg,
   onOpen,
+  onAnnuleer,
 }: {
   titel?: string
   uitleg?: string
   onOpen: () => void
+  /** Een weg terug zonder de som, waar dat zin heeft (zoals bij versturen). */
+  onAnnuleer?: () => void
 }) {
   const id = useId()
   // De som wordt pas in de browser gekozen: willekeur tijdens het prerenderen geeft
@@ -105,6 +108,11 @@ export function Rekenslot({
         <button type="button" className="btn btn--big" onClick={andereSom}>
           ↻ Andere som
         </button>
+        {onAnnuleer && (
+          <button type="button" className="btn btn--big btn--ghost" onClick={onAnnuleer}>
+            Toch niet
+          </button>
+        )}
       </div>
     </div>
   )

@@ -156,6 +156,7 @@ export const AFSTAND_BEGIN = 'Schaken met een vriendje dat ergens anders is! Jij
 export const AFSTAND_JOUW_BEURT = 'Je vriendje heeft gezet. Nu jij!'
 export const AFSTAND_JIJ_ZWART = 'Je vriendje begon met wit. Jij speelt zwart. Nu jij!'
 export const AFSTAND_VERSTUREN = 'Goed zo. Vraag papa of mama om je zet te versturen.'
+export const AFSTAND_WACHTEN = 'Verstuurd! Nu is je vriendje aan de beurt. Even wachten maar.'
 export const AFSTAND_KAPOT = 'Deze link werkt niet. Vraag of je vriendje hem nog eens stuurt.'
 export const AFSTAND_GEWONNEN = 'Gewonnen! Stuur de zet, dan ziet je vriendje het ook.'
 export const AFSTAND_VRIENDJE_WINT = 'Je vriendje heeft gewonnen. Knap gespeeld, allebei!'
