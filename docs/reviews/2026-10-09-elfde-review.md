@@ -8,7 +8,7 @@ waren groen.
 
 Schaakmeester en codebase: **GO** met voorwaarden. Layout: **NO-GO** (de kiezer stond op
 een telefoon buiten beeld). *Bijgewerkt: alle blokkerende en belangrijke punten zijn
-opgelost; zie de statuskolom. Herreview layout hieronder.*
+opgelost; zie de statuskolom. Herreview layout: **GO**.*
 
 ## Blokkerend
 
@@ -46,3 +46,14 @@ opgelost; zie de statuskolom. Herreview layout hieronder.*
 - Alleen voor 8 tot 10: sluit aan op pion-4 en de clubvolgorde.
 - Op afstand neemt de link het gekozen stuk mee; mat of pat na onderpromotie klopt.
 - Wit en zwart, licht en donker, 360 en 390: geen paginafouten, niet horizontaal scrollen.
+
+## Herreview layout (na `c1fee04`)
+
+**GO.** Kiezer in alle 8 combinaties (360 en 390, licht en donker, wit en zwart) volledig
+in beeld, zwart in donker duidelijk, focus op Dame, Escape werkt, geen horizontaal
+scrollen, geen consolefouten.
+
+| | Bevinding | Status |
+|---|---|---|
+| H1 | klein: na het kiezen bleef Pips vraag in de ballon staan, ook na de zet van de tegenstander. | **Opgelost**: Pip zegt "Goed gekozen!"; een schaak- of eindzin van de zet zelf gaat daaroverheen. |
+| H2 | klein: op 360 dekt de kiezer de onderste bordrijen af. | Open: bewust. Het bord is dan op slot en het pion- en promotieveld staan bovenin, goed zichtbaar. |

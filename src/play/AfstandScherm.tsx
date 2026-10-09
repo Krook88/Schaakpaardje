@@ -19,6 +19,7 @@ import {
   AFSTAND_WACHTEN,
   PARTIJ_REMISE,
   PROMOTIE_ANDERS,
+  PROMOTIE_GEKOZEN,
   PROMOTIE_KIES,
   SCHAAK_TEGEN_JOU,
   SCHAAK_VAN_JOU,
@@ -365,6 +366,9 @@ export function AfstandScherm() {
             onKies={(stuk) => {
               const v = promotieVraag
               setPromotieVraag(null)
+              // De vraag is beantwoord; wat de zet daarna oplevert (schaak, mat) mag eroverheen.
+              setZin(PROMOTIE_GEKOZEN)
+              setStemming('blij')
               doeZet(v.van, v.naar, stuk)
             }}
             onAnnuleer={() => {

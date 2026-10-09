@@ -14,6 +14,7 @@ import {
   PARTIJ_REMISE,
   PARTIJ_START,
   PROMOTIE_ANDERS,
+  PROMOTIE_GEKOZEN,
   PROMOTIE_KIES,
   SAMEN_KIES,
   SAMEN_SPELEN,
@@ -436,6 +437,9 @@ export function PartijScherm({ botId }: { botId: string }) {
             onKies={(stuk) => {
               const v = promotieVraag
               setPromotieVraag(null)
+              // De vraag is beantwoord; wat de zet daarna oplevert (schaak, mat) mag eroverheen.
+              setZin(PROMOTIE_GEKOZEN)
+              setStemming('blij')
               probeer(v.van, v.naar, stuk)
             }}
             onAnnuleer={() => {

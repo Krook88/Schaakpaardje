@@ -155,6 +155,7 @@ export const SAMEN_KIES = 'Met wie speel je? Kies wie er met zwart speelt.'
 /** Promoveren met keuze, alleen voor de oudste groep. Jongere kinderen krijgen altijd een dame. */
 export const PROMOTIE_KIES = 'Je pion is aan de overkant! Wat wordt hij? Meestal kies je de dame.'
 export const PROMOTIE_ANDERS = 'Goed, kies maar een andere zet.'
+export const PROMOTIE_GEKOZEN = 'Goed gekozen!'
 
 export const AFSTAND_BEGIN = 'Schaken met een vriendje dat ergens anders is! Jij speelt wit. Doe je eerste zet.'
 export const AFSTAND_JOUW_BEURT = 'Je vriendje heeft gezet. Nu jij!'
