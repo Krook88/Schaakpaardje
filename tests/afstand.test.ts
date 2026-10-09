@@ -27,6 +27,15 @@ describe('schaken op afstand: de partij in een link', () => {
     expect(leesIn(codeer({ zetten: [], wit: 'Daan', zwart: null }))).toBeNull()
   })
 
+  it('een promotie komt heen en terug goed over, ook tot paard', () => {
+    // Wit loopt met de h-pion door naar h8 (gxh7 slaat de pion op h7).
+    const zetten = ['h2h4', 'g7g5', 'h4g5', 'h7h6', 'g5h6', 'g8f6', 'h6h7', 'f6g8', 'h7g8n']
+    const terug = leesIn(codeer({ zetten, wit: '🐴', zwart: '🦊' }))!
+    expect(terug).not.toBeNull()
+    expect(terug.game.fen.split(' ')[0]).toContain('N')
+    expect(terug.game.fen.startsWith('rnbqkbN')).toBe(true)
+  })
+
   it('rommel levert null op, geen fout', () => {
     expect(leesIn('dit-is-geen-partij')).toBeNull()
     expect(leesIn('')).toBeNull()

@@ -10,12 +10,16 @@ import { sfx } from '@/audio/sfx'
 import {
   AFSTAND_BEGIN,
   AFSTAND_GEWONNEN,
+  AFSTAND_JIJ_ZWART,
   AFSTAND_VRIENDJE_WINT,
   AFSTAND_JOUW_BEURT,
   AFSTAND_KAPOT,
   AFSTAND_VERSTUREN,
   PARTIJ_REMISE,
+  SCHAAK_TEGEN_JOU,
+  SCHAAK_VAN_JOU,
 } from '@/content/voice'
+import { kies } from '@/audio/voice'
 import { type Square } from '@/engine/board'
 import { Game } from '@/engine/game'
 import { AVATARS, useInstellingen, useProfiel, useProfielStore, useToestandGeladen } from '@/progress/store'
@@ -36,6 +40,28 @@ function markeerGeteld(code: string) {
     localStorage.setItem(GETELD, JSON.stringify([...lijst.slice(-49), code]))
   } catch {
     /* geen opslag: dan telt hij hooguit nog eens */
+  }
+}
+
+/**
+ * Welke links dit apparaat zelf gemaakt heeft. Wie na zijn zet ververst of zijn eigen
+ * verstuurde link nog eens opent, kreeg anders het bord van de ander en kon diens zet
+ * doen, met Pip die zei "Je vriendje heeft gezet". Achtste schaakreview, punt 1.
+ */
+const EIGEN = 'schaakmaatje-afstand-eigen'
+function isEigen(code: string): boolean {
+  try {
+    return (JSON.parse(localStorage.getItem(EIGEN) ?? '[]') as string[]).includes(code)
+  } catch {
+    return false
+  }
+}
+function markeerEigen(code: string) {
+  try {
+    const lijst = JSON.parse(localStorage.getItem(EIGEN) ?? '[]') as string[]
+    localStorage.setItem(EIGEN, JSON.stringify([...lijst.slice(-99), code]))
+  } catch {
+    /* geen opslag: dan hooguit het oude gedrag */
   }
 }
 
@@ -95,12 +121,19 @@ export function AfstandScherm() {
       }
       gameRef.current = gelezen.game
       setPartij(gelezen.partij)
-      setKantInBeeld(gelezen.game.turn)
+      setVorige(null)
+      const eigen = isEigen(code)
+      // Mijn eigen link: het bord blijft op slot en staat naar mijn kant.
+      setKantInBeeld(eigen ? (gelezen.game.turn === 'w' ? 'b' : 'w') : gelezen.game.turn)
       const laatste = gelezen.partij.zetten.at(-1)
       setLaatsteZet(laatste ? [laatste.slice(0, 2) as Square, laatste.slice(2, 4) as Square] : null)
       setKapot(false)
       const status = gelezen.game.status()
-      if (status.over) {
+      if (eigen) {
+        setGezet(true)
+        setZin(status.over && status.reason === 'mat' ? AFSTAND_GEWONNEN : status.over ? PARTIJ_REMISE[0] : AFSTAND_VERSTUREN)
+        setStemming('trots')
+      } else if (status.over) {
         // Een afgelopen partij: wie de link opent, deed de laatste zet niet. Bij mat is
         // dat de verliezer; tel hem één keer mee.
         if (!alGeteld(code)) {
@@ -108,10 +141,20 @@ export function AfstandScherm() {
           markeerGeteld(code)
         }
         setZin(status.reason === 'mat' ? AFSTAND_VRIENDJE_WINT : PARTIJ_REMISE[0])
+      } else if (!status.over && status.check) {
+        // Wie schaak staat en het niet hoort, ziet alleen dat de stukken niet willen.
+        setZin(kies(SCHAAK_TEGEN_JOU, 'schaak'))
+        setStemming('verrast')
       } else {
-        setZin(gelezen.partij.zetten.length ? AFSTAND_JOUW_BEURT : AFSTAND_BEGIN)
+        setZin(
+          gelezen.partij.zetten.length === 1
+            ? AFSTAND_JIJ_ZWART
+            : gelezen.partij.zetten.length
+              ? AFSTAND_JOUW_BEURT
+              : AFSTAND_BEGIN,
+        )
+        setStemming('blij')
       }
-      setStemming('blij')
     }
     setFen(gameRef.current.fen)
   }, [bewaarPartij, mijnPlaatje])
@@ -148,6 +191,7 @@ export function AfstandScherm() {
         // De adresbalk bijwerken zonder te herladen: zo is de zet niet weg als de
         // pagina ververst wordt. `replaceState` geeft geen hashchange.
         history.replaceState(null, '', `#${code}`)
+        markeerEigen(code)
         setVorige(partij)
         setPartij(nieuw)
         setLaatsteZet([geselecteerd, veld])
@@ -164,7 +208,8 @@ export function AfstandScherm() {
           setZin(na.reason === 'mat' ? AFSTAND_GEWONNEN : PARTIJ_REMISE[0])
           setStemming('trots')
         } else {
-          setZin(AFSTAND_VERSTUREN)
+          // Eén ingesproken zin per keer; de knop "Zet versturen" staat er toch al.
+          setZin(na.check ? kies(SCHAAK_VAN_JOU, 'schaak') : AFSTAND_VERSTUREN)
           setStemming('trots')
         }
         return
@@ -266,9 +311,11 @@ export function AfstandScherm() {
             <button type="button" className="btn btn--primary btn--big" onClick={() => setSlot(true)}>
               📨 Zet versturen
             </button>
-            <button type="button" className="btn" onClick={neemTerug}>
-              ↩︎ Andere zet
-            </button>
+            {vorige && (
+              <button type="button" className="btn" onClick={neemTerug}>
+                ↩︎ Andere zet
+              </button>
+            )}
           </div>
         )}
 
