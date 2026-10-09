@@ -402,6 +402,43 @@ async function samenSpelenKentDeWinnaar() {
   meld(naam, telling === 1, `na terugnemen en opnieuw mat stonden er ${telling} partijen`)
 }
 
+/* ------------------------------------------------------------------ *
+ * 11. Op afstand: één zet, dan op slot; versturen achter het rekenslot; de link
+ * werkt aan de andere kant, en een kapotte link geeft een uitweg.
+ * ------------------------------------------------------------------ */
+async function opAfstandSpelen() {
+  const naam = 'op afstand: een zet, op slot, link via het rekenslot, werkt bij het vriendje'
+  await page.goto(`${URL}/spelen/afstand/`, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(600)
+  await page.locator('[data-square="e2"]').click()
+  await page.locator('[data-square="e4"]').click()
+  await page.waitForTimeout(300)
+  if (!(await page.locator('[data-square="d2"]').isDisabled())) return meld(naam, false, 'na de zet kon er nog een zet bij')
+  await page.getByRole('button', { name: /Zet versturen/ }).click()
+  await page.waitForTimeout(300)
+  const som = await page.getByText(/Hoeveel is \d+ × \d+/).innerText().catch(() => '')
+  const m = som.match(/(\d+) × (\d+)/)
+  if (!m) return meld(naam, false, 'versturen ging niet langs het rekenslot')
+  await page.getByRole('textbox').fill(String(Number(m[1]) * Number(m[2])))
+  await page.getByRole('button', { name: 'Verder' }).click()
+  await page.waitForTimeout(400)
+  const link = await page.getByRole('textbox', { name: 'Link met de zet' }).inputValue().catch(() => '')
+  if (!/\/spelen\/afstand\/#[A-Za-z0-9_-]+$/.test(link)) return meld(naam, false, `geen bruikbare link ("${link}")`)
+  // Aan de andere kant: een nieuw tabblad, zoals het vriendje dat de link opent.
+  const ander = await page.context().newPage()
+  await ander.goto(link.replace(/^https?:\/\/[^/]+/, URL), { waitUntil: 'networkidle' })
+  await ander.waitForTimeout(600)
+  const beurt = await ander.locator('p.muted[aria-live=polite]').innerText().catch(() => '')
+  const omgedraaid = (await ander.locator('[data-square]').first().getAttribute('data-square')) === 'h1'
+  const e4 = (await ander.locator('[data-square="e4"]').innerText()).trim() !== ''
+  await ander.goto(`${URL}/spelen/afstand/#rommel`, { waitUntil: 'networkidle' })
+  await ander.waitForTimeout(400)
+  const uitweg = await ander.getByRole('link', { name: /nieuwe partij/ }).count()
+  await ander.close()
+  const goed = /\(zwart\)/.test(beurt) && omgedraaid && e4 && uitweg > 0
+  meld(naam, goed, goed ? '' : `beurt "${beurt}", gedraaid ${omgedraaid}, e4 ${e4}, uitweg ${uitweg}`)
+}
+
 console.log(`Doorloop tegen ${URL}\n`)
 await pipZwijgtBijBinnenkomst()
 await nieuwProfiel()
@@ -412,6 +449,7 @@ await quizRekentGoedGoed()
 await onmogelijkeZetKrijgtRegelzin()
 await opdrachtKomtTerugNaTipje()
 await samenSpelenKentDeWinnaar()
+await opAfstandSpelen()
 await altijdEenUitweg()
 
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
