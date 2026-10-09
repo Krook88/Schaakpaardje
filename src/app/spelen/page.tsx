@@ -103,6 +103,21 @@ export default function Spelen() {
               </small>
             </span>
           </Link>
+          <Link
+            href="/spelen/afstand/"
+            className="btn btn--big"
+            style={{ justifyContent: 'flex-start', textAlign: 'left', padding: '14px 18px', height: 'auto', minHeight: 78 }}
+          >
+            <span style={{ fontSize: 32 }} aria-hidden="true">
+              📨
+            </span>
+            <span style={{ display: 'grid', gap: 2 }}>
+              <strong>Op afstand</strong>
+              <small className="muted" style={{ fontWeight: 400 }}>
+                Tegen een vriendje, opa of oma: zet voor zet via een link.
+              </small>
+            </span>
+          </Link>
         </div>
 
         <p className="muted" style={{ fontSize: '0.88rem' }}>

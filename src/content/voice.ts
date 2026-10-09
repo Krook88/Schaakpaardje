@@ -151,6 +151,16 @@ export const SAMEN_WIT_WINT = 'Wit heeft gewonnen! Knap gespeeld, allebei.'
 export const SAMEN_ZWART_WINT = 'Zwart heeft gewonnen! Knap gespeeld, allebei.'
 export const SAMEN_KIES = 'Met wie speel je? Kies wie er met zwart speelt.'
 
+/** Schaken op afstand: zie src/play/afstand.ts. */
+export const AFSTAND_BEGIN = 'Schaken met een vriendje dat ergens anders is! Jij speelt wit. Doe je eerste zet.'
+export const AFSTAND_JOUW_BEURT = 'Je vriendje heeft gezet. Nu jij!'
+export const AFSTAND_JIJ_ZWART = 'Je vriendje begon met wit. Jij speelt zwart. Nu jij!'
+export const AFSTAND_VERSTUREN = 'Goed zo. Vraag papa of mama om je zet te versturen.'
+export const AFSTAND_WACHTEN = 'Verstuurd! Nu is je vriendje aan de beurt. Even wachten maar.'
+export const AFSTAND_KAPOT = 'Deze link werkt niet. Vraag of je vriendje hem nog eens stuurt.'
+export const AFSTAND_GEWONNEN = 'Gewonnen! Stuur de zet, dan ziet je vriendje het ook.'
+export const AFSTAND_VRIENDJE_WINT = 'Je vriendje heeft gewonnen. Knap gespeeld, allebei!'
+
 /** Als de hele stal vol is. De tellerzin ernaast kan niet: daar staan getallen in. */
 export const STAL_VOL = 'Je stal is helemaal vol. Alles verzameld!'
 
