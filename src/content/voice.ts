@@ -152,6 +152,9 @@ export const SAMEN_ZWART_WINT = 'Zwart heeft gewonnen! Knap gespeeld, allebei.'
 export const SAMEN_KIES = 'Met wie speel je? Kies wie er met zwart speelt.'
 
 /** Schaken op afstand: zie src/play/afstand.ts. */
+/** Promoveren met keuze, alleen voor de oudste groep. Jongere kinderen krijgen altijd een dame. */
+export const PROMOTIE_KIES = 'Je pion is aan de overkant! Waar wordt hij in?'
+
 export const AFSTAND_BEGIN = 'Schaken met een vriendje dat ergens anders is! Jij speelt wit. Doe je eerste zet.'
 export const AFSTAND_JOUW_BEURT = 'Je vriendje heeft gezet. Nu jij!'
 export const AFSTAND_JIJ_ZWART = 'Je vriendje begon met wit. Jij speelt zwart. Nu jij!'

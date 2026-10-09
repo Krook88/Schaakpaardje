@@ -449,6 +449,55 @@ async function opAfstandSpelen() {
   meld(naam, goed, goed ? '' : `beurt "${beurt}", gedraaid ${omgedraaid}, e4 ${e4}, uitweg ${uitweg}`)
 }
 
+/* ------------------------------------------------------------------ *
+ * 12. De oudste groep kiest zelf waar een pion in verandert.
+ *
+ * Eerst werd een pion altijd een dame. Voor kinderen in de modus schaker (8 tot 10)
+ * komt er nu een keuze; jongere kinderen houden de dame. Samen spelen, zodat beide
+ * kanten met de hand gaan: wit loopt met de a-pion door en slaat op a8.
+ * ------------------------------------------------------------------ */
+async function promotieMetKeuze() {
+  const naam = 'modus schaker: bij promotie kies je het stuk (hier een paard)'
+  // De modus in de opslag zetten; de volgende pagina leest hem in.
+  const zetModus = async (m) => {
+    await page.goto(URL, { waitUntil: 'networkidle' })
+    return page.evaluate((m) => {
+      const j = JSON.parse(localStorage.getItem('schaakmaatje-v1'))
+      const prof = j.state.profielen.find((p) => p.id === j.state.actiefId)
+      const oud = prof.modus
+      prof.modus = m
+      localStorage.setItem('schaakmaatje-v1', JSON.stringify(j))
+      return oud
+    }, m)
+  }
+  const was = await zetModus('schaker')
+  await page.goto(`${URL}/spelen/samen/`, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(600)
+  await page.getByRole('button', { name: 'Beginnen', exact: true }).click()
+  await page.waitForTimeout(400)
+  const zet = async (a, z) => {
+    await page.locator(`[data-square="${a}"]`).click()
+    await page.locator(`[data-square="${z}"]`).click()
+    await page.waitForTimeout(300)
+    // Zwart krijgt aan het eind terecht een waarschuwing: wit gaat promoveren, wat zwart
+    // ook doet. Dan tikt het kind "Toch doen".
+    if (await page.getByRole('alertdialog').count()) await page.getByRole('button', { name: 'Toch doen' }).click()
+    await page.waitForTimeout(1000)
+  }
+  // Zwart springt heen en weer met een paard: veilig, dus geen blunderwaarschuwing die
+  // de regel zou ophouden.
+  for (const [a, z] of [['a2', 'a4'], ['g8', 'f6'], ['a4', 'a5'], ['f6', 'g8'], ['a5', 'a6'], ['g8', 'f6'], ['a6', 'b7'], ['f6', 'g8']]) await zet(a, z)
+  await page.locator('[data-square="b7"]').click()
+  await page.locator('[data-square="a8"]').click()
+  await page.waitForTimeout(400)
+  const kiezer = await page.getByRole('dialog', { name: /pion in/ }).count()
+  if (kiezer) await page.getByRole('button', { name: 'Paard', exact: true }).click()
+  await page.waitForTimeout(500)
+  const opA8 = (await page.locator('[data-square="a8"]').innerText()).trim()
+  await zetModus(was)
+  meld(naam, kiezer > 0 && opA8.startsWith('♞'), kiezer ? `op a8 staat "${opA8}"` : 'er kwam geen keuze')
+}
+
 console.log(`Doorloop tegen ${URL}\n`)
 await pipZwijgtBijBinnenkomst()
 await nieuwProfiel()
@@ -460,6 +509,7 @@ await onmogelijkeZetKrijgtRegelzin()
 await opdrachtKomtTerugNaTipje()
 await samenSpelenKentDeWinnaar()
 await opAfstandSpelen()
+await promotieMetKeuze()
 await altijdEenUitweg()
 
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))

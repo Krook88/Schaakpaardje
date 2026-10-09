@@ -13,6 +13,7 @@ import {
   PARTIJ_GEWONNEN,
   PARTIJ_REMISE,
   PARTIJ_START,
+  PROMOTIE_KIES,
   SAMEN_KIES,
   SAMEN_SPELEN,
   SAMEN_WIT_WINT,
@@ -22,12 +23,13 @@ import {
   ZET_TERUGGENOMEN,
   pipZinnen,
 } from '@/content/voice'
-import { PIECE_NAME, type Square } from '@/engine/board'
-import { Game, blunderVerlies, materialBalance } from '@/engine/game'
+import { PIECE_NAME, type PieceType, type Square } from '@/engine/board'
+import { Game, blunderVerlies, isPromotie, materialBalance } from '@/engine/game'
 import { getBot, KidBot } from '@/engine/bots'
 import { useInstellingen, useModus, useProfielStore } from '@/progress/store'
 import { OPSTELLING } from './opstellingen'
 import { SamenKiezer, type Speler } from './SamenKiezer'
+import { PromotieKiezer } from './PromotieKiezer'
 
 type Uitslag = 'gewonnen' | 'verloren' | 'remise' | null
 
@@ -38,7 +40,10 @@ export function PartijScherm({ botId }: { botId: string }) {
   const bot = useMemo(() => (botId === 'samen' ? null : (getBot(botId) ?? null)), [botId])
   const opzet = OPSTELLING[bot?.id ?? 'samen']
   const instellingen = useInstellingen()
-  const zinnen = pipZinnen(useModus() === 'schaker')
+  const modus = useModus()
+  const zinnen = pipZinnen(modus === 'schaker')
+  /** Een pionzet naar de overkant die wacht op de keuze van het stuk (alleen modus schaker). */
+  const [promotieVraag, setPromotieVraag] = useState<{ van: Square; naar: Square } | null>(null)
   const bewaarPartij = useProfielStore((s) => s.bewaarPartij)
   const bewaarOverwinning = useProfielStore((s) => s.bewaarOverwinning)
 
@@ -195,9 +200,9 @@ export function PartijScherm({ botId }: { botId: string }) {
   }, [kidBot, bot, controleerEinde, eindig, instellingen.effecten, opzet?.winBijPromotie])
 
   const voerUit = useCallback(
-    (van: Square, naar: Square) => {
+    (van: Square, naar: Square, promotie: PieceType = 'q') => {
       const game = gameRef.current
-      const gedaan = game.move(van, naar)
+      const gedaan = game.move(van, naar, promotie)
       if (!gedaan) return
       if (instellingen.effecten) (gedaan.isCapture ? sfx.slaan : sfx.zet)()
       if (gedaan.promotion && instellingen.effecten) sfx.promotie()
@@ -229,7 +234,7 @@ export function PartijScherm({ botId }: { botId: string }) {
 
   const opVeld = useCallback(
     (veld: Square) => {
-      if (uitslag || botDenkt || twijfel || beurtWissel) return
+      if (uitslag || botDenkt || twijfel || beurtWissel || promotieVraag) return
       const game = gameRef.current
       const aanZet = game.turn
       if (!samen && aanZet !== 'w') return
@@ -250,6 +255,13 @@ export function PartijScherm({ botId }: { botId: string }) {
             setStemming('verrast')
             return
           }
+          // De oudste groep kiest zelf waar de pion in verandert; de rest krijgt een dame.
+          if (modus === 'schaker' && isPromotie(game, geselecteerd, veld)) {
+            setPromotieVraag({ van: geselecteerd, naar: veld })
+            setZin(PROMOTIE_KIES)
+            setStemming('denkt')
+            return
+          }
           voerUit(geselecteerd, veld)
           return
         }
@@ -262,7 +274,7 @@ export function PartijScherm({ botId }: { botId: string }) {
         setGeselecteerd(null)
       }
     },
-    [beurtWissel, botDenkt, geselecteerd, instellingen, samen, twijfel, uitslag, voerUit],
+    [beurtWissel, botDenkt, geselecteerd, instellingen, modus, promotieVraag, samen, twijfel, uitslag, voerUit],
   )
 
   const neemTerug = useCallback(() => {
@@ -365,7 +377,7 @@ export function PartijScherm({ botId }: { botId: string }) {
             selected={geselecteerd}
             marks={marks}
             onSquare={opVeld}
-            disabled={Boolean(uitslag) || botDenkt || beurtWissel}
+            disabled={Boolean(uitslag) || botDenkt || beurtWissel || Boolean(promotieVraag)}
             showCoordinates={instellingen.coordinaten}
             label="Partij"
           />
@@ -403,6 +415,21 @@ export function PartijScherm({ botId }: { botId: string }) {
                   : 'Gelijk'}
           </span>
         </div>
+
+        {promotieVraag && (
+          <PromotieKiezer
+            kleur={gameRef.current.turn}
+            onKies={(stuk) => {
+              const v = promotieVraag
+              setPromotieVraag(null)
+              voerUit(v.van, v.naar, stuk)
+            }}
+            onAnnuleer={() => {
+              setPromotieVraag(null)
+              setGeselecteerd(null)
+            }}
+          />
+        )}
 
         {twijfel && (
           <div className="card stack" role="alertdialog" aria-label="Weet je het zeker?">

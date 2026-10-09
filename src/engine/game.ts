@@ -168,3 +168,8 @@ export function blunderVerlies(game: Game, van: string, naar: string): number {
   }
   return ergste
 }
+
+/** Is dit een pionzet naar de overkant, waarbij gekozen moet worden waarin hij verandert? */
+export function isPromotie(game: Game, van: string, naar: string): boolean {
+  return game.legalMoves(van as never).some((z) => z.to === naar && Boolean(z.promotion))
+}
