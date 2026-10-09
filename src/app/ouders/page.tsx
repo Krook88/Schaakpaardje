@@ -8,6 +8,7 @@ import { KOFFIE } from '@/seo'
 import { WERELDEN } from '@/content'
 import {
   useGespeeld,
+  useOefendagen,
   useInstellingen,
   useProfiel,
   useProfielStore,
@@ -154,6 +155,7 @@ function OuderPaneel() {
   const herstelInstellingen = useProfielStore((s) => s.herstelInstellingen)
   const verwijderProfiel = useProfielStore((s) => s.verwijderProfiel)
   const gespeeld = useGespeeld()
+  const oefendagen = useOefendagen()
 
   const gedaan = Object.keys(voortgang).length
   const totaal = WERELDEN.flatMap((w) => w.lessen).length
@@ -187,6 +189,7 @@ function OuderPaneel() {
           <p className="muted">
             {gedaan} van de {totaal} lessen gedaan
             {gespeeld ? ` · ${gespeeld.gewonnen + gespeeld.verloren + gespeeld.remise} partijen gespeeld` : ''}
+            {oefendagen ? ` · op ${oefendagen} ${oefendagen === 1 ? 'dag' : 'dagen'} geoefend` : ''}
           </p>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 10 }}>
             {WERELDEN.map((wereld) => {

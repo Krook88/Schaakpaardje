@@ -19,7 +19,7 @@ import {
   tik,
   type OpgaveStand,
 } from '@/lesson/runner'
-import { useInstellingen, useModus } from '@/progress/store'
+import { useInstellingen, useModus, useProfielStore } from '@/progress/store'
 import { gebruikTip } from '@/ui/gebruikTip'
 import { minispelMet, zaad, type Minispel } from './minispellen'
 
@@ -28,6 +28,7 @@ const NIVEAUS = 6
 export function MinispelScherm({ spelId }: { spelId: string }) {
   const spel = useMemo(() => minispelMet(spelId) as Minispel, [spelId])
   const instellingen = useInstellingen()
+  const bewaarOefendag = useProfielStore((s) => s.bewaarOefendag)
   const zinnen = pipZinnen(useModus() === 'schaker')
   const [niveau, setNiveau] = useState(1)
   const [stand, setStand] = useState<OpgaveStand>(() => startOpgave(minispelMet(spelId)!.maakOpgave(1, zaad(1))))
@@ -105,6 +106,8 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
         case 'klaar': {
           if (instellingen.effecten) sfx.ster()
           setGehaald((n) => n + 1)
+          // Een gehaald rondje telt als oefenen, net als een les.
+          bewaarOefendag()
           afbreken()
           setZin(kies(zinnen.PRIJS_LAATSTE, 'prijs'))
           setStemming('trots')
@@ -134,7 +137,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
           break
       }
     },
-    [stand, instellingen.effecten, niveau, nieuwRondje, zegTip, afbreken, opdracht, zinnen],
+    [stand, instellingen.effecten, niveau, nieuwRondje, zegTip, afbreken, opdracht, zinnen, bewaarOefendag],
   )
 
   const marks: BoardMarks = useMemo(() => {

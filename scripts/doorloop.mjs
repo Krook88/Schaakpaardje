@@ -293,6 +293,15 @@ async function opdrachtKomtTerugNaTipje() {
   const naam = 'opdracht komt terug na een tipje'
   await page.goto(`${URL}/spel/vind-het-veld/`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(900)
+  // Alleen een rondje met meer dan één veld te vinden: wijst het tipje het laatste
+  // veld aan, dan begint er een nieuw rondje met een andere opdracht, en dan meet deze
+  // regel iets anders dan bedoeld. Zo faalde hij eerst af en toe zonder dat er iets mis was.
+  const teVinden = async () => Number((await page.getByText(/van de \d+/).first().innerText().catch(() => '')).match(/van de (\d+)/)?.[1] ?? 0)
+  for (let i = 0; i < 10 && (await teVinden()) < 2; i++) {
+    await page.getByRole('button', { name: /Ander rondje/ }).click()
+    await page.waitForTimeout(700)
+  }
+  if ((await teVinden()) < 2) return meld(naam, false, 'geen rondje met meer dan één veld gevonden')
   const opdracht = await ballon()
   await page.getByRole('button', { name: /Tipje/ }).click()
   await page.waitForTimeout(300)

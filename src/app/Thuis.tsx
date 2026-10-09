@@ -17,6 +17,7 @@ import {
   useStickers,
   useToestandGeladen,
   useVerslagen,
+  useOefendagen,
   useVoortgang,
   volgendeOpenLes,
   wereldIsAf,
@@ -52,6 +53,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   const voortgang = useVoortgang()
   const stickers = useStickers()
   const verslagen = useVerslagen()
+  const oefendagen = useOefendagen()
   // Praat Pip hier vanzelf? Alleen als er al getikt was toen dit scherm verscheen,
   // dus als je terugkomt van een les. Wie de site net opent, schrikt anders bij de
   // eerste tik van een pratend paardje. Eén keer vastgelegd: anders gaat hij alsnog
@@ -125,6 +127,14 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
                     beeld het enige wat het ziet. Het getal blijft, voor de ouder; de
                     wereldrij hieronder is wat het kind ziet. */}
                 ⭐ {totaal} van de {maxSterren} sterren
+                {/* Alleen omhoog, nooit terug naar nul: zie `oefendagen` in de store. */}
+                {oefendagen > 0 && (
+                  <>
+                    {' · '}
+                    <span aria-hidden="true">📅</span> {oefendagen}{' '}
+                    {oefendagen === 1 ? 'dag' : 'dagen'} geoefend
+                  </>
+                )}
               </p>
             </div>
           </div>
