@@ -119,28 +119,33 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
             <span style={{ fontSize: 34 }} aria-hidden="true">
               {profiel.avatar}
             </span>
-            <div>
-              <h1 style={{ fontSize: '1.5rem' }}>Hoi {profiel.naam}!</h1>
-              <p className="muted" style={{ fontSize: '0.9rem' }}>
-                {/* Geen sterrenrij hier: die stond na drie sterren al vol, terwijl de tekst
-                    ernaast "5 van de 141" zei. Voor een kind dat nog niet leest is dat
-                    beeld het enige wat het ziet. Het getal blijft, voor de ouder; de
-                    wereldrij hieronder is wat het kind ziet. */}
-                ⭐ {totaal} van de {maxSterren} sterren
-                {/* Alleen omhoog, nooit terug naar nul: zie `oefendagen` in de store. */}
-                {oefendagen > 0 && (
-                  <>
-                    {' · '}
-                    <span aria-hidden="true">📅</span> {oefendagen}{' '}
-                    {oefendagen === 1 ? 'dag' : 'dagen'} geoefend
-                  </>
-                )}
+            {/* Een lange naam als "Maximiliaan" liep onder de knoppen rechts door. Nu een
+                kleinere kop bij een lange naam, smallere knoppen, en als het dan nog niet
+                past mag hij afbreken in plaats van eronder te schuiven. */}
+            <div style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+              <h1 style={{ fontSize: profiel.naam.length > 7 ? '1.2rem' : '1.5rem' }}>Hoi {profiel.naam}!</h1>
+              {/* Geen sterrenrij hier: die stond na drie sterren al vol, terwijl de tekst
+                  ernaast "5 van de 141" zei. Voor een kind dat nog niet leest is dat
+                  beeld het enige wat het ziet. Het getal blijft, voor de ouder; de
+                  wereldrij hieronder is wat het kind ziet.
+
+                  Twee eigen regels die niet afbreken: in één zin brak het op een
+                  telefoon in vier losse stukjes, met het kalendertje los van "dagen". */}
+              <p className="muted" style={{ fontSize: '0.9rem', margin: 0, whiteSpace: 'nowrap' }}>
+                ⭐ {totaal} van de {maxSterren}
               </p>
+              {/* Alleen omhoog, nooit terug naar nul: zie `oefendagen` in de store. */}
+              {oefendagen > 0 && (
+                <p className="muted" style={{ fontSize: '0.9rem', margin: 0, whiteSpace: 'nowrap' }}>
+                  <span aria-hidden="true">📅</span> {oefendagen} {oefendagen === 1 ? 'dag' : 'dagen'}
+                  <span className="visually-hidden"> geoefend</span>
+                </p>
+              )}
             </div>
           </div>
           <div className="row" style={{ gap: 6, flexWrap: 'nowrap', flexShrink: 0 }}>
-            <GeluidKnop />
-            <Link href="/ouders/" className="btn btn--ghost" aria-label="Voor ouders">
+            <GeluidKnop className="knopSmal" />
+            <Link href="/ouders/" className="btn btn--ghost knopSmal" aria-label="Voor ouders">
               ⚙️
             </Link>
           </div>

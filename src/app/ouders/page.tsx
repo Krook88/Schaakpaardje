@@ -9,6 +9,7 @@ import { WERELDEN } from '@/content'
 import {
   useGespeeld,
   useOefendagen,
+  useLaatstGeoefend,
   useInstellingen,
   useProfiel,
   useProfielStore,
@@ -156,6 +157,7 @@ function OuderPaneel() {
   const verwijderProfiel = useProfielStore((s) => s.verwijderProfiel)
   const gespeeld = useGespeeld()
   const oefendagen = useOefendagen()
+  const laatst = useLaatstGeoefend()
 
   const gedaan = Object.keys(voortgang).length
   const totaal = WERELDEN.flatMap((w) => w.lessen).length
@@ -186,11 +188,23 @@ function OuderPaneel() {
       <div className="stack">
         <section className="card stack">
           <h2>Wat kan {profiel?.naam ?? 'je kind'} nu?</h2>
-          <p className="muted">
-            {gedaan} van de {totaal} lessen gedaan
-            {gespeeld ? ` · ${gespeeld.gewonnen + gespeeld.verloren + gespeeld.remise} partijen gespeeld` : ''}
-            {oefendagen ? ` · op ${oefendagen} ${oefendagen === 1 ? 'dag' : 'dagen'} geoefend` : ''}
-          </p>
+          {/* Elk deel een eigen lijstje-regel die niet afbreekt: in één zin brak "· 6" los
+              van "partijen". En voor de ouder ook wanneer er laatst geoefend is; dat
+              staat bewust niet bij het kind, zodat het geen druk wordt. */}
+          <ul className="muted" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 2 }}>
+            <li style={{ whiteSpace: 'nowrap' }}>{gedaan} van de {totaal} lessen gedaan</li>
+            {gespeeld && (
+              <li style={{ whiteSpace: 'nowrap' }}>
+                {gespeeld.gewonnen + gespeeld.verloren + gespeeld.remise} partijen gespeeld
+              </li>
+            )}
+            {oefendagen > 0 && (
+              <li>
+                Op {oefendagen} {oefendagen === 1 ? 'dag' : 'dagen'} geoefend
+                {laatst && <>, laatst {laatsteDag(laatst)}</>}
+              </li>
+            )}
+          </ul>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 10 }}>
             {WERELDEN.map((wereld) => {
               const lessen = wereld.lessen.filter((l) => voortgang[l.id])
@@ -377,4 +391,16 @@ function OuderPaneel() {
       </div>
     </main>
   )
+}
+
+/** "vandaag", "gisteren" of "dinsdag 7 oktober", voor de ouder. */
+function laatsteDag(iso: string): string {
+  const [j, m, d] = iso.split('-').map(Number)
+  const dag = new Date(j, m - 1, d)
+  const nu = new Date()
+  const vandaag = new Date(nu.getFullYear(), nu.getMonth(), nu.getDate())
+  const verschil = Math.round((vandaag.getTime() - dag.getTime()) / 86_400_000)
+  if (verschil === 0) return 'vandaag'
+  if (verschil === 1) return 'gisteren'
+  return dag.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })
 }

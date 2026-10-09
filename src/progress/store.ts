@@ -145,6 +145,14 @@ type State = {
    * overslaat, en dat is een kind straffen omdat het naar oma ging. Deze teller gaat
    * alleen omhoog. `laatste` is de datum (JJJJ-MM-DD, lokale tijd) van de laatste dag
    * die al geteld is, zodat dezelfde dag niet twee keer telt.
+   *
+   * Hang hier nooit een beloning, sticker of Pip-zin aan als "nog 3 dagen en je krijgt
+   * ...". Dan is het alsnog een reeks, met druk om vol te houden. Het getal is er
+   * vooral voor de ouder.
+   *
+   * Opgeslagen toestand van voor deze teller heeft de sleutel niet. `persist` vult hem
+   * dan aan met de begintoestand `{}`, maar de code leest hem toch voorzichtig (`?.`):
+   * dat kost niets en beschermt tegen een half geschreven localStorage.
    */
   oefendagen: Record<string, { aantal: number; laatste: string }>
 
@@ -329,7 +337,6 @@ export const useProfielStore = create<State>()(
       bewaarOpfrissing(lesId) {
         const id = get().actiefId
         if (!id) return
-        get().bewaarOefendag()
         set((s) => {
           const vanProfiel = s.voortgang[id] ?? {}
           const bestaand = vanProfiel[lesId]
@@ -551,4 +558,9 @@ export function volgendeOpenLes(voortgang: Record<string, LesResultaat>, modus: 
 /** Op hoeveel dagen het actieve kind geoefend heeft. Nul als het nog niets deed. */
 export function useOefendagen(): number {
   return useProfielStore((s) => (s.actiefId ? (s.oefendagen?.[s.actiefId]?.aantal ?? 0) : 0))
+}
+
+/** De laatste dag waarop het actieve kind oefende (JJJJ-MM-DD), of null. Voor de ouder. */
+export function useLaatstGeoefend(): string | null {
+  return useProfielStore((s) => (s.actiefId ? (s.oefendagen?.[s.actiefId]?.laatste ?? null) : null))
 }

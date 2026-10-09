@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Zelfde emmertje als in modus.test.ts: zustand wil localStorage.
 const emmer = new Map<string, string>()
@@ -25,13 +25,20 @@ const aantal = () => {
  *
  * Bewust geen reeks die op nul springt als je een dag overslaat; dat is straffen.
  */
+const leeg = useProfielStore.getState()
+
 describe('dagen geoefend', () => {
+  // Elke test begint schoon, zodat ze los en in elke volgorde kunnen draaien.
+  beforeEach(() => {
+    emmer.clear()
+    useProfielStore.setState({ ...leeg, profielen: [], actiefId: null, oefendagen: {} })
+    useProfielStore.getState().maakProfiel('Test', 6, '🐴')
+  })
   afterEach(() => vi.useRealTimers())
 
   it('telt een dag één keer, hoe vaak er die dag ook geoefend wordt', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(2026, 9, 9, 10, 0))
-    useProfielStore.getState().maakProfiel('Test', 6, '🐴')
     expect(aantal()).toBe(0)
     useProfielStore.getState().bewaarLes('weide-1', { sterren: 3, fouten: 0, hints: 0 })
     useProfielStore.getState().bewaarPartij('gewonnen')
@@ -41,18 +48,38 @@ describe('dagen geoefend', () => {
 
   it('telt een nieuwe dag erbij, ook na een week niets', () => {
     vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 9, 9, 10, 0))
+    useProfielStore.getState().bewaarOefendag()
     vi.setSystemTime(new Date(2026, 9, 10, 9, 0))
     useProfielStore.getState().bewaarOefendag()
-    expect(aantal()).toBe(2)
     vi.setSystemTime(new Date(2026, 9, 18, 19, 0))
     useProfielStore.getState().bewaarOefendag()
     // Een week overgeslagen, en de teller is niet teruggezet.
     expect(aantal()).toBe(3)
   })
 
+  it('een losse opfrisopgave telt niet, pas de hele ronde (in het scherm)', () => {
+    useProfielStore.getState().bewaarLes('weide-1', { sterren: 3, fouten: 0, hints: 0 })
+    const id = useProfielStore.getState().actiefId!
+    useProfielStore.setState({ oefendagen: {} })
+    useProfielStore.getState().bewaarOpfrissing('weide-1')
+    expect(useProfielStore.getState().oefendagen[id]).toBeUndefined()
+  })
+
   it('verdwijnt mee als het profiel verwijderd wordt', () => {
+    useProfielStore.getState().bewaarOefendag()
     const id = useProfielStore.getState().actiefId!
     useProfielStore.getState().verwijderProfiel(id)
     expect(useProfielStore.getState().oefendagen[id]).toBeUndefined()
+  })
+
+  it('werkt ook met opslag van voor deze teller (zonder oefendagen)', () => {
+    // Zo ziet de toestand eruit bij een kind dat al speelde voordat de teller bestond:
+    // de sleutel ontbreekt helemaal.
+    const { oefendagen: _weg, ...zonder } = useProfielStore.getState()
+    useProfielStore.setState(zonder as typeof leeg, true)
+    expect(useProfielStore.getState().oefendagen).toBeUndefined()
+    useProfielStore.getState().bewaarOefendag()
+    expect(aantal()).toBe(1)
   })
 })

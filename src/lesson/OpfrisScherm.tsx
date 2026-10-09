@@ -47,6 +47,7 @@ export function OpfrisScherm() {
   const instellingen = useInstellingen()
   const zinnen = pipZinnen(useModus() === 'schaker')
   const bewaarOpfrissing = useProfielStore((s) => s.bewaarOpfrissing)
+  const bewaarOefendag = useProfielStore((s) => s.bewaarOefendag)
 
   // Eén keer kiezen, bij binnenkomst. Zou dit elke hertekening opnieuw gebeuren, dan
   // wisselde de opgave onder de handen van het kind zodra een les opschuift.
@@ -93,11 +94,13 @@ export function OpfrisScherm() {
     if (index + 1 < ronde.length) setIndex(index + 1)
     else {
       setKlaar(true)
+      // Pas een hele ronde telt als oefendag, niet elke losse opgave.
+      bewaarOefendag()
       setZin(OPFRISSER_KLAAR)
       setStemming('trots')
       if (instellingen.effecten) sfx.diploma()
     }
-  }, [ronde, index, bewaarOpfrissing, instellingen.effecten])
+  }, [ronde, index, bewaarOpfrissing, bewaarOefendag, instellingen.effecten])
 
   const gelukt = useCallback(() => {
     if (instellingen.effecten) sfx.goed()

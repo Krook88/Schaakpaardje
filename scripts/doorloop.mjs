@@ -301,7 +301,7 @@ async function opdrachtKomtTerugNaTipje() {
     await page.getByRole('button', { name: /Ander rondje/ }).click()
     await page.waitForTimeout(700)
   }
-  if ((await teVinden()) < 2) return meld(naam, false, 'geen rondje met meer dan één veld gevonden')
+  if ((await teVinden()) < 2) return meld(naam, false, 'geen rondje met meer dan één veld gevonden (of de teller "x van de N" staat er niet meer)')
   const opdracht = await ballon()
   await page.getByRole('button', { name: /Tipje/ }).click()
   await page.waitForTimeout(300)
@@ -316,11 +316,27 @@ async function opdrachtKomtTerugNaTipje() {
   meld(naam, goed, goed ? '' : `"${terug}" in plaats van "${opdracht}"`)
 }
 
+/* ------------------------------------------------------------------ *
+ * 9. Na een gespeeld minispel telt de dag als geoefend.
+ *
+ * De teller zit in de opslag en is daar getest, maar de koppeling vanuit het
+ * minispelscherm niet. Draait direct na `minispelEindigt`, dat zes rondjes haalt.
+ * ------------------------------------------------------------------ */
+async function dagTeltNaMinispel() {
+  const naam = 'na een minispel staat er een dag geoefend'
+  await page.goto(URL, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(600)
+  const tekst = await page.locator('main').first().innerText()
+  const goed = /📅\s*1 dag/.test(tekst)
+  meld(naam, goed, goed ? '' : 'geen "📅 1 dag" op het beginscherm')
+}
+
 console.log(`Doorloop tegen ${URL}\n`)
 await pipZwijgtBijBinnenkomst()
 await nieuwProfiel()
 await opdrachtKomtTerug()
 await minispelEindigt()
+await dagTeltNaMinispel()
 await quizRekentGoedGoed()
 await onmogelijkeZetKrijgtRegelzin()
 await opdrachtKomtTerugNaTipje()
