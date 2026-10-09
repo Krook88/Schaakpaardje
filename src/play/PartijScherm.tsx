@@ -13,6 +13,7 @@ import {
   PARTIJ_GEWONNEN,
   PARTIJ_REMISE,
   PARTIJ_START,
+  PROMOTIE_ANDERS,
   PROMOTIE_KIES,
   SAMEN_KIES,
   SAMEN_SPELEN,
@@ -57,7 +58,7 @@ export function PartijScherm({ botId }: { botId: string }) {
   const [stemming, setStemming] = useState<PipStemming>('blij')
   const [uitslag, setUitslag] = useState<Uitslag>(null)
   const [botDenkt, setBotDenkt] = useState(false)
-  const [twijfel, setTwijfel] = useState<{ van: Square; naar: Square; verlies: number } | null>(null)
+  const [twijfel, setTwijfel] = useState<{ van: Square; naar: Square; verlies: number; promotie: PieceType } | null>(null)
   const [zetten, setZetten] = useState(0)
   const [samenWinnaar, setSamenWinnaar] = useState<'w' | 'b' | null>(null)
 
@@ -232,6 +233,23 @@ export function PartijScherm({ botId }: { botId: string }) {
     [botAanZet, controleerEinde, eindig, instellingen.effecten, opzet?.winBijPromotie, samen],
   )
 
+  /** De zet doen, of eerst waarschuwen als hij een stuk kost. */
+  const probeer = useCallback(
+    (van: Square, naar: Square, promotie: PieceType = 'q') => {
+      const verlies = instellingen.blunderWaarschuwing ? blunderVerlies(gameRef.current, van, naar, promotie) : 0
+      if (verlies >= 3) {
+        setTwijfel({ van, naar, verlies, promotie })
+        // Bij samen spelen alleen de eerste zin: de tweede zegt "hij", en het andere
+        // kind kan net zo goed een meisje zijn.
+        setZin(samen ? BLUNDER_WAARSCHUWING[0] : kies(BLUNDER_WAARSCHUWING, 'blunder'))
+        setStemming('verrast')
+        return
+      }
+      voerUit(van, naar, promotie)
+    },
+    [instellingen.blunderWaarschuwing, samen, voerUit],
+  )
+
   const opVeld = useCallback(
     (veld: Square) => {
       if (uitslag || botDenkt || twijfel || beurtWissel || promotieVraag) return
@@ -246,23 +264,17 @@ export function PartijScherm({ botId }: { botId: string }) {
         }
         const kan = game.destinations(geselecteerd).includes(veld)
         if (kan) {
-          const verlies = instellingen.blunderWaarschuwing ? blunderVerlies(game, geselecteerd, veld) : 0
-          if (verlies >= 3) {
-            setTwijfel({ van: geselecteerd, naar: veld, verlies })
-            // Bij samen spelen alleen de eerste zin: de tweede zegt "hij", en het andere
-            // kind kan net zo goed een meisje zijn.
-            setZin(samen ? BLUNDER_WAARSCHUWING[0] : kies(BLUNDER_WAARSCHUWING, 'blunder'))
-            setStemming('verrast')
-            return
-          }
           // De oudste groep kiest zelf waar de pion in verandert; de rest krijgt een dame.
-          if (modus === 'schaker' && isPromotie(game, geselecteerd, veld)) {
+          // Eerst kiezen, dan pas waarschuwen: anders gaf "Toch doen" zonder vragen een
+          // dame, net als de keuze ertoe deed. In het pionnenspel niet: wie de overkant
+          // haalt, wint meteen, en dan zegt de keuze niets.
+          if (modus === 'schaker' && !opzet?.winBijPromotie && isPromotie(game, geselecteerd, veld)) {
             setPromotieVraag({ van: geselecteerd, naar: veld })
             setZin(PROMOTIE_KIES)
             setStemming('denkt')
             return
           }
-          voerUit(geselecteerd, veld)
+          probeer(geselecteerd, veld)
           return
         }
       }
@@ -274,7 +286,7 @@ export function PartijScherm({ botId }: { botId: string }) {
         setGeselecteerd(null)
       }
     },
-    [beurtWissel, botDenkt, geselecteerd, instellingen, modus, promotieVraag, samen, twijfel, uitslag, voerUit],
+    [beurtWissel, botDenkt, geselecteerd, instellingen, modus, opzet?.winBijPromotie, probeer, promotieVraag, samen, twijfel, uitslag],
   )
 
   const neemTerug = useCallback(() => {
@@ -282,6 +294,7 @@ export function PartijScherm({ botId }: { botId: string }) {
     const game = gameRef.current
     game.undo()
     if (!samen) game.undo()
+    setPromotieVraag(null)
     if (wisselTimer.current) clearTimeout(wisselTimer.current)
     setBeurtWissel(false)
     setKantInBeeld(game.turn)
@@ -303,6 +316,7 @@ export function PartijScherm({ botId }: { botId: string }) {
     stopDenken()
     setPartijNr((n) => n + 1)
     gameRef.current = new Game(opzet?.fen)
+    setPromotieVraag(null)
     if (wisselTimer.current) clearTimeout(wisselTimer.current)
     setBeurtWissel(false)
     setKantInBeeld('w')
@@ -422,11 +436,13 @@ export function PartijScherm({ botId }: { botId: string }) {
             onKies={(stuk) => {
               const v = promotieVraag
               setPromotieVraag(null)
-              voerUit(v.van, v.naar, stuk)
+              probeer(v.van, v.naar, stuk)
             }}
             onAnnuleer={() => {
               setPromotieVraag(null)
               setGeselecteerd(null)
+              setZin(PROMOTIE_ANDERS)
+              setStemming('moedigt')
             }}
           />
         )}
@@ -444,7 +460,7 @@ export function PartijScherm({ botId }: { botId: string }) {
                 onClick={() => {
                   const t = twijfel
                   setTwijfel(null)
-                  voerUit(t.van, t.naar)
+                  voerUit(t.van, t.naar, t.promotie)
                 }}
               >
                 Toch doen

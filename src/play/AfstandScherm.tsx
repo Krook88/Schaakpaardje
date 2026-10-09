@@ -13,10 +13,12 @@ import {
   AFSTAND_JIJ_ZWART,
   AFSTAND_VRIENDJE_WINT,
   AFSTAND_JOUW_BEURT,
+  AFSTAND_ONDERPROMOTIE,
   AFSTAND_KAPOT,
   AFSTAND_VERSTUREN,
   AFSTAND_WACHTEN,
   PARTIJ_REMISE,
+  PROMOTIE_ANDERS,
   PROMOTIE_KIES,
   SCHAAK_TEGEN_JOU,
   SCHAAK_VAN_JOU,
@@ -115,6 +117,7 @@ export function AfstandScherm() {
     setHoe(null)
     setWachten(false)
     setGeselecteerd(null)
+    setPromotieVraag(null)
     if (!code) {
       gameRef.current = new Game()
       setPartij({ zetten: [], wit: mijnPlaatje, zwart: null })
@@ -161,12 +164,16 @@ export function AfstandScherm() {
         setZin(kies(SCHAAK_TEGEN_JOU, 'schaak'))
         setStemming('verrast')
       } else {
+        // Een pion die geen dame werd: zonder uitleg staat er ineens een paard.
+        const onder = laatste?.[4] ? 'rbn'.indexOf(laatste[4]) : -1
         setZin(
-          gelezen.partij.zetten.length === 1
-            ? AFSTAND_JIJ_ZWART
-            : gelezen.partij.zetten.length
-              ? AFSTAND_JOUW_BEURT
-              : AFSTAND_BEGIN,
+          onder >= 0
+            ? AFSTAND_ONDERPROMOTIE[onder]
+            : gelezen.partij.zetten.length === 1
+              ? AFSTAND_JIJ_ZWART
+              : gelezen.partij.zetten.length
+                ? AFSTAND_JOUW_BEURT
+                : AFSTAND_BEGIN,
         )
         setStemming('blij')
       }
@@ -363,6 +370,8 @@ export function AfstandScherm() {
             onAnnuleer={() => {
               setPromotieVraag(null)
               setGeselecteerd(null)
+              setZin(PROMOTIE_ANDERS)
+              setStemming('moedigt')
             }}
           />
         )}

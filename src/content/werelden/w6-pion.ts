@@ -218,7 +218,7 @@ export const wereld6: World = {
       vertel: [
         'En nu het mooiste van de pion.',
         {
-          tekst: 'Haalt hij de overkant? Dan wordt hij een dame! Zomaar, midden in de partij.',
+          tekst: 'Haalt hij de overkant? Dan mag hij een ander stuk worden. Bijna altijd kies je de dame! Zomaar, midden in de partij.',
           wijs: ['e8'],
         },
         "Daarom is zo'n klein pionnetje toch heel gevaarlijk.",

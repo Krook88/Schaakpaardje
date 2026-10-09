@@ -145,11 +145,12 @@ export function materialBalance(fen: string): number {
  * telde als winst (zesde review, I5). Hij woonde in het partijscherm, waar geen test
  * bij kon; hier wel.
  */
-export function blunderVerlies(game: Game, van: string, naar: string): number {
+export function blunderVerlies(game: Game, van: string, naar: string, promotie: PieceType = 'q'): number {
   const kant = game.turn === 'w' ? 1 : -1
   const balans = (f: string) => kant * materialBalance(f)
   const proef = game.clone()
-  if (!proef.move(van as never, naar as never)) return 0
+  // Met het gekozen stuk: een paard dat op de overkant geslagen kan worden, is 3 kwijt, geen 9.
+  if (!proef.move(van as never, naar as never, promotie as never)) return 0
   const balansNa = balans(proef.fen)
   let ergste = 0
   for (const reactie of proef.legalMoves()) {

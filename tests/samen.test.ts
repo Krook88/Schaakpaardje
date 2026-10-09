@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Game, blunderVerlies } from '@/engine/game'
+import { Game, blunderVerlies, isPromotie } from '@/engine/game'
 
 /**
  * De blunderwaarschuwing rekent vanuit wie er zet.
@@ -25,5 +25,29 @@ describe('blunderVerlies, voor wit en voor zwart', () => {
     expect(blunderVerlies(wit, 'c3', 'd5')).toBe(0)
     const zwart = new Game('r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 2 3')
     expect(blunderVerlies(zwart, 'c6', 'd4')).toBe(0)
+  })
+
+  it('rekent met het gekozen promotiestuk', () => {
+    // De pion promoveert op a8, waar de toren van b8 het nieuwe stuk slaat.
+    const g = new Game('1r5k/P7/8/8/8/8/8/K7 w - - 0 1')
+    expect(blunderVerlies(g, 'a7', 'a8', 'q')).toBe(9)
+    expect(blunderVerlies(g, 'a7', 'a8', 'n')).toBe(3)
+  })
+})
+
+describe('isPromotie', () => {
+  it('wit en zwart naar de overkant, ook met slaan', () => {
+    const g = new Game('1r5k/P7/8/8/8/8/p7/K7 w - - 0 1')
+    expect(isPromotie(g, 'a7', 'a8')).toBe(true)
+    expect(isPromotie(g, 'a7', 'b8')).toBe(true)
+    const z = new Game('1r5k/P7/8/8/8/8/p6K/8 b - - 0 1')
+    expect(isPromotie(z, 'a2', 'a1')).toBe(true)
+  })
+
+  it('een gewone pionzet of een onmogelijke zet is geen promotie', () => {
+    const g = new Game()
+    expect(isPromotie(g, 'e2', 'e4')).toBe(false)
+    expect(isPromotie(g, 'e2', 'e8')).toBe(false)
+    expect(isPromotie(g, 'g1', 'f3')).toBe(false)
   })
 })

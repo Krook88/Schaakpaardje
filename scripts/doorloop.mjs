@@ -487,15 +487,29 @@ async function promotieMetKeuze() {
   // Zwart springt heen en weer met een paard: veilig, dus geen blunderwaarschuwing die
   // de regel zou ophouden.
   for (const [a, z] of [['a2', 'a4'], ['g8', 'f6'], ['a4', 'a5'], ['f6', 'g8'], ['a5', 'a6'], ['g8', 'f6'], ['a6', 'b7'], ['f6', 'g8']]) await zet(a, z)
+  // Op telefoonmaat: op het grote doorloopscherm paste de kiezer onder het bord nog net.
+  const groot = page.viewportSize()
+  await page.setViewportSize({ width: 360, height: 640 })
   await page.locator('[data-square="b7"]').click()
   await page.locator('[data-square="a8"]').click()
   await page.waitForTimeout(400)
-  const kiezer = await page.getByRole('dialog', { name: /pion in/ }).count()
+  const dialoog = page.getByRole('dialog', { name: /Wat wordt je pion/ })
+  const kiezer = await dialoog.count()
+  // Hij moet ook in beeld staan: onder het bord viel hij op een telefoon buiten het
+  // scherm, en met het bord op slot leek de app dan vast te lopen.
+  const vak = kiezer ? await dialoog.boundingBox() : null
+  const hoogte = page.viewportSize()?.height ?? 0
+  const inBeeld = Boolean(vak && vak.y >= 0 && vak.y + vak.height <= hoogte)
   if (kiezer) await page.getByRole('button', { name: 'Paard', exact: true }).click()
   await page.waitForTimeout(500)
+  if (groot) await page.setViewportSize(groot)
   const opA8 = (await page.locator('[data-square="a8"]').innerText()).trim()
   await zetModus(was)
-  meld(naam, kiezer > 0 && opA8.startsWith('♞'), kiezer ? `op a8 staat "${opA8}"` : 'er kwam geen keuze')
+  meld(
+    naam,
+    kiezer > 0 && inBeeld && opA8.startsWith('♞'),
+    !kiezer ? 'er kwam geen keuze' : !inBeeld ? 'de keuze stond niet in beeld' : `op a8 staat "${opA8}"`,
+  )
 }
 
 console.log(`Doorloop tegen ${URL}\n`)
