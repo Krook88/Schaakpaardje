@@ -331,6 +331,36 @@ async function dagTeltNaMinispel() {
   meld(naam, goed, goed ? '' : 'geen "📅 1 dag" op het beginscherm')
 }
 
+/* ------------------------------------------------------------------ *
+ * 10. Samen spelen: de uitslag hoort bij een kleur, niet bij "jij".
+ *
+ * Won zwart, dan kreeg het kind van dit profiel "verloren" te horen, ook als het zelf
+ * zwart speelde. Nu kiest het tweede kind wie het is, draait het bord mee, en staat
+ * er wie er wint. Gespeeld met het snelste mat dat er is.
+ * ------------------------------------------------------------------ */
+async function samenSpelenKentDeWinnaar() {
+  const naam = 'samen spelen: het bord draait mee en de winnaar heeft een naam'
+  await page.goto(`${URL}/spelen/samen/`, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(600)
+  await page.getByRole('button', { name: 'Kies 🦊' }).click()
+  await page.getByRole('button', { name: 'Beginnen', exact: true }).click()
+  await page.waitForTimeout(400)
+  const zet = async (a, z) => {
+    await page.locator(`[data-square="${a}"]`).click()
+    await page.locator(`[data-square="${z}"]`).click()
+    await page.waitForTimeout(300)
+  }
+  await zet('f2', 'f3')
+  const gedraaid = (await page.locator('[data-square]').first().getAttribute('data-square')) === 'h1'
+  if (!gedraaid) return meld(naam, false, 'het bord draaide niet naar zwart')
+  await zet('e7', 'e5')
+  await zet('g2', 'g4')
+  await zet('d8', 'h4')
+  await page.waitForTimeout(500)
+  const kop = (await page.locator('.card h2').first().innerText().catch(() => '')).replace(/\s+/g, ' ')
+  meld(naam, /🦊 Zwart wint/.test(kop), `de uitslag zei "${kop}"`)
+}
+
 console.log(`Doorloop tegen ${URL}\n`)
 await pipZwijgtBijBinnenkomst()
 await nieuwProfiel()
@@ -340,6 +370,7 @@ await dagTeltNaMinispel()
 await quizRekentGoedGoed()
 await onmogelijkeZetKrijgtRegelzin()
 await opdrachtKomtTerugNaTipje()
+await samenSpelenKentDeWinnaar()
 await altijdEenUitweg()
 
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))

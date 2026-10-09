@@ -176,10 +176,14 @@ type State = {
   bewaarHervatpunt: (lesId: string, fase: string | null) => void
   bewaarOpfrissing: (lesId: string) => void
   bewaarOverwinning: (botId: string) => void
-  bewaarPartij: (uitslag: 'gewonnen' | 'verloren' | 'remise') => void
+  /**
+   * Een partij is uit. Standaard voor het actieve kind; bij samen spelen ook voor het
+   * andere kind als dat een eigen profiel op dit apparaat heeft.
+   */
+  bewaarPartij: (uitslag: 'gewonnen' | 'verloren' | 'remise', profielId?: string) => void
   geefSticker: (sticker: string) => void
   /** Vandaag telt als oefendag. Vaker per dag aanroepen kan geen kwaad. */
-  bewaarOefendag: () => void
+  bewaarOefendag: (profielId?: string) => void
 }
 
 const nieuwId = () => Math.random().toString(36).slice(2, 10)
@@ -371,18 +375,18 @@ export const useProfielStore = create<State>()(
         })
       },
 
-      bewaarPartij(uitslag) {
-        const id = get().actiefId
+      bewaarPartij(uitslag, profielId) {
+        const id = profielId ?? get().actiefId
         if (!id) return
-        get().bewaarOefendag()
+        get().bewaarOefendag(id)
         set((s) => {
           const huidig = s.gespeeld[id] ?? { gewonnen: 0, verloren: 0, remise: 0 }
           return { gespeeld: { ...s.gespeeld, [id]: { ...huidig, [uitslag]: huidig[uitslag] + 1 } } }
         })
       },
 
-      bewaarOefendag() {
-        const id = get().actiefId
+      bewaarOefendag(profielId) {
+        const id = profielId ?? get().actiefId
         if (!id) return
         const vandaag = vandaagLokaal()
         set((s) => {
