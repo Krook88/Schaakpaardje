@@ -118,6 +118,8 @@ a { color: inherit; }
 .btn--primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
 .btn--big { min-height: var(--tap); font-size: 1.15rem; padding: 0 28px; }
 .btn--ghost { background: transparent; box-shadow: none; }
+/* Een vierkante knop met alleen een plaatje, zoals de bel en het tandwiel. */
+.knopSmal { padding: 0 12px; min-width: 56px; }
 .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
 
 .card {

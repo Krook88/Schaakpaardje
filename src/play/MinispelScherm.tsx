@@ -19,15 +19,19 @@ import {
   tik,
   type OpgaveStand,
 } from '@/lesson/runner'
-import { useInstellingen, useModus } from '@/progress/store'
+import { useInstellingen, useModus, useProfielStore } from '@/progress/store'
 import { gebruikTip } from '@/ui/gebruikTip'
 import { minispelMet, zaad, type Minispel } from './minispellen'
+
+/** Zoveel gehaalde rondjes in één keer spelen laten de dag tellen als oefendag. */
+const RONDJES_VOOR_OEFENDAG = 3
 
 const NIVEAUS = 6
 
 export function MinispelScherm({ spelId }: { spelId: string }) {
   const spel = useMemo(() => minispelMet(spelId) as Minispel, [spelId])
   const instellingen = useInstellingen()
+  const bewaarOefendag = useProfielStore((s) => s.bewaarOefendag)
   const zinnen = pipZinnen(useModus() === 'schaker')
   const [niveau, setNiveau] = useState(1)
   const [stand, setStand] = useState<OpgaveStand>(() => startOpgave(minispelMet(spelId)!.maakOpgave(1, zaad(1))))
@@ -104,6 +108,9 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
           break
         case 'klaar': {
           if (instellingen.effecten) sfx.ster()
+          // Drie gehaalde rondjes tellen als een oefendag. Eén rondje kan één tik zijn,
+          // en dan zegt "geoefend" de ouder niets meer. Een les telt ook pas als hij af is.
+          if (gehaald + 1 >= RONDJES_VOOR_OEFENDAG) bewaarOefendag()
           setGehaald((n) => n + 1)
           afbreken()
           setZin(kies(zinnen.PRIJS_LAATSTE, 'prijs'))
@@ -134,7 +141,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
           break
       }
     },
-    [stand, instellingen.effecten, niveau, nieuwRondje, zegTip, afbreken, opdracht, zinnen],
+    [stand, instellingen.effecten, niveau, nieuwRondje, zegTip, afbreken, opdracht, zinnen, bewaarOefendag, gehaald],
   )
 
   const marks: BoardMarks = useMemo(() => {

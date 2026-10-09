@@ -13,19 +13,26 @@ import {
   PARTIJ_GEWONNEN,
   PARTIJ_REMISE,
   PARTIJ_START,
+  SAMEN_KIES,
   SAMEN_SPELEN,
+  SAMEN_WIT_WINT,
+  SAMEN_ZWART_WINT,
   SCHAAK_TEGEN_JOU,
   SCHAAK_VAN_JOU,
   ZET_TERUGGENOMEN,
   pipZinnen,
 } from '@/content/voice'
 import { PIECE_NAME, type Square } from '@/engine/board'
-import { Game, materialBalance } from '@/engine/game'
+import { Game, blunderVerlies, materialBalance } from '@/engine/game'
 import { getBot, KidBot } from '@/engine/bots'
 import { useInstellingen, useModus, useProfielStore } from '@/progress/store'
 import { OPSTELLING } from './opstellingen'
+import { SamenKiezer, type Speler } from './SamenKiezer'
 
 type Uitslag = 'gewonnen' | 'verloren' | 'remise' | null
+
+/** Zo lang blijft een zet bij samen spelen staan voor het bord draait, met het bord op slot. */
+const BEURTWISSEL_MS = 900
 
 export function PartijScherm({ botId }: { botId: string }) {
   const bot = useMemo(() => (botId === 'samen' ? null : (getBot(botId) ?? null)), [botId])
@@ -47,12 +54,36 @@ export function PartijScherm({ botId }: { botId: string }) {
   const [botDenkt, setBotDenkt] = useState(false)
   const [twijfel, setTwijfel] = useState<{ van: Square; naar: Square; verlies: number } | null>(null)
   const [zetten, setZetten] = useState(0)
+  const [samenWinnaar, setSamenWinnaar] = useState<'w' | 'b' | null>(null)
 
   // Nieuwe KidBot per partij: het genadebudget hoort bij één partij, niet bij de sessie.
   const [partijNr, setPartijNr] = useState(0)
   const kidBot = useMemo(() => (bot ? new KidBot(bot, 2) : null), [bot, partijNr])
   const samen = !bot
+  /** Bij samen spelen: wie er wit en zwart is. Null tot het tweede kind gekozen heeft. */
+  const [spelers, setSpelers] = useState<{ w: Speler; b: Speler } | null>(null)
+  /** Bij samen spelen draait het bord naar wie er aan zet is. Uit te zetten. */
+  const [draaien, setDraaien] = useState(true)
+  /**
+   * Welke kant er bij samen spelen onderaan staat, en of het bord even op slot zit.
+   *
+   * Het bord draaide meteen na een zet. Een kind dat dacht dat het niet lukte, tikte
+   * dezelfde plekken nog eens, en deed zo op het gedraaide bord de zet van het andere
+   * kind. Nu blijft de zet eerst even staan, met het bord op slot, en draait het daarna.
+   */
+  const [kantInBeeld, setKantInBeeld] = useState<'w' | 'b'>('w')
+  const [beurtWissel, setBeurtWissel] = useState(false)
+  const wisselTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => {
+    if (wisselTimer.current) clearTimeout(wisselTimer.current)
+  }, [])
   const denkTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /**
+   * Voor welke partij de uitslag al bewaard is. Na mat kan een kind "Terugnemen"
+   * tikken en anders verder spelen; zonder deze grendel telde dat als een tweede
+   * partij, bij samen spelen zelfs voor twee kinderen tegelijk.
+   */
+  const bewaardVoor = useRef<number | null>(null)
 
   const stopDenken = useCallback(() => {
     if (denkTimer.current) clearTimeout(denkTimer.current)
@@ -67,14 +98,40 @@ export function PartijScherm({ botId }: { botId: string }) {
       setUitslag(nieuw)
       setZin(tekst)
       setStemming(nieuw === 'gewonnen' ? 'trots' : 'moedigt')
-      if (nieuw) bewaarPartij(nieuw)
+      if (nieuw && bewaardVoor.current !== partijNr) {
+        bewaardVoor.current = partijNr
+        bewaarPartij(nieuw)
+      }
       // Winnen van een tegenstander levert zijn maatje op voor de stal. Eén keer is
       // genoeg: het is een verzameling, geen scorebord, dus je kunt hem niet kwijtraken
       // door daarna te verliezen.
       if (nieuw === 'gewonnen' && bot) bewaarOverwinning(bot.id)
       if (instellingen.effecten) sfx.diploma()
     },
-    [bewaarPartij, bewaarOverwinning, bot, instellingen.effecten],
+    [bewaarPartij, bewaarOverwinning, bot, instellingen.effecten, partijNr],
+  )
+
+  /**
+   * Einde van een samen-partij. De uitslag hoort bij een kleur, niet bij "jij": eerst
+   * kreeg het kind van dit profiel "verloren" te horen als zwart won, ook als het
+   * zelf zwart speelde. Beide kinderen met een eigen profiel krijgen hun eigen uitslag.
+   */
+  const eindigSamen = useCallback(
+    (winnaar: 'w' | 'b' | null) => {
+      setUitslag(winnaar === null ? 'remise' : 'gewonnen')
+      setSamenWinnaar(winnaar)
+      setZin(winnaar === 'w' ? SAMEN_WIT_WINT : winnaar === 'b' ? SAMEN_ZWART_WINT : kies(PARTIJ_REMISE, 'einde'))
+      setStemming('trots')
+      const alBewaard = bewaardVoor.current === partijNr
+      bewaardVoor.current = partijNr
+      for (const kleur of ['w', 'b'] as const) {
+        const id = spelers?.[kleur].profielId
+        if (!id || alBewaard) continue
+        bewaarPartij(winnaar === null ? 'remise' : winnaar === kleur ? 'gewonnen' : 'verloren', id)
+      }
+      if (instellingen.effecten) sfx.diploma()
+    },
+    [bewaarPartij, instellingen.effecten, spelers, partijNr],
   )
 
   /** Kijkt of de partij voorbij is en vertelt dat. */
@@ -94,6 +151,10 @@ export function PartijScherm({ botId }: { botId: string }) {
         }
         return false
       }
+      if (samen) {
+        eindigSamen(status.reason === 'mat' ? (status.winner ?? null) : null)
+        return true
+      }
       if (status.reason === 'mat') {
         const jijWint = status.winner === 'w'
         eindig(jijWint ? 'gewonnen' : 'verloren', kies(jijWint ? PARTIJ_GEWONNEN : zinnen.PARTIJ_VERLOREN, 'einde'))
@@ -102,38 +163,9 @@ export function PartijScherm({ botId }: { botId: string }) {
       }
       return true
     },
-    [eindig, instellingen.effecten, samen],
+    [eindig, eindigSamen, instellingen.effecten, samen],
   )
 
-  /**
-   * Hoeveel kost deze zet netto, als de tegenstander het beste antwoord speelt?
-   *
-   * Alleen kijken naar wat hij kan pakken is niet genoeg: dan gaat de waarschuwing ook
-   * af bij een eerlijke ruil (paard voor paard) en leert een kind dat ruilen eng is.
-   * Daarom telt de herovering mee — precies zoals wereld 7 het uitlegt.
-   */
-  const blunderVerlies = useCallback((game: Game, van: Square, naar: Square): number => {
-    const proef = game.clone()
-    if (!proef.move(van, naar)) return 0
-    const balansNa = materialBalance(proef.fen)
-    let ergste = 0
-    for (const reactie of proef.legalMoves()) {
-      if (!reactie.isCapture) continue
-      const na = proef.clone()
-      na.move(reactie.from, reactie.to)
-      // Wat blijft er van dat verlies over nadat wij terugslaan?
-      let besteHerovering = materialBalance(na.fen)
-      for (const terug of na.legalMoves()) {
-        if (!terug.isCapture) continue
-        const daarna = na.clone()
-        daarna.move(terug.from, terug.to)
-        besteHerovering = Math.max(besteHerovering, materialBalance(daarna.fen))
-      }
-      const verlies = balansNa - besteHerovering
-      if (verlies > ergste) ergste = verlies
-    }
-    return ergste
-  }, [])
 
   const botAanZet = useCallback(() => {
     if (!kidBot || !bot) return
@@ -181,13 +213,23 @@ export function PartijScherm({ botId }: { botId: string }) {
       }
       if (controleerEinde(game)) return
       if (!samen) botAanZet()
+      else {
+        // Even laten zien wat er gebeurde, dan pas draaien. Ondertussen op slot.
+        setBeurtWissel(true)
+        if (wisselTimer.current) clearTimeout(wisselTimer.current)
+        wisselTimer.current = setTimeout(() => {
+          setKantInBeeld(game.turn)
+          setBeurtWissel(false)
+          wisselTimer.current = null
+        }, BEURTWISSEL_MS)
+      }
     },
     [botAanZet, controleerEinde, eindig, instellingen.effecten, opzet?.winBijPromotie, samen],
   )
 
   const opVeld = useCallback(
     (veld: Square) => {
-      if (uitslag || botDenkt || twijfel) return
+      if (uitslag || botDenkt || twijfel || beurtWissel) return
       const game = gameRef.current
       const aanZet = game.turn
       if (!samen && aanZet !== 'w') return
@@ -202,7 +244,9 @@ export function PartijScherm({ botId }: { botId: string }) {
           const verlies = instellingen.blunderWaarschuwing ? blunderVerlies(game, geselecteerd, veld) : 0
           if (verlies >= 3) {
             setTwijfel({ van: geselecteerd, naar: veld, verlies })
-            setZin(kies(BLUNDER_WAARSCHUWING, 'blunder'))
+            // Bij samen spelen alleen de eerste zin: de tweede zegt "hij", en het andere
+            // kind kan net zo goed een meisje zijn.
+            setZin(samen ? BLUNDER_WAARSCHUWING[0] : kies(BLUNDER_WAARSCHUWING, 'blunder'))
             setStemming('verrast')
             return
           }
@@ -218,7 +262,7 @@ export function PartijScherm({ botId }: { botId: string }) {
         setGeselecteerd(null)
       }
     },
-    [blunderVerlies, botDenkt, geselecteerd, instellingen, samen, twijfel, uitslag, voerUit],
+    [beurtWissel, botDenkt, geselecteerd, instellingen, samen, twijfel, uitslag, voerUit],
   )
 
   const neemTerug = useCallback(() => {
@@ -226,14 +270,20 @@ export function PartijScherm({ botId }: { botId: string }) {
     const game = gameRef.current
     game.undo()
     if (!samen) game.undo()
+    if (wisselTimer.current) clearTimeout(wisselTimer.current)
+    setBeurtWissel(false)
+    setKantInBeeld(game.turn)
     setFen(game.fen)
     setLaatsteZet(null)
     setGeselecteerd(null)
     setUitslag(null)
+    setSamenWinnaar(null)
     setZetten((n) => Math.max(0, n - 1))
-    setZin(ZET_TERUGGENOMEN)
-    setStemming('moedigt')
-  }, [samen, stopDenken])
+    // Na een uitslag is terugnemen geen troost waard: dan troostte Pip de winnaar, alsof
+    // winnen een fout was. Herreview negende review.
+    setZin(uitslag ? kies(PARTIJ_START, 'start') : ZET_TERUGGENOMEN)
+    setStemming(uitslag ? 'blij' : 'moedigt')
+  }, [samen, stopDenken, uitslag])
 
   const opnieuw = useCallback(() => {
     // Zonder dit bleef de oude denk-timer lopen: die deed daarna een zet op de nieuwe
@@ -241,10 +291,14 @@ export function PartijScherm({ botId }: { botId: string }) {
     stopDenken()
     setPartijNr((n) => n + 1)
     gameRef.current = new Game(opzet?.fen)
+    if (wisselTimer.current) clearTimeout(wisselTimer.current)
+    setBeurtWissel(false)
+    setKantInBeeld('w')
     setFen(gameRef.current.fen)
     setGeselecteerd(null)
     setLaatsteZet(null)
     setUitslag(null)
+    setSamenWinnaar(null)
     setZetten(0)
     setZin(kies(PARTIJ_START, 'start'))
     setStemming('blij')
@@ -252,7 +306,8 @@ export function PartijScherm({ botId }: { botId: string }) {
 
   useEffect(() => {
     setZin(kies(PARTIJ_START, 'start'))
-    void speak(bot ? `Je speelt tegen ${bot.naam}. ${bot.tagline}` : SAMEN_SPELEN)
+    if (samen) setZin(SAMEN_KIES)
+    void speak(bot ? `Je speelt tegen ${bot.naam}. ${bot.tagline}` : SAMEN_KIES)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -263,6 +318,35 @@ export function PartijScherm({ botId }: { botId: string }) {
   }, [geselecteerd, laatsteZet, fen])
 
   const balans = materialBalance(fen)
+  const aanZet = gameRef.current.turn
+  const wie = spelers?.[aanZet]
+
+  // Samen spelen: eerst kiezen wie er met zwart speelt.
+  if (samen && !spelers) {
+    return (
+      <main className="page">
+        <Kop titel="👨‍👩‍👧 Samen spelen" terug="/spelen/" />
+        <div className="stack">
+          <Pip zegt={zin} stemming="blij" klein />
+          <SamenKiezer
+            onKies={(w, b) => {
+              setSpelers({ w, b })
+              setZin(SAMEN_SPELEN)
+              void speak(SAMEN_SPELEN)
+            }}
+          />
+        </div>
+      </main>
+    )
+  }
+
+  /** Revanche met de kleuren omgedraaid: wie zwart had, mag nu beginnen. */
+  const andersom = () => {
+    setSpelers((s) => (s ? { w: s.b, b: s.w } : s))
+    opnieuw()
+    setZin(SAMEN_SPELEN)
+    void speak(SAMEN_SPELEN)
+  }
 
   return (
     <main className="page">
@@ -273,10 +357,15 @@ export function PartijScherm({ botId }: { botId: string }) {
         <div style={{ maxWidth: 'min(100%, 70vh, 620px)', margin: '0 auto', width: '100%' }}>
           <Board
             position={fen}
+            // Bij samen spelen draait het bord naar wie er aan zet is, zodat elk kind
+            // zijn eigen stukken onderaan heeft, maar pas na een korte pauze (zie
+            // `kantInBeeld`). Na de laatste zet draait het niet meer: bij mat ziet de
+            // winnaar zijn matbeeld.
+            orientation={samen && draaien ? kantInBeeld : 'w'}
             selected={geselecteerd}
             marks={marks}
             onSquare={opVeld}
-            disabled={Boolean(uitslag) || botDenkt}
+            disabled={Boolean(uitslag) || botDenkt || beurtWissel}
             showCoordinates={instellingen.coordinaten}
             label="Partij"
           />
@@ -284,7 +373,11 @@ export function PartijScherm({ botId }: { botId: string }) {
 
         <div className="row" style={{ justifyContent: 'space-between' }}>
           <span className="muted" aria-live="polite">
-            {uitslag
+            {uitslag && samen
+              ? samenWinnaar && spelers
+                ? `🏆 ${spelers[samenWinnaar].naam} wint!`
+                : 'Gelijkspel'
+              : uitslag
               ? uitslag === 'gewonnen'
                 ? '🏆 Gewonnen!'
                 : uitslag === 'verloren'
@@ -292,10 +385,22 @@ export function PartijScherm({ botId }: { botId: string }) {
                   : 'Gelijkspel'
               : botDenkt
                 ? `${bot?.naam ?? 'De ander'} denkt na…`
-                : `Jij bent aan zet · zet ${zetten + 1}`}
+                : wie
+                  ? `${wie.avatar} ${wie.naam} is aan zet (${aanZet === 'w' ? 'wit' : 'zwart'})`
+                  : `Jij bent aan zet · zet ${zetten + 1}`}
           </span>
-          <span className="muted">
-            {balans > 0 ? `Jij staat ${balans} voor` : balans < 0 ? `Je staat ${-balans} achter` : 'Gelijk'}
+          <span className="muted" hidden={Boolean(uitslag)}>
+            {samen
+              ? balans > 0
+                ? `Wit staat ${balans} voor`
+                : balans < 0
+                  ? `Zwart staat ${-balans} voor`
+                  : 'Gelijk'
+              : balans > 0
+                ? `Jij staat ${balans} voor`
+                : balans < 0
+                  ? `Je staat ${-balans} achter`
+                  : 'Gelijk'}
           </span>
         </div>
 
@@ -333,19 +438,29 @@ export function PartijScherm({ botId }: { botId: string }) {
           </div>
         )}
 
-        <div className="row" style={{ justifyContent: 'center' }}>
-          <button type="button" className="btn" onClick={neemTerug} disabled={zetten === 0}>
-            ↩︎ Terugnemen
-          </button>
-          <button type="button" className="btn" onClick={opnieuw}>
-            ↺ Nog een keer
-          </button>
-          <Link href="/spelen/" className="btn btn--ghost">
-            Andere tegenstander
-          </Link>
-        </div>
+        {uitslag && samen && spelers && (
+          <div className="card stack center">
+            <h2>
+              {samenWinnaar ? (
+                <>
+                  <span aria-hidden="true">{spelers[samenWinnaar].avatar}</span> {spelers[samenWinnaar].naam} wint! 🏆
+                </>
+              ) : (
+                'Gelijkspel'
+              )}
+            </h2>
+            {/* Geen "N zetten": op het notatieformulier is een zet wit en zwart samen,
+                en dan klopte het getal niet met wat wereld 12 leert. */}
+            <p className="muted">Knap gespeeld, allebei.</p>
+            <div className="row" style={{ justifyContent: 'center' }}>
+              <button type="button" className="btn btn--primary btn--big" onClick={andersom}>
+                Nog een keer, andersom
+              </button>
+            </div>
+          </div>
+        )}
 
-        {uitslag && (
+        {uitslag && !samen && (
           <div className="card stack center">
             <h2>{uitslag === 'gewonnen' ? 'Gewonnen! 🏆' : uitslag === 'verloren' ? 'Deze ging verloren' : 'Gelijkspel'}</h2>
             <p className="muted">
@@ -358,6 +473,34 @@ export function PartijScherm({ botId }: { botId: string }) {
             </div>
           </div>
         )}
+
+        {/* De knoppen onder de uitslag: anders viel de uitslag op een telefoon onder de vouw. */}
+        <div className="row" style={{ justifyContent: 'center' }}>
+          <button type="button" className="btn" onClick={neemTerug} disabled={zetten === 0}>
+            ↩︎ Terugnemen
+          </button>
+          {/* Na een samen-partij staat "andersom" al in de uitslag; twee knoppen voor
+              opnieuw beginnen met ander gedrag kan een kind niet uit elkaar houden. */}
+          {!(samen && uitslag) && (
+            <button type="button" className="btn" onClick={opnieuw}>
+              ↺ Nog een keer
+            </button>
+          )}
+          {samen && (
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setDraaien((d) => !d)}
+              aria-pressed={draaien}
+            >
+              🔄 Bord draait {draaien ? 'mee' : 'niet'}
+            </button>
+          )}
+          <Link href="/spelen/" className="btn btn--ghost">
+            {samen ? 'Terug naar spelen' : 'Andere tegenstander'}
+          </Link>
+        </div>
+
       </div>
     </main>
   )

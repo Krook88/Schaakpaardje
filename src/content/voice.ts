@@ -146,6 +146,10 @@ export const EERSTE_KEER =
 
 /** Bij een partijtje samen op één tablet, als er geen tegenstander gekozen is. */
 export const SAMEN_SPELEN = 'Samen spelen! Wit begint.'
+/** Uitslag bij samen spelen. Geen namen: die verschillen per kind en kunnen niet ingesproken worden. */
+export const SAMEN_WIT_WINT = 'Wit heeft gewonnen! Knap gespeeld, allebei.'
+export const SAMEN_ZWART_WINT = 'Zwart heeft gewonnen! Knap gespeeld, allebei.'
+export const SAMEN_KIES = 'Met wie speel je? Kies wie er met zwart speelt.'
 
 /** Als de hele stal vol is. De tellerzin ernaast kan niet: daar staan getallen in. */
 export const STAL_VOL = 'Je stal is helemaal vol. Alles verzameld!'

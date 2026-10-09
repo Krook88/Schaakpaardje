@@ -137,6 +137,24 @@ type State = {
    */
   verslagen: Record<string, string[]>
   gespeeld: Record<string, { gewonnen: number; verloren: number; remise: number }>
+  /**
+   * Op hoeveel verschillende dagen dit kind iets gedaan heeft: een les, een opfrisser,
+   * een minispel of een partij.
+   *
+   * Bewust geen reeks ("5 dagen op rij"). Een reeks springt op nul als je een dag
+   * overslaat, en dat is een kind straffen omdat het naar oma ging. Deze teller gaat
+   * alleen omhoog. `laatste` is de datum (JJJJ-MM-DD, lokale tijd) van de laatste dag
+   * die al geteld is, zodat dezelfde dag niet twee keer telt.
+   *
+   * Hang hier nooit een beloning, sticker of Pip-zin aan als "nog 3 dagen en je krijgt
+   * ...". Dan is het alsnog een reeks, met druk om vol te houden. Het getal is er
+   * vooral voor de ouder.
+   *
+   * Opgeslagen toestand van voor deze teller heeft de sleutel niet. `persist` vult hem
+   * dan aan met de begintoestand `{}`, maar de code leest hem toch voorzichtig (`?.`):
+   * dat kost niets en beschermt tegen een half geschreven localStorage.
+   */
+  oefendagen: Record<string, { aantal: number; laatste: string }>
 
   maakProfiel: (naam: string, leeftijd: number, avatar: string) => string
   kiesProfiel: (id: string) => void
@@ -158,11 +176,24 @@ type State = {
   bewaarHervatpunt: (lesId: string, fase: string | null) => void
   bewaarOpfrissing: (lesId: string) => void
   bewaarOverwinning: (botId: string) => void
-  bewaarPartij: (uitslag: 'gewonnen' | 'verloren' | 'remise') => void
+  /**
+   * Een partij is uit. Standaard voor het actieve kind; bij samen spelen ook voor het
+   * andere kind als dat een eigen profiel op dit apparaat heeft.
+   */
+  bewaarPartij: (uitslag: 'gewonnen' | 'verloren' | 'remise', profielId?: string) => void
   geefSticker: (sticker: string) => void
+  /** Vandaag telt als oefendag. Vaker per dag aanroepen kan geen kwaad. */
+  bewaarOefendag: (profielId?: string) => void
 }
 
 const nieuwId = () => Math.random().toString(36).slice(2, 10)
+
+/** De datum van vandaag in lokale tijd, als JJJJ-MM-DD. Om middernacht begint een nieuwe dag. */
+function vandaagLokaal(): string {
+  const d = new Date()
+  const twee = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${twee(d.getMonth() + 1)}-${twee(d.getDate())}`
+}
 
 export const useProfielStore = create<State>()(
   persist(
@@ -173,6 +204,7 @@ export const useProfielStore = create<State>()(
       instellingen: {},
       stickers: {},
       hervatpunt: {},
+      oefendagen: {},
       verslagen: {},
       gespeeld: {},
 
@@ -247,6 +279,7 @@ export const useProfielStore = create<State>()(
           const { [id]: _i, ...instellingen } = s.instellingen
           const { [id]: _s, ...stickers } = s.stickers
           const { [id]: _g, ...gespeeld } = s.gespeeld
+          const { [id]: _d, ...oefendagen } = s.oefendagen ?? {}
           const profielen = s.profielen.filter((p) => p.id !== id)
           return {
             profielen,
@@ -254,6 +287,7 @@ export const useProfielStore = create<State>()(
             instellingen,
             stickers,
             gespeeld,
+            oefendagen,
             actiefId: s.actiefId === id ? (profielen[0]?.id ?? null) : s.actiefId,
           }
         })
@@ -273,6 +307,7 @@ export const useProfielStore = create<State>()(
       bewaarLes(lesId, resultaat) {
         const id = get().actiefId
         if (!id) return
+        get().bewaarOefendag()
         set((s) => {
           const vanProfiel = s.voortgang[id] ?? {}
           const bestaand = vanProfiel[lesId]
@@ -340,12 +375,29 @@ export const useProfielStore = create<State>()(
         })
       },
 
-      bewaarPartij(uitslag) {
-        const id = get().actiefId
+      bewaarPartij(uitslag, profielId) {
+        const id = profielId ?? get().actiefId
         if (!id) return
+        get().bewaarOefendag(id)
         set((s) => {
           const huidig = s.gespeeld[id] ?? { gewonnen: 0, verloren: 0, remise: 0 }
           return { gespeeld: { ...s.gespeeld, [id]: { ...huidig, [uitslag]: huidig[uitslag] + 1 } } }
+        })
+      },
+
+      bewaarOefendag(profielId) {
+        const id = profielId ?? get().actiefId
+        if (!id) return
+        const vandaag = vandaagLokaal()
+        set((s) => {
+          const huidig = s.oefendagen?.[id]
+          if (huidig?.laatste === vandaag) return {}
+          return {
+            oefendagen: {
+              ...s.oefendagen,
+              [id]: { aantal: (huidig?.aantal ?? 0) + 1, laatste: vandaag },
+            },
+          }
         })
       },
 
@@ -505,4 +557,14 @@ export function volgendeOpenLes(voortgang: Record<string, LesResultaat>, modus: 
       (l) => (voortgang[l.id]?.sterren ?? 0) < 2 && isOntgrendeld(l.id, voortgang, modus),
     ) ?? ALLE_LESSEN[0]
   )
+}
+
+/** Op hoeveel dagen het actieve kind geoefend heeft. Nul als het nog niets deed. */
+export function useOefendagen(): number {
+  return useProfielStore((s) => (s.actiefId ? (s.oefendagen?.[s.actiefId]?.aantal ?? 0) : 0))
+}
+
+/** De laatste dag waarop het actieve kind oefende (JJJJ-MM-DD), of null. Voor de ouder. */
+export function useLaatstGeoefend(): string | null {
+  return useProfielStore((s) => (s.actiefId ? (s.oefendagen?.[s.actiefId]?.laatste ?? null) : null))
 }

@@ -74,9 +74,25 @@ async function nieuwProfiel(leeftijd = 6) {
  * overschreven door de fouttip, dan kon een kind dat niet leest nergens meer
  * terugvinden wat de bedoeling was — en juist wie een fout maakte heeft dat nodig.
  * ------------------------------------------------------------------ */
+/** Hoeveel velden er in dit rondje van "Vind het veld" te vinden zijn ("0 van de N"). */
+const teVinden = async () =>
+  Number((await page.getByText(/van de \d+/).first().innerText().catch(() => '')).match(/van de (\d+)/)?.[1] ?? 0)
+
+/** Een rondje met meer dan één veld: dan begint een toevallig goede tik geen nieuw rondje. */
+async function rondjeMetMeerDanEen() {
+  for (let i = 0; i < 10 && (await teVinden()) < 2; i++) {
+    await page.getByRole('button', { name: /Ander rondje/ }).click()
+    await page.waitForTimeout(700)
+  }
+  return (await teVinden()) >= 2
+}
+
 async function opdrachtKomtTerug() {
   await page.goto(`${URL}/spel/vind-het-veld/`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(900)
+  // Een "mis"-tik kan toevallig het laatste goede veld raken; dan begon er een nieuw
+  // rondje met een andere opdracht en faalde deze regel zonder dat er iets mis was.
+  if (!(await rondjeMetMeerDanEen())) return meld('opdracht komt terug na een fout', false, 'geen rondje met meer dan één veld')
   const opdracht = await ballon()
   if (!opdracht) return meld('opdracht komt terug na een fout', false, 'geen opdracht gevonden')
 
@@ -293,6 +309,10 @@ async function opdrachtKomtTerugNaTipje() {
   const naam = 'opdracht komt terug na een tipje'
   await page.goto(`${URL}/spel/vind-het-veld/`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(900)
+  // Alleen een rondje met meer dan één veld te vinden: wijst het tipje het laatste
+  // veld aan, dan begint er een nieuw rondje met een andere opdracht, en dan meet deze
+  // regel iets anders dan bedoeld. Zo faalde hij eerst af en toe zonder dat er iets mis was.
+  if (!(await rondjeMetMeerDanEen())) return meld(naam, false, 'geen rondje met meer dan één veld gevonden (of de teller "x van de N" staat er niet meer)')
   const opdracht = await ballon()
   await page.getByRole('button', { name: /Tipje/ }).click()
   await page.waitForTimeout(300)
@@ -307,14 +327,91 @@ async function opdrachtKomtTerugNaTipje() {
   meld(naam, goed, goed ? '' : `"${terug}" in plaats van "${opdracht}"`)
 }
 
+/* ------------------------------------------------------------------ *
+ * 9. Na een gespeeld minispel telt de dag als geoefend.
+ *
+ * De teller zit in de opslag en is daar getest, maar de koppeling vanuit het
+ * minispelscherm niet. Draait direct na `minispelEindigt`, dat zes rondjes haalt.
+ * ------------------------------------------------------------------ */
+async function dagTeltNaMinispel() {
+  const naam = 'na een minispel staat er een dag geoefend'
+  await page.goto(URL, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(600)
+  const tekst = await page.locator('main').first().innerText()
+  const goed = /📅\s*1 dag/.test(tekst)
+  meld(naam, goed, goed ? '' : 'geen "📅 1 dag" op het beginscherm')
+}
+
+/* ------------------------------------------------------------------ *
+ * 10. Samen spelen: de uitslag hoort bij een kleur, niet bij "jij".
+ *
+ * Won zwart, dan kreeg het kind van dit profiel "verloren" te horen, ook als het zelf
+ * zwart speelde. Nu kiest het tweede kind wie het is, draait het bord mee, en staat
+ * er wie er wint. Gespeeld met het snelste mat dat er is.
+ * ------------------------------------------------------------------ */
+async function samenSpelenKentDeWinnaar() {
+  const naam = 'samen spelen: zet blijft staan, bord draait, winnaar heeft een naam, telt één keer'
+  await page.goto(`${URL}/spelen/samen/`, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(600)
+  await page.getByRole('button', { name: 'Kies 🦊' }).click()
+  await page.getByRole('button', { name: 'Beginnen', exact: true }).click()
+  await page.waitForTimeout(400)
+  const zet = async (a, z) => {
+    await page.locator(`[data-square="${a}"]`).click()
+    await page.locator(`[data-square="${z}"]`).click()
+    await page.waitForTimeout(1300)
+  }
+  // Tik direct na de zet nog eens op dezelfde plekken, zoals een kind dat denkt dat het
+  // niet lukte. Eerst draaide het bord meteen en deed dat de zet van het andere kind.
+  const plek = async (v) => {
+    const b = await page.locator(`[data-square="${v}"]`).boundingBox()
+    return [b.x + b.width / 2, b.y + b.height / 2]
+  }
+  const [ax, ay] = await plek('d2')
+  const [bx, by] = await plek('d4')
+  await page.locator('[data-square="d2"]').click()
+  await page.locator('[data-square="d4"]').click()
+  await page.mouse.click(ax, ay)
+  await page.mouse.click(bx, by)
+  await page.waitForTimeout(1300)
+  // Na één witte zet hoort zwart aan zet te zijn. Draaide het bord meteen, dan werd de
+  // tweede tik op een gedraaid bord e7-e5, en was wit weer aan de beurt.
+  const beurt = await page.getByText(/is aan zet \((wit|zwart)\)/).first().innerText().catch(() => '')
+  if (!/\(zwart\)/.test(beurt)) return meld(naam, false, `een dubbele tik na de zet deed ook de zet van zwart ("${beurt}")`)
+  const gedraaid = (await page.locator('[data-square]').first().getAttribute('data-square')) === 'h1'
+  if (!gedraaid) return meld(naam, false, 'het bord draaide niet naar zwart')
+  // Snelste mat, met wit dat al d4 speelde: 1.d4 e5 2.g4 ... wit heeft geen snel mat
+  // tegen zich, dus speel opnieuw vanaf het begin.
+  await page.getByRole('button', { name: /Nog een keer/ }).first().click()
+  await page.waitForTimeout(500)
+  await zet('f2', 'f3')
+  await zet('e7', 'e5')
+  await zet('g2', 'g4')
+  await zet('d8', 'h4')
+  const kop = (await page.locator('.card h2').first().innerText().catch(() => '')).replace(/\s+/g, ' ')
+  if (!/🦊 Vos wint/.test(kop)) return meld(naam, false, `de uitslag zei "${kop}"`)
+  // Terugnemen na mat en opnieuw mat zetten is nog steeds één partij.
+  await page.getByRole('button', { name: /Terugnemen/ }).click()
+  await page.waitForTimeout(1300)
+  await zet('d8', 'h4')
+  const telling = await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('schaakmaatje-v1')).state
+    const g = s.gespeeld[s.actiefId] ?? {}
+    return (g.gewonnen ?? 0) + (g.verloren ?? 0) + (g.remise ?? 0)
+  })
+  meld(naam, telling === 1, `na terugnemen en opnieuw mat stonden er ${telling} partijen`)
+}
+
 console.log(`Doorloop tegen ${URL}\n`)
 await pipZwijgtBijBinnenkomst()
 await nieuwProfiel()
 await opdrachtKomtTerug()
 await minispelEindigt()
+await dagTeltNaMinispel()
 await quizRekentGoedGoed()
 await onmogelijkeZetKrijgtRegelzin()
 await opdrachtKomtTerugNaTipje()
+await samenSpelenKentDeWinnaar()
 await altijdEenUitweg()
 
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
