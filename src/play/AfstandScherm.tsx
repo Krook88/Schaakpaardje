@@ -13,18 +13,23 @@ import {
   AFSTAND_JIJ_ZWART,
   AFSTAND_VRIENDJE_WINT,
   AFSTAND_JOUW_BEURT,
+  AFSTAND_ONDERPROMOTIE,
   AFSTAND_KAPOT,
   AFSTAND_VERSTUREN,
   AFSTAND_WACHTEN,
   PARTIJ_REMISE,
+  PROMOTIE_ANDERS,
+  PROMOTIE_GEKOZEN,
+  PROMOTIE_KIES,
   SCHAAK_TEGEN_JOU,
   SCHAAK_VAN_JOU,
 } from '@/content/voice'
 import { kies } from '@/audio/voice'
-import { type Square } from '@/engine/board'
-import { Game } from '@/engine/game'
-import { AVATARS, useInstellingen, useProfiel, useProfielStore, useToestandGeladen } from '@/progress/store'
+import { type PieceType, type Square } from '@/engine/board'
+import { Game, isPromotie } from '@/engine/game'
+import { AVATARS, useInstellingen, useModus, useProfiel, useProfielStore, useToestandGeladen } from '@/progress/store'
 import { codeer, leesIn, zetCode, type AfstandPartij } from './afstand'
+import { PromotieKiezer } from './PromotieKiezer'
 
 /** Welke afgelopen partijen dit apparaat al heeft meegeteld, zodat er niets dubbel telt. */
 const GETELD = 'schaakmaatje-afstand-geteld'
@@ -81,6 +86,8 @@ export function AfstandScherm() {
   const bewaarPartij = useProfielStore((s) => s.bewaarPartij)
   const bewaarOefendag = useProfielStore((s) => s.bewaarOefendag)
   const mijnPlaatje = profiel?.avatar ?? AVATARS[0]
+  const modus = useModus()
+  const [promotieVraag, setPromotieVraag] = useState<{ van: Square; naar: Square } | null>(null)
 
   const gameRef = useRef(new Game())
   const [partij, setPartij] = useState<AfstandPartij | null>(null)
@@ -111,6 +118,7 @@ export function AfstandScherm() {
     setHoe(null)
     setWachten(false)
     setGeselecteerd(null)
+    setPromotieVraag(null)
     if (!code) {
       gameRef.current = new Game()
       setPartij({ zetten: [], wit: mijnPlaatje, zwart: null })
@@ -157,12 +165,16 @@ export function AfstandScherm() {
         setZin(kies(SCHAAK_TEGEN_JOU, 'schaak'))
         setStemming('verrast')
       } else {
+        // Een pion die geen dame werd: zonder uitleg staat er ineens een paard.
+        const onder = laatste?.[4] ? 'rbn'.indexOf(laatste[4]) : -1
         setZin(
-          gelezen.partij.zetten.length === 1
-            ? AFSTAND_JIJ_ZWART
-            : gelezen.partij.zetten.length
-              ? AFSTAND_JOUW_BEURT
-              : AFSTAND_BEGIN,
+          onder >= 0
+            ? AFSTAND_ONDERPROMOTIE[onder]
+            : gelezen.partij.zetten.length === 1
+              ? AFSTAND_JIJ_ZWART
+              : gelezen.partij.zetten.length
+                ? AFSTAND_JOUW_BEURT
+                : AFSTAND_BEGIN,
         )
         setStemming('blij')
       }
@@ -180,50 +192,66 @@ export function AfstandScherm() {
   const status = useMemo(() => gameRef.current.status(), [fen])
   const aanZet = gameRef.current.turn
 
+  /** Eén zet doen, met de link erbij. */
+  const doeZet = useCallback(
+    (van: Square, naar: Square, promotie: PieceType = 'q') => {
+      if (!partij) return
+      const game = gameRef.current
+      const kant = game.turn
+      const gedaan = game.move(van, naar, promotie)
+      if (!gedaan) return
+      if (instellingen.effecten) (gedaan.isCapture ? sfx.slaan : sfx.zet)()
+      if (gedaan.promotion && instellingen.effecten) sfx.promotie()
+      // Zwart krijgt zijn plaatje bij zijn eerste zet. Hetzelfde plaatje als wit kan
+      // niet: dan weet niemand meer wie wie is.
+      const zwart =
+        partij.zwart ?? (kant === 'b' ? (mijnPlaatje !== partij.wit ? mijnPlaatje : AVATARS.find((a) => a !== partij.wit)!) : null)
+      const nieuw: AfstandPartij = {
+        ...partij,
+        zwart,
+        zetten: [...partij.zetten, zetCode(van, naar, gedaan.promotion)],
+      }
+      const code = codeer(nieuw)
+      // De adresbalk bijwerken zonder te herladen: zo is de zet niet weg als de
+      // pagina ververst wordt. `replaceState` geeft geen hashchange.
+      history.replaceState(null, '', `#${code}`)
+      markeerEigen(code)
+      setVorige(partij)
+      setPartij(nieuw)
+      setLaatsteZet([van, naar])
+      setGeselecteerd(null)
+      setFen(game.fen)
+      setGezet(true)
+      bewaarOefendag()
+      const na = game.status()
+      if (na.over) {
+        if (profiel && !alGeteld(profiel.id, code)) {
+          bewaarPartij(na.reason === 'mat' ? 'gewonnen' : 'remise')
+          markeerGeteld(profiel.id, code)
+        }
+        setZin(na.reason === 'mat' ? AFSTAND_GEWONNEN : PARTIJ_REMISE[0])
+        setStemming('trots')
+      } else {
+        // Eén ingesproken zin per keer; de knop "Zet versturen" staat er toch al.
+        setZin(na.check ? kies(SCHAAK_VAN_JOU, 'schaak') : AFSTAND_VERSTUREN)
+        setStemming('trots')
+      }
+    },
+    [partij, instellingen.effecten, mijnPlaatje, bewaarOefendag, bewaarPartij, profiel],
+  )
+
   const opVeld = useCallback(
     (veld: Square) => {
-      if (!partij || gezet || status.over || kapot) return
+      if (!partij || gezet || status.over || kapot || promotieVraag) return
       const game = gameRef.current
       if (geselecteerd && geselecteerd !== veld && game.destinations(geselecteerd).includes(veld)) {
-        const kant = game.turn
-        const gedaan = game.move(geselecteerd, veld)
-        if (!gedaan) return
-        if (instellingen.effecten) (gedaan.isCapture ? sfx.slaan : sfx.zet)()
-        if (gedaan.promotion && instellingen.effecten) sfx.promotie()
-        // Zwart krijgt zijn plaatje bij zijn eerste zet. Hetzelfde plaatje als wit kan
-        // niet: dan weet niemand meer wie wie is.
-        const zwart =
-          partij.zwart ?? (kant === 'b' ? (mijnPlaatje !== partij.wit ? mijnPlaatje : AVATARS.find((a) => a !== partij.wit)!) : null)
-        const nieuw: AfstandPartij = {
-          ...partij,
-          zwart,
-          zetten: [...partij.zetten, zetCode(geselecteerd, veld, gedaan.promotion)],
+        // De oudste groep kiest zelf waar de pion in verandert; de rest krijgt een dame.
+        if (modus === 'schaker' && isPromotie(game, geselecteerd, veld)) {
+          setPromotieVraag({ van: geselecteerd, naar: veld })
+          setZin(PROMOTIE_KIES)
+          return
         }
-        const code = codeer(nieuw)
-        // De adresbalk bijwerken zonder te herladen: zo is de zet niet weg als de
-        // pagina ververst wordt. `replaceState` geeft geen hashchange.
-        history.replaceState(null, '', `#${code}`)
-        markeerEigen(code)
-        setVorige(partij)
-        setPartij(nieuw)
-        setLaatsteZet([geselecteerd, veld])
-        setGeselecteerd(null)
-        setFen(game.fen)
-        setGezet(true)
-        bewaarOefendag()
-        const na = game.status()
-        if (na.over) {
-          if (profiel && !alGeteld(profiel.id, code)) {
-            bewaarPartij(na.reason === 'mat' ? 'gewonnen' : 'remise')
-            markeerGeteld(profiel.id, code)
-          }
-          setZin(na.reason === 'mat' ? AFSTAND_GEWONNEN : PARTIJ_REMISE[0])
-          setStemming('trots')
-        } else {
-          // Eén ingesproken zin per keer; de knop "Zet versturen" staat er toch al.
-          setZin(na.check ? kies(SCHAAK_VAN_JOU, 'schaak') : AFSTAND_VERSTUREN)
-          setStemming('trots')
-        }
+        doeZet(geselecteerd, veld)
         return
       }
       if (game.destinations(veld).length) {
@@ -231,7 +259,7 @@ export function AfstandScherm() {
         if (instellingen.effecten) sfx.tik()
       } else setGeselecteerd(null)
     },
-    [partij, gezet, status.over, kapot, geselecteerd, instellingen.effecten, mijnPlaatje, bewaarOefendag, bewaarPartij, profiel],
+    [partij, gezet, status.over, kapot, promotieVraag, geselecteerd, modus, doeZet, instellingen.effecten],
   )
 
   const neemTerug = () => {
@@ -326,11 +354,31 @@ export function AfstandScherm() {
             selected={geselecteerd}
             marks={marks}
             onSquare={opVeld}
-            disabled={gezet || status.over}
+            disabled={gezet || status.over || Boolean(promotieVraag)}
             showCoordinates={instellingen.coordinaten}
             label="Partij op afstand"
           />
         </div>
+
+        {promotieVraag && (
+          <PromotieKiezer
+            kleur={gameRef.current.turn}
+            onKies={(stuk) => {
+              const v = promotieVraag
+              setPromotieVraag(null)
+              // De vraag is beantwoord; wat de zet daarna oplevert (schaak, mat) mag eroverheen.
+              setZin(PROMOTIE_GEKOZEN)
+              setStemming('blij')
+              doeZet(v.van, v.naar, stuk)
+            }}
+            onAnnuleer={() => {
+              setPromotieVraag(null)
+              setGeselecteerd(null)
+              setZin(PROMOTIE_ANDERS)
+              setStemming('moedigt')
+            }}
+          />
+        )}
 
         <p className="muted" aria-live="polite" style={{ margin: 0 }}>
           {status.over

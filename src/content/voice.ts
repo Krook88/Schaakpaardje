@@ -152,8 +152,19 @@ export const SAMEN_ZWART_WINT = 'Zwart heeft gewonnen! Knap gespeeld, allebei.'
 export const SAMEN_KIES = 'Met wie speel je? Kies wie er met zwart speelt.'
 
 /** Schaken op afstand: zie src/play/afstand.ts. */
+/** Promoveren met keuze, alleen voor de oudste groep. Jongere kinderen krijgen altijd een dame. */
+export const PROMOTIE_KIES = 'Je pion is aan de overkant! Wat wordt hij? Meestal kies je de dame.'
+export const PROMOTIE_ANDERS = 'Goed, kies maar een andere zet.'
+export const PROMOTIE_GEKOZEN = 'Goed gekozen!'
+
 export const AFSTAND_BEGIN = 'Schaken met een vriendje dat ergens anders is! Jij speelt wit. Doe je eerste zet.'
 export const AFSTAND_JOUW_BEURT = 'Je vriendje heeft gezet. Nu jij!'
+/** Het vriendje promoveerde tot iets anders dan een dame: een jonger kind kent dat niet. */
+export const AFSTAND_ONDERPROMOTIE = [
+  'De pion van je vriendje is een toren geworden. Dat mag ook! Nu jij.',
+  'De pion van je vriendje is een loper geworden. Dat mag ook! Nu jij.',
+  'De pion van je vriendje is een paard geworden. Dat mag ook! Nu jij.',
+] as const
 export const AFSTAND_JIJ_ZWART = 'Je vriendje begon met wit. Jij speelt zwart. Nu jij!'
 export const AFSTAND_VERSTUREN = 'Goed zo. Vraag papa of mama om je zet te versturen.'
 export const AFSTAND_WACHTEN = 'Verstuurd! Nu is je vriendje aan de beurt. Even wachten maar.'

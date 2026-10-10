@@ -34,7 +34,9 @@ function pick<T>(items: T[], random: () => number): T | null {
 
 /** Speelt een willekeurige legale zet. */
 function randomChoice(game: Game, random: () => number): BotMove | null {
-  const moves = game.legalMoves()
+  // Een promotie staat vier keer in de lijst (q, r, b, n). Eén keer tellen, anders koos
+  // Mila een promotiezet vier keer zo vaak als een gewone zet.
+  const moves = game.legalMoves().filter((z) => !z.promotion || z.promotion === 'q')
   const m = pick(moves, random)
   return m ? { from: m.from, to: m.to } : null
 }
