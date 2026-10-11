@@ -15,8 +15,10 @@
 import { readFileSync } from 'node:fs'
 import { chromium } from 'playwright'
 
-const CHROMIUM = process.env.CHROMIUM_PAD ?? '/opt/pw-browsers/chromium'
-const scherm = `data:image/png;base64,${readFileSync('public/schermen/les.png').toString('base64')}`
+// Vanaf de projectmap, waar je het script ook start. Let op: Pip (een emoji) en de
+// letter hangen af van de lettertypen op de machine; bekijk de plaatjes vóór je commit.
+const PUBLIEK = new URL('../public/', import.meta.url)
+const scherm = `data:image/png;base64,${readFileSync(new URL('schermen/les.png', PUBLIEK)).toString('base64')}`
 
 const stijl = `
   * { box-sizing: border-box; margin: 0; }
@@ -64,7 +66,7 @@ const vierkant = `
     h1 { font-size: 100px; }
     .slogan { font-size: 46px; }
     .feiten { font-size: 32px; }
-    .telefoon { width: 440px; margin-top: 30px; transform: rotate(2deg); }
+    .telefoon { width: 420px; margin-top: 30px; transform: rotate(2deg); }
   </style>
   <div class="doek">
     <div class="kop"><div class="pip">🐴</div><h1>Schaakmaatje</h1></div>
@@ -74,14 +76,17 @@ const vierkant = `
     ${bordrand}
   </div>`
 
-const browser = await chromium.launch({ executablePath: CHROMIUM })
+// Zelfde afspraak als de doorloop: CHROMIUM_PAD als die gezet is, anders die van Playwright.
+const browser = await chromium.launch(
+  process.env.CHROMIUM_PAD ? { executablePath: process.env.CHROMIUM_PAD } : {},
+)
 for (const [naam, html, hoogte] of [
   ['og.png', breed, 630],
   ['og-vierkant.png', vierkant, 1200],
 ]) {
   const page = await browser.newPage({ viewport: { width: 1200, height: hoogte } })
   await page.setContent(html, { waitUntil: 'load' })
-  await page.screenshot({ path: `public/${naam}` })
+  await page.screenshot({ path: new URL(naam, PUBLIEK).pathname })
   await page.close()
   console.log(`public/${naam}`)
 }

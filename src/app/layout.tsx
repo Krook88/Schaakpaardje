@@ -39,7 +39,8 @@ export const metadata: Metadata = {
     url: `${SITE}/`,
   }),
   // Zonder `max-image-preview: large` toont Google bij de site hooguit een klein
-  // plaatje, of geen. Pagina's die zelf `robots` zetten, staan op noindex en tellen niet.
+  // plaatje, of geen. Next vervangt `robots` per pagina in zijn geheel: een pagina die
+  // zelf `robots` zet én gevonden mag worden, moet deze twee regels dus herhalen.
   robots: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
   /*
    * Het bewijs voor Google Search Console, als tweede route naast het DNS-record.
