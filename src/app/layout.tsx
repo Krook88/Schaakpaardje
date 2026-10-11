@@ -38,7 +38,9 @@ export const metadata: Metadata = {
     omschrijving: OMSCHRIJVING,
     url: `${SITE}/`,
   }),
-  robots: { index: true, follow: true },
+  // Zonder `max-image-preview: large` toont Google bij de site hooguit een klein
+  // plaatje, of geen. Pagina's die zelf `robots` zetten, staan op noindex en tellen niet.
+  robots: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
   /*
    * Het bewijs voor Google Search Console, als tweede route naast het DNS-record.
    *
@@ -73,6 +75,7 @@ const GEGEVENS = {
       '@type': 'WebSite',
       '@id': `${SITE}/#site`,
       name: NAAM,
+      image: `${SITE}/og-vierkant.png`,
       url: SITE,
       inLanguage: 'nl-NL',
       description: OMSCHRIJVING,
@@ -88,7 +91,9 @@ const GEGEVENS = {
       operatingSystem: 'Web, iOS, Android',
       inLanguage: 'nl-NL',
       description: OMSCHRIJVING,
-      image: `${SITE}/og.png`,
+      // Vierkant en breed: Google kiest per plek de maat die past.
+      image: [`${SITE}/og-vierkant.png`, `${SITE}/og.png`],
+      screenshot: `${SITE}/schermen/les.png`,
       isAccessibleForFree: true,
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
       audience: {
