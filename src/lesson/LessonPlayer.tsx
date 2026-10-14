@@ -35,6 +35,7 @@ import {
   useVoortgang,
   wereldIsAf,
 } from '@/progress/store'
+import { tel } from '@/progress/tellen'
 import styles from './LessonPlayer.module.css'
 
 type Fase = 'kijken' | 'meedoen' | 'zelf' | 'toets' | 'beloning'
@@ -107,6 +108,16 @@ export function LessonPlayer({
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
   const { zegTip, afbreken: tipAfbreken } = gebruikTip(setZin)
+
+  // Tellen waar kinderen afhaken: bij weggaan vóór de beloning de fase meegeven.
+  const faseNu = useRef(fase)
+  faseNu.current = fase
+  useEffect(() => {
+    tel('Les begonnen', { les: les.id })
+    return () => {
+      if (faseNu.current !== 'beloning') tel('Les gestopt', { les: les.id, fase: faseNu.current })
+    }
+  }, [les.id])
 
   const later = useCallback((fn: () => void, ms: number) => {
     // Afgelopen timers eruit: anders groeit deze lijst een hele les lang door.
@@ -211,6 +222,7 @@ export function LessonPlayer({
       setSterren(behaald)
       setFase('beloning')
       bewaarLes(les.id, { sterren: behaald, fouten: toetsFouten, hints: toetsHints })
+      tel('Les af', { les: les.id, sterren: behaald })
       bewaarHervatpunt(les.id, null)
       if (behaald === 3) geefSticker(`${les.id}`)
       sfx.diploma()

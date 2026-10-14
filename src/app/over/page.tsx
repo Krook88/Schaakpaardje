@@ -71,7 +71,7 @@ const VRAGEN: [string, string][] = [
   ],
   [
     'Is het gratis?',
-    'Op dit moment wel, en er valt niets te kopen in de app. Wat zeker zo blijft: er komt geen reclame in, je hebt geen account nodig en er gaat niets van je kind naar internet.',
+    'Op dit moment wel, en er valt niets te kopen in de app. Wat zeker zo blijft: er komt geen reclame in, je hebt geen account nodig en er gaat niets van je kind naar internet. Wel tellen we anoniem hoeveel er gespeeld wordt; dat kan uit in het ouderscherm.',
   ],
   [
     'Werkt het op een telefoon?',
@@ -145,7 +145,7 @@ export default function Over() {
             <li>Pip leest alles voor</li>
             <li>Geen reclame</li>
             <li>Geen account</li>
-            <li>Niets naar internet</li>
+            <li>Niets van je kind online</li>
           </ul>
           <div className={s.knoppen}>
             <Link href="/" className="btn btn--primary btn--big">
@@ -426,7 +426,8 @@ export default function Over() {
           <div className={s.nul}>
             <b>Niets</b>
             gaat er van je kind naar internet. Een voornaam, een leeftijd en de voortgang
-            blijven op dit apparaat. Wissen kan in het ouderscherm.
+            blijven op dit apparaat. Wissen kan in het ouderscherm. Wel tellen we anoniem
+            hoeveel er gespeeld wordt, zonder cookie; ook dat kan daar uit.
           </div>
         </div>
         <p className={s.fooi} style={{ marginTop: 16 }}>

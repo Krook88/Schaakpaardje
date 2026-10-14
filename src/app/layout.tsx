@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import '@/ui/globals.css'
 import { Instellingen } from '@/ui/Instellingen'
 import { ServiceWorker } from '@/ui/ServiceWorker'
+import { Tellingen } from '@/ui/Tellingen'
 import { NAAM, OMSCHRIJVING, SITE, SLOGAN, deelkaart } from '@/seo'
 
 /** Zelfde afspraak als in voice.ts en ServiceWorker.tsx: leeg = domeinwortel. */
@@ -127,6 +128,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Instellingen />
         {children}
         <ServiceWorker />
+        <Tellingen />
       </body>
     </html>
   )

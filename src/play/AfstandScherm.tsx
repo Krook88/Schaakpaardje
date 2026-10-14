@@ -30,6 +30,7 @@ import { Game, isPromotie } from '@/engine/game'
 import { AVATARS, useInstellingen, useModus, useProfiel, useProfielStore, useToestandGeladen } from '@/progress/store'
 import { codeer, leesIn, zetCode, type AfstandPartij } from './afstand'
 import { PromotieKiezer } from './PromotieKiezer'
+import { tel } from '@/progress/tellen'
 
 /** Welke afgelopen partijen dit apparaat al heeft meegeteld, zodat er niets dubbel telt. */
 const GETELD = 'schaakmaatje-afstand-geteld'
@@ -229,6 +230,7 @@ export function AfstandScherm() {
           bewaarPartij(na.reason === 'mat' ? 'gewonnen' : 'remise')
           markeerGeteld(profiel.id, code)
         }
+        tel('Partij', { tegen: 'afstand', uitslag: na.reason === 'mat' ? 'gewonnen' : 'remise' })
         setZin(na.reason === 'mat' ? AFSTAND_GEWONNEN : PARTIJ_REMISE[0])
         setStemming('trots')
       } else {

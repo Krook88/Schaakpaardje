@@ -6,6 +6,7 @@ import { Kop } from '@/ui/Kop'
 import { Rekenslot } from '@/ui/Rekenslot'
 import { Sterren } from '@/ui/Sterren'
 import { KOFFIE } from '@/seo'
+import { tellenAan, zetTellen } from '@/progress/tellen'
 import { WERELDEN } from '@/content'
 import {
   useGespeeld,
@@ -259,10 +260,11 @@ function OuderPaneel() {
         <section className="card stack">
           <h2>Privacy</h2>
           <p className="muted">
-            Alles staat op dit apparaat: een voornaam, een leeftijd en de voortgang. Er gaat
-            niets naar internet, er zijn geen advertenties, geen chat en geen account. Wil je
-            alles wissen, dan kan dat hier.
+            Alles staat op dit apparaat: een voornaam, een leeftijd en de voortgang. Daarvan
+            gaat niets naar internet. Er zijn geen advertenties, geen chat en geen account.
+            Wil je alles wissen, dan kan dat hier.
           </p>
+          <TellenSchakel />
           {/* Achter het rekenslot, dus geen kind komt hier per ongeluk. Een regel tekst
               en geen knop: wie hem zoekt vindt hem, wie hem niet zoekt ziet hem amper. */}
           <p className="muted" style={{ margin: 0 }}>
@@ -317,4 +319,34 @@ function laatsteDag(iso: string): string {
   if (verschil === 0) return 'vandaag'
   if (verschil === 1) return 'gisteren'
   return dag.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+/**
+ * Anonieme tellingen aan of uit, voor het hele apparaat. Staat los van de instellingen
+ * per kind: het gaat om dit apparaat, niet om een profiel.
+ */
+function TellenSchakel() {
+  const [aan, setAan] = useState(tellenAan)
+  return (
+    <label className="row" style={{ justifyContent: 'space-between', gap: 16 }}>
+      <span style={{ flex: 1 }}>
+        Anoniem meetellen
+        <br />
+        <small className="muted">
+          Zodat de maker ziet hoeveel er gespeeld wordt en bij welke les kinderen stoppen.
+          Alleen tellingen, zoals &ldquo;les 3 is begonnen&rdquo;. Geen naam, geen leeftijd,
+          geen cookie.
+        </small>
+      </span>
+      <input
+        type="checkbox"
+        checked={aan}
+        onChange={(e) => {
+          zetTellen(e.target.checked)
+          setAan(e.target.checked)
+        }}
+        style={{ width: 44, height: 44, flexShrink: 0 }}
+      />
+    </label>
+  )
 }

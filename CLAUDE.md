@@ -127,4 +127,7 @@ Meng ze niet. Een opgave die met schaak te maken heeft, hoort een `regelZet` te 
 - Mat of matbegrip eerder introduceren dan wereld 10. Het late uitstel ís de methode.
 - Een opgave met één "juist" veld waar er meerdere goede zetten zijn.
 - Een kind straffen: geen levens, geen game-over, geen nul sterren.
-- Iets van een kind naar internet sturen.
+- Iets óver een kind naar internet sturen: geen naam, leeftijd, profiel, voortgang per
+  kind, cookie of eigen ID. Alleen anonieme tellingen via `src/progress/tellen.ts`
+  (Plausible, uit te zetten op het ouderscherm). Besloten door Kaj, oktober 2026. Wil je
+  er iets aan toevoegen, dan alleen losse tellingen en nooit iets wat een kind intypt.
