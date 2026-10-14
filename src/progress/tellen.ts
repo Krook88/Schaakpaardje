@@ -14,7 +14,8 @@
  */
 
 const DOMEIN = 'schaakmaatje.nl'
-const ADRES = '/teller/'
+// Met index.php erbij: op de hosting gaf alleen /teller/ een 404 (geen DirectoryIndex).
+const ADRES = '/teller/index.php'
 const UIT_SLEUTEL = 'schaakmaatje-tellen'
 
 /** Mag er geteld worden? Alleen op de echte site, en niet als een ouder het uitzette. */
