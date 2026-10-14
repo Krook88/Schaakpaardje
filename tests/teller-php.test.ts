@@ -33,7 +33,8 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
   beforeAll(async () => {
     map = mkdtempSync(join(tmpdir(), 'teller-'))
     cpSync('public/teller', join(www(), 'teller'), { recursive: true })
-    server = spawn('php', ['-S', `127.0.0.1:${POORT}`, '-t', www()], { stdio: 'ignore' })
+    // Krap geheugen, zoals op goedkope hosting: het dashboard moet volle dagbestanden aankunnen.
+    server = spawn('php', ['-d', 'memory_limit=32M', '-S', `127.0.0.1:${POORT}`, '-t', www()], { stdio: 'ignore' })
     for (let i = 0; i < 50; i++) {
       try {
         await fetch(`${BASIS}/teller/index.php`)
@@ -63,6 +64,9 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect((await stuur({ name: 'Les af', url: '/', props: { naam: 'daan' } })).status).toBe(400)
     expect((await stuur({ name: 'Les af', url: '/', props: { les: 'Daan Jansen' } })).status).toBe(400)
     expect((await stuur({ name: 'Les af', url: '/', props: { les: { x: 1 } } })).status).toBe(400)
+    // Precies de eigenschappen van de lijst: niet minder, anders vervuilt een "les ?" de tabel.
+    expect((await stuur({ name: 'Les af', url: '/' })).status).toBe(400)
+    expect((await stuur({ name: 'Les af', url: '/', props: { les: 'toren-1' } })).status).toBe(400)
     expect(bewaard()).toHaveLength(1)
   })
 
@@ -73,6 +77,8 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect(laatste.v).toBe('google.com')
   })
 
+  // Let op: `php -S` leest geen .htaccess. De 403 hieronder komt van de eigen controle in
+  // opslag.php; of Apache de map dichthoudt, controleert de publiceer-workflow op de echte site.
   it('alleen POST, en opslag.php is niet los te openen', async () => {
     expect((await fetch(`${BASIS}/teller/index.php`)).status).toBe(405)
     expect((await fetch(`${BASIS}/teller/opslag.php`)).status).toBe(403)
@@ -100,4 +106,36 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect(open).toContain('Lessen: waar haken kinderen af?')
     expect(open).toContain('toren-1')
   })
+
+  it('raden wordt afgeremd: na 10 mislukte pogingen in een uur gaat niemand er meer in', async () => {
+    const pogingen = join(dataMap(), `pogingen-${new Date().toISOString().slice(0, 13).replace('T', '-')}.txt`)
+    writeFileSync(pogingen, 'x'.repeat(10))
+    const r = await fetch(`${BASIS}/teller/dashboard.php`, {
+      method: 'POST',
+      body: new URLSearchParams({ wachtwoord: 'proef-wachtwoord' }),
+      redirect: 'manual',
+    })
+    expect(await r.text()).toContain('Te veel mislukte pogingen')
+    rmSync(pogingen)
+  })
+
+  it('het dashboard werkt ook als iemand de dagbestanden heeft volgeschreven', async () => {
+    const regel = JSON.stringify({ u: '08', n: 'Bezoek', p: '/', e: { geoefend: '1 dag' } }) + '\n'
+    const vol = regel.repeat(Math.ceil((1024 * 1024) / regel.length))
+    for (let i = 0; i < 30; i++) {
+      const dag = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10)
+      writeFileSync(join(dataMap(), `dag-${dag}.ndjson`), vol)
+    }
+    const inloggen = await fetch(`${BASIS}/teller/dashboard.php`, {
+      method: 'POST',
+      body: new URLSearchParams({ wachtwoord: 'proef-wachtwoord' }),
+      redirect: 'manual',
+    })
+    const koekje = (inloggen.headers.get('set-cookie') ?? '').split(';')[0]
+    const r = await fetch(`${BASIS}/teller/dashboard.php?dagen=30`, { headers: { cookie: koekje } })
+    expect(r.status).toBe(200)
+    expect(await r.text()).toContain('Bezoeken per dag')
+    // En een vol dagbestand neemt niets meer aan.
+    expect((await stuur({ name: 'Bezoek', url: '/', props: { geoefend: '1 dag' } })).status).toBe(507)
+  }, 30000)
 })

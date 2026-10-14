@@ -40,7 +40,7 @@ en Flutter (kleiner schaak-ecosysteem in JS/TS).
 | Monorepo | **pnpm workspaces + Turborepo** | apps/web, packages/{engine,content,ui,audio,analytics}. |
 | CI/CD | **GitHub Actions** → **Vercel** (preview per PR) | Reviewer kan elke PR direct op de tablet proberen. |
 | i18n | **next-intl** | NL is de bron; sleutelstructuur maakt EN/DE later mogelijk. |
-| Analytics | **Plausible** (self-hosted of EU) of PostHog EU, cookieloos | Geen Google Analytics, geen advertentie-SDK's. |
+| Analytics | **Eigen teller** (`public/teller/`, PHP op de eigen hosting), cookieloos | Geen kosten, geen dienst van buiten, geen Google Analytics, geen advertentie-SDK's. Dashboard op `/teller/dashboard.php`. |
 | Foutmonitoring | **Sentry** met scrubbing van alle profieldata | |
 
 ## 5.3 De audiopijplijn (het hart van deze app)

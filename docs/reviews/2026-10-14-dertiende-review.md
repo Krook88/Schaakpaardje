@@ -34,3 +34,23 @@ zijn opgelost; zie de statuskolom.*
 | L2 | Layout: schermlezer las de hele uitleg als naam van het vinkvakje. | **Opgelost**: korte `aria-label`, uitleg via `aria-describedby`, ook bij de andere schakelaars. |
 | L3 | Layout: blauw browservinkje past niet bij de app. | Open: geldt voor alle schakelaars; één keer `accent-color` in een stijlronde. |
 | L4 | Layout: welkomstpagina noemt het tellen niet. | Open, bewust: "niets over je kind" klopt letterlijk; het staat op /over/ en het ouderscherm. |
+
+## Herreview: eigen teller in plaats van Plausible (`aa24c3a`)
+
+Kaj wil geen extra kosten. Plausible is vervangen door een eigen teller op de eigen
+hosting (`public/teller/`, PHP) met een eigen dashboard achter een wachtwoord.
+Codebase-reviewer: **GO**, niets blokkerends. Geen geheim zichtbaar, geen tekst of HTML in
+opslag of dashboard, geen IP, geen koekje voor kinderen.
+
+| | Bevinding | Status |
+|---|---|---|
+| T1 | belangrijk: het dashboard las alle regels eerst in; met volgeschreven dagbestanden liep het geheugen vol (1 dag = 113 MB) en bleef het 30 tot 90 dagen wit. | **Opgelost**: regel voor regel tellen (`loopDagen`), dagbestand hoogstens 1 MB. Test met 30 volle dagen bij 32 MB geheugen. |
+| T2 | belangrijk: de controle na het publiceren keek alleen of PHP draait en waarschuwde alleen. | **Opgelost**: ook `opslag.php`, `wachtwoord.php` en `data/` moeten 403 of 404 geven; anders faalt de stap. |
+| T3 | klein: raden van het wachtwoord nauwelijks afgeremd. | **Opgelost**: hoogstens 10 mislukte pogingen per uur voor iedereen samen; de workflow weigert een wachtwoord korter dan 16 tekens. Test erbij. |
+| T4 | klein: elke bezoeker maakte een sessiebestand; koekje gold voor de hele site. | **Opgelost**: sessie alleen bij inloggen of een bestaand koekje; koekje alleen voor `/teller/`. |
+| T5 | klein: dashboard in een frame te tonen. | **Opgelost**: `frame-ancestors 'none'`. |
+| T6 | klein: oude tellingen nooit opgeruimd. | **Opgelost**: dagbestanden ouder dan 400 dagen worden af en toe weggehaald. |
+| T7 | klein: telling zonder verplichte eigenschap werd aangenomen ("les ?"). | **Opgelost**: precies de eigenschappen van de lijst. Test erbij. |
+| T8 | klein: verwijzerspam kan op het dashboard komen. | Open, geaccepteerd: alleen een sitenaam, ge-escaped; een vervalste verwijzer schaadt niemand. |
+| T9 | klein: de test bewijst niet dat `.htaccess` werkt (`php -S` leest hem niet). | **Opgelost** als opmerking bij de test; de workflow controleert het op de echte site (T2). |
+| T10 | klein: docs noemden nog Plausible; TransIP houdt zelf toegangslogs met IP. | **Opgelost** in `docs/05-techstack.md` en `docs/08-privacy-en-juridisch.md`. |

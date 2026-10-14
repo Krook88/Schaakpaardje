@@ -12,29 +12,34 @@ require __DIR__ . '/opslag.php';
 
 header('Cache-Control: no-store');
 header('X-Robots-Tag: noindex, nofollow');
-header("Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; form-action 'self'");
+header("Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'");
 
 $hashBestand = __DIR__ . '/wachtwoord.php';
 $hash = is_file($hashBestand) ? (include $hashBestand) : '';
 
-session_set_cookie_params(['httponly' => true, 'secure' => true, 'samesite' => 'Strict']);
+// Alleen een sessie als er al een is of als iemand inlogt: anders maakt elke bezoeker
+// (of elk script) een sessiebestand aan. Het koekje geldt alleen voor /teller/.
+session_set_cookie_params(['path' => '/teller/', 'httponly' => true, 'secure' => true, 'samesite' => 'Strict']);
 session_name('teller');
-session_start();
+if (isset($_COOKIE['teller']) || isset($_POST['wachtwoord'])) session_start();
 
-if (isset($_POST['uit'])) {
+if (isset($_POST['uit']) && session_status() === PHP_SESSION_ACTIVE) {
     $_SESSION = [];
     session_destroy();
     header('Location: dashboard.php');
     exit;
 }
+$teVaak = false;
 if (isset($_POST['wachtwoord']) && is_string($hash) && $hash !== '') {
-    if (password_verify((string) $_POST['wachtwoord'], $hash)) {
+    $teVaak = pogingenOp();
+    if (!$teVaak && password_verify((string) $_POST['wachtwoord'], $hash)) {
         session_regenerate_id(true);
         $_SESSION['binnen'] = true;
         header('Location: dashboard.php');
         exit;
     }
-    sleep(2); // raden duurt zo te lang
+    if (!$teVaak) telPoging();
+    sleep(2);
 }
 
 function e($s): string
@@ -68,7 +73,9 @@ if (!is_string($hash) || $hash === '') {
     exit;
 }
 if (empty($_SESSION['binnen'])) {
-    pagina('Teller', '<h1>Teller van Schaakmaatje</h1><section><form method="post" class="rij">'
+    pagina('Teller', '<h1>Teller van Schaakmaatje</h1><section>'
+        . ($teVaak ? '<p>Te veel mislukte pogingen dit uur. Probeer het straks opnieuw.</p>' : '')
+        . '<form method="post" class="rij">'
         . '<label for="w">Wachtwoord</label><input id="w" type="password" name="wachtwoord" autocomplete="current-password" autofocus>'
         . '<button type="submit">Inloggen</button></form></section>');
     exit;
@@ -78,7 +85,6 @@ if (empty($_SESSION['binnen'])) {
 
 $periode = isset($_GET['dagen']) ? (int) $_GET['dagen'] : 30;
 if (!in_array($periode, [7, 30, 90], true)) $periode = 30;
-$perDag = leesDagen($periode);
 
 $bezoekPerDag = [];
 $totaal = ['Bezoek' => 0, 'pageview' => 0, 'Les begonnen' => 0, 'Les af' => 0, 'Partij' => 0, 'Minispel rondje' => 0];
@@ -91,56 +97,59 @@ $schermen = [];
 $verwijzers = [];
 $uren = array_fill(0, 24, 0);
 
-foreach ($perDag as $dag => $regels) {
-    $bezoekPerDag[$dag] = 0;
-    foreach ($regels as $r) {
-        $n = $r['n'] ?? '';
-        $e = $r['e'] ?? [];
-        if (isset($totaal[$n])) $totaal[$n]++;
-        switch ($n) {
-            case 'Bezoek':
-                $bezoekPerDag[$dag]++;
-                $uren[(int) ($r['u'] ?? 0)]++;
-                $k = $e['geoefend'] ?? '?';
-                $geoefend[$k] = ($geoefend[$k] ?? 0) + 1;
-                break;
-            case 'pageview':
-                $p = $r['p'] ?? '?';
-                $schermen[$p] = ($schermen[$p] ?? 0) + 1;
-                if (isset($r['v'])) $verwijzers[$r['v']] = ($verwijzers[$r['v']] ?? 0) + 1;
-                break;
-            case 'Speelduur':
-                $k = $e['duur'] ?? '?';
-                $duur[$k] = ($duur[$k] ?? 0) + 1;
-                break;
-            case 'Les begonnen':
-            case 'Les af':
-            case 'Les gestopt':
-                $id = $e['les'] ?? '?';
-                $l = $lessen[$id] ?? ['nieuw' => 0, 'hervat' => 0, 'af' => 0, 'sterren' => 0, 'gestopt' => []];
-                if ($n === 'Les begonnen') {
-                    $l[($e['hervat'] ?? 'nee') === 'ja' ? 'hervat' : 'nieuw']++;
-                } elseif ($n === 'Les af') {
-                    $l['af']++;
-                    $l['sterren'] += (int) ($e['sterren'] ?? 0);
-                } else {
-                    $f = $e['fase'] ?? '?';
-                    $l['gestopt'][$f] = ($l['gestopt'][$f] ?? 0) + 1;
-                }
-                $lessen[$id] = $l;
-                break;
-            case 'Partij':
-                $t = $e['tegen'] ?? '?';
-                $u = $e['uitslag'] ?? '?';
-                $partijen[$t][$u] = ($partijen[$t][$u] ?? 0) + 1;
-                break;
-            case 'Minispel rondje':
-                $s = $e['spel'] ?? '?';
-                $spellen[$s] = ($spellen[$s] ?? 0) + 1;
-                break;
-        }
+loopDagen($periode, function (string $dag, ?array $r) use (
+    &$bezoekPerDag, &$totaal, &$lessen, &$duur, &$geoefend, &$partijen, &$spellen, &$schermen, &$verwijzers, &$uren
+) {
+    if ($r === null) {
+        $bezoekPerDag[$dag] = 0;
+        return;
     }
-}
+    $n = $r['n'] ?? '';
+    $e = $r['e'] ?? [];
+    if (isset($totaal[$n])) $totaal[$n]++;
+    switch ($n) {
+        case 'Bezoek':
+            $bezoekPerDag[$dag]++;
+            $uren[(int) ($r['u'] ?? 0)]++;
+            $k = $e['geoefend'] ?? '?';
+            $geoefend[$k] = ($geoefend[$k] ?? 0) + 1;
+            break;
+        case 'pageview':
+            $p = $r['p'] ?? '?';
+            $schermen[$p] = ($schermen[$p] ?? 0) + 1;
+            if (isset($r['v'])) $verwijzers[$r['v']] = ($verwijzers[$r['v']] ?? 0) + 1;
+            break;
+        case 'Speelduur':
+            $k = $e['duur'] ?? '?';
+            $duur[$k] = ($duur[$k] ?? 0) + 1;
+            break;
+        case 'Les begonnen':
+        case 'Les af':
+        case 'Les gestopt':
+            $id = $e['les'] ?? '?';
+            $l = $lessen[$id] ?? ['nieuw' => 0, 'hervat' => 0, 'af' => 0, 'sterren' => 0, 'gestopt' => []];
+            if ($n === 'Les begonnen') {
+                $l[($e['hervat'] ?? 'nee') === 'ja' ? 'hervat' : 'nieuw']++;
+            } elseif ($n === 'Les af') {
+                $l['af']++;
+                $l['sterren'] += (int) ($e['sterren'] ?? 0);
+            } else {
+                $f = $e['fase'] ?? '?';
+                $l['gestopt'][$f] = ($l['gestopt'][$f] ?? 0) + 1;
+            }
+            $lessen[$id] = $l;
+            break;
+        case 'Partij':
+            $t = $e['tegen'] ?? '?';
+            $u = $e['uitslag'] ?? '?';
+            $partijen[$t][$u] = ($partijen[$t][$u] ?? 0) + 1;
+            break;
+        case 'Minispel rondje':
+            $s = $e['spel'] ?? '?';
+            $spellen[$s] = ($spellen[$s] ?? 0) + 1;
+            break;
+    }
+});
 
 /** Lessen in de volgorde van de app, als lessen.json er is (gemaakt bij het bouwen). */
 $volgorde = [];

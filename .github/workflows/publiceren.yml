@@ -121,6 +121,10 @@ jobs:
             echo "Geen TELLER_WACHTWOORD ingesteld; het dashboard houdt zijn huidige wachtwoord (of heeft er nog geen)."
             exit 0
           fi
+          if [ ${#TELLER_WACHTWOORD} -lt 16 ]; then
+            echo "TELLER_WACHTWOORD is korter dan 16 tekens. Kies een langer wachtwoord."
+            exit 1
+          fi
           php -r 'echo "<?php return " . var_export(password_hash(getenv("TELLER_WACHTWOORD"), PASSWORD_DEFAULT), true) . ";\n";' > out/teller/wachtwoord.php
           echo "Wachtwoord voor het dashboard klaargezet."
 
@@ -144,14 +148,19 @@ jobs:
             echo "Gepubliceerd naar schaakmaatje.nl."
           fi
 
-      - name: Draait de teller?
+      - name: Draait de teller, en zit hij dicht?
         if: ${{ !inputs.proef }}
         run: |
-          # Een lege telling hoort 400 te geven: dan draait PHP. 200 met de broncode of
-          # 404 betekent dat de hosting geen PHP uitvoert, en dan telt er niets.
-          CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST -d '{}' https://schaakmaatje.nl/teller/ || true)
-          if [ "$CODE" = "400" ]; then
-            echo "De teller draait."
-          else
-            echo "::warning::De teller antwoordde $CODE in plaats van 400. Draait PHP op de hosting?"
-          fi
+          # Een lege telling hoort 400 te geven: dan draait PHP. Wat intern is, hoort 403
+          # (of 404 als het er niet is) te geven: dan leest Apache de .htaccess. Klopt een
+          # van beide niet, dan faalt deze stap: een groene vink terwijl de wachtwoordhash
+          # of de tellingen open staan, is erger dan een rode.
+          fout=0
+          code() { curl -s -o /dev/null -w "%{http_code}" "$@" || echo "000"; }
+          c=$(code -X POST -d '{}' https://schaakmaatje.nl/teller/)
+          if [ "$c" = "400" ]; then echo "De teller draait."; else echo "::error::/teller/ gaf $c in plaats van 400. Draait PHP?"; fout=1; fi
+          for pad in teller/opslag.php teller/wachtwoord.php teller/data/.htaccess; do
+            c=$(code "https://schaakmaatje.nl/$pad")
+            if [ "$c" = "403" ] || [ "$c" = "404" ]; then echo "$pad zit dicht ($c)."; else echo "::error::$pad gaf $c; die hoort dicht te zitten."; fout=1; fi
+          done
+          exit $fout

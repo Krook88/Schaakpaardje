@@ -32,7 +32,7 @@ const TELLINGEN = [
 const BEKEND_PAD = '#^/(|(les|lessen|kaart|spel|spelen|stal|ouders|over|diploma|opfrissen)(/[a-z0-9-]+)?/|onbekend/)$#';
 
 /** Grootste dagbestand. Daarboven wordt niets meer bewaard: zo kan niemand de schijf vullen. */
-const MAX_DAG = 5 * 1024 * 1024;
+const MAX_DAG = 1024 * 1024; // ruim 10.000 echte tellingen
 
 /** Een binnengekomen bericht naar een nette regel, of null als er iets niet klopt. */
 function schoonmaken(array $in): ?array
@@ -44,8 +44,15 @@ function schoonmaken(array $in): ?array
     if (!preg_match(BEKEND_PAD, $pad)) $pad = '/onbekend/';
 
     $props = [];
-    if (isset($in['props']) && is_array($in['props'])) {
-        foreach ($in['props'] as $k => $v) {
+    $gekregen = isset($in['props']) && is_array($in['props']) ? $in['props'] : [];
+    // Precies de eigenschappen van de lijst, niet meer en niet minder.
+    $sleutels = array_keys($gekregen);
+    sort($sleutels);
+    $nodig = TELLINGEN[$naam];
+    sort($nodig);
+    if ($sleutels !== $nodig) return null;
+    if ($gekregen) {
+        foreach ($gekregen as $k => $v) {
             if (!in_array($k, TELLINGEN[$naam], true)) return null;
             if (is_int($v) && $v >= 0 && $v <= 1000) {
                 $props[$k] = $v;
@@ -92,26 +99,61 @@ function bewaar(array $regel): bool
     if ($map === null) return false;
     $bestand = $map . '/dag-' . gmdate('Y-m-d') . '.ndjson';
     if (is_file($bestand) && filesize($bestand) > MAX_DAG) return false;
+    if (mt_rand(1, 500) === 1) ruimOp($map);
     return file_put_contents($bestand, json_encode($regel) . "\n", FILE_APPEND | LOCK_EX) !== false;
 }
 
-/** De regels van de laatste $dagen dagen, per dag. */
-function leesDagen(int $dagen): array
+/**
+ * Loopt de regels van de laatste $dagen dagen langs, één voor één, en geeft ze aan $doe
+ * (dag, regel). Niet eerst alles inlezen: met volle dagbestanden liep het geheugen vol
+ * en gaf het dashboard een witte pagina.
+ */
+function loopDagen(int $dagen, callable $doe): void
 {
     $map = dataMap();
-    $uit = [];
-    if ($map === null) return $uit;
     for ($i = $dagen - 1; $i >= 0; $i--) {
         $dag = gmdate('Y-m-d', time() - $i * 86400);
+        $doe($dag, null);
+        if ($map === null) continue;
         $bestand = $map . '/dag-' . $dag . '.ndjson';
-        $regels = [];
-        if (is_file($bestand)) {
-            foreach (file($bestand, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $r) {
-                $d = json_decode($r, true);
-                if (is_array($d)) $regels[] = $d;
-            }
+        if (!is_file($bestand)) continue;
+        $f = fopen($bestand, 'r');
+        if ($f === false) continue;
+        while (($r = fgets($f, 4096)) !== false) {
+            $d = json_decode($r, true);
+            if (is_array($d)) $doe($dag, $d);
         }
-        $uit[$dag] = $regels;
+        fclose($f);
     }
-    return $uit;
+}
+
+/** Dagbestanden ouder dan ruim een jaar opruimen. Af en toe, bij het bewaren. */
+function ruimOp(string $map): void
+{
+    $grens = gmdate('Y-m-d', time() - 400 * 86400);
+    foreach (glob($map . '/dag-*.ndjson') ?: [] as $bestand) {
+        if (substr(basename($bestand), 4, 10) < $grens) @unlink($bestand);
+    }
+}
+
+/**
+ * Mislukte inlogpogingen, voor alle bezoekers samen: hoogstens 10 per uur. Een wachtwoord
+ * raden met veel verzoeken tegelijk lukt dan niet meer.
+ */
+function pogingenOp(): bool
+{
+    $map = dataMap();
+    if ($map === null) return true;
+    $bestand = $map . '/pogingen-' . gmdate('Y-m-d-H') . '.txt';
+    return is_file($bestand) && filesize($bestand) >= 10;
+}
+
+function telPoging(): void
+{
+    $map = dataMap();
+    if ($map === null) return;
+    file_put_contents($map . '/pogingen-' . gmdate('Y-m-d-H') . '.txt', 'x', FILE_APPEND | LOCK_EX);
+    foreach (glob($map . '/pogingen-*.txt') ?: [] as $oud) {
+        if (filemtime($oud) < time() - 7200) @unlink($oud);
+    }
 }
