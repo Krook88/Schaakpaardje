@@ -6,6 +6,7 @@ import { Kop } from '@/ui/Kop'
 import { Rekenslot } from '@/ui/Rekenslot'
 import { Sterren } from '@/ui/Sterren'
 import { KOFFIE } from '@/seo'
+import { tellenAan, zetTellen } from '@/progress/tellen'
 import { WERELDEN } from '@/content'
 import {
   useGespeeld,
@@ -83,12 +84,14 @@ function OuderPaneel() {
         {uitleg && (
           <>
             <br />
-            <small className="muted">{uitleg}</small>
+            <small className="muted" id={`uitleg-${sleutel}`}>{uitleg}</small>
           </>
         )}
       </span>
       <input
         type="checkbox"
+        aria-label={label}
+        aria-describedby={uitleg ? `uitleg-${sleutel}` : undefined}
         checked={Boolean(instellingen[sleutel])}
         onChange={(e) => zetInstelling(sleutel, e.target.checked as never)}
         style={{ width: 44, height: 44, flexShrink: 0 }}
@@ -259,10 +262,10 @@ function OuderPaneel() {
         <section className="card stack">
           <h2>Privacy</h2>
           <p className="muted">
-            Alles staat op dit apparaat: een voornaam, een leeftijd en de voortgang. Er gaat
-            niets naar internet, er zijn geen advertenties, geen chat en geen account. Wil je
-            alles wissen, dan kan dat hier.
+            Alles staat op dit apparaat: een voornaam, een leeftijd en de voortgang. Daarvan
+            gaat niets naar internet. Er zijn geen advertenties, geen chat en geen account.
           </p>
+          <TellenSchakel />
           {/* Achter het rekenslot, dus geen kind komt hier per ongeluk. Een regel tekst
               en geen knop: wie hem zoekt vindt hem, wie hem niet zoekt ziet hem amper. */}
           <p className="muted" style={{ margin: 0 }}>
@@ -271,6 +274,9 @@ function OuderPaneel() {
               Een kop koffie trakteren
             </a>{' '}
             mag, maar hoeft niet. Het levert je niets extra's op.
+          </p>
+          <p className="muted" style={{ margin: 0 }}>
+            Wil je alles van dit kind wissen? Dat kan hier.
           </p>
           <button
             type="button"
@@ -317,4 +323,37 @@ function laatsteDag(iso: string): string {
   if (verschil === 0) return 'vandaag'
   if (verschil === 1) return 'gisteren'
   return dag.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+/**
+ * Anonieme tellingen aan of uit, voor het hele apparaat. Staat los van de instellingen
+ * per kind: het gaat om dit apparaat, niet om een profiel.
+ */
+function TellenSchakel() {
+  const [aan, setAan] = useState(tellenAan)
+  return (
+    <label className="row" style={{ justifyContent: 'space-between', gap: 16 }}>
+      <span style={{ flex: 1 }}>
+        Anoniem meetellen
+        <br />
+        <small className="muted" id="uitleg-tellen">
+          Zodat de maker ziet hoeveel er gespeeld wordt en bij welke les kinderen stoppen.
+          Alleen losse tellingen: welk scherm, welke les begonnen, af (met sterren) of
+          gestopt, de uitslag van een partij, en speelduur en geoefende dagen in grove
+          klassen. Geen naam, geen leeftijd, geen cookie.
+        </small>
+      </span>
+      <input
+        type="checkbox"
+        aria-label="Anoniem meetellen"
+        aria-describedby="uitleg-tellen"
+        checked={aan}
+        onChange={(e) => {
+          zetTellen(e.target.checked)
+          setAan(e.target.checked)
+        }}
+        style={{ width: 44, height: 44, flexShrink: 0 }}
+      />
+    </label>
+  )
 }

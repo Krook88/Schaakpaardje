@@ -32,6 +32,7 @@ import { useInstellingen, useModus, useProfielStore } from '@/progress/store'
 import { OPSTELLING } from './opstellingen'
 import { SamenKiezer, type Speler } from './SamenKiezer'
 import { PromotieKiezer } from './PromotieKiezer'
+import { tel } from '@/progress/tellen'
 
 type Uitslag = 'gewonnen' | 'verloren' | 'remise' | null
 
@@ -108,6 +109,7 @@ export function PartijScherm({ botId }: { botId: string }) {
       if (nieuw && bewaardVoor.current !== partijNr) {
         bewaardVoor.current = partijNr
         bewaarPartij(nieuw)
+        if (bot) tel('Partij', { tegen: bot.id, uitslag: nieuw })
       }
       // Winnen van een tegenstander levert zijn maatje op voor de stal. Eén keer is
       // genoeg: het is een verzameling, geen scorebord, dus je kunt hem niet kwijtraken
@@ -131,6 +133,7 @@ export function PartijScherm({ botId }: { botId: string }) {
       setStemming('trots')
       const alBewaard = bewaardVoor.current === partijNr
       bewaardVoor.current = partijNr
+      if (!alBewaard) tel('Partij', { tegen: 'samen', uitslag: winnaar === null ? 'remise' : 'gewonnen' })
       for (const kleur of ['w', 'b'] as const) {
         const id = spelers?.[kleur].profielId
         if (!id || alBewaard) continue

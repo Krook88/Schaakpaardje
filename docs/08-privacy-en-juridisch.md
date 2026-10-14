@@ -11,7 +11,10 @@ bijzaak maar een ontwerpuitgangspunt.
 - **Geen advertenties, geen third-party trackers, geen SDK's van sociale media.**
 - **Geen chat, geen open multiplayer.** Alleen bots en samen-op-één-tablet. Dit sluit
   de grootste veiligheidsrisico's structureel uit.
-- **Cookieloze, geaggregeerde analytics** (Plausible/PostHog EU), zonder id per kind.
+- **Cookieloze, anonieme tellingen** naar de eigen teller (`public/teller/`), zonder id per
+  kind en zonder IP-adres: alleen de telling, het pad en het uur. Een ouder zet het uit op
+  het ouderscherm. Let op: de hosting (TransIP) houdt zelf, zoals elke webserver,
+  toegangslogs met IP-adressen bij; die bewaart de teller niet, maar ze bestaan wel.
 
 ## 8.2 Regelgeving om aan te voldoen
 - **AVG/GDPR** + het Nederlandse **Code voor Kinderrechten** en de Britse **Age

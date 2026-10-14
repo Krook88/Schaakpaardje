@@ -1,0 +1,13 @@
+# De teller: alleen index.php (ontvangen) en dashboard.php (bekijken, met wachtwoord)
+# mogen van buitenaf. De rest is voor intern gebruik.
+DirectoryIndex index.php
+Options -Indexes
+
+<FilesMatch "^(opslag|wachtwoord)\.php$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
+  Header set Cache-Control "no-store"
+</IfModule>

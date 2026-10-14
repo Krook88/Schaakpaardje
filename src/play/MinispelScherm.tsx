@@ -22,6 +22,7 @@ import {
 import { useInstellingen, useModus, useProfielStore } from '@/progress/store'
 import { gebruikTip } from '@/ui/gebruikTip'
 import { minispelMet, zaad, type Minispel } from './minispellen'
+import { tel } from '@/progress/tellen'
 
 /** Zoveel gehaalde rondjes in één keer spelen laten de dag tellen als oefendag. */
 const RONDJES_VOOR_OEFENDAG = 3
@@ -111,6 +112,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
           // Drie gehaalde rondjes tellen als een oefendag. Eén rondje kan één tik zijn,
           // en dan zegt "geoefend" de ouder niets meer. Een les telt ook pas als hij af is.
           if (gehaald + 1 >= RONDJES_VOOR_OEFENDAG) bewaarOefendag()
+          tel('Minispel rondje', { spel: spel.id, rondje: gehaald + 1 })
           setGehaald((n) => n + 1)
           afbreken()
           setZin(kies(zinnen.PRIJS_LAATSTE, 'prijs'))
@@ -141,7 +143,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
           break
       }
     },
-    [stand, instellingen.effecten, niveau, nieuwRondje, zegTip, afbreken, opdracht, zinnen, bewaarOefendag, gehaald],
+    [stand, instellingen.effecten, niveau, nieuwRondje, zegTip, afbreken, opdracht, zinnen, bewaarOefendag, gehaald, spel.id],
   )
 
   const marks: BoardMarks = useMemo(() => {

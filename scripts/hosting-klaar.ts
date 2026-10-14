@@ -18,6 +18,7 @@
 import { readdirSync, renameSync, readFileSync, writeFileSync, existsSync, statSync, rmSync } from 'node:fs'
 import { join, type PlatformPath } from 'node:path'
 import * as pad_ from 'node:path'
+import { WERELDEN } from '../src/content'
 
 const UIT = join(process.cwd(), 'out')
 const TEKSTBESTANDEN = /\.(html|txt|json|webmanifest)$/
@@ -115,6 +116,7 @@ function main() {
   )
 
   laatOpnamesMetRust()
+  lessenVoorDeTeller()
   stempelDeCacheversie()
 }
 
@@ -187,6 +189,18 @@ function laatOpnamesMetRust() {
         `de opnames op de server niet overschrijft.`,
     )
   }
+}
+
+/**
+ * De lessen in de volgorde van de app, voor het dashboard van de teller (teller/
+ * dashboard.php). Zonder dit staan daar alleen id's als "toren-1", in willekeurige volgorde.
+ */
+function lessenVoorDeTeller() {
+  const map = join(UIT, 'teller')
+  if (!existsSync(map)) return
+  const lessen = WERELDEN.flatMap((w) => w.lessen.map((l) => ({ id: l.id, titel: l.titel, wereld: w.naam })))
+  writeFileSync(join(map, 'lessen.json'), JSON.stringify(lessen))
+  console.log(`Hosting-klaar: ${lessen.length} lessen klaargezet voor het dashboard van de teller.`)
 }
 
 // Alleen draaien als het script zelf gestart wordt, niet als de test hem importeert.

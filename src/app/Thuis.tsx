@@ -578,7 +578,7 @@ function NieuwProfiel({
           Beginnen →
         </button>
         <p className="muted" style={{ fontSize: '0.85rem' }}>
-          Alles blijft op dit apparaat. Er gaat niets naar internet en je hoeft nergens een
+          Alles blijft op dit apparaat. Er gaat niets over je kind naar internet en je hoeft nergens een
           account voor te maken.
         </p>
         {/* Voor de ouder die eerst wil weten waar hij zijn kind op zet — en meteen de
