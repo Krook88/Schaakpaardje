@@ -34,7 +34,7 @@ describe('anoniem tellen', () => {
     zetSite('schaakmaatje.nl')
     tel('Les af', { les: 'toren-1', sterren: 3 })
     expect(verstuurd).toHaveLength(1)
-    expect(verstuurd[0].url).toBe('/teller/')
+    expect(verstuurd[0].url).toBe('/teller/index.php')
     expect(verstuurd[0].body).toEqual({
       name: 'Les af',
       url: '/les/toren-1/',

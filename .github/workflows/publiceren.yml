@@ -157,8 +157,10 @@ jobs:
           # of de tellingen open staan, is erger dan een rode.
           fout=0
           code() { curl -s -o /dev/null -w "%{http_code}" "$@" || echo "000"; }
-          c=$(code -X POST -d '{}' https://schaakmaatje.nl/teller/)
-          if [ "$c" = "400" ]; then echo "De teller draait."; else echo "::error::/teller/ gaf $c in plaats van 400. Draait PHP?"; fout=1; fi
+          c=$(code -X POST -d '{}' https://schaakmaatje.nl/teller/index.php)
+          if [ "$c" = "400" ]; then echo "De teller draait."; else echo "::error::/teller/index.php gaf $c in plaats van 400. Draait PHP?"; fout=1; fi
+          c=$(code https://schaakmaatje.nl/teller/dashboard.php)
+          if [ "$c" = "200" ]; then echo "Het dashboard is bereikbaar."; else echo "::error::/teller/dashboard.php gaf $c in plaats van 200."; fout=1; fi
           for pad in teller/opslag.php teller/wachtwoord.php teller/data/.htaccess; do
             c=$(code "https://schaakmaatje.nl/$pad")
             if [ "$c" = "403" ] || [ "$c" = "404" ]; then echo "$pad zit dicht ($c)."; else echo "::error::$pad gaf $c; die hoort dicht te zitten."; fout=1; fi
