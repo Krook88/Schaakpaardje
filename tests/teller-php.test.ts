@@ -134,7 +134,7 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     const koekje = (inloggen.headers.get('set-cookie') ?? '').split(';')[0]
     const r = await fetch(`${BASIS}/teller/dashboard.php?dagen=30`, { headers: { cookie: koekje } })
     expect(r.status).toBe(200)
-    expect(await r.text()).toContain('Bezoeken per dag')
+    expect(await r.text()).toContain('Verloop per dag')
     // En een vol dagbestand neemt niets meer aan.
     expect((await stuur({ name: 'Bezoek', url: '/', props: { geoefend: '1 dag' } })).status).toBe(507)
   }, 30000)

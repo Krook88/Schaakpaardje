@@ -64,6 +64,14 @@ function pagina(string $titel, string $inhoud): void
         . '.balk{height:10px;background:var(--groen);border-radius:5px;min-width:2px}.rood{background:var(--accent)}'
         . 'form.rij{display:flex;gap:8px;flex-wrap:wrap;align-items:center}button,input{font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--rand);background:var(--kaart);color:var(--tekst)}'
         . 'button[aria-pressed=true]{border-color:var(--accent);font-weight:700}'
+        . '.raster{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}'
+        . '.grafiek h3{font-size:.95rem;margin:0 0 6px}.grafiek svg{width:100%;height:auto;display:block;overflow:visible}'
+        . '.s-balk{fill:var(--groen)}.s-dag:hover .s-balk{fill:var(--accent)}.s-raak{fill:transparent}'
+        . '.s-as{stroke:var(--zacht);stroke-width:1}.s-raster{stroke:var(--rand);stroke-width:1}'
+        . '.s-tekst{fill:var(--zacht);font-size:11px}.s-waarde{fill:var(--tekst);font-size:11px;font-weight:600}'
+        . '.s-lijn{fill:none;stroke:var(--groen);stroke-width:2;stroke-linejoin:round}'
+        . '.s-stip{fill:var(--groen);stroke:var(--kaart);stroke-width:2}.s-dag:hover .s-stip{fill:var(--accent)}'
+        . 'details{margin-top:12px}summary{cursor:pointer}'
         . '</style></head><body><main>' . $inhoud . '</main></body></html>';
 }
 
@@ -86,7 +94,6 @@ if (empty($_SESSION['binnen'])) {
 $periode = isset($_GET['dagen']) ? (int) $_GET['dagen'] : 30;
 if (!in_array($periode, [7, 30, 90], true)) $periode = 30;
 
-$bezoekPerDag = [];
 $totaal = ['Bezoek' => 0, 'pageview' => 0, 'Les begonnen' => 0, 'Les af' => 0, 'Partij' => 0, 'Minispel rondje' => 0];
 $lessen = [];
 $duur = [];
@@ -96,12 +103,16 @@ $spellen = [];
 $schermen = [];
 $verwijzers = [];
 $uren = array_fill(0, 24, 0);
+/** Per dag de cijfers voor het verloop. */
+$dagen = [];
+$leeg = ['bezoek' => 0, 'terug' => 0, 'begonnen' => 0, 'af' => 0, 'partij' => 0, 'rondje' => 0, 'stukken' => 0, 'lang' => 0];
 
 loopDagen($periode, function (string $dag, ?array $r) use (
-    &$bezoekPerDag, &$totaal, &$lessen, &$duur, &$geoefend, &$partijen, &$spellen, &$schermen, &$verwijzers, &$uren
+    &$totaal, &$lessen, &$duur, &$geoefend, &$partijen, &$spellen, &$schermen, &$verwijzers, &$uren,
+    &$dagen, $leeg
 ) {
     if ($r === null) {
-        $bezoekPerDag[$dag] = 0;
+        $dagen[$dag] = $leeg;
         return;
     }
     $n = $r['n'] ?? '';
@@ -109,10 +120,11 @@ loopDagen($periode, function (string $dag, ?array $r) use (
     if (isset($totaal[$n])) $totaal[$n]++;
     switch ($n) {
         case 'Bezoek':
-            $bezoekPerDag[$dag]++;
             $uren[(int) ($r['u'] ?? 0)]++;
             $k = $e['geoefend'] ?? '?';
             $geoefend[$k] = ($geoefend[$k] ?? 0) + 1;
+            $dagen[$dag]['bezoek']++;
+            if (!in_array($k, ['nog niet', '1 dag', '?'], true)) $dagen[$dag]['terug']++;
             break;
         case 'pageview':
             $p = $r['p'] ?? '?';
@@ -122,6 +134,8 @@ loopDagen($periode, function (string $dag, ?array $r) use (
         case 'Speelduur':
             $k = $e['duur'] ?? '?';
             $duur[$k] = ($duur[$k] ?? 0) + 1;
+            $dagen[$dag]['stukken']++;
+            if (in_array($k, ['5 tot 15 min', '15 tot 30 min', '30 min of meer'], true)) $dagen[$dag]['lang']++;
             break;
         case 'Les begonnen':
         case 'Les af':
@@ -129,9 +143,12 @@ loopDagen($periode, function (string $dag, ?array $r) use (
             $id = $e['les'] ?? '?';
             $l = $lessen[$id] ?? ['nieuw' => 0, 'hervat' => 0, 'af' => 0, 'sterren' => 0, 'gestopt' => []];
             if ($n === 'Les begonnen') {
-                $l[($e['hervat'] ?? 'nee') === 'ja' ? 'hervat' : 'nieuw']++;
+                $nieuw = ($e['hervat'] ?? 'nee') !== 'ja';
+                $l[$nieuw ? 'nieuw' : 'hervat']++;
+                if ($nieuw) $dagen[$dag]['begonnen']++;
             } elseif ($n === 'Les af') {
                 $l['af']++;
+                $dagen[$dag]['af']++;
                 $l['sterren'] += (int) ($e['sterren'] ?? 0);
             } else {
                 $f = $e['fase'] ?? '?';
@@ -143,10 +160,12 @@ loopDagen($periode, function (string $dag, ?array $r) use (
             $t = $e['tegen'] ?? '?';
             $u = $e['uitslag'] ?? '?';
             $partijen[$t][$u] = ($partijen[$t][$u] ?? 0) + 1;
+            $dagen[$dag]['partij']++;
             break;
         case 'Minispel rondje':
             $s = $e['spel'] ?? '?';
             $spellen[$s] = ($spellen[$s] ?? 0) + 1;
+            $dagen[$dag]['rondje']++;
             break;
     }
 });
@@ -199,6 +218,114 @@ function top(string $titel, array $tellen, int $hoeveel, string $leeg): string
     return '<section><h2>' . e($titel) . '</h2>' . ($rijen ? '<table>' . $rijen . '</table>' : '<p class="zacht">' . e($leeg) . '</p>') . '</section>';
 }
 
+/**
+ * Een staafdiagram per dag als SVG, zonder script (de CSP staat er geen toe). Wie over
+ * een dag beweegt, ziet datum en aantal: het hele dagvak is het raakvlak, niet alleen
+ * de staaf, want een dag met 1 bezoek is anders bijna niet te raken.
+ */
+function staven(string $titel, array $reeks): string
+{
+    // Ongeveer op ware grootte (een kolom is zo'n 300 px), anders krimpt de tekst mee.
+    $b = 320;
+    $hoog = 130;
+    $boven = 16;
+    $onder = 20;
+    $n = max(1, count($reeks));
+    $max = max(1, max($reeks ?: [0]));
+    $vak = $b / $n;
+    $breed = max(1.0, $vak - 1); // lucht tussen de staven
+    $svg = '';
+    $i = 0;
+    foreach ($reeks as $dag => $waarde) {
+        $x = $i * $vak;
+        $hh = $waarde / $max * ($hoog - $boven - $onder);
+        $y = $hoog - $onder - $hh;
+        $svg .= '<g class="s-dag"><title>' . e($dag) . ': ' . $waarde . '</title>'
+            . '<rect class="s-raak" x="' . round($x, 1) . '" y="0" width="' . round($vak, 1) . '" height="' . ($hoog - $onder) . '"/>'
+            . ($waarde ? '<rect class="s-balk" x="' . round($x + 1, 1) . '" y="' . round($y, 1) . '" width="' . round($breed, 1)
+                . '" height="' . round($hh, 1) . '" rx="' . min(2, $breed / 2) . '"/>' : '')
+            . '</g>';
+        $i++;
+    }
+    $dagenLijst = array_keys($reeks);
+    $svg .= '<line class="s-as" x1="0" x2="' . $b . '" y1="' . ($hoog - $onder) . '" y2="' . ($hoog - $onder) . '"/>'
+        . '<text class="s-tekst" x="0" y="' . ($hoog - 4) . '">' . e(substr((string) reset($dagenLijst), 5)) . '</text>'
+        . '<text class="s-tekst" x="' . $b . '" y="' . ($hoog - 4) . '" text-anchor="end">' . e(substr((string) end($dagenLijst), 5)) . '</text>'
+        . '<text class="s-tekst" x="0" y="11">hoogste: ' . $max . '</text>';
+    $som = array_sum($reeks);
+    return '<div class="grafiek"><h3>' . e($titel) . ' <span class="zacht">' . $som . ' in totaal</span></h3>'
+        . '<svg viewBox="0 0 ' . $b . ' ' . $hoog . '" role="img" aria-label="' . e($titel) . ' per dag">' . $svg . '</svg></div>';
+}
+
+/**
+ * Een percentage per week (of per dag bij 7 dagen) als lijn met punten. Elk punt draagt
+ * zijn waarde: het zijn er hooguit dertien, en het getal is waar het om gaat.
+ */
+function lijn(string $titel, array $punten, string $uitleg): string
+{
+    $b = 320;
+    $hoog = 150;
+    $boven = 22;
+    $onder = 20;
+    $links = 34;
+    $rechts = 22;
+    $geldig = array_filter($punten, function ($p) { return $p['pct'] !== null; });
+    if (!$geldig) {
+        return '<div class="grafiek"><h3>' . e($titel) . '</h3><p class="zacht">Nog te weinig gegevens.</p></div>';
+    }
+    $n = count($punten);
+    $stap = $n > 1 ? ($b - $links - $rechts) / ($n - 1) : 0;
+    $yVan = function ($pct) use ($hoog, $boven, $onder) { return $hoog - $onder - $pct / 100 * ($hoog - $boven - $onder); };
+    $svg = '';
+    foreach ([0, 50, 100] as $raster) {
+        $y = round($yVan($raster), 1);
+        $svg .= '<line class="s-raster" x1="' . $links . '" x2="' . ($b - $rechts) . '" y1="' . $y . '" y2="' . $y . '"/>'
+            . '<text class="s-tekst" x="' . ($links - 6) . '" y="' . ($y + 4) . '" text-anchor="end">' . $raster . '%</text>';
+    }
+    $pad = '';
+    $stippen = '';
+    $i = 0;
+    foreach ($punten as $p) {
+        $x = round($links + $i * $stap, 1);
+        if ($p['pct'] !== null) {
+            $y = round($yVan($p['pct']), 1);
+            $pad .= ($pad === '' ? 'M' : 'L') . $x . ' ' . $y . ' ';
+            $stippen .= '<g class="s-dag"><title>' . e($p['label']) . ': ' . $p['pct'] . '% (' . $p['teller'] . ' van ' . $p['noemer'] . ')</title>'
+                . '<circle class="s-raak" cx="' . $x . '" cy="' . $y . '" r="14"/>'
+                . '<circle class="s-stip" cx="' . $x . '" cy="' . $y . '" r="4"/>'
+                . '<text class="s-waarde" x="' . $x . '" y="' . ($y - 9) . '" text-anchor="middle">' . $p['pct'] . '%</text></g>';
+        }
+        $i++;
+    }
+    $eerste = reset($punten);
+    $laatste = end($punten);
+    $svg .= '<path class="s-lijn" d="' . trim($pad) . '"/>' . $stippen
+        . '<text class="s-tekst" x="' . $links . '" y="' . ($hoog - 4) . '">' . e($eerste['label']) . '</text>'
+        . '<text class="s-tekst" x="' . ($b - $rechts) . '" y="' . ($hoog - 4) . '" text-anchor="end">' . e($laatste['label']) . '</text>';
+    return '<div class="grafiek"><h3>' . e($titel) . '</h3><p class="zacht">' . e($uitleg) . '</p>'
+        . '<svg viewBox="0 0 ' . $b . ' ' . $hoog . '" role="img" aria-label="' . e($titel) . '">' . $svg . '</svg></div>';
+}
+
+/** Dagen samenvoegen tot weken (de laatste week eindigt vandaag), of per dag bij 7 dagen. */
+function perStuk(array $dagen, int $periode, string $teller, string $noemer): array
+{
+    $stukken = $periode <= 7 ? array_chunk($dagen, 1, true) : array_reverse(array_chunk(array_reverse($dagen, true), 7, true));
+    $uit = [];
+    foreach ($stukken as $stuk) {
+        $t = 0;
+        $nn = 0;
+        foreach ($stuk as $d) {
+            $t += $d[$teller];
+            $nn += $d[$noemer];
+        }
+        $sleutels = array_keys($stuk);
+        sort($sleutels);
+        $label = count($sleutels) > 1 ? 'week tot ' . substr(end($sleutels), 5) : substr($sleutels[0], 5);
+        $uit[] = ['label' => $label, 'pct' => $nn >= 5 ? (int) round($t / $nn * 100) : null, 'teller' => $t, 'noemer' => $nn];
+    }
+    return $uit;
+}
+
 /* ---------- tonen ---------- */
 
 $h = '<h1>Teller van Schaakmaatje</h1>';
@@ -222,12 +349,29 @@ foreach ([
 $h .= '</div><p class="zacht" style="margin:10px 0 0">Er zijn geen ID\'s, dus "unieke bezoekers" bestaan hier niet: '
     . 'een bezoek is één keer de app openen. Tijden in UTC.</p></section>';
 
-$max = $bezoekPerDag ? max($bezoekPerDag) : 0;
-$h .= '<section><h2>Bezoeken per dag</h2><table>';
-foreach (array_reverse($bezoekPerDag, true) as $dag => $n) {
-    $h .= '<tr><td>' . e($dag) . '</td><td class="n">' . $n . '</td><td>' . balk($n, $max) . '</td></tr>';
+$kolom = function (string $k) use ($dagen) {
+    return array_map(function ($d) use ($k) { return $d[$k]; }, $dagen);
+};
+$h .= '<section><h2>Verloop per dag</h2><div class="raster">'
+    . staven('Bezoeken', $kolom('bezoek'))
+    . staven('Lessen afgemaakt', $kolom('af'))
+    . staven('Partijen', $kolom('partij'))
+    . staven('Minispelrondjes', $kolom('rondje'))
+    . '</div>';
+$h .= '<details><summary class="zacht">Als tabel</summary><table>';
+foreach (array_reverse($dagen, true) as $dag => $d) {
+    $h .= '<tr><td>' . e($dag) . '</td><td class="n">' . $d['bezoek'] . ' bezoeken</td><td class="n">' . $d['af']
+        . ' lessen af</td><td class="n">' . $d['partij'] . ' partijen</td><td class="n">' . $d['rondje'] . ' rondjes</td></tr>';
 }
-$h .= '</table></section>';
+$h .= '</table></details></section>';
+
+$per = $periode <= 7 ? 'per dag' : 'per week';
+$h .= '<section><h2>Wordt het beter? (' . $per . ')</h2><p class="zacht">Percentages, zodat een drukke week niet '
+    . 'vanzelf beter lijkt. Een punt verschijnt pas vanaf 5 metingen.</p><div class="raster">'
+    . lijn('Lessen afgemaakt', perStuk($dagen, $periode, 'af', 'begonnen'), 'Van de nieuw begonnen lessen, hoeveel er af kwamen.')
+    . lijn('Komt terug', perStuk($dagen, $periode, 'terug', 'bezoek'), 'Bezoeken van een apparaat waarop al op 2 of meer dagen geoefend is.')
+    . lijn('Speelt 5 minuten of langer', perStuk($dagen, $periode, 'lang', 'stukken'), 'Van de speelstukken, hoeveel 5 minuten of langer duurden.')
+    . '</div></section>';
 
 $fases = ['kijken', 'meedoen', 'zelf', 'toets'];
 $h .= '<section><h2>Lessen: waar haken kinderen af?</h2><p class="zacht">Gestopt = weggegaan vóór het eind, '
