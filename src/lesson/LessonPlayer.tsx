@@ -109,13 +109,27 @@ export function LessonPlayer({
 
   const { zegTip, afbreken: tipAfbreken } = gebruikTip(setZin)
 
-  // Tellen waar kinderen afhaken: bij weggaan vóór de beloning de fase meegeven.
-  const faseNu = useRef(fase)
-  faseNu.current = fase
+  // Tellen waar kinderen afhaken. "Les begonnen" pas na het hervatten (zie hieronder),
+  // zodat te zien is of het een nieuwe les is of een halve. "Les gestopt" bij weggaan
+  // vóór de beloning: via terug, maar ook als de tab dichtgaat of de tablet op slot
+  // gaat, want zo stopt een kind meestal. Komt het terug, dan mag hij later opnieuw.
+  const faseNu = useRef<Fase>(fase)
+  faseNu.current = kijkTerug ?? fase
+  const gestoptGemeld = useRef(false)
   useEffect(() => {
-    tel('Les begonnen', { les: les.id })
+    const meldGestopt = () => {
+      if (faseNu.current === 'beloning' || gestoptGemeld.current) return
+      gestoptGemeld.current = true
+      tel('Les gestopt', { les: les.id, fase: faseNu.current })
+    }
+    const wissel = () => {
+      if (document.visibilityState === 'hidden') meldGestopt()
+      else gestoptGemeld.current = false
+    }
+    document.addEventListener('visibilitychange', wissel)
     return () => {
-      if (faseNu.current !== 'beloning') tel('Les gestopt', { les: les.id, fase: faseNu.current })
+      document.removeEventListener('visibilitychange', wissel)
+      meldGestopt()
     }
   }, [les.id])
 
@@ -211,8 +225,10 @@ export function LessonPlayer({
   useEffect(() => {
     if (!geladen || hervatGedaan.current) return
     hervatGedaan.current = true
-    if (hervat && VOLGORDE.includes(hervat as Fase)) startFase(hervat as Fase)
-  }, [geladen, hervat, startFase])
+    const halfAf = Boolean(hervat && VOLGORDE.includes(hervat as Fase))
+    tel('Les begonnen', { les: les.id, hervat: halfAf ? 'ja' : 'nee' })
+    if (halfAf) startFase(hervat as Fase)
+  }, [geladen, hervat, startFase, les.id])
 
   const volgendeFase = useCallback(() => {
     const i = VOLGORDE.indexOf(fase)

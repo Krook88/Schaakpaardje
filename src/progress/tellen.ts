@@ -46,10 +46,22 @@ function opDeSite(): boolean {
  */
 export type Eigenschappen = Record<string, string | number>
 
-/** Het pad zonder hekje en zonder vraagteken: in het hekje van een afstandslink staat de partij. */
-function pad(): string {
-  return `https://${DOMEIN}${window.location.pathname}`
+/** De schermen van de app. Een ander pad is door iemand ingetypt en gaat niet mee. */
+const BEKEND = /^\/(|(les|lessen|kaart|spel|spelen|stal|ouders|over|diploma|opfrissen)(\/[a-z0-9-]+)?\/)$/
+
+/**
+ * Het pad zonder hekje en zonder vraagteken: in het hekje van een afstandslink staat de
+ * partij. En alleen een bekend scherm; een zelf ingetypt adres wordt `/onbekend/`.
+ */
+export function pad(pathname: string): string {
+  return `https://${DOMEIN}${BEKEND.test(pathname) ? pathname : '/onbekend/'}`
 }
+
+/**
+ * Tellingen die geen handeling van de bezoeker zijn (speelduur, een bezoek, weggaan),
+ * telt Plausible anders als interactie, en dan zegt het bouncepercentage niets meer.
+ */
+const ACHTERGROND = new Set(['Bezoek', 'Speelduur', 'Les gestopt'])
 
 function stuur(naam: string, props?: Eigenschappen, referrer?: string) {
   if (!opDeSite() || !tellenAan()) return
@@ -61,7 +73,14 @@ function stuur(naam: string, props?: Eigenschappen, referrer?: string) {
       // text/plain zoals Plausibles eigen script: dan vraagt de browser niet eerst om
       // toestemming (CORS), en de inhoud is toch JSON.
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ name: naam, url: pad(), domain: DOMEIN, referrer, props }),
+      body: JSON.stringify({
+        name: naam,
+        url: pad(window.location.pathname),
+        domain: DOMEIN,
+        referrer,
+        props,
+        interactive: ACHTERGROND.has(naam) ? false : undefined,
+      }),
     }).catch(() => {})
   } catch {
     // Tellen mag nooit iets kapotmaken.

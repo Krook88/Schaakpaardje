@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { duurKlasse, tel, telScherm, zetTellen } from '@/progress/tellen'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { join } from 'node:path'
+import { dagenKlasse, duurKlasse, pad, tel, telScherm, zetTellen } from '@/progress/tellen'
 
 /**
  * Wat er naar buiten gaat, ligt hier vast. De belofte aan ouders is: niets óver een
@@ -69,5 +71,54 @@ describe('anoniem tellen', () => {
     expect(duurKlasse(30_000)).toBe('minder dan 1 min')
     expect(duurKlasse(4 * 60_000)).toBe('1 tot 5 min')
     expect(duurKlasse(40 * 60_000)).toBe('30 min of meer')
+  })
+
+  it('een zelf ingetypt adres gaat niet mee, alleen de schermen van de app', () => {
+    expect(pad('/les/toren-1/')).toBe('https://schaakmaatje.nl/les/toren-1/')
+    expect(pad('/')).toBe('https://schaakmaatje.nl/')
+    expect(pad('/mijn-naam-is-daan/')).toBe('https://schaakmaatje.nl/onbekend/')
+    expect(pad('/les/Daan Jansen/')).toBe('https://schaakmaatje.nl/onbekend/')
+  })
+
+  it('geoefende dagen in klassen', () => {
+    expect(dagenKlasse(1)).toBe('1 dag')
+    expect(dagenKlasse(4)).toBe('3 tot 5 dagen')
+    expect(dagenKlasse(30)).toBe('meer dan 10 dagen')
+  })
+})
+
+/**
+ * Elke telling in de code, met de eigenschappen die meegaan, tegen een vaste lijst. Wie
+ * er later iets bij zet, komt hier langs en moet zich afvragen of het iets over een kind
+ * zegt. Een naam of iets wat een kind intypt hoort hier nooit bij.
+ */
+describe('wat er geteld wordt, ligt vast', () => {
+  const TOEGESTAAN: Record<string, string[]> = {
+    'Les begonnen': ['les', 'hervat'],
+    'Les af': ['les', 'sterren'],
+    'Les gestopt': ['les', 'fase'],
+    Partij: ['tegen', 'uitslag'],
+    'Minispel rondje': ['spel', 'rondje'],
+    Bezoek: ['geoefend'],
+    Speelduur: ['duur'],
+  }
+  const bestanden = (map: string): string[] =>
+    readdirSync(map).flatMap((n) => {
+      const p = join(map, n)
+      return statSync(p).isDirectory() ? bestanden(p) : /\.tsx?$/.test(n) ? [p] : []
+    })
+
+  it('alleen bekende tellingen met bekende eigenschappen', () => {
+    const gevonden: string[] = []
+    for (const f of bestanden('src')) {
+      for (const m of readFileSync(f, 'utf8').matchAll(/\btel\('([^']+)'(?:,\s*\{([^}]*)\})?/g)) {
+        const naam = m[1]
+        gevonden.push(naam)
+        expect(TOEGESTAAN, `onbekende telling "${naam}" in ${f}`).toHaveProperty([naam])
+        const sleutels = (m[2] ?? '').split(',').map((d) => d.split(':')[0].trim()).filter(Boolean)
+        for (const k of sleutels) expect(TOEGESTAAN[naam], `"${k}" bij "${naam}" in ${f}`).toContain(k)
+      }
+    }
+    expect(gevonden.length).toBeGreaterThanOrEqual(Object.keys(TOEGESTAAN).length)
   })
 })

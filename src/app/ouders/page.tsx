@@ -338,8 +338,9 @@ function TellenSchakel() {
         <br />
         <small className="muted" id="uitleg-tellen">
           Zodat de maker ziet hoeveel er gespeeld wordt en bij welke les kinderen stoppen.
-          Alleen tellingen, zoals &ldquo;les 3 is begonnen&rdquo;. Geen naam, geen leeftijd,
-          geen cookie.
+          Alleen losse tellingen: welk scherm, welke les begonnen, af (met sterren) of
+          gestopt, de uitslag van een partij, en speelduur en geoefende dagen in grove
+          klassen. Geen naam, geen leeftijd, geen cookie.
         </small>
       </span>
       <input
