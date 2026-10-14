@@ -31,3 +31,4 @@ scripts/_*
 # neer en fotografeert hem op zes formaten in twee thema's; dat is tientallen megabytes
 # bewijs voor één oordeel, en het oordeel staat in docs/reviews/.
 .review-tmp/
+public/teller/wachtwoord.php

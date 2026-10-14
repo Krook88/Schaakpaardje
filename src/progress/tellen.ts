@@ -6,15 +6,15 @@
  * internet. Geen naam, geen leeftijd, geen profiel, geen voortgang per kind, geen
  * cookie en geen eigen ID. Alleen losse tellingen zoals "les toren-1 is begonnen".
  *
- * Ze gaan naar Plausible (Europees, slaat geen IP-adres op, zet geen cookies). Er wordt
- * geen script van buiten geladen: deze module stuurt zelf een klein bericht naar de
- * openbare Events API, dus we weten precies wat erin staat. Alleen op schaakmaatje.nl
+ * Ze gaan naar de eigen teller op schaakmaatje.nl zelf (`public/teller/`, een klein
+ * PHP-script op de eigen hosting): geen dienst van buiten, geen kosten. Die bewaart geen
+ * IP-adres en weigert alles wat niet op zijn vaste lijst staat. Alleen op schaakmaatje.nl
  * zelf, dus niet in ontwikkeling, de doorloop of de tests. Een ouder kan het uitzetten
  * op het ouderscherm; dat geldt voor het hele apparaat.
  */
 
 const DOMEIN = 'schaakmaatje.nl'
-const ADRES = 'https://plausible.io/api/event'
+const ADRES = '/teller/'
 const UIT_SLEUTEL = 'schaakmaatje-tellen'
 
 /** Mag er geteld worden? Alleen op de echte site, en niet als een ouder het uitzette. */
@@ -37,7 +37,9 @@ export function zetTellen(aan: boolean) {
 }
 
 function opDeSite(): boolean {
-  return typeof window !== 'undefined' && window.location.hostname === DOMEIN
+  if (typeof window === 'undefined') return false
+  const h = window.location.hostname
+  return h === DOMEIN || h === `www.${DOMEIN}`
 }
 
 /**
@@ -51,17 +53,12 @@ const BEKEND = /^\/(|(les|lessen|kaart|spel|spelen|stal|ouders|over|diploma|opfr
 
 /**
  * Het pad zonder hekje en zonder vraagteken: in het hekje van een afstandslink staat de
- * partij. En alleen een bekend scherm; een zelf ingetypt adres wordt `/onbekend/`.
+ * partij. En alleen een bekend scherm; een zelf ingetypt adres wordt `/onbekend/`. De
+ * teller controleert dit zelf nog eens.
  */
 export function pad(pathname: string): string {
-  return `https://${DOMEIN}${BEKEND.test(pathname) ? pathname : '/onbekend/'}`
+  return BEKEND.test(pathname) ? pathname : '/onbekend/'
 }
-
-/**
- * Tellingen die geen handeling van de bezoeker zijn (speelduur, een bezoek, weggaan),
- * telt Plausible anders als interactie, en dan zegt het bouncepercentage niets meer.
- */
-const ACHTERGROND = new Set(['Bezoek', 'Speelduur', 'Les gestopt'])
 
 function stuur(naam: string, props?: Eigenschappen, referrer?: string) {
   if (!opDeSite() || !tellenAan()) return
@@ -70,17 +67,8 @@ function stuur(naam: string, props?: Eigenschappen, referrer?: string) {
       method: 'POST',
       // keepalive: het laatste bericht (speelduur) gaat vaak net als de tab sluit.
       keepalive: true,
-      // text/plain zoals Plausibles eigen script: dan vraagt de browser niet eerst om
-      // toestemming (CORS), en de inhoud is toch JSON.
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        name: naam,
-        url: pad(window.location.pathname),
-        domain: DOMEIN,
-        referrer,
-        props,
-        interactive: ACHTERGROND.has(naam) ? false : undefined,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: naam, url: pad(window.location.pathname), referrer, props }),
     }).catch(() => {})
   } catch {
     // Tellen mag nooit iets kapotmaken.

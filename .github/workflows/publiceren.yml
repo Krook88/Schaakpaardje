@@ -111,6 +111,19 @@ jobs:
             -e "set sftp:connect-program 'ssh -a -x -i ~/.ssh/id_ed25519'; set net:max-retries 2; mirror --reverse --verbose --exclude-glob .gitkeep public/audio/ $SFTP_MAP/audio/; bye" \
             "sftp://$SFTP_HOST"
 
+      - name: Wachtwoord voor het dashboard van de teller
+        env:
+          TELLER_WACHTWOORD: ${{ secrets.TELLER_WACHTWOORD }}
+        run: |
+          # Alleen de hash gaat naar de server, in een bestand dat van buiten dicht zit.
+          # Geen geheim ingesteld: dan blijft het wachtwoord op de server zoals het was.
+          if [ -z "$TELLER_WACHTWOORD" ]; then
+            echo "Geen TELLER_WACHTWOORD ingesteld; het dashboard houdt zijn huidige wachtwoord (of heeft er nog geen)."
+            exit 0
+          fi
+          php -r 'echo "<?php return " . var_export(password_hash(getenv("TELLER_WACHTWOORD"), PASSWORD_DEFAULT), true) . ";\n";' > out/teller/wachtwoord.php
+          echo "Wachtwoord voor het dashboard klaargezet."
+
       - name: Uploaden (of proef)
         env:
           PROEF: ${{ inputs.proef }}
@@ -129,4 +142,16 @@ jobs:
             echo "Proef geslaagd. Start opnieuw met proef uit om echt te publiceren."
           else
             echo "Gepubliceerd naar schaakmaatje.nl."
+          fi
+
+      - name: Draait de teller?
+        if: ${{ !inputs.proef }}
+        run: |
+          # Een lege telling hoort 400 te geven: dan draait PHP. 200 met de broncode of
+          # 404 betekent dat de hosting geen PHP uitvoert, en dan telt er niets.
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST -d '{}' https://schaakmaatje.nl/teller/ || true)
+          if [ "$CODE" = "400" ]; then
+            echo "De teller draait."
+          else
+            echo "::warning::De teller antwoordde $CODE in plaats van 400. Draait PHP op de hosting?"
           fi

@@ -30,15 +30,14 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('anoniem tellen', () => {
-  it('op schaakmaatje.nl gaat er een telling naar Plausible, met alleen pad en eigenschappen', () => {
+  it('op schaakmaatje.nl gaat er een telling naar de eigen teller, met alleen pad en eigenschappen', () => {
     zetSite('schaakmaatje.nl')
     tel('Les af', { les: 'toren-1', sterren: 3 })
     expect(verstuurd).toHaveLength(1)
-    expect(verstuurd[0].url).toBe('https://plausible.io/api/event')
+    expect(verstuurd[0].url).toBe('/teller/')
     expect(verstuurd[0].body).toEqual({
       name: 'Les af',
-      url: 'https://schaakmaatje.nl/les/toren-1/',
-      domain: 'schaakmaatje.nl',
+      url: '/les/toren-1/',
       props: { les: 'toren-1', sterren: 3 },
     })
   })
@@ -47,7 +46,7 @@ describe('anoniem tellen', () => {
     zetSite('schaakmaatje.nl', '/spelen/afstand/', '#djF8...')
     telScherm()
     expect(JSON.stringify(verstuurd)).not.toContain('#')
-    expect(verstuurd[0].body.url).toBe('https://schaakmaatje.nl/spelen/afstand/')
+    expect(verstuurd[0].body.url).toBe('/spelen/afstand/')
   })
 
   it('buiten de echte site (ontwikkeling, doorloop) gaat er niets weg', () => {
@@ -74,10 +73,10 @@ describe('anoniem tellen', () => {
   })
 
   it('een zelf ingetypt adres gaat niet mee, alleen de schermen van de app', () => {
-    expect(pad('/les/toren-1/')).toBe('https://schaakmaatje.nl/les/toren-1/')
-    expect(pad('/')).toBe('https://schaakmaatje.nl/')
-    expect(pad('/mijn-naam-is-daan/')).toBe('https://schaakmaatje.nl/onbekend/')
-    expect(pad('/les/Daan Jansen/')).toBe('https://schaakmaatje.nl/onbekend/')
+    expect(pad('/les/toren-1/')).toBe('/les/toren-1/')
+    expect(pad('/')).toBe('/')
+    expect(pad('/mijn-naam-is-daan/')).toBe('/onbekend/')
+    expect(pad('/les/Daan Jansen/')).toBe('/onbekend/')
   })
 
   it('geoefende dagen in klassen', () => {
@@ -120,5 +119,15 @@ describe('wat er geteld wordt, ligt vast', () => {
       }
     }
     expect(gevonden.length).toBeGreaterThanOrEqual(Object.keys(TOEGESTAAN).length)
+  })
+
+  it('de teller op de server kent precies dezelfde lijst', () => {
+    const php = readFileSync('public/teller/opslag.php', 'utf8')
+    const blok = php.slice(php.indexOf('const TELLINGEN'), php.indexOf('];', php.indexOf('const TELLINGEN')))
+    const server: Record<string, string[]> = {}
+    for (const m of blok.matchAll(/'([^']+)' => \[([^\]]*)\]/g)) {
+      server[m[1]] = [...m[2].matchAll(/'([^']+)'/g)].map((x) => x[1])
+    }
+    expect(server).toEqual({ pageview: [], ...TOEGESTAAN })
   })
 })
