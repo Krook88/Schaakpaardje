@@ -84,12 +84,14 @@ function OuderPaneel() {
         {uitleg && (
           <>
             <br />
-            <small className="muted">{uitleg}</small>
+            <small className="muted" id={`uitleg-${sleutel}`}>{uitleg}</small>
           </>
         )}
       </span>
       <input
         type="checkbox"
+        aria-label={label}
+        aria-describedby={uitleg ? `uitleg-${sleutel}` : undefined}
         checked={Boolean(instellingen[sleutel])}
         onChange={(e) => zetInstelling(sleutel, e.target.checked as never)}
         style={{ width: 44, height: 44, flexShrink: 0 }}
@@ -262,7 +264,6 @@ function OuderPaneel() {
           <p className="muted">
             Alles staat op dit apparaat: een voornaam, een leeftijd en de voortgang. Daarvan
             gaat niets naar internet. Er zijn geen advertenties, geen chat en geen account.
-            Wil je alles wissen, dan kan dat hier.
           </p>
           <TellenSchakel />
           {/* Achter het rekenslot, dus geen kind komt hier per ongeluk. Een regel tekst
@@ -273,6 +274,9 @@ function OuderPaneel() {
               Een kop koffie trakteren
             </a>{' '}
             mag, maar hoeft niet. Het levert je niets extra's op.
+          </p>
+          <p className="muted" style={{ margin: 0 }}>
+            Wil je alles van dit kind wissen? Dat kan hier.
           </p>
           <button
             type="button"
@@ -332,7 +336,7 @@ function TellenSchakel() {
       <span style={{ flex: 1 }}>
         Anoniem meetellen
         <br />
-        <small className="muted">
+        <small className="muted" id="uitleg-tellen">
           Zodat de maker ziet hoeveel er gespeeld wordt en bij welke les kinderen stoppen.
           Alleen tellingen, zoals &ldquo;les 3 is begonnen&rdquo;. Geen naam, geen leeftijd,
           geen cookie.
@@ -340,6 +344,8 @@ function TellenSchakel() {
       </span>
       <input
         type="checkbox"
+        aria-label="Anoniem meetellen"
+        aria-describedby="uitleg-tellen"
         checked={aan}
         onChange={(e) => {
           zetTellen(e.target.checked)
