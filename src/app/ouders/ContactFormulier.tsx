@@ -9,7 +9,7 @@ const SOORTEN = [
   { id: 'anders', label: 'Iets anders' },
 ] as const
 
-type Stand = 'invullen' | 'bezig' | 'verstuurd' | 'fout' | 'druk'
+type Stand = 'invullen' | 'bezig' | 'verstuurd' | 'fout' | 'druk' | 'adres' | 'kort'
 
 /**
  * Een bericht van een ouder aan de maker. Alleen op het ouderscherm, achter het
@@ -22,7 +22,7 @@ export function ContactFormulier() {
   const [soort, setSoort] = useState<(typeof SOORTEN)[number]['id']>('idee')
   const [bericht, setBericht] = useState('')
   const [email, setEmail] = useState('')
-  const [website, setWebsite] = useState('')
+  const [extra, setExtra] = useState('')
   const [stand, setStand] = useState<Stand>('invullen')
 
   if (stand === 'verstuurd') {
@@ -30,7 +30,7 @@ export function ContactFormulier() {
       <div className="stack">
         <p style={{ margin: 0 }}>
           Dank je wel! Je bericht is verstuurd.
-          {email ? ' Als het een vraag is, komt het antwoord naar het adres dat je opgaf.' : ''}
+          {email ? ' Als we antwoorden, doen we dat op het adres dat je opgaf.' : ''}
         </p>
         <button
           type="button"
@@ -48,14 +48,22 @@ export function ContactFormulier() {
 
   const verstuur = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (bericht.trim().length < 5) {
+      setStand('kort')
+      return
+    }
     setStand('bezig')
     try {
       const r = await fetch('/teller/bericht.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ soort, bericht, email: email.trim(), website }),
+        body: JSON.stringify({ soort, bericht, email: email.trim(), extra_veld: extra }),
       })
-      setStand(r.ok ? 'verstuurd' : r.status === 429 ? 'druk' : 'fout')
+      // Alleen 204 is gelukt. Draait PHP niet, dan geeft de server 200 met de broncode,
+      // en dan zag een ouder "verstuurd" terwijl het bericht nergens heen ging.
+      setStand(
+        r.status === 204 ? 'verstuurd' : r.status === 429 ? 'druk' : r.status === 400 && email.trim() ? 'adres' : 'fout',
+      )
     } catch {
       setStand('fout')
     }
@@ -84,14 +92,13 @@ export function ContactFormulier() {
       <label className="stack" style={{ gap: 4 }}>
         <span>Je bericht</span>
         <textarea
+          className="veld"
           value={bericht}
           onChange={(e) => setBericht(e.target.value)}
-          required
-          minLength={5}
           maxLength={2000}
           rows={5}
           placeholder="Bij welke les, en wat gebeurde er?"
-          style={{ font: 'inherit', padding: 10, borderRadius: 10, border: '2px solid var(--line)', background: 'var(--surface-2)', color: 'var(--ink)', width: '100%' }}
+          style={{ font: 'inherit', padding: 10, borderRadius: 10, border: '2px solid var(--muted)', background: 'var(--surface)', color: 'var(--ink)', width: '100%' }}
         />
       </label>
       <label className="stack" style={{ gap: 4 }}>
@@ -104,35 +111,48 @@ export function ContactFormulier() {
           onChange={(e) => setEmail(e.target.value)}
           maxLength={120}
           autoComplete="email"
-          style={{ font: 'inherit', padding: 10, borderRadius: 10, border: '2px solid var(--line)', background: 'var(--surface-2)', color: 'var(--ink)', minHeight: 44 }}
+          style={{ font: 'inherit', padding: 10, borderRadius: 10, border: '2px solid var(--muted)', background: 'var(--surface)', color: 'var(--ink)', minHeight: 44 }}
         />
       </label>
-      {/* Voor robots: een mens ziet dit veld niet en laat het leeg. */}
+      {/* Voor robots: een mens ziet dit veld niet en laat het leeg. Een naam die een
+          browser niet herkent, zodat hij het niet zelf invult. */}
       <input
         type="text"
-        name="website"
-        value={website}
-        onChange={(e) => setWebsite(e.target.value)}
+        name="extra_veld"
+        value={extra}
+        onChange={(e) => setExtra(e.target.value)}
         tabIndex={-1}
         autoComplete="off"
         aria-hidden="true"
         style={{ position: 'absolute', left: '-9999px', width: 1, height: 1 }}
       />
       <small className="muted">
-        Je bericht gaat naar info@schaakmaatje.nl. Een e-mailadres bewaren we alleen om te
-        antwoorden, en na een jaar wordt het gewist.
+        Je bericht gaat naar info@schaakmaatje.nl. Noem liever geen naam van je kind. Een
+        e-mailadres gebruiken we alleen om te antwoorden; op de site wordt je bericht na een
+        jaar gewist.
       </small>
+      {stand === 'kort' && (
+        <p role="alert" style={{ margin: 0, color: 'var(--berry)', fontWeight: 600 }}>
+          Schrijf iets meer, dan weten we waar het over gaat.
+        </p>
+      )}
+      {stand === 'adres' && (
+        <p role="alert" style={{ margin: 0, color: 'var(--berry)', fontWeight: 600 }}>
+          Klopt je e-mailadres? Of laat het leeg als je geen antwoord nodig hebt.
+        </p>
+      )}
       {stand === 'fout' && (
-        <p role="alert" style={{ margin: 0 }}>
+        <p role="alert" style={{ margin: 0, color: 'var(--berry)', fontWeight: 600 }}>
           Versturen lukte niet. Probeer het later nog eens, of mail naar info@schaakmaatje.nl.
         </p>
       )}
       {stand === 'druk' && (
-        <p role="alert" style={{ margin: 0 }}>
-          Er komen nu veel berichten binnen. Probeer het over een uur nog eens.
+        <p role="alert" style={{ margin: 0, color: 'var(--berry)', fontWeight: 600 }}>
+          Er komen nu veel berichten binnen. Probeer het over een uur nog eens, of mail naar
+          info@schaakmaatje.nl.
         </p>
       )}
-      <button type="submit" className="btn btn--primary" disabled={stand === 'bezig' || bericht.trim().length < 5}>
+      <button type="submit" className="btn btn--primary" disabled={stand === 'bezig'}>
         {stand === 'bezig' ? 'Bezig met versturen…' : 'Versturen'}
       </button>
     </form>

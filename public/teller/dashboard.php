@@ -376,10 +376,13 @@ $h .= '<section><h2>Wordt het beter? (' . $per . ')</h2><p class="zacht">Percent
 
 $berichten = laatsteBerichten(30);
 $h .= '<section><h2>Berichten van ouders</h2><p class="zacht">Via het formulier op het ouderscherm. Ze gaan ook '
-    . 'naar info@schaakmaatje.nl; hier staan ze voor als een mail niet aankwam. Na een jaar worden ze gewist.</p>';
+    . 'naar info@schaakmaatje.nl; hier staan ze voor als een mail niet aankwam. Na een jaar worden ze gewist. '
+    . 'Staat er vaak "niet gemaild", dan verstuurt de hosting geen mail.</p>';
 if ($berichten) {
     foreach ($berichten as $b) {
         $h .= '<div class="bericht"><p class="zacht" style="margin:0">' . e($b['t'] ?? '') . ' UTC · ' . e($b['s'] ?? '')
+            . (!empty($b['r']) ? ' · <strong>waarschijnlijk een robot</strong>' : '')
+            . (empty($b['r']) && isset($b['m']) && !$b['m'] ? ' · <strong>niet gemaild</strong>' : '')
             . (isset($b['e']) ? ' · <a href="mailto:' . e(rawurlencode((string) $b['e'])) . '">' . e($b['e']) . '</a>' : ' · geen adres')
             . '</p><p style="margin:4px 0 0;white-space:pre-wrap">' . e($b['b'] ?? '') . '</p></div>';
     }

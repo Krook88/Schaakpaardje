@@ -158,11 +158,25 @@ function telPoging(): void
     }
 }
 
+/**
+ * Berichten van ouders (met e-mailadressen) niet langer dan een jaar bewaren: alles van
+ * vóór de maand van elf maanden geleden gaat weg. Draait bij elk bericht en bij elk
+ * bezoek aan het dashboard, zodat het ook gebeurt als er geen berichten meer komen.
+ */
+function ruimBerichtenOp(string $map): void
+{
+    $grens = gmdate('Y-m', strtotime('-11 months', strtotime(gmdate('Y-m-15'))));
+    foreach (glob($map . '/berichten-????-??.ndjson') ?: [] as $oud) {
+        if (substr(basename($oud), 10, 7) < $grens) @unlink($oud);
+    }
+}
+
 /** De laatste berichten van ouders, nieuwste eerst (uit de afgelopen drie maanden). */
 function laatsteBerichten(int $hoeveel): array
 {
     $map = dataMap();
     if ($map === null) return [];
+    ruimBerichtenOp($map);
     $uit = [];
     for ($i = 0; $i < 3 && count($uit) < $hoeveel; $i++) {
         $bestand = $map . '/berichten-' . gmdate('Y-m', strtotime("-$i months", strtotime(gmdate('Y-m-15')))) . '.ndjson';

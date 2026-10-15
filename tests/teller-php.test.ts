@@ -169,16 +169,39 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
       expect(berichten()).toHaveLength(2)
     })
 
-    it('een robot die het verborgen veld invult, krijgt "gelukt" maar er wordt niets bewaard', async () => {
-      expect((await bericht({ soort: 'idee', bericht: 'Koop nu goedkope horloges!', website: 'http://spam' })).status).toBe(204)
-      expect(berichten()).toHaveLength(2)
+    it('een robot die het verborgen veld invult, krijgt "gelukt"; het bericht wordt gemarkeerd en niet gemaild', async () => {
+      expect((await bericht({ soort: 'idee', bericht: 'Koop nu goedkope horloges!', extra_veld: 'http://spam' })).status).toBe(204)
+      const b = berichten()
+      expect(b).toHaveLength(3)
+      expect(b[2]).toMatchObject({ r: true, m: false })
     })
 
-    it('hoogstens 20 berichten per uur voor iedereen samen', async () => {
+    it('hoogstens 3 berichten per uur van dezelfde afzender, zonder het IP-adres te bewaren', async () => {
+      // Er zijn er al 3 van deze afzender (127.0.0.1): het vierde wordt geweigerd.
+      expect((await bericht({ soort: 'idee', bericht: 'Nog een heel gewoon bericht.' })).status).toBe(429)
+      const alles = readdirSync(dataMap()).map((f) => f + readFileSync(join(dataMap(), f), 'utf8')).join('\n')
+      expect(alles).not.toContain('127.0.0.1')
+    })
+
+    it('hoogstens 60 berichten per uur voor iedereen samen', async () => {
+      for (const f of readdirSync(dataMap()).filter((f) => f.startsWith('afzender-'))) rmSync(join(dataMap(), f))
       const uur = join(dataMap(), `berichten-uur-${new Date().toISOString().slice(0, 13).replace('T', '-')}.txt`)
-      writeFileSync(uur, 'x'.repeat(20))
+      writeFileSync(uur, 'x'.repeat(60))
       expect((await bericht({ soort: 'idee', bericht: 'Nog een heel gewoon bericht.' })).status).toBe(429)
       rmSync(uur)
+    })
+
+    it('berichten van meer dan een jaar oud worden gewist, ook zonder nieuw bericht', async () => {
+      const oud = join(dataMap(), 'berichten-2020-01.ndjson')
+      writeFileSync(oud, JSON.stringify({ t: '2020-01-01 10:00', s: 'idee', b: 'Oud bericht', e: 'oud@voorbeeld.nl' }) + '\n')
+      const inloggen = await fetch(`${BASIS}/teller/dashboard.php`, {
+        method: 'POST',
+        body: new URLSearchParams({ wachtwoord: 'proef-wachtwoord' }),
+        redirect: 'manual',
+      })
+      const koekje = (inloggen.headers.get('set-cookie') ?? '').split(';')[0]
+      await fetch(`${BASIS}/teller/dashboard.php`, { headers: { cookie: koekje } })
+      expect(readdirSync(dataMap())).not.toContain('berichten-2020-01.ndjson')
     })
 
     it('het dashboard toont de berichten, met tekst als tekst en niet als HTML', async () => {
@@ -193,6 +216,7 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
       expect(html).toContain('&lt;b&gt;bleef&lt;/b&gt;')
       expect(html).not.toContain('<b>bleef</b>')
       expect(html).toContain('ouder@voorbeeld.nl')
+      expect(html).toContain('waarschijnlijk een robot')
     })
   })
 })

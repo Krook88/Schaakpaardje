@@ -512,6 +512,29 @@ async function promotieMetKeuze() {
   )
 }
 
+/**
+ * 13. Het contactformulier zegt eerlijk dat versturen mislukte. Hier draait geen PHP, en
+ * dan gaf de server 200 met de broncode terug: het formulier zei "Dank je wel" terwijl
+ * het bericht nergens heen ging.
+ */
+async function contactformulierIsEerlijk() {
+  const naam = 'contactformulier: zonder werkende server geen "verstuurd"'
+  await page.goto(`${URL}/ouders/`, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(400)
+  const som = await page.getByText(/Hoeveel is \d+ × \d+/).innerText().catch(() => '')
+  const m = som.match(/(\d+) × (\d+)/)
+  if (!m) return meld(naam, false, 'geen rekenslot op het ouderscherm')
+  await page.getByRole('textbox').fill(String(Number(m[1]) * Number(m[2])))
+  await page.getByRole('button', { name: 'Verder' }).click()
+  await page.waitForTimeout(400)
+  await page.getByLabel('Je bericht').fill('Een bericht uit de doorloop.')
+  await page.getByRole('button', { name: 'Versturen' }).click()
+  await page.waitForTimeout(800)
+  const bedankt = await page.getByText('Dank je wel! Je bericht is verstuurd.').count()
+  const fout = await page.getByRole('alert').filter({ hasText: 'Versturen lukte niet' }).count()
+  meld(naam, !bedankt && fout > 0, bedankt ? 'het formulier zei "verstuurd"' : fout ? 'foutmelding verscheen' : 'geen melding')
+}
+
 console.log(`Doorloop tegen ${URL}\n`)
 await pipZwijgtBijBinnenkomst()
 await nieuwProfiel()
@@ -524,6 +547,7 @@ await opdrachtKomtTerugNaTipje()
 await samenSpelenKentDeWinnaar()
 await opAfstandSpelen()
 await promotieMetKeuze()
+await contactformulierIsEerlijk()
 await altijdEenUitweg()
 
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
