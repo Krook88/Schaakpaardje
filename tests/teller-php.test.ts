@@ -34,7 +34,9 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     map = mkdtempSync(join(tmpdir(), 'teller-'))
     cpSync('public/teller', join(www(), 'teller'), { recursive: true })
     // Krap geheugen, zoals op goedkope hosting: het dashboard moet volle dagbestanden aankunnen.
-    server = spawn('php', ['-d', 'memory_limit=32M', '-S', `127.0.0.1:${POORT}`, '-t', www()], { stdio: 'ignore' })
+    // Een nep-sendmail: elke mail komt in mail.txt, zodat de test kan zien wat er verstuurd wordt.
+    writeFileSync(join(map, 'sendmail.sh'), `#!/bin/sh\ncat >> '${join(map, 'mail.txt')}'\n`, { mode: 0o755 })
+    server = spawn('php', ['-d', `sendmail_path=${join(map, 'sendmail.sh')}`, '-d', 'memory_limit=32M', '-S', `127.0.0.1:${POORT}`, '-t', www()], { stdio: 'ignore' })
     for (let i = 0; i < 50; i++) {
       try {
         await fetch(`${BASIS}/teller/index.php`)
@@ -156,6 +158,20 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
       expect(b[0]).not.toHaveProperty('e')
       expect(b[1].e).toBe('ouder@voorbeeld.nl')
       expect(JSON.stringify(b)).not.toContain('127.0.0.1')
+    })
+
+    it('de mail heeft een HTML-versie in de stijl van de site en een tekstversie, met de tekst veilig', () => {
+      const mail = readFileSync(join(map, 'mail.txt'), 'utf8')
+      expect(mail).toContain('multipart/alternative')
+      expect(mail).toContain('Reply-To: ouder@voorbeeld.nl')
+      const delen = [...mail.matchAll(/Content-Transfer-Encoding: base64\r?\n\r?\n([A-Za-z0-9+/=\r\n]+)/g)].map((m) =>
+        Buffer.from(m[1].replace(/\s/g, ''), 'base64').toString('utf8'),
+      )
+      const html = delen.find((d) => d.includes('<html'))!
+      expect(html).toContain('https://schaakmaatje.nl/mail/logo.png')
+      expect(html).toContain('&lt;b&gt;bleef&lt;/b&gt;')
+      expect(html).not.toContain('<b>bleef</b>')
+      expect(delen.some((d) => d.startsWith('Soort: Een fout gezien'))).toBe(true)
     })
 
     it('weigert een onzinnig bericht, een vreemd soort of een adres met extra mailkoppen', async () => {

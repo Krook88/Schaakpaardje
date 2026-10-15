@@ -7,6 +7,8 @@
  * daarom geen foto zien in de zoekresultaten: tekst is geen beeld van wat de site ís.
  * Nu staan Pip en een echt lesscherm erop.
  *
+ * Plus het logo voor mail (`public/mail/logo.png`).
+ *
  * Twee maten: 1200×630 voor de deelkaart (og:image) en 1200×1200 voor Google, dat in
  * de resultaten vaak een vierkant uitsnijdt. Het lesscherm komt uit `public/schermen`,
  * dezelfde afbeelding als op /over. De uitkomst staat in git; dit script hoeft alleen
@@ -90,4 +92,13 @@ for (const [naam, html, hoogte] of [
   await page.close()
   console.log(`public/${naam}`)
 }
+
+// Het logo voor mail (het contactbericht en Kajs handtekening). Mailprogramma's tonen
+// geen SVG, dus een PNG, op 3x zodat hij scherp is op een telefoon.
+const logo = await browser.newPage({ viewport: { width: 64, height: 64 }, deviceScaleFactor: 3 })
+const svg = readFileSync(new URL('icon.svg', PUBLIEK), 'utf8')
+await logo.setContent(`<style>*{margin:0}body{background:transparent}svg{width:64px;height:64px;display:block}</style>${svg}`)
+await logo.screenshot({ path: new URL('mail/logo.png', PUBLIEK).pathname, omitBackground: true })
+console.log('public/mail/logo.png')
+
 await browser.close()
