@@ -157,3 +157,22 @@ function telPoging(): void
         if (filemtime($oud) < time() - 7200) @unlink($oud);
     }
 }
+
+/** De laatste berichten van ouders, nieuwste eerst (uit de afgelopen drie maanden). */
+function laatsteBerichten(int $hoeveel): array
+{
+    $map = dataMap();
+    if ($map === null) return [];
+    $uit = [];
+    for ($i = 0; $i < 3 && count($uit) < $hoeveel; $i++) {
+        $bestand = $map . '/berichten-' . gmdate('Y-m', strtotime("-$i months", strtotime(gmdate('Y-m-15')))) . '.ndjson';
+        if (!is_file($bestand)) continue;
+        $regels = file($bestand, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+        foreach (array_reverse($regels) as $r) {
+            $d = json_decode($r, true);
+            if (is_array($d)) $uit[] = $d;
+            if (count($uit) >= $hoeveel) break;
+        }
+    }
+    return $uit;
+}

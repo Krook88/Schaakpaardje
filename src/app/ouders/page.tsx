@@ -6,6 +6,7 @@ import { Kop } from '@/ui/Kop'
 import { Rekenslot } from '@/ui/Rekenslot'
 import { Sterren } from '@/ui/Sterren'
 import { KOFFIE } from '@/seo'
+import { ContactFormulier } from './ContactFormulier'
 import { tellenAan, zetTellen } from '@/progress/tellen'
 import { WERELDEN } from '@/content'
 import {
@@ -294,6 +295,14 @@ function OuderPaneel() {
         {/* De uitleg voor ouders: hoe de app werkt, hoe lang per dag, tips voor thuis.
             Alleen hier en op de landingspagina, niet op het kindscherm: op /over/ staat
             de koffielink, en die hoort achter het rekenslot te blijven. */}
+        <section className="card stack">
+          <h2>Contact</h2>
+          <p className="muted" style={{ margin: 0 }}>
+            Een fout gezien, een idee, of loopt je kind ergens vast? Laat het weten.
+          </p>
+          <ContactFormulier />
+        </section>
+
         <section className="card stack">
           <h2>Meer weten?</h2>
           <p className="muted" style={{ margin: 0 }}>
