@@ -15,6 +15,13 @@ bijzaak maar een ontwerpuitgangspunt.
   kind en zonder IP-adres: alleen de telling, het pad en het uur. Een ouder zet het uit op
   het ouderscherm. Let op: de hosting (TransIP) houdt zelf, zoals elke webserver,
   toegangslogs met IP-adressen bij; die bewaart de teller niet, maar ze bestaan wel.
+- **Contactformulier** op /contact/ (voor ouders, gelinkt onderaan de startpagina):
+  `public/teller/bericht.php` mailt naar info@schaakmaatje.nl en bewaart het bericht
+  voor het dashboard. Een e-mailadres alleen als de ouder antwoord wil; op de site worden
+  berichten na een jaar gewist. De kopie in de mailbox van info@ bewaart Kaj zelf; gooi
+  die ook weg als het gesprek klaar is. Tegen misbruik wordt per uur een hash van het
+  IP-adres met een dagelijks nieuw zout bijgehouden; het IP-adres zelf niet, en de hash is
+  na twee uur weg.
 
 ## 8.2 Regelgeving om aan te voldoen
 - **AVG/GDPR** + het Nederlandse **Code voor Kinderrechten** en de Britse **Age

@@ -29,7 +29,7 @@ const TELLINGEN = [
 ];
 
 /** Dezelfde regel als `pad()` in src/progress/tellen.ts: alleen schermen van de app. */
-const BEKEND_PAD = '#^/(|(les|lessen|kaart|spel|spelen|stal|ouders|over|diploma|opfrissen)(/[a-z0-9-]+)?/|onbekend/)$#';
+const BEKEND_PAD = '#^/(|(les|lessen|kaart|spel|spelen|stal|ouders|over|diploma|opfrissen|contact)(/[a-z0-9-]+)?/|onbekend/)$#';
 
 /** Grootste dagbestand. Daarboven wordt niets meer bewaard: zo kan niemand de schijf vullen. */
 const MAX_DAG = 1024 * 1024; // ruim 10.000 echte tellingen
@@ -156,4 +156,37 @@ function telPoging(): void
     foreach (glob($map . '/pogingen-*.txt') ?: [] as $oud) {
         if (filemtime($oud) < time() - 7200) @unlink($oud);
     }
+}
+
+/**
+ * Berichten van ouders (met e-mailadressen) niet langer dan een jaar bewaren: alles van
+ * vóór de maand van elf maanden geleden gaat weg. Draait bij elk bericht en bij elk
+ * bezoek aan het dashboard, zodat het ook gebeurt als er geen berichten meer komen.
+ */
+function ruimBerichtenOp(string $map): void
+{
+    $grens = gmdate('Y-m', strtotime('-11 months', strtotime(gmdate('Y-m-15'))));
+    foreach (glob($map . '/berichten-????-??.ndjson') ?: [] as $oud) {
+        if (substr(basename($oud), 10, 7) < $grens) @unlink($oud);
+    }
+}
+
+/** De laatste berichten van ouders, nieuwste eerst (uit de afgelopen drie maanden). */
+function laatsteBerichten(int $hoeveel): array
+{
+    $map = dataMap();
+    if ($map === null) return [];
+    ruimBerichtenOp($map);
+    $uit = [];
+    for ($i = 0; $i < 3 && count($uit) < $hoeveel; $i++) {
+        $bestand = $map . '/berichten-' . gmdate('Y-m', strtotime("-$i months", strtotime(gmdate('Y-m-15')))) . '.ndjson';
+        if (!is_file($bestand)) continue;
+        $regels = file($bestand, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+        foreach (array_reverse($regels) as $r) {
+            $d = json_decode($r, true);
+            if (is_array($d)) $uit[] = $d;
+            if (count($uit) >= $hoeveel) break;
+        }
+    }
+    return $uit;
 }

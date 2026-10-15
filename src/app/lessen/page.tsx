@@ -44,7 +44,8 @@ export default function Lessen() {
       <article className="stack" style={{ maxWidth: 760, margin: '0 auto' }}>
         <header className="stack" style={{ gap: 8 }}>
           <p className="muted" style={{ margin: 0 }}>
-            <Link href="/">← Naar de app</Link> · <Link href="/over/">Over Schaakmaatje</Link>
+            <Link href="/">← Naar de app</Link> · <Link href="/over/">Over Schaakmaatje</Link> ·{' '}
+            <Link href="/contact/">Contact</Link>
           </p>
           <h1 style={{ fontSize: '1.9rem', margin: 0 }}>Alle schaaklessen</h1>
           <p style={{ fontSize: '1.05rem', margin: 0 }}>

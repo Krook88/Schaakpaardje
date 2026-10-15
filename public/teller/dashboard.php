@@ -72,6 +72,7 @@ function pagina(string $titel, string $inhoud): void
         . '.s-lijn{fill:none;stroke:var(--groen);stroke-width:2;stroke-linejoin:round}'
         . '.s-stip{fill:var(--groen);stroke:var(--kaart);stroke-width:2}.s-dag:hover .s-stip{fill:var(--accent)}'
         . 'details{margin-top:12px}summary{cursor:pointer}'
+        . '.bericht{border-top:1px solid var(--rand);padding:10px 0}.bericht a{color:var(--accent)}'
         . '</style></head><body><main>' . $inhoud . '</main></body></html>';
 }
 
@@ -372,6 +373,23 @@ $h .= '<section><h2>Wordt het beter? (' . $per . ')</h2><p class="zacht">Percent
     . lijn('Komt terug', perStuk($dagen, $periode, 'terug', 'bezoek'), 'Bezoeken van een apparaat waarop al op 2 of meer dagen geoefend is.')
     . lijn('Speelt 5 minuten of langer', perStuk($dagen, $periode, 'lang', 'stukken'), 'Van de speelstukken, hoeveel 5 minuten of langer duurden.')
     . '</div></section>';
+
+$berichten = laatsteBerichten(30);
+$h .= '<section><h2>Berichten van ouders</h2><p class="zacht">Via het formulier op /contact/. Ze gaan ook '
+    . 'naar info@schaakmaatje.nl; hier staan ze voor als een mail niet aankwam. Na een jaar worden ze gewist. '
+    . 'Staat er vaak "niet gemaild", dan verstuurt de hosting geen mail.</p>';
+if ($berichten) {
+    foreach ($berichten as $b) {
+        $h .= '<div class="bericht"><p class="zacht" style="margin:0">' . e($b['t'] ?? '') . ' UTC · ' . e($b['s'] ?? '')
+            . (!empty($b['r']) ? ' · <strong>waarschijnlijk een robot</strong>' : '')
+            . (empty($b['r']) && isset($b['m']) && !$b['m'] ? ' · <strong>niet gemaild</strong>' : '')
+            . (isset($b['e']) ? ' · <a href="mailto:' . e(rawurlencode((string) $b['e'])) . '">' . e($b['e']) . '</a>' : ' · geen adres')
+            . '</p><p style="margin:4px 0 0;white-space:pre-wrap">' . e($b['b'] ?? '') . '</p></div>';
+    }
+} else {
+    $h .= '<p class="zacht">Nog geen berichten.</p>';
+}
+$h .= '</section>';
 
 $fases = ['kijken', 'meedoen', 'zelf', 'toets'];
 $h .= '<section><h2>Lessen: waar haken kinderen af?</h2><p class="zacht">Gestopt = weggegaan vóór het eind, '

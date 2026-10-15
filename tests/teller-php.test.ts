@@ -138,4 +138,85 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     // En een vol dagbestand neemt niets meer aan.
     expect((await stuur({ name: 'Bezoek', url: '/', props: { geoefend: '1 dag' } })).status).toBe(507)
   }, 30000)
+
+  describe('het contactformulier', () => {
+    const bericht = (body: unknown) =>
+      fetch(`${BASIS}/teller/bericht.php`, { method: 'POST', body: JSON.stringify(body) })
+    const berichten = () =>
+      readdirSync(dataMap())
+        .filter((f) => /^berichten-\d{4}-\d{2}\.ndjson$/.test(f))
+        .flatMap((f) => readFileSync(join(dataMap(), f), 'utf8').trim().split('\n').map((r) => JSON.parse(r)))
+
+    it('een bericht wordt bewaard, met het adres alleen als dat is opgegeven', async () => {
+      // mail() lukt niet op de testmachine; het bewaren wel, en dat is genoeg voor 204.
+      expect((await bericht({ soort: 'fout', bericht: 'Bij toren-1 <b>bleef</b> Pip stil.', email: '' })).status).toBe(204)
+      expect((await bericht({ soort: 'vraag', bericht: 'Komt er een les over rokade?', email: 'ouder@voorbeeld.nl' })).status).toBe(204)
+      const b = berichten()
+      expect(b).toHaveLength(2)
+      expect(b[0]).not.toHaveProperty('e')
+      expect(b[1].e).toBe('ouder@voorbeeld.nl')
+      expect(JSON.stringify(b)).not.toContain('127.0.0.1')
+    })
+
+    it('weigert een onzinnig bericht, een vreemd soort of een adres met extra mailkoppen', async () => {
+      expect((await bericht({ soort: 'fout', bericht: 'kort' })).status).toBe(400)
+      expect((await bericht({ soort: 'spam', bericht: 'Een heel gewoon bericht.' })).status).toBe(400)
+      expect((await bericht({ soort: 'idee', bericht: 'x'.repeat(2001) })).status).toBe(400)
+      expect(
+        (await bericht({ soort: 'idee', bericht: 'Een heel gewoon bericht.', email: 'a@b.nl\r\nBcc: iedereen@x.nl' })).status,
+      ).toBe(400)
+      expect((await fetch(`${BASIS}/teller/bericht.php`)).status).toBe(405)
+      expect(berichten()).toHaveLength(2)
+    })
+
+    it('een robot die het verborgen veld invult, krijgt "gelukt"; het bericht wordt gemarkeerd en niet gemaild', async () => {
+      expect((await bericht({ soort: 'idee', bericht: 'Koop nu goedkope horloges!', extra_veld: 'http://spam' })).status).toBe(204)
+      const b = berichten()
+      expect(b).toHaveLength(3)
+      expect(b[2]).toMatchObject({ r: true, m: false })
+    })
+
+    it('hoogstens 3 berichten per uur van dezelfde afzender, zonder het IP-adres te bewaren', async () => {
+      // Er zijn er al 3 van deze afzender (127.0.0.1): het vierde wordt geweigerd.
+      expect((await bericht({ soort: 'idee', bericht: 'Nog een heel gewoon bericht.' })).status).toBe(429)
+      const alles = readdirSync(dataMap()).map((f) => f + readFileSync(join(dataMap(), f), 'utf8')).join('\n')
+      expect(alles).not.toContain('127.0.0.1')
+    })
+
+    it('hoogstens 60 berichten per uur voor iedereen samen', async () => {
+      for (const f of readdirSync(dataMap()).filter((f) => f.startsWith('afzender-'))) rmSync(join(dataMap(), f))
+      const uur = join(dataMap(), `berichten-uur-${new Date().toISOString().slice(0, 13).replace('T', '-')}.txt`)
+      writeFileSync(uur, 'x'.repeat(60))
+      expect((await bericht({ soort: 'idee', bericht: 'Nog een heel gewoon bericht.' })).status).toBe(429)
+      rmSync(uur)
+    })
+
+    it('berichten van meer dan een jaar oud worden gewist, ook zonder nieuw bericht', async () => {
+      const oud = join(dataMap(), 'berichten-2020-01.ndjson')
+      writeFileSync(oud, JSON.stringify({ t: '2020-01-01 10:00', s: 'idee', b: 'Oud bericht', e: 'oud@voorbeeld.nl' }) + '\n')
+      const inloggen = await fetch(`${BASIS}/teller/dashboard.php`, {
+        method: 'POST',
+        body: new URLSearchParams({ wachtwoord: 'proef-wachtwoord' }),
+        redirect: 'manual',
+      })
+      const koekje = (inloggen.headers.get('set-cookie') ?? '').split(';')[0]
+      await fetch(`${BASIS}/teller/dashboard.php`, { headers: { cookie: koekje } })
+      expect(readdirSync(dataMap())).not.toContain('berichten-2020-01.ndjson')
+    })
+
+    it('het dashboard toont de berichten, met tekst als tekst en niet als HTML', async () => {
+      const inloggen = await fetch(`${BASIS}/teller/dashboard.php`, {
+        method: 'POST',
+        body: new URLSearchParams({ wachtwoord: 'proef-wachtwoord' }),
+        redirect: 'manual',
+      })
+      const koekje = (inloggen.headers.get('set-cookie') ?? '').split(';')[0]
+      const html = await (await fetch(`${BASIS}/teller/dashboard.php`, { headers: { cookie: koekje } })).text()
+      expect(html).toContain('Berichten van ouders')
+      expect(html).toContain('&lt;b&gt;bleef&lt;/b&gt;')
+      expect(html).not.toContain('<b>bleef</b>')
+      expect(html).toContain('ouder@voorbeeld.nl')
+      expect(html).toContain('waarschijnlijk een robot')
+    })
+  })
 })

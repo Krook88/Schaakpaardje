@@ -300,6 +300,9 @@ function OuderPaneel() {
             Hoe een les werkt, hoe lang per dag genoeg is, tips om thuis aan een echt bord
             mee te doen, en hoe de app zich verhoudt tot de Stappenmethode.
           </p>
+          <Link href="/contact/" className="btn">
+            Contact
+          </Link>
           <Link href="/over/" className="btn">
             Over Schaakmaatje
           </Link>

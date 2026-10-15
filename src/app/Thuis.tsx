@@ -299,12 +299,9 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
             grijs onderaan: een kind van vier wordt hier niet naartoe getrokken, een
             ouder vindt het wel. Op /over/ staat de koffielink, maar als regel tekst,
             niet als knop die oplicht. */}
-        <footer
-          className="muted"
-          style={{ textAlign: 'center', fontSize: '0.92rem', paddingBlock: 18, lineHeight: 2.4 }}
-        >
-          Voor ouders: <Link href="/over/">hoe Schaakmaatje werkt</Link> ·{' '}
-          <Link href="/lessen/">alle lessen</Link>
+        <footer style={{ textAlign: 'center', fontSize: '1rem', paddingBlock: 18, lineHeight: 2.4 }}>
+          <span className="muted">Voor ouders:</span> <Link href="/over/">hoe Schaakmaatje werkt</Link> ·{' '}
+          <Link href="/lessen/">alle lessen</Link> · <Link href="/contact/">contact</Link>
         </footer>
       </div>
     </main>
@@ -584,8 +581,9 @@ function NieuwProfiel({
         {/* Voor de ouder die eerst wil weten waar hij zijn kind op zet — en meteen de
             enige link vanaf de startpagina naar de twee pagina's die zonder de app te
             lezen zijn. Zonder zo'n link staan ze los in de sitemap en verder nergens. */}
-        <p className="muted" style={{ fontSize: '0.85rem', margin: 0 }}>
-          <Link href="/over/">Over Schaakmaatje</Link> · <Link href="/lessen/">Alle lessen</Link>
+        <p style={{ fontSize: '1rem', margin: 0, lineHeight: 2 }}>
+          <Link href="/over/">Over Schaakmaatje</Link> · <Link href="/lessen/">Alle lessen</Link> ·{' '}
+          <Link href="/contact/">Contact</Link>
         </p>
       </section>
     </div>

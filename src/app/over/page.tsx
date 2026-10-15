@@ -70,6 +70,10 @@ const VRAGEN: [string, string][] = [
     'Nee. Schaken leer je echt aan een bord met iemand tegenover je, en op een club leert je kind ook winnen en verliezen van een ander kind. De app is een aanloop: wie binnenkomt, kent de stukken en de regels al. Speel daarom ook thuis; op deze pagina staan tips.',
   ],
   [
+    'Een fout gezien of een vraag?',
+    'Laat het weten via de pagina Contact, onderaan de startpagina (schaakmaatje.nl/contact). Je bericht komt bij de maker terecht; een e-mailadres is alleen nodig als je antwoord wilt.',
+  ],
+  [
     'Is het gratis?',
     'Op dit moment wel, en er valt niets te kopen in de app. Wat zeker zo blijft: er komt geen reclame in, je hebt geen account nodig en er gaat niets van je kind naar internet. Wel tellen we anoniem hoeveel er gespeeld wordt; dat kan uit in het ouderscherm.',
   ],
