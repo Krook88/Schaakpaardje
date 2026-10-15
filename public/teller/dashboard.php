@@ -60,7 +60,8 @@ function pagina(string $titel, string $inhoud): void
         . '.cijfers{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}'
         . '.cijfer b{display:block;font-size:1.7rem}.cijfer span,.zacht{color:var(--zacht);font-size:.9rem}'
         . 'table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--rand);white-space:nowrap}'
-        . 'th{color:var(--zacht);font-weight:600}td.n{text-align:right;font-variant-numeric:tabular-nums}'
+        . 'th{color:var(--zacht);font-weight:600}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}th.midden{text-align:center}'
+        . 'table.lessen th,table.lessen td{padding:5px 6px}table.lessen td:first-child{white-space:normal;min-width:9em}'
         . '.balk{height:10px;background:var(--groen);border-radius:5px;min-width:2px}.rood{background:var(--accent)}'
         . 'form.rij{display:flex;gap:8px;flex-wrap:wrap;align-items:center}button,input{font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--rand);background:var(--kaart);color:var(--tekst)}'
         . 'button[aria-pressed=true]{border-color:var(--accent);font-weight:700}'
@@ -395,8 +396,12 @@ $fases = ['kijken', 'meedoen', 'zelf', 'toets'];
 $h .= '<section><h2>Lessen: waar haken kinderen af?</h2><p class="zacht">Gestopt = weggegaan vóór het eind, '
     . 'ook door de tab te sluiten of de tablet op slot te doen. Wie later terugkomt en de les afmaakt, telt ook bij af.</p>';
 if ($lessen) {
-    $h .= '<table><tr><th>Les</th><th>Begonnen</th><th>Hervat</th><th>Af</th><th>Af %</th><th>Sterren gem.</th>';
-    foreach ($fases as $f) $h .= '<th>Gestopt in ' . e($f) . '</th>';
+    // Twee koprijen: "Gestopt in" boven vier smalle fasekolommen. Met "Gestopt in kijken"
+    // als losse koppen was de tabel breder dan het scherm.
+    $h .= '<table class="lessen"><tr><th rowspan="2">Les</th><th rowspan="2" class="n">Begon</th><th rowspan="2" class="n">Hervat</th>'
+        . '<th rowspan="2" class="n">Af</th><th rowspan="2" class="n">Af %</th><th rowspan="2" class="n" title="Gemiddeld aantal sterren">★</th>'
+        . '<th colspan="4" class="midden">Gestopt in</th></tr><tr>';
+    foreach ($fases as $f) $h .= '<th class="n">' . e($f) . '</th>';
     $h .= '</tr>';
     foreach ($lessen as $id => $l) {
         $begonnen = $l['nieuw'];

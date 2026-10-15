@@ -85,18 +85,28 @@ file_put_contents($iedereen, 'x', FILE_APPEND | LOCK_EX);
 
 $gemaild = false;
 if (!$robot) {
-    $onderwerp = '=?UTF-8?B?' . base64_encode('Schaakmaatje: ' . $soort . ' van een ouder') . '?=';
-    // base64: een lange alinea zonder Enter zou anders over de 998 bytes per regel gaan.
-    $koppen = "From: Schaakmaatje <" . AAN . ">\r\n"
-        . "MIME-Version: 1.0\r\n"
-        . "Content-Type: text/plain; charset=UTF-8\r\n"
-        . "Content-Transfer-Encoding: base64\r\n";
-    if ($email !== '') $koppen .= "Reply-To: " . $email . "\r\n";
-    $inhoud = "Soort: " . $soort . "\n"
+    $labels = ['fout' => 'Een fout gezien', 'idee' => 'Een idee', 'vraag' => 'Een vraag', 'anders' => 'Iets anders'];
+    $onderwerp = '=?UTF-8?B?' . base64_encode('Schaakmaatje: ' . strtolower($labels[$soort]) . ' van een ouder') . '?=';
+    $tekstversie = "Soort: " . $labels[$soort] . "\n"
         . "Antwoord naar: " . ($email !== '' ? $email : '(geen adres opgegeven)') . "\n\n"
         . $tekst . "\n\n-- \nVia het contactformulier op schaakmaatje.nl/contact\n";
+    $htmlversie = mailHtml($labels[$soort], $tekst, $email);
+    // Twee versies in één mail: HTML in de stijl van de site, en platte tekst voor wie
+    // geen HTML toont. base64: een lange alinea zou anders over de 998 bytes per regel gaan.
+    $grens = 'sm-' . bin2hex(random_bytes(8));
+    $koppen = "From: Schaakmaatje <" . AAN . ">\r\n"
+        . "MIME-Version: 1.0\r\n"
+        . "Content-Type: multipart/alternative; boundary=\"" . $grens . "\"\r\n";
+    if ($email !== '') $koppen .= "Reply-To: " . $email . "\r\n";
+    $inhoud = "--" . $grens . "\r\n"
+        . "Content-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
+        . chunk_split(base64_encode($tekstversie)) . "\r\n"
+        . "--" . $grens . "\r\n"
+        . "Content-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
+        . chunk_split(base64_encode($htmlversie)) . "\r\n"
+        . "--" . $grens . "--\r\n";
     // -f: de envelope-afzender ook op het eigen domein, anders keurt SPF de mail af.
-    $gemaild = @mail(AAN, $onderwerp, chunk_split(base64_encode($inhoud)), $koppen, '-f' . AAN);
+    $gemaild = @mail(AAN, $onderwerp, $inhoud, $koppen, '-f' . AAN);
 }
 
 $bericht = ['t' => gmdate('Y-m-d H:i'), 's' => $soort, 'b' => $tekst, 'm' => $gemaild];
@@ -109,3 +119,35 @@ $bewaard = file_put_contents(
 ) !== false;
 
 http_response_code($robot || $bewaard || $gemaild ? 204 : 503);
+
+/**
+ * De mail als HTML, in de kleuren van de site. Tabellen en inline stijl, want daar kunnen
+ * alle mailprogramma's mee overweg; het logo als PNG van de site (geen SVG, dat toont
+ * Gmail niet). Alles van de ouder gaat door htmlspecialchars.
+ */
+function mailHtml(string $soort, string $tekst, string $email): string
+{
+    $h = function ($s) { return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); };
+    $antwoord = $email !== ''
+        ? 'Antwoorden kan direct: je antwoord gaat naar <a href="mailto:' . $h($email) . '" style="color:#b45c16">' . $h($email) . '</a>.'
+        : 'De ouder heeft geen e-mailadres opgegeven.';
+    return '<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>'
+        . '<body style="margin:0;padding:0;background:#f5f0e6">'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e6;padding:24px 12px">'
+        . '<tr><td align="center">'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fffdf8;border:2px solid #ded3bf;border-radius:16px;font-family:Arial,Helvetica,sans-serif;color:#22201b">'
+        . '<tr><td style="padding:20px 24px 8px">'
+        . '<table role="presentation" cellpadding="0" cellspacing="0"><tr>'
+        . '<td style="padding-right:12px"><img src="https://schaakmaatje.nl/mail/logo.png" width="44" height="44" alt="Schaakmaatje" style="display:block;border-radius:10px"></td>'
+        . '<td style="font-size:20px;font-weight:bold">Schaakmaatje</td></tr></table>'
+        . '</td></tr>'
+        . '<tr><td style="padding:8px 24px 0">'
+        . '<span style="display:inline-block;background:#fbead7;color:#8a4410;border:1px solid #e9c9a6;border-radius:999px;padding:4px 12px;font-size:14px;font-weight:bold">' . $h($soort) . '</span>'
+        . '</td></tr>'
+        . '<tr><td style="padding:16px 24px;font-size:16px;line-height:1.5">' . nl2br($h($tekst)) . '</td></tr>'
+        . '<tr><td style="padding:0 24px 20px;font-size:14px;color:#6b6357;line-height:1.5">' . $antwoord . '</td></tr>'
+        . '<tr><td style="background:#8fa98a;height:8px;border-radius:0 0 14px 14px;font-size:0;line-height:0">&nbsp;</td></tr>'
+        . '</table>'
+        . '<p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#6b6357;margin:12px 0 0">Via het contactformulier op <a href="https://schaakmaatje.nl/contact/" style="color:#6b6357">schaakmaatje.nl/contact</a></p>'
+        . '</td></tr></table></body></html>';
+}
