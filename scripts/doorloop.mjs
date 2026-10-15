@@ -519,14 +519,12 @@ async function promotieMetKeuze() {
  */
 async function contactformulierIsEerlijk() {
   const naam = 'contactformulier: zonder werkende server geen "verstuurd"'
-  await page.goto(`${URL}/ouders/`, { waitUntil: 'networkidle' })
-  await page.waitForTimeout(400)
-  const som = await page.getByText(/Hoeveel is \d+ × \d+/).innerText().catch(() => '')
-  const m = som.match(/(\d+) × (\d+)/)
-  if (!m) return meld(naam, false, 'geen rekenslot op het ouderscherm')
-  await page.getByRole('textbox').fill(String(Number(m[1]) * Number(m[2])))
-  await page.getByRole('button', { name: 'Verder' }).click()
-  await page.waitForTimeout(400)
+  // Eerst de weg ernaartoe: de link onderaan de startpagina.
+  await page.goto(URL, { waitUntil: 'networkidle' })
+  const link = page.getByRole('link', { name: /^contact$/i }).first()
+  if (!(await link.count())) return meld(naam, false, 'geen link naar contact op de startpagina')
+  await link.click()
+  await page.waitForURL(/\/contact\/$/)
   await page.getByLabel('Je bericht').fill('Een bericht uit de doorloop.')
   await page.getByRole('button', { name: 'Versturen' }).click()
   await page.waitForTimeout(800)

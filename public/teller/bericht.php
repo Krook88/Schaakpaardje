@@ -1,6 +1,6 @@
 <?php
 /**
- * Het contactformulier van het ouderscherm: een bericht van een ouder naar Kaj.
+ * Het contactformulier (/contact/): een bericht van een ouder naar Kaj.
  *
  * Het bericht gaat per mail naar info@schaakmaatje.nl en wordt ook bewaard, zodat het op
  * het dashboard staat als de mail niet aankomt. Een e-mailadres is niet verplicht en
@@ -94,7 +94,7 @@ if (!$robot) {
     if ($email !== '') $koppen .= "Reply-To: " . $email . "\r\n";
     $inhoud = "Soort: " . $soort . "\n"
         . "Antwoord naar: " . ($email !== '' ? $email : '(geen adres opgegeven)') . "\n\n"
-        . $tekst . "\n\n-- \nVia het contactformulier op het ouderscherm van schaakmaatje.nl\n";
+        . $tekst . "\n\n-- \nVia het contactformulier op schaakmaatje.nl/contact\n";
     // -f: de envelope-afzender ook op het eigen domein, anders keurt SPF de mail af.
     $gemaild = @mail(AAN, $onderwerp, chunk_split(base64_encode($inhoud)), $koppen, '-f' . AAN);
 }

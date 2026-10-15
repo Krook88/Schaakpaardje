@@ -12,8 +12,8 @@ const SOORTEN = [
 type Stand = 'invullen' | 'bezig' | 'verstuurd' | 'fout' | 'druk' | 'adres' | 'kort'
 
 /**
- * Een bericht van een ouder aan de maker. Alleen op het ouderscherm, achter het
- * rekenslot: een kind typt hier niets, en wat een kind intypt gaat nooit naar internet.
+ * Een bericht van een ouder aan de maker, op /contact/. Voor ouders: de teksten vragen
+ * geen naam van het kind te noemen.
  *
  * Het gaat naar `public/teller/bericht.php`, die het naar info@schaakmaatje.nl mailt en
  * op het dashboard zet. Een e-mailadres is niet nodig, alleen als je antwoord wilt.

@@ -71,7 +71,7 @@ const VRAGEN: [string, string][] = [
   ],
   [
     'Een fout gezien of een vraag?',
-    'Laat het weten via het contactformulier op het ouderscherm (het tandwiel in de app, achter een rekensom). Je bericht komt bij de maker terecht; een e-mailadres is alleen nodig als je antwoord wilt.',
+    'Laat het weten via de pagina Contact, onderaan de startpagina (schaakmaatje.nl/contact). Je bericht komt bij de maker terecht; een e-mailadres is alleen nodig als je antwoord wilt.',
   ],
   [
     'Is het gratis?',

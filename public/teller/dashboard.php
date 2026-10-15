@@ -375,7 +375,7 @@ $h .= '<section><h2>Wordt het beter? (' . $per . ')</h2><p class="zacht">Percent
     . '</div></section>';
 
 $berichten = laatsteBerichten(30);
-$h .= '<section><h2>Berichten van ouders</h2><p class="zacht">Via het formulier op het ouderscherm. Ze gaan ook '
+$h .= '<section><h2>Berichten van ouders</h2><p class="zacht">Via het formulier op /contact/. Ze gaan ook '
     . 'naar info@schaakmaatje.nl; hier staan ze voor als een mail niet aankwam. Na een jaar worden ze gewist. '
     . 'Staat er vaak "niet gemaild", dan verstuurt de hosting geen mail.</p>';
 if ($berichten) {

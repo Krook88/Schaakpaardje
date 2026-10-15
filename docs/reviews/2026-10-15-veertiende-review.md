@@ -36,3 +36,14 @@ belangrijke punten opgelost; doorloop 13/13.*
 | L6 | Bedanktekst noemde "als het een vraag is" bij elke soort. | **Opgelost**. |
 | L7 | Foutmelding viel weinig op. | **Opgelost**: in `--berry`, vet. |
 | L8 | Enter in het rekenslot doet niets. | Open: buiten deze wijziging; volgende ronde. |
+
+## Na de review: eigen pagina /contact/
+
+Op verzoek van Kaj staat het formulier niet meer op het ouderscherm maar op een eigen
+pagina **/contact/**, gelinkt onderaan beide startschermen naast "hoe Schaakmaatje werkt"
+en "alle lessen" (groter en niet meer grijs), en vanaf /lessen/, /over/ (FAQ) en het
+ouderscherm. Niet meer achter het rekenslot: bewust, het moet makkelijk te vinden zijn;
+de tekst vraagt geen naam van het kind te noemen. CLAUDE.md en docs/08 zijn bijgewerkt.
+Doorloopregel 13 loopt nu via de link op de startpagina naar /contact/. `npm run check`
+en `npm run doorloop` (13/13) groen. Geen nieuwe review: dezelfde component, alleen
+verplaatst; de layout is op 390 licht en donker bekeken.

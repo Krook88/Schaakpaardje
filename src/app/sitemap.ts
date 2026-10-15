@@ -36,6 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     pad('/', 1),
     pad('/over/', 0.9),
     pad('/lessen/', 0.9),
+    pad('/contact/', 0.5),
     ...ALLE_LESSEN.map((les) => pad(`/les/${les.id}/`, 0.6)),
   ]
 }
