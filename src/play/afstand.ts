@@ -47,17 +47,9 @@ export function leesIn(code: string): { partij: AfstandPartij; game: Game } | nu
     if (versie !== VERSIE || !wit) return null
     const zetten = zettenTekst ? zettenTekst.split(' ').filter(Boolean) : []
     if (zetten.length > 600) return null
-    const game = new Game()
-    // De zetten opnieuw opschrijven zoals wij ze zelf zouden schrijven: anders kon één
-    // partij meerdere links hebben ("e2e4" en "e2e4q"), en dan telde hij dubbel.
-    const netjes: string[] = []
-    for (const z of zetten) {
-      if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(z)) return null
-      const gedaan = game.move(z.slice(0, 2) as never, z.slice(2, 4) as never, (z[4] ?? 'q') as never)
-      if (!gedaan) return null
-      if (z.length === 5 && !gedaan.promotion) return null
-      netjes.push(zetCode(gedaan.from, gedaan.to, gedaan.promotion))
-    }
+    const gespeeld = speelNa(zetten)
+    if (!gespeeld) return null
+    const { game, netjes } = gespeeld
     // Alleen de plaatjes uit de app. Een aangepaste link kon anders elk teken bij een
     // kind op het scherm zetten, ook een grof plaatje of tekst die achterstevoren loopt.
     const isPlaatje = (s: string) => (AVATARS as readonly string[]).includes(s)
@@ -66,6 +58,26 @@ export function leesIn(code: string): { partij: AfstandPartij; game: Game } | nu
   } catch {
     return null
   }
+}
+
+/**
+ * Zetten opnieuw spelen met de echte regels. `null` bij een zet die niet kan.
+ *
+ * De zetten komen netjes terug zoals wij ze zelf zouden schrijven: anders kon één partij
+ * meerdere vormen hebben ("e2e4" en "e2e4q"), en dan telde hij dubbel.
+ */
+export function speelNa(zetten: string[]): { game: Game; netjes: string[] } | null {
+  if (zetten.length > 600) return null
+  const game = new Game()
+  const netjes: string[] = []
+  for (const z of zetten) {
+    if (typeof z !== 'string' || !/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(z)) return null
+    const gedaan = game.move(z.slice(0, 2) as never, z.slice(2, 4) as never, (z[4] ?? 'q') as never)
+    if (!gedaan) return null
+    if (z.length === 5 && !gedaan.promotion) return null
+    netjes.push(zetCode(gedaan.from, gedaan.to, gedaan.promotion))
+  }
+  return { game, netjes }
 }
 
 /** De zet in de vorm die in de link komt. */

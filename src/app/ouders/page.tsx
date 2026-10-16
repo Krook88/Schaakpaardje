@@ -264,6 +264,8 @@ function OuderPaneel() {
           <p className="muted">
             Alles staat op dit apparaat: een voornaam, een leeftijd en de voortgang. Daarvan
             gaat niets naar internet. Er zijn geen advertenties, geen chat en geen account.
+            Speelt je kind live met een vriendje, dan staan alleen de zetten en twee plaatjes
+            een dag op onze eigen server, zonder naam.
           </p>
           <TellenSchakel />
           {/* Achter het rekenslot, dus geen kind komt hier per ongeluk. Een regel tekst

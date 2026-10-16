@@ -1,0 +1,8 @@
+# Live spelen: alleen index.php mag van buitenaf. Partijen staan in data/ of naast de webmap.
+DirectoryIndex index.php
+Options -Indexes
+
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
+  Header set Cache-Control "no-store"
+</IfModule>

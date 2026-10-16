@@ -122,7 +122,12 @@
 
 .goedVeld::after { background: color-mix(in srgb, var(--grass) 66%, transparent); }
 .foutVeld::after { background: color-mix(in srgb, var(--berry) 62%, transparent); }
-.last::after { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--sel) 45%, transparent); }
+/* Een gevuld waasje met een rand: alleen een dunne rand was in het donkere thema bijna
+   onzichtbaar, en bij live spelen moet een kind meteen zien welke zet er binnenkwam. */
+.last::after {
+  background: color-mix(in srgb, var(--sel) 28%, transparent);
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--sel) 60%, transparent);
+}
 
 .merk {
   position: absolute; top: 5%; right: 5%; width: 38%; height: 38%;

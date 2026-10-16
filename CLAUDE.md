@@ -39,7 +39,7 @@ een kind hier verkeerd leert, moet het bij de club weer afleren.
 ```bash
 npm run dev              # ontwikkelserver
 npm run check            # typecheck + tests + content + build (draai dit vóór je pusht)
-npm run doorloop         # de app spelen als kind (vereist een draaiende `npx serve out`)
+npm run doorloop         # de app spelen als kind (vereist een draaiende `npx serve out`; live spelen start zelf PHP)
 npm run validate:content # alle stellingen en opgaven controleren
 npm run audio:render     # Pip inspreken (vereist ELEVENLABS_API_KEY)
 npm run live             # staat op schaakmaatje.nl wat je gebouwd hebt? (na npm run build)
@@ -135,6 +135,8 @@ Meng ze niet. Een opgave die met schaak te maken heeft, hoort een `regelZet` te 
   vaste lijsten (`tests/tellen.test.ts` en `public/teller/opslag.php`). Eén uitzondering,
   ook door Kaj gevraagd: het contactformulier op /contact/ (voor ouders, gelinkt onderaan
   de startpagina), waar een ouder een bericht en eventueel een e-mailadres stuurt naar
-  info@schaakmaatje.nl.
+  info@schaakmaatje.nl. En een tweede, ook van Kaj (oktober 2026): live spelen met een
+  vriendje (`public/live/`), waar de server een dag lang alleen de zetten, twee plaatjes
+  en een sleutel per kant bewaart. Daar komt nooit iets bij wat een kind intypt.
 - Iets toevoegen wat geld kost (een dienst, een abonnement) zonder het eerst aan Kaj
   voor te leggen.

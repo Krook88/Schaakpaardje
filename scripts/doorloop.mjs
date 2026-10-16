@@ -23,6 +23,10 @@
  * De regels hieronder zijn allemaal geleerd van een echte fout.
  */
 import { chromium } from 'playwright'
+import { spawn, spawnSync } from 'node:child_process'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 const URL = process.env.DOORLOOP_URL ?? 'http://localhost:4173'
 const CHROMIUM = process.env.CHROMIUM_PAD ?? '/opt/pw-browsers/chromium'
@@ -533,6 +537,199 @@ async function contactformulierIsEerlijk() {
   meld(naam, !bedankt && fout > 0, bedankt ? 'het formulier zei "verstuurd"' : fout ? 'foutmelding verscheen' : 'geen melding')
 }
 
+/* ------------------------------------------------------------------ *
+ * 14. Live met een vriendje: twee apparaten, één link, de zetten komen vanzelf over.
+ *
+ * Hier is PHP voor nodig (public/live/index.php). `npx serve` draait dat niet, dus
+ * start de doorloop zelf PHP's eigen webserver op de gebouwde app. Zonder PHP op de
+ * machine wordt dit stuk overgeslagen, en dat staat er dan ook.
+ * ------------------------------------------------------------------ */
+async function liveMetEenVriendje() {
+  const naam = 'live: link via het rekenslot, zetten komen over, verversen, meekijken, nog een keer'
+  if (spawnSync('php', ['-v']).status !== 0) return console.log(`  - ${naam} — overgeslagen, geen PHP`)
+  const data = mkdtempSync(join(tmpdir(), 'live-doorloop-'))
+  const poort = 4176
+  const BASIS = `http://127.0.0.1:${poort}`
+  // Meer werkers: elk scherm houdt een kijkverzoek open (long polling), en intussen moet
+  // er een zet door kunnen. Zonder dit handelt PHP's eigen server één verzoek tegelijk af.
+  const php = spawn('php', ['-S', `127.0.0.1:${poort}`, '-t', 'out'], {
+    stdio: 'ignore',
+    env: { ...process.env, LIVE_DATA: data, PHP_CLI_SERVER_WORKERS: '8' },
+  })
+  const apparaten = []
+  const nieuwApparaat = async () => {
+    const ctx = await browser.newContext({ viewport: { width: 420, height: 950 } })
+    apparaten.push(ctx)
+    // Tel wat Pip hardop zegt (apparaatstem of een opname van Pip, niet de bordgeluiden).
+    await ctx.addInitScript(() => {
+      window.__gezegd = []
+      const s = window.speechSynthesis
+      if (s) {
+        const echt = s.speak.bind(s)
+        s.speak = (u) => {
+          window.__gezegd.push(u.text)
+          echt(u)
+        }
+      }
+      const play = HTMLMediaElement.prototype.play
+      HTMLMediaElement.prototype.play = function () {
+        if (/\/audio\//.test(this.src)) window.__gezegd.push(this.src)
+        return play.call(this)
+      }
+    })
+    const p = await ctx.newPage()
+    p.on('pageerror', (e) => consolefouten.push(`LIVE PAGEERROR: ${e.message}`))
+    return p
+  }
+  // Niet wachten op 'networkidle': met long polling staat er altijd een kijkverzoek open.
+  /** Wachten tot iets klopt; de schermen kijken elke anderhalve seconde. */
+  const wacht = async (fn, ms = 6000) => {
+    for (const eind = Date.now() + ms; Date.now() < eind; ) {
+      if (await fn().catch(() => false)) return true
+      await new Promise((r) => setTimeout(r, 200))
+    }
+    return false
+  }
+  const stuk = async (p, veld) => (await p.locator(`[data-square="${veld}"]`).innerText()).trim() !== ''
+  const magZetten = async (p, veld) => !(await p.locator(`[data-square="${veld}"]`).isDisabled())
+  const zet = async (p, van, naar) => {
+    await p.locator(`[data-square="${van}"]`).click()
+    await p.locator(`[data-square="${naar}"]`).click()
+  }
+  try {
+    for (let i = 0; i < 50; i++) {
+      try {
+        await fetch(`${BASIS}/`)
+        break
+      } catch {
+        await new Promise((r) => setTimeout(r, 100))
+      }
+    }
+    const a = await nieuwApparaat()
+    await a.goto(`${BASIS}/spelen/live/`, { waitUntil: 'load' })
+    await a.getByRole('button', { name: /Speellink maken/ }).click()
+    const som = await a.getByText(/Hoeveel is \d+ × \d+/).innerText().catch(() => '')
+    const m = som.match(/(\d+) × (\d+)/)
+    if (!m) return meld(naam, false, 'de speellink ging niet langs het rekenslot')
+    await a.getByRole('textbox').fill(String(Number(m[1]) * Number(m[2])))
+    await a.getByRole('button', { name: 'Verder' }).click()
+    const veld = a.getByRole('textbox', { name: 'Speellink' })
+    await veld.waitFor({ timeout: 5000 }).catch(() => {})
+    const link = await veld.inputValue().catch(() => '')
+    if (!/\/spelen\/live\/#[a-z2-9]{10}$/.test(link)) return meld(naam, false, `geen bruikbare speellink ("${link}")`)
+    // Zonder vriendje nog geen zet: anders speelt het kind tegen niemand.
+    if (await magZetten(a, 'e2')) return meld(naam, false, 'wit kon al zetten voor het vriendje er was')
+    // Verversen terwijl je wacht: de link moet er nog staan, onder het bord (Kaj: eerst
+    // het bord zien). Eerst was hij na verversen weg.
+    await a.reload({ waitUntil: 'load' })
+    const linkNa = a.getByRole('textbox', { name: 'Speellink' })
+    if (!(await wacht(async () => (await linkNa.count()) > 0))) return meld(naam, false, 'na verversen was de speellink weg')
+    const bordBoven = (await a.locator('[data-square]').first().boundingBox()).y
+    if (bordBoven > (await linkNa.boundingBox()).y) return meld(naam, false, 'de speellink staat boven het bord')
+
+    const b = await nieuwApparaat()
+    await b.goto(link.replace(/^https?:\/\/[^/]+/, BASIS), { waitUntil: 'load' })
+    const gedraaid = await wacht(async () => (await b.locator('[data-square]').first().getAttribute('data-square')) === 'h1')
+    if (!gedraaid) return meld(naam, false, 'het vriendje kreeg het bord niet van de zwarte kant')
+    if (!(await wacht(() => magZetten(a, 'e2')))) return meld(naam, false, 'wit merkte niet dat het vriendje er was')
+    if (await a.getByRole('textbox', { name: 'Speellink' }).count()) return meld(naam, false, 'de speellink bleef staan toen het vriendje er was')
+
+    // Pip praat niet na elke zet: "Nu jij!" staat alleen in de ballon (Kaj, 16 oktober).
+    await a.waitForTimeout(800)
+    const gezegdA = () => a.evaluate(() => window.__gezegd.length)
+    const voorZetten = await gezegdA()
+    await zet(a, 'e2', 'e4')
+    if (!(await wacht(() => stuk(b, 'e4')))) return meld(naam, false, 'de zet van wit kwam niet over')
+    if (!(await wacht(() => magZetten(b, 'e7')))) return meld(naam, false, 'zwart mocht niet zetten na wit')
+    await zet(b, 'e7', 'e5')
+    if (!(await wacht(() => stuk(a, 'e5')))) return meld(naam, false, 'de zet van zwart kwam niet over')
+    await a.waitForTimeout(500)
+    // Belangrijke zinnen mogen hardop (na verversen houdt de browser die vast tot de
+    // eerste tik); de zinnen die bij elke zet terugkomen niet.
+    const hardop = (await a.evaluate(() => window.__gezegd)).slice(voorZetten)
+    const gewoon = hardop.filter((t) => /Nu jij|denkt je vriendje na/.test(t))
+    if (gewoon.length) return meld(naam, false, `Pip zei bij gewone zetten iets hardop: ${JSON.stringify(gewoon)}`)
+
+    // Verversen (iOS doet dat zelf bij het wisselen van app): zelfde kant, zelfde stand.
+    await a.reload({ waitUntil: 'load' })
+    if (!(await wacht(async () => (await stuk(a, 'e5')) && (await magZetten(a, 'f1')))))
+      return meld(naam, false, 'na verversen was wit zijn partij kwijt')
+
+    // Weglopen via "terug" en via de kaart terugkomen: de partij moet er nog zijn.
+    // Layoutreview van 16 oktober, punt 1 (blokkerend).
+    await a.goto(`${BASIS}/spelen/`, { waitUntil: 'load' })
+    await a.getByRole('link', { name: /Live met een vriendje/ }).click()
+    const verder = a.getByRole('button', { name: /▶️ Verder spelen/ })
+    if (!(await wacht(async () => (await verder.count()) > 0))) return meld(naam, false, 'na weglopen en terugkomen was de partij niet terug te vinden')
+    await verder.click()
+    if (!(await wacht(async () => (await stuk(a, 'e5')) && (await magZetten(a, 'f1')))))
+      return meld(naam, false, '"verder spelen" bracht wit niet terug in zijn partij')
+
+    // Even geen verbinding, en dan weer wel: Pip mag niet blijven zeggen dat hij niemand
+    // bereikt. Layoutreview van 16 oktober, punt 2.
+    const ballonB = async () => (await b.locator('[class*=ballon]').first().innerText().catch(() => '')).split('\n')[0]
+    await b.context().setOffline(true)
+    // Een kijkverzoek dat al openstond, merkt pas iets als het afloopt (hooguit twintig
+    // seconden wacht de server), dus ruim de tijd.
+    const kwijt = await wacht(async () => /bereiken/.test(await ballonB()), 35000)
+    await b.context().setOffline(false)
+    const terugVerbinding = await wacht(async () => !/bereiken/.test(await ballonB()), 15000)
+    if (!kwijt || !terugVerbinding) return meld(naam, false, `verbinding weg ${kwijt}, Pip daarna weer normaal ${terugVerbinding} ("${await ballonB()}")`)
+
+    // Een derde met de link kijkt mee en kan niets aanraken.
+    const c = await nieuwApparaat()
+    await c.goto(link.replace(/^https?:\/\/[^/]+/, BASIS), { waitUntil: 'load' })
+    if (!(await wacht(async () => /kijkt mee/.test(await c.locator('p.muted[aria-live=polite]').innerText()))))
+      return meld(naam, false, 'een derde met de link kreeg geen meekijkstand')
+    if (await magZetten(c, 'f1')) return meld(naam, false, 'een derde met de link kon zetten')
+
+    // Herdersmat, dan nog een keer: kleuren wisselen.
+    for (const [p, van, naar, ander, kijk] of [
+      [a, 'f1', 'c4', b, 'c4'],
+      [b, 'b8', 'c6', a, 'c6'],
+      [a, 'd1', 'h5', b, 'h5'],
+      [b, 'g8', 'f6', a, 'f6'],
+    ]) {
+      if (!(await wacht(() => magZetten(p, van)))) return meld(naam, false, `${van} kon niet zetten`)
+      await zet(p, van, naar)
+      if (!(await wacht(() => stuk(ander, kijk)))) return meld(naam, false, `${van}-${naar} kwam niet over`)
+    }
+    // Zwart is even weg (app weggeklikt) terwijl wit mat zet en meteen op "Nog een keer"
+    // tikt. Zwart moet daarna tóch zien hoe het afliep, en pas dan door. Schaakreview
+    // van 16 oktober, punt 1.
+    if (!(await wacht(() => magZetten(a, 'h5')))) return meld(naam, false, 'wit kon de matzet niet doen')
+    await b.context().setOffline(true)
+    await zet(a, 'h5', 'f7')
+    if (!(await wacht(async () => /wint/.test(await a.locator('p.muted[aria-live=polite]').innerText()))))
+      return meld(naam, false, 'wit zag zijn eigen mat niet')
+    await a.getByRole('button', { name: /🔁 Nog een keer/ }).click()
+    await a.waitForTimeout(500)
+    await b.context().setOffline(false)
+    const zagMat = await wacht(async () => /wint/.test(await b.locator('p.muted[aria-live=polite]').innerText()), 10000)
+    if (!zagMat) return meld(naam, false, 'zwart sprong naar de nieuwe partij zonder de mat te zien')
+    if (!(await b.getByRole('button', { name: /▶️ Naar de nieuwe partij/ }).count())) return meld(naam, false, 'geen knop naar de nieuwe partij')
+    await b.getByRole('button', { name: /▶️ Naar de nieuwe partij/ }).click()
+    const gewisseld = await wacht(async () => (await a.locator('[data-square]').first().getAttribute('data-square')) === 'h1')
+    const bWit = await wacht(() => magZetten(b, 'e2'))
+    if (!(gewisseld && bWit)) return meld(naam, false, `na "nog een keer": wit nu zwart ${gewisseld}, zwart mag beginnen ${bWit}`)
+
+    // Halverwege opnieuw: een kind dat nog niet kan matzetten moet eruit kunnen, en de
+    // ander hoort dat er niemand verloren heeft. Schaakreview van 16 oktober, punt 2.
+    await zet(b, 'e2', 'e4')
+    if (!(await wacht(() => stuk(a, 'e4')))) return meld(naam, false, 'in de tweede partij kwam de zet niet over')
+    await a.getByRole('button', { name: /↺ Nieuwe partij/ }).click()
+    await a.getByRole('button', { name: /Ja, opnieuw/ }).click()
+    const terug = await wacht(async () => (await b.locator('[data-square]').first().getAttribute('data-square')) === 'h1')
+    const zinB = await b.locator('[class*=ballon]').first().innerText().catch(() => '')
+    const goed = terug && /nieuwe partij/i.test(zinB) && (await wacht(() => magZetten(a, 'e2')))
+    meld(naam, goed, goed ? '' : `halverwege opnieuw: bord gedraaid ${terug}, Pip zei "${zinB.split('\n')[0]}"`)
+  } finally {
+    for (const ctx of apparaten) await ctx.close()
+    php.kill()
+    rmSync(data, { recursive: true, force: true })
+  }
+}
+
 console.log(`Doorloop tegen ${URL}\n`)
 await pipZwijgtBijBinnenkomst()
 await nieuwProfiel()
@@ -544,6 +741,7 @@ await onmogelijkeZetKrijgtRegelzin()
 await opdrachtKomtTerugNaTipje()
 await samenSpelenKentDeWinnaar()
 await opAfstandSpelen()
+await liveMetEenVriendje()
 await promotieMetKeuze()
 await contactformulierIsEerlijk()
 await altijdEenUitweg()
