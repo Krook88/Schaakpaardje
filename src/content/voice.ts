@@ -180,7 +180,7 @@ export const AFSTAND_VRIENDJE_WINT = 'Je vriendje heeft gewonnen. Knap gespeeld,
 
 /** Live spelen met een vriendje, elk op een eigen scherm: zie src/play/live.ts. */
 export const LIVE_BEGIN = 'Speel tegen een vriendje, ieder op je eigen scherm! Vraag papa of mama om een speellink te maken.'
-export const LIVE_WACHT_OP_VRIENDJE = 'Stuur de link naar je vriendje. Zodra het er is, mag jij beginnen.'
+export const LIVE_WACHT_OP_VRIENDJE = 'Stuur de link onder het bord naar je vriendje. Zodra het er is, mag jij beginnen.'
 export const LIVE_VRIENDJE_ER = 'Je vriendje is er! Jij speelt wit. Doe je eerste zet.'
 export const LIVE_JIJ_ZWART = 'Je speelt tegen je vriendje. Jij speelt zwart. Wit begint, dus kijk even mee.'
 export const LIVE_DENKT_NA = 'Goed zo! Nu denkt je vriendje na.'

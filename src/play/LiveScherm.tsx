@@ -88,6 +88,9 @@ function zinVoorJouwBeurt(p: LivePartij): string {
   return onder >= 0 ? AFSTAND_ONDERPROMOTIE[onder] : AFSTAND_JOUW_BEURT
 }
 
+/** De zinnen die bij elke zet terugkomen: die staan in de ballon, maar Pip zegt ze niet hardop. */
+const GEWOON = new Set<string>([AFSTAND_JOUW_BEURT, LIVE_DENKT_NA])
+
 type Fase = 'laden' | 'start' | 'spel' | 'vol' | 'kapot'
 
 /**
@@ -126,6 +129,17 @@ export function LiveScherm() {
   const [geselecteerd, setGeselecteerd] = useState<Square | null>(null)
   const [promotieVraag, setPromotieVraag] = useState<{ van: Square; naar: Square } | null>(null)
   const [zin, setZin] = useState(LIVE_BEGIN)
+  /**
+   * Of Pip de zin hardop zegt. Bij een partij tegen elkaar praat Pip niet na elke zet:
+   * "Nu jij!" en "Nu denkt je vriendje na" staan alleen in de ballon. Hardop alleen bij
+   * wat ertoe doet: het vriendje is er, schaak, een ander stuk dan een dame, de uitslag,
+   * een nieuwe partij, geen verbinding. Gevraagd door Kaj, 16 oktober.
+   */
+  const [spreek, setSpreek] = useState(true)
+  const zeg = useCallback((z: string, stil = GEWOON.has(z)) => {
+    setZin(z)
+    setSpreek(!stil)
+  }, [])
   const [stemming, setStemming] = useState<PipStemming>('blij')
   const [verbinding, setVerbinding] = useState(true)
   const [slot, setSlot] = useState(false)
@@ -160,36 +174,36 @@ export function LiveScherm() {
 
       if (jij === null) {
         // Een meekijker hoort ook hoe het afloopt, en dat er opnieuw begonnen wordt.
-        if (oud && oud.ronde !== nieuw.ronde) setZin(LIVE_KIJK_NIEUW)
+        if (oud && oud.ronde !== nieuw.ronde) zeg(LIVE_KIJK_NIEUW)
         else if (status.over && oud && !oud.game.status().over)
-          setZin(status.reason === 'mat' ? (status.winner === 'w' ? SAMEN_WIT_WINT : SAMEN_ZWART_WINT) : PARTIJ_REMISE[0])
+          zeg(status.reason === 'mat' ? (status.winner === 'w' ? SAMEN_WIT_WINT : SAMEN_ZWART_WINT) : PARTIJ_REMISE[0])
         return
       }
       const nieuweRonde = oud !== null && oud.ronde !== nieuw.ronde
       const nieuweZet = oud !== null && !nieuweRonde && nieuw.zetten.length > oud.zetten.length
       if (nieuweRonde) {
         setGeselecteerd(null)
-        setZin((stopte ? LIVE_VRIENDJE_BEGINT_OPNIEUW : LIVE_OPNIEUW)[jij === 'w' ? 0 : 1])
+        zeg((stopte ? LIVE_VRIENDJE_BEGINT_OPNIEUW : LIVE_OPNIEUW)[jij === 'w' ? 0 : 1])
         setStemming('blij')
       } else if (status.over) {
         if (!nieuweZet && oud !== null) return
-        setZin(status.reason === 'mat' ? (ikDeedLaatste ? LIVE_GEWONNEN : AFSTAND_VRIENDJE_WINT) : PARTIJ_REMISE[0])
+        zeg(status.reason === 'mat' ? (ikDeedLaatste ? LIVE_GEWONNEN : AFSTAND_VRIENDJE_WINT) : PARTIJ_REMISE[0])
         setStemming('trots')
         if (nieuweZet && !ikDeedLaatste && instellingen.effecten) (status.reason === 'mat' ? sfx.schaak : sfx.zet)()
       } else if (nieuweZet && !ikDeedLaatste) {
-        setZin(zinVoorJouwBeurt(nieuw))
+        zeg(zinVoorJouwBeurt(nieuw))
         setStemming(status.check ? 'verrast' : 'blij')
         if (instellingen.effecten) (status.check ? sfx.schaak : sfx.zet)()
       } else if (oud?.ander === 'nog-niet' && nieuw.ander !== 'nog-niet') {
-        setZin(jij === 'w' ? LIVE_VRIENDJE_ER : LIVE_JIJ_ZWART)
+        zeg(jij === 'w' ? LIVE_VRIENDJE_ER : LIVE_JIJ_ZWART)
         setStemming('blij')
         setLink(null)
       } else if (oud?.ander !== 'weg' && nieuw.ander === 'weg' && nieuw.game.turn !== jij) {
-        setZin(LIVE_WEG)
+        zeg(LIVE_WEG)
         setStemming('moedigt')
       } else if (oud === null) {
         // Binnenkomen, of terugkomen na verversen: net zo goed schaak en onderpromotie melden.
-        setZin(
+        zeg(
           nieuw.ander === 'nog-niet'
             ? LIVE_WACHT_OP_VRIENDJE
             : nieuw.zetten.length === 0
@@ -241,7 +255,7 @@ export function LiveScherm() {
     (a: Antwoord, zelf = false) => {
       if (a.soort === 'geen-verbinding') {
         if (verbindingRef.current) {
-          setZin(LIVE_GEEN_VERBINDING)
+          zeg(LIVE_GEEN_VERBINDING)
           setStemming('moedigt')
         }
         verbindingRef.current = false
@@ -256,12 +270,12 @@ export function LiveScherm() {
       if (wasWeg && a.soort === 'goed') {
         const p = isNieuwer(partijRef.current, a.stand) ? a.stand : partijRef.current
         if (p && p.jij && !p.game.status().over) {
-          setZin(p.ander === 'nog-niet' ? LIVE_WACHT_OP_VRIENDJE : p.game.turn === p.jij ? zinVoorJouwBeurt(p) : LIVE_DENKT_NA)
+          zeg(p.ander === 'nog-niet' ? LIVE_WACHT_OP_VRIENDJE : p.game.turn === p.jij ? zinVoorJouwBeurt(p) : LIVE_DENKT_NA)
           setStemming('blij')
-        } else if (p && !p.jij) setZin(LIVE_VOL)
+        } else if (p && !p.jij) zeg(LIVE_VOL)
       }
       if (a.soort === 'druk') {
-        setZin(LIVE_DRUK)
+        zeg(LIVE_DRUK)
         setStemming('moedigt')
         return
       }
@@ -271,7 +285,7 @@ export function LiveScherm() {
         setVolgende(false)
         setPartij(null)
         setFase('kapot')
-        setZin(LIVE_KAPOT)
+        zeg(LIVE_KAPOT)
         setStemming('moedigt')
         return
       }
@@ -290,11 +304,11 @@ export function LiveScherm() {
       if (a.soort === 'goed') setFase('spel')
       else if (a.soort === 'vol') {
         setFase('vol')
-        setZin(LIVE_VOL)
+        zeg(LIVE_VOL)
         setStemming('blij')
       } else if (a.soort === 'geen-verbinding' || a.soort === 'druk') setFase('kapot')
       verwerk(a)
-      if (a.soort === 'geen-verbinding') setZin(LIVE_GEEN_INTERNET)
+      if (a.soort === 'geen-verbinding') zeg(LIVE_GEEN_INTERNET)
     },
     [mijnPlaatje, verwerk],
   )
@@ -317,7 +331,7 @@ export function LiveScherm() {
     if (!code) {
       kamerRef.current = null
       setFase('start')
-      setZin(LIVE_BEGIN)
+      zeg(LIVE_BEGIN)
       setStemming('blij')
       // Weggelopen en via de kaart teruggekomen: de partij is er nog. Layoutreview van
       // 16 oktober, punt 1 (blokkerend).
@@ -327,13 +341,13 @@ export function LiveScherm() {
       if (kamerRef.current !== null || window.location.hash || a.soort !== 'goed' || !a.stand.jij) return
       const ander = a.stand.jij === 'w' ? a.stand.zwart : a.stand.wit
       setHervat({ kamer: laatste.kamer, plaatje: ander ?? '' })
-      setZin(LIVE_VERDER)
+      zeg(LIVE_VERDER)
       return
     }
     if (!isKamer(code)) {
       kamerRef.current = null
       setFase('kapot')
-      setZin(LIVE_KAPOT)
+      zeg(LIVE_KAPOT)
       setStemming('moedigt')
       return
     }
@@ -351,7 +365,7 @@ export function LiveScherm() {
     if (a.soort === 'goed') {
       setFase(a.stand.jij ? 'spel' : 'vol')
       verwerk(a)
-      if (!a.stand.jij) setZin(LIVE_VOL)
+      if (!a.stand.jij) zeg(LIVE_VOL)
       return
     }
     setFase(a.soort === 'geen-verbinding' ? 'spel' : 'kapot')
@@ -456,7 +470,7 @@ export function LiveScherm() {
         const na2 = a.stand.game.status()
         verwerk(a)
         if (!na2.over) {
-          setZin(na2.check ? kies(SCHAAK_VAN_JOU, 'schaak') : LIVE_DENKT_NA)
+          zeg(na2.check ? kies(SCHAAK_VAN_JOU, 'schaak') : LIVE_DENKT_NA)
           setStemming('trots')
         }
         return
@@ -477,7 +491,7 @@ export function LiveScherm() {
         // De oudste groep kiest zelf waar de pion in verandert; de rest krijgt een dame.
         if (modus === 'schaker' && isPromotie(p.game, geselecteerd, veld)) {
           setPromotieVraag({ van: geselecteerd, naar: veld })
-          setZin(PROMOTIE_KIES)
+          zeg(PROMOTIE_KIES)
           return
         }
         void doeZet(geselecteerd, veld)
@@ -516,7 +530,7 @@ export function LiveScherm() {
       // Er is nog geen vriendje, dus niet "ik kan je vriendje niet bereiken". En de ouder
       // hoeft de som niet nog eens te maken. Layoutreview van 16 oktober, punt 3.
       verwerk(a.soort === 'druk' ? a : { soort: 'geen-verbinding' })
-      if (a.soort !== 'druk') setZin(LIVE_LINK_MISLUKT)
+      if (a.soort !== 'druk') zeg(LIVE_LINK_MISLUKT)
       setStemming('moedigt')
       setFase('start')
       setLinkMislukt(true)
@@ -535,10 +549,9 @@ export function LiveScherm() {
     await deel(url)
   }
 
-  const kopieer = async () => {
-    if (!link) return
+  const kopieer = async (url: string) => {
     try {
-      await navigator.clipboard.writeText(link)
+      await navigator.clipboard.writeText(url)
       setHoe('gekopieerd')
     } catch {
       setHoe('zelf')
@@ -617,7 +630,13 @@ export function LiveScherm() {
     )
   }
 
-  const deelKaart = link && (
+  /**
+   * De link om te delen, zolang het vriendje er niet is. Onder het bord, zodat je bij
+   * binnenkomst eerst het bord ziet (gevraagd door Kaj). En ook na verversen: de link
+   * volgt uit de partij, niet uit het moment dat hij gemaakt werd.
+   */
+  const deelLink = link ?? (fase === 'spel' && partij?.jij === 'w' && kamerRef.current ? speellink(kamerRef.current) : null)
+  const deelKaart = deelLink && (
     <div className="card stack">
       <p style={{ margin: 0 }}>
         {hoe === 'gedeeld'
@@ -630,21 +649,21 @@ export function LiveScherm() {
       <textarea
         readOnly
         rows={2}
-        value={link}
+        value={deelLink}
         onFocus={(e) => e.currentTarget.select()}
         aria-label="Speellink"
         style={{ font: 'inherit', padding: '12px 14px', borderRadius: 12, border: '2px solid var(--line)', background: 'var(--surface)', color: 'var(--ink)', width: '100%', resize: 'none', wordBreak: 'break-all' }}
       />
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
         {typeof navigator !== 'undefined' && 'share' in navigator && (
-          <button type="button" className="btn btn--primary btn--big" onClick={() => void deel(link)}>
+          <button type="button" className="btn btn--primary btn--big" onClick={() => void deel(deelLink)}>
             📤 Delen
           </button>
         )}
         <button
           type="button"
           className={typeof navigator !== 'undefined' && 'share' in navigator ? 'btn btn--big' : 'btn btn--primary btn--big'}
-          onClick={() => void kopieer()}
+          onClick={() => void kopieer(deelLink)}
         >
           📋 Kopieer
         </button>
@@ -656,7 +675,7 @@ export function LiveScherm() {
     <main className="page">
       <Kop titel="🤝 Live met een vriendje" terug="/spelen/" />
       <div className="stack">
-        <Pip zegt={zin} stemming={stemming} klein />
+        <Pip zegt={zin} stemming={stemming} klein vanzelf={spreek} />
 
         {fase === 'start' && !slot && (
           <div className="stack" style={{ alignItems: 'center' }}>
@@ -702,10 +721,6 @@ export function LiveScherm() {
           </div>
         )}
 
-        {/* Zolang het vriendje er niet is, staat de link bovenaan: onder het bord viel hij
-            op een kleine telefoon en op de Chromebook buiten beeld. Layoutreview, punt 5. */}
-        {partij?.ander === 'nog-niet' && deelKaart}
-
         {partij && (fase === 'spel' || fase === 'vol') && (
           <>
             {/* Het bord laat ruimte voor de kop, Pip en de knoppen eronder: met 70vh viel
@@ -731,14 +746,14 @@ export function LiveScherm() {
                 onKies={(stuk) => {
                   const v = promotieVraag
                   setPromotieVraag(null)
-                  setZin(PROMOTIE_GEKOZEN)
+                  zeg(PROMOTIE_GEKOZEN)
                   setStemming('blij')
                   void doeZet(v.van, v.naar, stuk)
                 }}
                 onAnnuleer={() => {
                   setPromotieVraag(null)
                   setGeselecteerd(null)
-                  setZin(PROMOTIE_ANDERS)
+                  zeg(PROMOTIE_ANDERS)
                   setStemming('moedigt')
                 }}
               />
@@ -762,6 +777,8 @@ export function LiveScherm() {
                 </button>
               </div>
             )}
+
+            {partij.ander === 'nog-niet' && deelKaart}
 
             {volgende && (
               <div className="row" style={{ justifyContent: 'center' }}>

@@ -560,6 +560,23 @@ async function liveMetEenVriendje() {
   const nieuwApparaat = async () => {
     const ctx = await browser.newContext({ viewport: { width: 420, height: 950 } })
     apparaten.push(ctx)
+    // Tel wat Pip hardop zegt (apparaatstem of een opname van Pip, niet de bordgeluiden).
+    await ctx.addInitScript(() => {
+      window.__gezegd = []
+      const s = window.speechSynthesis
+      if (s) {
+        const echt = s.speak.bind(s)
+        s.speak = (u) => {
+          window.__gezegd.push(u.text)
+          echt(u)
+        }
+      }
+      const play = HTMLMediaElement.prototype.play
+      HTMLMediaElement.prototype.play = function () {
+        if (/\/audio\//.test(this.src)) window.__gezegd.push(this.src)
+        return play.call(this)
+      }
+    })
     const p = await ctx.newPage()
     p.on('pageerror', (e) => consolefouten.push(`LIVE PAGEERROR: ${e.message}`))
     return p
@@ -602,6 +619,13 @@ async function liveMetEenVriendje() {
     if (!/\/spelen\/live\/#[a-z2-9]{10}$/.test(link)) return meld(naam, false, `geen bruikbare speellink ("${link}")`)
     // Zonder vriendje nog geen zet: anders speelt het kind tegen niemand.
     if (await magZetten(a, 'e2')) return meld(naam, false, 'wit kon al zetten voor het vriendje er was')
+    // Verversen terwijl je wacht: de link moet er nog staan, onder het bord (Kaj: eerst
+    // het bord zien). Eerst was hij na verversen weg.
+    await a.reload({ waitUntil: 'load' })
+    const linkNa = a.getByRole('textbox', { name: 'Speellink' })
+    if (!(await wacht(async () => (await linkNa.count()) > 0))) return meld(naam, false, 'na verversen was de speellink weg')
+    const bordBoven = (await a.locator('[data-square]').first().boundingBox()).y
+    if (bordBoven > (await linkNa.boundingBox()).y) return meld(naam, false, 'de speellink staat boven het bord')
 
     const b = await nieuwApparaat()
     await b.goto(link.replace(/^https?:\/\/[^/]+/, BASIS), { waitUntil: 'load' })
@@ -610,11 +634,21 @@ async function liveMetEenVriendje() {
     if (!(await wacht(() => magZetten(a, 'e2')))) return meld(naam, false, 'wit merkte niet dat het vriendje er was')
     if (await a.getByRole('textbox', { name: 'Speellink' }).count()) return meld(naam, false, 'de speellink bleef staan toen het vriendje er was')
 
+    // Pip praat niet na elke zet: "Nu jij!" staat alleen in de ballon (Kaj, 16 oktober).
+    await a.waitForTimeout(800)
+    const gezegdA = () => a.evaluate(() => window.__gezegd.length)
+    const voorZetten = await gezegdA()
     await zet(a, 'e2', 'e4')
     if (!(await wacht(() => stuk(b, 'e4')))) return meld(naam, false, 'de zet van wit kwam niet over')
     if (!(await wacht(() => magZetten(b, 'e7')))) return meld(naam, false, 'zwart mocht niet zetten na wit')
     await zet(b, 'e7', 'e5')
     if (!(await wacht(() => stuk(a, 'e5')))) return meld(naam, false, 'de zet van zwart kwam niet over')
+    await a.waitForTimeout(500)
+    // Belangrijke zinnen mogen hardop (na verversen houdt de browser die vast tot de
+    // eerste tik); de zinnen die bij elke zet terugkomen niet.
+    const hardop = (await a.evaluate(() => window.__gezegd)).slice(voorZetten)
+    const gewoon = hardop.filter((t) => /Nu jij|denkt je vriendje na/.test(t))
+    if (gewoon.length) return meld(naam, false, `Pip zei bij gewone zetten iets hardop: ${JSON.stringify(gewoon)}`)
 
     // Verversen (iOS doet dat zelf bij het wisselen van app): zelfde kant, zelfde stand.
     await a.reload({ waitUntil: 'load' })

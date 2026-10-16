@@ -39,7 +39,7 @@ staat. Oordeel nu: **GO**, nadat Kaj de privacy-uitzondering in de PR bevestigt 
 | L2 | Kwam de verbinding terug, dan bleef Pip "Ik kan je vriendje nu niet bereiken" zeggen. | **Opgelost**: bij herstel zet Pip de beurtzin terug. Het eerste verzoek na een storing wacht niet op de server, anders duurde dat tot 20 s. Doorloopregel: offline, online, de ballon mag die zin niet meer tonen. |
 | L3 | "Ik blijf het proberen" terwijl er niets meer geprobeerd werd; bij het maken van de link ging het over een vriendje dat er nog niet was, en de som moest opnieuw. | **Opgelost**: eigen zinnen (`LIVE_GEEN_INTERNET`, `LIVE_LINK_MISLUKT`). "Opnieuw proberen" maakt de link zonder nieuwe som. "Nieuwe partij beginnen" verschijnt niet zonder verbinding. |
 | L4 | De statusregel leunde op plaatjes: "🐴 wint!" las een kind als "ik" of "Pip". | **Opgelost**: de statusregel zegt "Jij wint!", "Je vriendje wint!", "Je vriendje denkt na…". Boven en onder het bord staan de spelers met plaatje, "Jij" of "Je vriendje" en de kleur. Een meekijker ziet Wit en Zwart. |
-| L5 | De deelkaart stond onder het bord, buiten beeld op een kleine telefoon en op de Chromebook; de code viel rechts weg. | **Opgelost**: zolang het vriendje er niet is, staat de kaart boven het bord. Delen is de grote knop, of Kopieer als delen niet kan. De link staat in een tekstvak van twee regels. Gecontroleerd op 375×667. |
+| L5 | De deelkaart stond onder het bord, buiten beeld op een kleine telefoon en op de Chromebook; de code viel rechts weg. | **Deels**: Delen is de grote knop (of Kopieer als delen niet kan), en de link staat in een tekstvak van twee regels. De kaart staat op verzoek van Kaj tóch onder het bord, zodat je bij binnenkomst eerst het bord ziet. Pip zegt nu "de link onder het bord". Wel opgelost: na verversen was de link helemaal weg; nu volgt hij uit de partij. Doorloopregel: verversen tijdens het wachten, de link staat er nog, onder het bord. |
 | L6 | Op 1280×800 viel "Nog een keer" onder de rand. | **Opgelost**: bordmaat `min(100%, max(100dvh − 420px, 340px), 620px)`. Gemeten op 1280×800: de onderste knop eindigt op 787 px. Op telefoons blijft het bord schermbreed. |
 | L7 | "Jij bent aan zet" viel het minst op. | **Opgelost**: groot, vet en in de accentkleur. "· zet 1" is weg. |
 | L8 | Was het vriendje weg, dan kon het kind niets doen. | **Opgelost**: knop "📤 Stuur de link nog eens". *Niet gedaan*: "ondertussen tegen een bot spelen". De partij blijft wel bewaard en is via "Verder spelen" terug te vinden (L1), dus wegklikken naar een bot kan al. |
@@ -67,6 +67,11 @@ staat. Oordeel nu: **GO**, nadat Kaj de privacy-uitzondering in de PR bevestigt 
 | L12 | De kaart leek te veel op "Op afstand". | **Opgelost**: 🤝 "Tegelijk spelen, ieder op een eigen scherm" tegenover "Om de beurt, wanneer het uitkomt: elke zet als een link, ook voor opa of oma". |
 | L13 | De luidsprekerknop stak uit een ballon van één regel. | **Opgelost** in Pip zelf: de ballon is minstens 58 px hoog. Dit raakt alle schermen. |
 | L14 | "↺ Nieuwe partij" was te klein en stond te dicht bij het bord. | **Opgelost**: `btn--big`, met 16 px extra afstand. |
+
+## Na de herstelronde, op verzoek van Kaj
+
+- **Pip praat niet na elke zet.** "Je vriendje heeft gezet. Nu jij!" en "Nu denkt je vriendje na" staan alleen in de ballon. Hardop alleen bij wat ertoe doet: het vriendje is er, schaak, onderpromotie, de uitslag, een nieuwe partij, geen verbinding. Doorloopregel: na een zet over en weer zegt Pip die zinnen niet hardop. De regel faalt aantoonbaar als de stilte eruit gaat.
+- **De link onder het bord**, ook na verversen (zie L5).
 
 ## Long polling (nieuw in deze ronde)
 
