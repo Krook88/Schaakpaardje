@@ -158,6 +158,13 @@ type State = {
 
   maakProfiel: (naam: string, leeftijd: number, avatar: string) => string
   kiesProfiel: (id: string) => void
+  /**
+   * Geen profiel meer actief, zodat de startpagina het formulier "Nieuw hier" toont.
+   *
+   * Dat formulier verscheen alleen zolang er nog geen enkel profiel was. Een tweede kind
+   * op hetzelfde apparaat kon er dus niet bij, behalve door het eerste te wissen.
+   */
+  nieuwKind: () => void
   verwijderProfiel: (id: string) => void
   zetInstelling: <K extends keyof Instellingen>(sleutel: K, waarde: Instellingen[K]) => void
   /**
@@ -231,6 +238,10 @@ export const useProfielStore = create<State>()(
 
       kiesProfiel(id) {
         set({ actiefId: id })
+      },
+
+      nieuwKind() {
+        set({ actiefId: null })
       },
 
       zetLeeftijd(leeftijd) {

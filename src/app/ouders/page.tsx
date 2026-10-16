@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Kop } from '@/ui/Kop'
 import { Rekenslot } from '@/ui/Rekenslot'
 import { Sterren } from '@/ui/Sterren'
@@ -70,6 +71,8 @@ function OuderPaneel() {
   const zetLeeftijd = useProfielStore((s) => s.zetLeeftijd)
   const herstelInstellingen = useProfielStore((s) => s.herstelInstellingen)
   const verwijderProfiel = useProfielStore((s) => s.verwijderProfiel)
+  const nieuwKind = useProfielStore((s) => s.nieuwKind)
+  const router = useRouter()
   const gespeeld = useGespeeld()
   const oefendagen = useOefendagen()
   const laatst = useLaatstGeoefend()
@@ -257,6 +260,26 @@ function OuderPaneel() {
               ))}
             </span>
           </label>
+        </section>
+
+        {/* Hier en niet op het kindscherm: een kind van vier dat op een plusje tikt,
+            heeft zo vijf profielen. Achter het rekenslot maakt de ouder er een aan. */}
+        <section className="card stack">
+          <h2>Nog een kind</h2>
+          <p className="muted" style={{ margin: 0 }}>
+            Elk kind krijgt een eigen profiel, met een eigen niveau en eigen sterren. Op de
+            startpagina kies je daarna bij &ldquo;Wie speelt er?&rdquo; wie er aan de beurt is.
+          </p>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              nieuwKind()
+              router.push('/')
+            }}
+          >
+            + Profiel voor nog een kind
+          </button>
         </section>
 
         <section className="card stack">

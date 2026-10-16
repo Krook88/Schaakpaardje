@@ -730,6 +730,39 @@ async function liveMetEenVriendje() {
   }
 }
 
+/* ------------------------------------------------------------------ *
+ * 15. Een tweede kind op hetzelfde apparaat.
+ *
+ * Het formulier om een profiel te maken stond alleen op het scherm zolang er nog
+ * geen profiel was. Een broertje kon er dus niet bij, behalve door het eerste kind te
+ * wissen. Gevraagd door Kaj. Nu via het ouderscherm, en daarna wissel je op de
+ * startpagina.
+ * ------------------------------------------------------------------ */
+async function tweedeKind() {
+  const naam = 'tweede kind: profiel via het ouderscherm, daarna wisselen'
+  await page.goto(`${URL}/ouders/`, { waitUntil: 'networkidle' })
+  const som = await page.getByText(/Hoeveel is \d+ × \d+/).innerText().catch(() => '')
+  const m = som.match(/(\d+) × (\d+)/)
+  if (!m) return meld(naam, false, 'geen rekenslot voor het ouderscherm')
+  await page.getByRole('textbox').fill(String(Number(m[1]) * Number(m[2])))
+  await page.getByRole('button', { name: 'Verder' }).click()
+  const knop = page.getByRole('button', { name: /Profiel voor nog een kind/ })
+  if (!(await knop.count())) return meld(naam, false, 'geen knop voor een tweede kind in het ouderscherm')
+  await knop.click()
+  await page.waitForURL((u) => new globalThis.URL(u).pathname === '/')
+  await page.getByRole('textbox').first().fill('Broertje')
+  await page.getByRole('button', { name: '9', exact: true }).click()
+  await page.getByRole('button', { name: /Beginnen/ }).click()
+  await page.waitForTimeout(700)
+  if (!(await page.getByRole('heading', { name: 'Hoi Broertje!' }).count())) return meld(naam, false, 'het tweede profiel begon niet')
+  const wie = page.getByRole('button', { name: /Testkind/ })
+  if (!(await wie.count())) return meld(naam, false, 'geen "Wie speelt er?" met het eerste kind')
+  await wie.click()
+  await page.waitForTimeout(300)
+  const terug = await page.getByRole('heading', { name: 'Hoi Testkind!' }).count()
+  meld(naam, terug > 0, terug ? '' : 'wisselen naar het eerste kind lukte niet')
+}
+
 console.log(`Doorloop tegen ${URL}\n`)
 await pipZwijgtBijBinnenkomst()
 await nieuwProfiel()
@@ -745,6 +778,7 @@ await liveMetEenVriendje()
 await promotieMetKeuze()
 await contactformulierIsEerlijk()
 await altijdEenUitweg()
+await tweedeKind()
 
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 
