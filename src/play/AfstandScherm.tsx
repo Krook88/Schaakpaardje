@@ -14,6 +14,7 @@ import {
   AFSTAND_VRIENDJE_WINT,
   AFSTAND_JOUW_BEURT,
   AFSTAND_ONDERPROMOTIE,
+  ONDERPROMOTIE_SCHAAK,
   AFSTAND_KAPOT,
   AFSTAND_VERSTUREN,
   AFSTAND_WACHTEN,
@@ -162,8 +163,10 @@ export function AfstandScherm() {
         }
         setZin(status.reason === 'mat' ? AFSTAND_VRIENDJE_WINT : PARTIJ_REMISE[0])
       } else if (!status.over && status.check) {
-        // Wie schaak staat en het niet hoort, ziet alleen dat de stukken niet willen.
-        setZin(kies(SCHAAK_TEGEN_JOU, 'schaak'))
+        // Wie schaak staat en het niet hoort, ziet alleen dat de stukken niet willen. Een
+        // paard met schaak is juist de reden om geen dame te nemen: dan beide zeggen.
+        const onder = laatste?.[4] ? 'rbn'.indexOf(laatste[4]) : -1
+        setZin(onder >= 0 ? ONDERPROMOTIE_SCHAAK[onder] : kies(SCHAAK_TEGEN_JOU, 'schaak'))
         setStemming('verrast')
       } else {
         // Een pion die geen dame werd: zonder uitleg staat er ineens een paard.

@@ -165,6 +165,12 @@ export const AFSTAND_ONDERPROMOTIE = [
   'De pion van je vriendje is een loper geworden. Dat mag ook! Nu jij.',
   'De pion van je vriendje is een paard geworden. Dat mag ook! Nu jij.',
 ] as const
+/** Onderpromotie met schaak: juist dan neemt iemand een paard, en dan moet het kind het eerst oplossen. */
+export const ONDERPROMOTIE_SCHAAK = [
+  'De pion van je vriendje is een toren geworden, en die toren geeft schaak! Los dat eerst op.',
+  'De pion van je vriendje is een loper geworden, en die loper geeft schaak! Los dat eerst op.',
+  'De pion van je vriendje is een paard geworden, en dat paard geeft schaak! Los dat eerst op.',
+] as const
 export const AFSTAND_JIJ_ZWART = 'Je vriendje begon met wit. Jij speelt zwart. Nu jij!'
 export const AFSTAND_VERSTUREN = 'Goed zo. Vraag papa of mama om je zet te versturen.'
 export const AFSTAND_WACHTEN = 'Verstuurd! Nu is je vriendje aan de beurt. Even wachten maar.'
@@ -183,6 +189,16 @@ export const LIVE_VOL = 'Hier spelen al twee kinderen. Je mag meekijken, of zelf
 export const LIVE_KAPOT = 'Deze speellink werkt niet meer. Maak samen een nieuwe.'
 export const LIVE_GEEN_VERBINDING = 'Ik kan je vriendje nu niet bereiken. Ik blijf het proberen.'
 export const LIVE_GEWONNEN = 'Gewonnen! Knap gespeeld. Nog een keer?'
+export const LIVE_GEEN_INTERNET = 'Er is nu geen internet. Tik op opnieuw proberen.'
+export const LIVE_LINK_MISLUKT = 'Het lukte niet om een speellink te maken. Is er internet? Tik op opnieuw proberen.'
+export const LIVE_VERDER = 'Je partij is er nog! Tik op verder spelen.'
+export const LIVE_KIJK_NIEUW = 'Ze beginnen een nieuwe partij. Kijk maar mee!'
+export const LIVE_DRUK = 'Het lukt nu even niet om een speellink te maken. Probeer het straks nog eens.'
+/** Het vriendje begon halverwege een nieuwe partij. Niemand heeft verloren. */
+export const LIVE_VRIENDJE_BEGINT_OPNIEUW = [
+  'Je vriendje begint een nieuwe partij. Nu speel jij wit. Doe je eerste zet.',
+  'Je vriendje begint een nieuwe partij. Nu speel jij zwart. Je vriendje begint.',
+] as const
 export const LIVE_OPNIEUW = [
   'Nog een partij! Nu speel jij wit. Doe je eerste zet.',
   'Nog een partij! Nu speel jij zwart. Je vriendje begint.',

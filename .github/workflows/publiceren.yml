@@ -148,7 +148,7 @@ jobs:
             echo "Gepubliceerd naar schaakmaatje.nl."
           fi
 
-      - name: Draait de teller, en zit hij dicht?
+      - name: Draaien de teller en live spelen, en zit het dicht?
         if: ${{ !inputs.proef }}
         run: |
           # Een lege telling hoort 400 te geven: dan draait PHP. Wat intern is, hoort 403
@@ -163,7 +163,11 @@ jobs:
           if [ "$c" = "400" ]; then echo "Het contactformulier draait."; else echo "::error::/teller/bericht.php gaf $c in plaats van 400."; fout=1; fi
           c=$(code https://schaakmaatje.nl/teller/dashboard.php)
           if [ "$c" = "200" ]; then echo "Het dashboard is bereikbaar."; else echo "::error::/teller/dashboard.php gaf $c in plaats van 200."; fout=1; fi
-          for pad in teller/opslag.php teller/wachtwoord.php teller/data/.htaccess; do
+          # Live spelen: een onbekende opdracht geeft 400 als PHP draait én er een
+          # schrijfbare map is voor de partijen; 503 betekent dat die map er niet is.
+          c=$(code -X POST -d '{"doe":"x"}' https://schaakmaatje.nl/live/index.php)
+          if [ "$c" = "400" ]; then echo "Live spelen draait."; else echo "::error::/live/index.php gaf $c in plaats van 400. Draait PHP, en is er een schrijfbare map?"; fout=1; fi
+          for pad in teller/opslag.php teller/wachtwoord.php teller/data/.htaccess live/data/.htaccess; do
             c=$(code "https://schaakmaatje.nl/$pad")
             if [ "$c" = "403" ] || [ "$c" = "404" ]; then echo "$pad zit dicht ($c)."; else echo "::error::$pad gaf $c; die hoort dicht te zitten."; fout=1; fi
           done

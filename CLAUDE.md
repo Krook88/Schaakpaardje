@@ -39,7 +39,7 @@ een kind hier verkeerd leert, moet het bij de club weer afleren.
 ```bash
 npm run dev              # ontwikkelserver
 npm run check            # typecheck + tests + content + build (draai dit vóór je pusht)
-npm run doorloop         # de app spelen als kind (vereist een draaiende `npx serve out`)
+npm run doorloop         # de app spelen als kind (vereist een draaiende `npx serve out`; live spelen start zelf PHP)
 npm run validate:content # alle stellingen en opgaven controleren
 npm run audio:render     # Pip inspreken (vereist ELEVENLABS_API_KEY)
 npm run live             # staat op schaakmaatje.nl wat je gebouwd hebt? (na npm run build)

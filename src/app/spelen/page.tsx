@@ -109,12 +109,12 @@ export default function Spelen() {
             style={{ justifyContent: 'flex-start', textAlign: 'left', padding: '14px 18px', height: 'auto', minHeight: 78 }}
           >
             <span style={{ fontSize: 32 }} aria-hidden="true">
-              📡
+              🤝
             </span>
             <span style={{ display: 'grid', gap: 2 }}>
               <strong>Live met een vriendje</strong>
               <small className="muted" style={{ fontWeight: 400 }}>
-                Ieder op je eigen scherm. Eén link, en jullie spelen.
+                Tegelijk spelen, ieder op een eigen scherm.
               </small>
             </span>
           </Link>
@@ -129,7 +129,7 @@ export default function Spelen() {
             <span style={{ display: 'grid', gap: 2 }}>
               <strong>Op afstand</strong>
               <small className="muted" style={{ fontWeight: 400 }}>
-                Tegen een vriendje, opa of oma: zet voor zet via een link.
+                Om de beurt, wanneer het uitkomt: elke zet als een link, ook voor opa of oma.
               </small>
             </span>
           </Link>
