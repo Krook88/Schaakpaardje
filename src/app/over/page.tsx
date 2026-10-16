@@ -431,7 +431,8 @@ export default function Over() {
             <b>Niets</b>
             gaat er van je kind naar internet. Een voornaam, een leeftijd en de voortgang
             blijven op dit apparaat. Wissen kan in het ouderscherm. Wel tellen we anoniem
-            hoeveel er gespeeld wordt, zonder cookie; ook dat kan daar uit.
+            hoeveel er gespeeld wordt, zonder cookie; ook dat kan daar uit. Live spelen met een
+            vriendje gaat via onze eigen server: alleen de zetten en twee plaatjes, een dag lang.
           </div>
         </div>
         <p className={s.fooi} style={{ marginTop: 16 }}>

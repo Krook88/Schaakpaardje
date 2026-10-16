@@ -104,6 +104,21 @@ export default function Spelen() {
             </span>
           </Link>
           <Link
+            href="/spelen/live/"
+            className="btn btn--big"
+            style={{ justifyContent: 'flex-start', textAlign: 'left', padding: '14px 18px', height: 'auto', minHeight: 78 }}
+          >
+            <span style={{ fontSize: 32 }} aria-hidden="true">
+              📡
+            </span>
+            <span style={{ display: 'grid', gap: 2 }}>
+              <strong>Live met een vriendje</strong>
+              <small className="muted" style={{ fontWeight: 400 }}>
+                Ieder op je eigen scherm. Eén link, en jullie spelen.
+              </small>
+            </span>
+          </Link>
+          <Link
             href="/spelen/afstand/"
             className="btn btn--big"
             style={{ justifyContent: 'flex-start', textAlign: 'left', padding: '14px 18px', height: 'auto', minHeight: 78 }}

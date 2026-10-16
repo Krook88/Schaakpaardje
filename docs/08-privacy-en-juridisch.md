@@ -9,8 +9,17 @@ bijzaak maar een ontwerpuitgangspunt.
 - **Lokaal tenzij.** Fase 1 draait 100% op het apparaat. Cloudsync is fase 3, optioneel,
   op initiatief van de ouder, met EU-hosting (Supabase EU / eigen VPS).
 - **Geen advertenties, geen third-party trackers, geen SDK's van sociale media.**
-- **Geen chat, geen open multiplayer.** Alleen bots en samen-op-één-tablet. Dit sluit
-  de grootste veiligheidsrisico's structureel uit.
+- **Geen chat, geen open multiplayer.** Alleen bots, samen-op-één-tablet, op afstand
+  per link en live met een vriendje via een link die een ouder deelt. Geen lobby, geen
+  zoeken naar tegenstanders, geen tekst tussen spelers. Dit sluit de grootste
+  veiligheidsrisico's structureel uit.
+- **Live met een vriendje** (`/spelen/live/`, besloten door Kaj, oktober 2026): een ouder
+  maakt achter het rekenslot één speellink. `public/live/index.php` op de eigen hosting
+  bewaart per partij de zetten, twee plaatjes uit de vaste lijst, een sleutel per kant
+  en wanneer elke kant voor het laatst keek. Geen naam, geen profiel, geen IP-adres,
+  geen cookie. De code staat achter het hekje van de link, dus niet in de toegangslogs.
+  Na 24 uur zonder zet of bezoek wordt de partij gewist. Wie de link heeft maar geen
+  sleutel, kijkt alleen mee.
 - **Cookieloze, anonieme tellingen** naar de eigen teller (`public/teller/`), zonder id per
   kind en zonder IP-adres: alleen de telling, het pad en het uur. Een ouder zet het uit op
   het ouderscherm. Let op: de hosting (TransIP) houdt zelf, zoals elke webserver,

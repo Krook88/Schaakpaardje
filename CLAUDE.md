@@ -135,6 +135,8 @@ Meng ze niet. Een opgave die met schaak te maken heeft, hoort een `regelZet` te 
   vaste lijsten (`tests/tellen.test.ts` en `public/teller/opslag.php`). Eén uitzondering,
   ook door Kaj gevraagd: het contactformulier op /contact/ (voor ouders, gelinkt onderaan
   de startpagina), waar een ouder een bericht en eventueel een e-mailadres stuurt naar
-  info@schaakmaatje.nl.
+  info@schaakmaatje.nl. En een tweede, ook van Kaj (oktober 2026): live spelen met een
+  vriendje (`public/live/`), waar de server een dag lang alleen de zetten, twee plaatjes
+  en een sleutel per kant bewaart. Daar komt nooit iets bij wat een kind intypt.
 - Iets toevoegen wat geld kost (een dienst, een abonnement) zonder het eerst aan Kaj
   voor te leggen.

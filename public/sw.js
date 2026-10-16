@@ -48,6 +48,8 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return
   // De teller en zijn dashboard: altijd van de server, nooit in de cache.
   if (url.pathname.includes('/teller/')) return
+  // Live spelen gaat met POST en komt hier al niet langs; voor de zekerheid toch.
+  if (url.pathname.includes('/live/index.php')) return
 
   // Bestanden met een hash in hun naam veranderen nooit: cache eerst, dat is direct.
   // Het audiomanifest hoort daar NIET bij: dat heet altijd manifest.json en wijst naar
