@@ -114,6 +114,17 @@ function vanafHetBegin(lesId: string, modus: Modus): boolean {
 
 export const AVATARS = ['🐴', '🦊', '🐻', '🐰', '🦉', '🐢', '🐝', '🦄'] as const
 
+/**
+ * Het eerste maatje dat nog niemand op dit apparaat heeft.
+ *
+ * Het formulier begon altijd bij het paardje. Kiest de ouder niets, dan stonden er bij
+ * "Wie speelt er?" twee keer 🐴, en een kind dat nog niet leest herkent zichzelf alleen
+ * aan het plaatje. Zijn ze allemaal bezet, dan weer het paardje.
+ */
+export function eersteVrijeMaatje(bezet: readonly string[]): string {
+  return AVATARS.find((a) => !bezet.includes(a)) ?? AVATARS[0]
+}
+
 type State = {
   profielen: Profiel[]
   actiefId: string | null
