@@ -111,7 +111,10 @@ export function kruimels(pad: { naam: string; url: string }[]) {
 export const VOOR_KINDEREN = {
   inLanguage: 'nl-NL',
   isAccessibleForFree: true,
-  audience: { '@type': 'EducationalAudience', educationalRole: 'student', suggestedMinAge: 3, suggestedMaxAge: 10 },
+  // Leeftijd als typicalAgeRange: suggestedMinAge en -MaxAge horen bij PeopleAudience, en
+  // op een EducationalAudience negeert een validator ze.
+  typicalAgeRange: '3-10',
+  audience: { '@type': 'EducationalAudience', educationalRole: 'student' },
   about: { '@type': 'Thing', name: 'Schaken' },
   publisher: { '@id': `${SITE}/#site` },
 } as const

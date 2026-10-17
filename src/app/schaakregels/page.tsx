@@ -93,10 +93,10 @@ export default function Schaakregels() {
       <section className={s.thuis}>
         <h2>In welke volgorde leer je een kind schaken?</h2>
         <p>
-          Niet in de volgorde van deze lijst, en niet alles tegelijk. Begin bij het bord, dan
-          de toren en de loper: die lopen in rechte lijnen en zijn het makkelijkst. Dan de
-          dame, het paard, de koning en als laatste de pion, die de meeste regels heeft.
-          Daarna komt wat de stukken waard zijn, aanvallen en verdedigen, en schaak.
+          Eén ding tegelijk. Begin bij het bord, dan de toren en de loper: de toren recht, de
+          loper schuin, allebei in lange lijnen, en daarom het makkelijkst. Dan de dame, het
+          paard, de koning en als laatste de pion, die de meeste regels heeft. Daarna komt
+          wat de stukken waard zijn, aanvallen en verdedigen, en schaak.
         </p>
         <p>
           Schaakmat komt pas als dat allemaal zit. Mat zien vraagt dat je van alle stukken

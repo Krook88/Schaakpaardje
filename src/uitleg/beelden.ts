@@ -140,6 +140,10 @@ export function bouwBeelden(a: Animatie): Beeld[] {
 
   const ruw = a.stappen.map((stap) => {
     let zet: Square[] = []
+    if (stap.plaats && spel) {
+      // chess.js zou het nieuwe stuk niet kennen, en dan lopen de twee motoren uiteen.
+      throw new Error(`${a.id}: plaats werkt alleen op een los bord, niet met regels: 'echt'`)
+    }
     if (stap.plaats) {
       for (const [veld, s] of Object.entries(stap.plaats)) {
         if (bord[veld]) throw new Error(`${a.id}: ${veld} is al bezet`)
@@ -154,6 +158,7 @@ export function bouwBeelden(a: Animatie): Beeld[] {
       if (spel) {
         const m = spel.move(van, naar, stap.wordt ?? 'q')
         if (!m) throw new Error(`${a.id}: ${stap.zet} is geen geldige zet in ${spel.fen}`)
+        if (stap.wordt && !m.promotion) throw new Error(`${a.id}: ${stap.zet} is geen promotie`)
         bord = parseBoard(spel.fen)
       } else {
         const stuk = bord[van]
@@ -170,7 +175,6 @@ export function bouwBeelden(a: Animatie): Beeld[] {
         }
       }
       ids = volg(ids, oud, bord, van, naar)
-      if (stap.wordt) soorten.set(ids.get(naar)!, { stuk: stap.wordt, kleur: bord[naar].color })
       zet = [van, naar]
     }
 
@@ -200,9 +204,14 @@ export function bouwBeelden(a: Animatie): Beeld[] {
       }
     }
 
+    // Het type per beeld, uit het bord van dát moment. Een pion die straks promoveert,
+    // is tot die zet gewoon een pion.
+    const typen = new Map([...ids].map(([veld, id]) => [id, { stuk: bord[veld].type, kleur: bord[veld].color }]))
+
     return {
       tekst: stap.tekst,
       plek: new Map(ids),
+      typen,
       stippen,
       ringen,
       verboden: stap.verboden ?? [],
@@ -215,11 +224,12 @@ export function bouwBeelden(a: Animatie): Beeld[] {
 
   // Pas aan het eind is bekend welke stukken er allemaal meedoen; elk beeld krijgt ze
   // allemaal, zodat een stuk dat erbij komt of verdwijnt kan in- en uitfaden.
-  return ruw.map(({ plek, ...rest }) => {
+  // Een stuk dat (nog) niet op het bord staat, houdt het type dat het bij binnenkomst had.
+  return ruw.map(({ plek, typen, ...rest }) => {
     const waar = new Map([...plek].map(([veld, id]) => [id, veld]))
     return {
       ...rest,
-      stukken: [...soorten].map(([id, s]) => ({ id, ...s, veld: waar.get(id) ?? null })),
+      stukken: [...soorten].map(([id, s]) => ({ id, ...(typen.get(id) ?? s), veld: waar.get(id) ?? null })),
     }
   })
 }

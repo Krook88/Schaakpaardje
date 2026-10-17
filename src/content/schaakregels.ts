@@ -393,7 +393,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
       {
         kop: 'Koningen blijven van elkaar af',
         tekst: [
-          'Een koning mag nooit op een veld gaan staan waar hij geslagen kan worden. Een koning die naast de andere koning gaat staan, kan geslagen worden. Dus komen twee koningen nooit naast elkaar: er zit altijd minstens één veld tussen.',
+          'Een koning mag nooit op een veld gaan staan dat de tegenstander aanvalt. Naast de andere koning wordt hij aangevallen, door die koning zelf. Dus komen twee koningen nooit naast elkaar: er zit altijd minstens één veld tussen.',
         ],
         animatie: {
           id: 'koning-afstand',
@@ -493,6 +493,51 @@ export const SCHAAKREGELS: Onderwerp[] = [
       ['Mag een pion achteruit?', 'Nee, nooit. Dat is het enige stuk dat nooit terug kan.'],
     ],
     lessen: ['pion-1', 'pion-2', 'pion-3', 'pion-4'],
+  },
+  {
+    slug: 'waarde-van-de-stukken',
+    vraag: 'Hoeveel zijn de schaakstukken waard?',
+    zoektitel: 'Waarde van de schaakstukken: pion 1, paard 3, toren 5, dame 9',
+    omschrijving:
+      'Een pion is 1 punt, paard en loper 3, de toren 5 en de dame 9. Zo leer je je kind ruilen, met een bewegend bord.',
+    kort: 'Pion 1, paard en loper 3, toren 5, dame 9.',
+    teken: '⚖',
+    antwoord:
+      'Als je een pion op één punt zet, is een paard drie punten waard, een loper ook drie, een toren vijf en de dame negen. De koning heeft geen waarde: hem kun je niet ruilen.',
+    delen: [
+      {
+        kop: 'Pak wat het meest oplevert',
+        tekst: [
+          'De punten zijn geen regel uit het spel; ze tellen niet mee voor wie er wint. Het is een hulpmiddel: als je kunt kiezen wat je slaat, of als er geruild wordt, laten de punten zien wie er beter van wordt.',
+          'Voor een kind is de eerste stap eenvoudig: kun je twee stukken slaan, kies dan het duurste.',
+        ],
+        animatie: {
+          id: 'waarde-kiezen',
+          titel: 'Een pion of een toren?',
+          beschrijving: 'Een wit paard op d4 kan een zwarte pion op c6 of een zwarte toren op e6 slaan. Het slaat de toren.',
+          fen: '8/8/2p1r3/8/3N4/8/8/8',
+          stappen: [
+            { tekst: 'Het paard kan twee stukken slaan.', bereik: 'd4' },
+            { tekst: 'Een pion is één punt. Een toren is vijf.', markeer: ['c6', 'e6'] },
+            { tekst: 'Het paard pakt de toren.', zet: 'd4-e6' },
+          ],
+        },
+      },
+      {
+        kop: 'Ruilen',
+        tekst: [
+          'Een ruil is als allebei de spelers een stuk slaan. Geef je een paard en krijg je een paard terug, dan is het gelijk op. Geef je een loper voor een toren, dan win je twee punten. Geef je een dame voor een paard, dan verlies je er zes.',
+          'Daarom kijk je vóór elke slagzet: staat het stuk dat ik pak gedekt? Dan kost het je misschien je eigen stuk.',
+        ],
+      },
+    ],
+    thuis:
+      'Speel een partij en vraag bij elke ruil hardop: wie kreeg er meer? Tel de punten op de vingers. Na een paar partijen doet je kind het vanzelf.',
+    vragen: [
+      ['Is een loper meer waard dan een paard?', 'Ze zijn allebei drie punten. In open stellingen is de loper vaak iets sterker, in dichte stellingen het paard, maar voor een kind is gelijk precies goed.'],
+      ['Wat is de koning waard?', 'De koning kun je niet ruilen en niet slaan. Staat hij mat, dan is de partij voorbij. Daarom krijgt hij geen punten.'],
+    ],
+    lessen: ['waarde-1', 'waarde-2', 'waarde-3'],
   },
   {
     slug: 'en-passant',
@@ -724,51 +769,6 @@ export const SCHAAKREGELS: Onderwerp[] = [
       ['Wanneer leert mijn kind pat in de app?', 'In wereld 10, samen met mat. Pas als je mat kent, heeft het zin om het verschil met pat te leren.'],
     ],
     lessen: ['mat-3'],
-  },
-  {
-    slug: 'waarde-van-de-stukken',
-    vraag: 'Hoeveel zijn de schaakstukken waard?',
-    zoektitel: 'Waarde van de schaakstukken: pion 1, paard 3, toren 5, dame 9',
-    omschrijving:
-      'Een pion is 1 punt, paard en loper 3, de toren 5 en de dame 9. Zo leer je je kind ruilen, met een bewegend bord.',
-    kort: 'Pion 1, paard en loper 3, toren 5, dame 9.',
-    teken: '⚖',
-    antwoord:
-      'Als je een pion op één punt zet, is een paard drie punten waard, een loper ook drie, een toren vijf en de dame negen. De koning heeft geen waarde: hem kun je niet ruilen.',
-    delen: [
-      {
-        kop: 'Pak wat het meest oplevert',
-        tekst: [
-          'De punten zijn geen regel uit het spel; ze tellen niet mee voor wie er wint. Het is een hulpmiddel: als je kunt kiezen wat je slaat, of als er geruild wordt, laten de punten zien wie er beter van wordt.',
-          'Voor een kind is de eerste stap eenvoudig: kun je twee stukken slaan, kies dan het duurste.',
-        ],
-        animatie: {
-          id: 'waarde-kiezen',
-          titel: 'Een pion of een toren?',
-          beschrijving: 'Een wit paard op d4 kan een zwarte pion op c6 of een zwarte toren op e6 slaan. Het slaat de toren.',
-          fen: '8/8/2p1r3/8/3N4/8/8/8',
-          stappen: [
-            { tekst: 'Het paard kan twee stukken slaan.', bereik: 'd4' },
-            { tekst: 'Een pion is één punt. Een toren is vijf.', markeer: ['c6', 'e6'] },
-            { tekst: 'Het paard pakt de toren.', zet: 'd4-e6' },
-          ],
-        },
-      },
-      {
-        kop: 'Ruilen',
-        tekst: [
-          'Een ruil is als allebei de spelers een stuk slaan. Geef je een paard en krijg je een paard terug, dan is het gelijk op. Geef je een loper voor een toren, dan win je twee punten. Geef je een dame voor een paard, dan verlies je er zes.',
-          'Daarom kijk je vóór elke slagzet: staat het stuk dat ik pak gedekt? Dan kost het je misschien je eigen stuk.',
-        ],
-      },
-    ],
-    thuis:
-      'Speel een partij en vraag bij elke ruil hardop: wie kreeg er meer? Tel de punten op de vingers. Na een paar partijen doet je kind het vanzelf.',
-    vragen: [
-      ['Is een loper meer waard dan een paard?', 'Ze zijn allebei drie punten. In open stellingen is de loper vaak iets sterker, in dichte stellingen het paard, maar voor een kind is gelijk precies goed.'],
-      ['Wat is de koning waard?', 'De koning kun je niet ruilen en niet slaan. Raak je hem kwijt door mat, dan is de partij voorbij. Daarom krijgt hij geen punten.'],
-    ],
-    lessen: ['waarde-1', 'waarde-2', 'waarde-3'],
   },
 ]
 

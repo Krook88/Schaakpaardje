@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { ALLE_LESSEN, START } from '@/content'
 import { SCHAAKREGELS, onderwerpBijLes } from '@/content/schaakregels'
-import { isLightSquare, PIECE_VALUE, toPlacement, type BoardMap } from '@/engine/board'
+import { applyMove, isLightSquare, parseBoard, PIECE_VALUE, toPlacement, type BoardMap, type PieceType } from '@/engine/board'
 import { Game } from '@/engine/game'
+import { VOOR_KINDEREN } from '@/seo'
 import { bouwBeelden, type Animatie, type Beeld } from '@/uitleg/beelden'
 
 /**
@@ -60,7 +61,41 @@ describe('de schaakregelpagina’s', () => {
   })
 })
 
+/**
+ * Hetzelfde script nog een keer, maar zonder de bouwer: alleen de engine. Zo vergelijkt
+ * de test wat het scherm tekent met wat er werkelijk op het bord staat, en niet de bouwer
+ * met zichzelf. Hier ontsnapte een pion die al vóór zijn promotie als dame op het bord
+ * stond: de zetten waren geldig, alleen het plaatje niet.
+ */
+function naspelen(a: Animatie): string[] {
+  const spel = a.regels === 'echt' ? new Game(a.fen) : null
+  let b = parseBoard(a.fen)
+  return a.stappen.map((stap) => {
+    for (const [veld, st] of Object.entries(stap.plaats ?? {})) {
+      b = { ...b, [veld]: { type: st.toLowerCase() as PieceType, color: st === st.toUpperCase() ? 'w' : 'b' } }
+    }
+    if (stap.zet) {
+      const [van, naar] = stap.zet.split('-')
+      if (spel) {
+        spel.move(van, naar, stap.wordt ?? 'q')
+        b = parseBoard(spel.fen)
+      } else {
+        const kleur = b[van].color
+        b = applyMove(b, van, naar)
+        if (stap.wordt) b = { ...b, [naar]: { type: stap.wordt, color: kleur } }
+      }
+    }
+    return toPlacement(b)
+  })
+}
+
 describe('elke animatie', () => {
+  it.each(ANIMATIES.map((a) => [a.id, a] as const))('%s tekent bij elke stap het echte bord', (_, a) => {
+    expect(a.stappen.length).toBeGreaterThan(0)
+    const echt = naspelen(a)
+    bouwBeelden(a).forEach((b, i) => expect(toPlacement(bord(b)), `stap ${i + 1}`).toBe(echt[i]))
+  })
+
   it.each(ANIMATIES.map((a) => [a.id, a] as const))('%s speelt zonder onmogelijke zet', (_, a) => {
     expect(() => bouwBeelden(a)).not.toThrow()
   })
@@ -85,7 +120,7 @@ describe('elke animatie', () => {
       if (stap.verwacht === 'mat') expect(label, `stap ${i + 1}`).toBe('Schaakmat!')
       if (stap.verwacht === 'pat') expect(label, `stap ${i + 1}`).toBe('Pat')
       // Andersom: een mat of pat dat niemand bedoelde, is een fout in de stelling.
-      if (net && (label === 'Schaakmat!' || label === 'Pat')) expect(stap.verwacht, `stap ${i + 1}`).toBeDefined()
+      if (net && label) expect(stap.verwacht, `stap ${i + 1}`).toBeDefined()
     })
   })
 
@@ -101,7 +136,22 @@ describe('elke animatie', () => {
   })
 })
 
+describe('de gestructureerde gegevens', () => {
+  it('geven de leeftijd op een plek waar een validator hem leest', () => {
+    // suggestedMinAge/-MaxAge bestaan alleen op PeopleAudience; op een EducationalAudience
+    // werden ze op 61 pagina's genegeerd.
+    expect(VOOR_KINDEREN.typicalAgeRange).toBe('3-10')
+    expect(Object.keys(VOOR_KINDEREN.audience).sort()).toEqual(['@type', 'educationalRole'])
+  })
+})
+
 describe('wat de tekst over het bord zegt', () => {
+  it('een pion is een pion tot hij promoveert', () => {
+    const b = bouwBeelden(animatie('pion-promotie'))
+    expect(bord(b[0]).e7).toEqual({ type: 'p', color: 'w' })
+    expect(bord(b[1]).e8).toEqual({ type: 'q', color: 'w' })
+  })
+
   it('rechtsonder ligt een licht veld, linksonder een donker', () => {
     expect(isLightSquare('h1')).toBe(true)
     expect(isLightSquare('a1')).toBe(false)

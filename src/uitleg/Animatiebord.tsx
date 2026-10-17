@@ -48,19 +48,33 @@ export function Animatiebord({
   // Pas na het laden beslissen we of het bord vanzelf gaat spelen. Zonder JavaScript,
   // en in de gebouwde HTML, staat het dus stil op de eerste stap.
   useEffect(() => {
-    const rustig = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!rustig) setSpeelt(true)
+    const rustig = window.matchMedia('(prefers-reduced-motion: reduce)')
+    if (!rustig.matches) setSpeelt(true)
+    // Zet iemand beweging halverwege uit, dan stopt het bord ook.
+    const wissel = () => {
+      if (rustig.matches) setSpeelt(false)
+    }
+    rustig.addEventListener('change', wissel)
     const el = wortel.current
     if (!el || typeof IntersectionObserver === 'undefined') {
       setInBeeld(true)
-      return
+      return () => rustig.removeEventListener('change', wissel)
     }
     const kijker = new IntersectionObserver(([e]) => setInBeeld(e.isIntersecting), {
       threshold: 0.35,
     })
     kijker.observe(el)
-    return () => kijker.disconnect()
+    return () => {
+      kijker.disconnect()
+      rustig.removeEventListener('change', wissel)
+    }
   }, [])
+
+  /** Terug naar het begin, zonder dat de stukken achteruit over het bord glijden. */
+  const naarBegin = () => {
+    setDirect(true)
+    setStap(0)
+  }
 
   useEffect(() => {
     if (!speelt || !inBeeld) return
@@ -68,8 +82,7 @@ export function Animatiebord({
     const t = window.setTimeout(
       () => {
         if (laatste) {
-          setDirect(true)
-          setStap(0)
+          naarBegin()
         } else {
           setStap(stap + 1)
         }
@@ -81,8 +94,14 @@ export function Animatiebord({
 
   useEffect(() => {
     if (!direct) return
-    const r = requestAnimationFrame(() => requestAnimationFrame(() => setDirect(false)))
-    return () => cancelAnimationFrame(r)
+    let binnen = 0
+    const buiten = requestAnimationFrame(() => {
+      binnen = requestAnimationFrame(() => setDirect(false))
+    })
+    return () => {
+      cancelAnimationFrame(buiten)
+      cancelAnimationFrame(binnen)
+    }
   }, [direct])
 
   /**
@@ -172,7 +191,7 @@ export function Animatiebord({
               type="button"
               className={`${s.knop} ${s.speel}`}
               onClick={() => {
-                if (!speelt && stap === beelden.length - 1) setStap(0)
+                if (!speelt && stap === beelden.length - 1) naarBegin()
                 setSpeelt(!speelt)
               }}
               aria-label={speelt ? 'Pauze' : 'Afspelen'}
