@@ -323,6 +323,11 @@ export default function Over() {
               er meer kreeg.
             </li>
           </ul>
+          <p>
+            Zelf de regels even opfrissen? Op de{' '}
+            <Link href="/schaakregels/">schaakregelpagina&apos;s</Link> doet een bewegend bord
+            elke regel voor, van de paardensprong tot en passant.
+          </p>
           <p className={s.klein}>
             Speel je al hele partijen, prima. Maak er alleen nog geen les van hoe je mat
             zet. Dat komt in de app in wereld 10, als de rest erin zit.

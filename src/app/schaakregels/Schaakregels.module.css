@@ -1,0 +1,66 @@
+/*
+ * De schaakregelpagina's. Zelfde ritme en tokens als /over/: secties die ademen, kaarten
+ * alleen voor wat je naast elkaar vergelijkt, en het bewegende bord als blikvanger.
+ */
+.pagina { max-width: 1040px; margin: 0 auto; padding: 8px 18px 96px; display: flex; flex-direction: column; gap: clamp(36px, 6vw, 60px); }
+
+.kruimels { color: var(--muted); font-size: 0.95rem; padding-block: 12px; }
+.kruimels a { color: var(--muted); }
+
+.held { display: flex; gap: 20px; align-items: center; }
+.heldTekst { display: flex; flex-direction: column; gap: 14px; max-width: 64ch; }
+.held h1 { font-size: clamp(1.9rem, 6.2vw, 2.8rem); line-height: 1.08; margin: 0; }
+.antwoord { font-size: 1.15rem; margin: 0; }
+@media (max-width: 559px) { .held { flex-direction: column; align-items: flex-start; } }
+
+.merk {
+  flex: 0 0 auto; width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
+  background: var(--dark-sq); color: #fcf8ef; font-size: 30px; font-weight: 800; line-height: 1;
+  box-shadow: var(--shadow);
+}
+.merkGroot { width: 96px; height: 96px; border-radius: 24px; font-size: 52px; }
+.stuk {
+  font-family: 'Schaakstukken', sans-serif; font-variant-emoji: text; font-size: 1.25em;
+  color: #fcf8ef; -webkit-text-stroke: 1.5px #33302a; paint-order: stroke fill;
+  filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.28));
+}
+
+.deel { display: flex; flex-direction: column; gap: 16px; }
+.deel h2, .thuis h2 { margin: 0; font-size: clamp(1.35rem, 4vw, 1.7rem); }
+.tekst { max-width: 64ch; display: flex; flex-direction: column; gap: 12px; margin: 0; }
+.tekst p { margin: 0; }
+.bordvak { background: var(--surface); border: 2px solid var(--line); border-radius: 24px; padding: clamp(16px, 4vw, 28px); }
+
+.thuis { background: var(--grass-soft); border-radius: 24px; padding: clamp(20px, 5vw, 36px); display: flex; flex-direction: column; gap: 12px; }
+.thuis p { margin: 0; max-width: 64ch; }
+
+.vragen { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+.vragen details { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); }
+.vragen summary { cursor: pointer; list-style: none; padding: 16px 52px 16px 18px; font-weight: 800; position: relative; min-height: 64px; display: flex; align-items: center; }
+.vragen summary::-webkit-details-marker { display: none; }
+.vragen summary::after { content: '+'; position: absolute; right: 18px; top: 50%; translate: 0 -50%; font-size: 1.5rem; color: var(--accent); }
+.vragen details[open] summary::after { content: '−'; }
+.vragen summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: var(--radius); }
+.vragen details p { padding: 0 18px 18px; margin: 0; }
+
+.lessen { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.lessen a, .tegel {
+  display: flex; gap: 14px; align-items: center; height: 100%; padding: 14px 16px; border-radius: var(--radius);
+  background: var(--surface); border: 2px solid var(--line); color: var(--ink); text-decoration: none;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.lessen a:hover, .tegel:hover { border-color: var(--accent); transform: translateY(-2px); }
+.lessen a:focus-visible, .tegel:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.icoon { font-size: 30px; line-height: 1; flex: 0 0 auto; }
+.doel { display: block; color: var(--muted); font-size: 0.95rem; margin-top: 2px; }
+
+.tegels { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+
+.chips { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.chips a { display: inline-flex; align-items: center; min-height: 44px; padding: 6px 14px; border-radius: 999px; background: var(--surface); border: 2px solid var(--line); color: var(--ink); text-decoration: none; font-weight: 700; font-size: 0.95rem; }
+.chips a:hover { border-color: var(--accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lessen a, .tegel { transition: none; }
+  .lessen a:hover, .tegel:hover { transform: none; }
+}

@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import styles from './Welkom.module.css'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
+import { SCHAAKREGELS, onderwerpMet } from '@/content/schaakregels'
+import { Animatiebord } from '@/uitleg/Animatiebord'
+import { bouwBeelden } from '@/uitleg/beelden'
 
 /** Dezelfde basis als de rest van de app, voor als hij ooit in een submap staat. */
 const BASIS = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
@@ -53,6 +56,7 @@ const PUNTEN: [string, string, string][] = [
 export function Welkom() {
   const lessen = ALLE_LESSEN.length
   const werelden = WERELDEN.length
+  const paard = onderwerpMet('paard')!.delen[0].animatie!
 
   return (
     <div className="stack" style={{ gap: 22 }}>
@@ -113,6 +117,41 @@ export function Welkom() {
           </li>
         ))}
       </ul>
+
+      {/* Eén bewegend bord laat beter zien wat je kind gaat doen dan een alinea. Het is
+          hetzelfde bord als op de schaakregelpagina's, en het verwijst ernaar door. */}
+      <section className={`stack ${styles.uitleg}`} style={{ gap: 14 }}>
+        <h2 style={{ margin: 0, fontSize: '1.35rem' }}>Schaken leren, stap voor stap</h2>
+        <p style={{ margin: 0 }}>
+          Kinderen leren schaken het best met één stuk tegelijk. Daarom begint Schaakmaatje
+          bij het bord, en krijgt daarna elk stuk een eigen wereld: eerst de toren en de
+          loper, dan de dame, het paard, de koning en de pion. Pas als alle stukken zitten,
+          komen schaak, mat en rokade. Kijk maar hoe het paard springt:
+        </p>
+        <Animatiebord
+          id="welkom-paard"
+          titel="Het paard springt in een L"
+          beschrijving={paard.beschrijving}
+          beelden={bouwBeelden(paard)}
+          kort
+        />
+        <p style={{ margin: 0 }}>
+          Alle schaakregels staan zo op een bewegend bord, om zelf even op te frissen of
+          samen te bekijken:
+        </p>
+        {/* Alleen de zes stukken; de rest staat één tik verder. Twaalf links onder elkaar
+            duwden het aanmeldformulier op een telefoon twee schermen naar beneden. */}
+        <ul className={styles.regels}>
+          {SCHAAKREGELS.filter((o) => o.stuk).map((o) => (
+            <li key={o.slug}>
+              <Link href={`/schaakregels/${o.slug}/`}>{o.vraag.replace('Hoe loopt ', '').replace('?', '')}</Link>
+            </li>
+          ))}
+          <li>
+            <Link href="/schaakregels/">Alle schaakregels →</Link>
+          </li>
+        </ul>
+      </section>
 
       <p className="muted" style={{ margin: 0, fontSize: '0.95rem' }}>
         Geen reclame, geen account, geen aankopen in de app. Alles blijft op dit

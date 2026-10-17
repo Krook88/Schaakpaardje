@@ -221,7 +221,7 @@ async function quizRekentGoedGoed() {
  * Overal moet minstens één knop of link staan die ergens heen gaat.
  * ------------------------------------------------------------------ */
 async function altijdEenUitweg() {
-  const schermen = ['/', '/kaart/', '/lessen/', '/over/', '/stal/', '/spelen/', '/opfrissen/', '/les/weide-1/']
+  const schermen = ['/', '/kaart/', '/lessen/', '/over/', '/schaakregels/', '/schaakregels/paard/', '/stal/', '/spelen/', '/opfrissen/', '/les/weide-1/']
   const zonder = []
   for (const pad of schermen) {
     await page.goto(URL + pad, { waitUntil: 'networkidle' })
@@ -230,6 +230,44 @@ async function altijdEenUitweg() {
     if (knoppen === 0) zonder.push(pad)
   }
   meld('elk scherm heeft een uitweg', zonder.length === 0, zonder.join(', '))
+}
+
+/* ------------------------------------------------------------------ *
+ * 4b. Het uitlegbord speelt, en stopt als je pauze drukt.
+ *
+ * De schaakregelpagina's leggen alles uit met een bord dat zichzelf afspeelt. Een
+ * bord dat blijft stilstaan valt in de contentcontrole niet op, want de stappen staan
+ * gewoon in de HTML; en een pauzeknop die niets doet ook niet. Bij de rokade moet
+ * bovendien de toren meeverhuizen, en dat zie je alleen als het bord echt speelt.
+ * ------------------------------------------------------------------ */
+async function uitlegbordSpeelt() {
+  const naam = 'het uitlegbord speelt af en pauzeert'
+  await page.goto(`${URL}/schaakregels/rokade/`, { waitUntil: 'networkidle' })
+  const bord = page.locator('#rokade-kort-lang')
+  await bord.scrollIntoViewIfNeeded()
+  const stap = () => bord.locator('li[aria-current="step"]').innerText()
+  const eerst = await stap()
+  await page.waitForTimeout(4500)
+  const later = await stap()
+  if (eerst === later) return meld(naam, false, 'na 4,5 seconde nog steeds de eerste stap')
+  await bord.getByRole('button', { name: 'Pauze' }).click()
+  const stil = await stap()
+  await page.waitForTimeout(7000)
+  if ((await stap()) !== stil) return meld(naam, false, 'het bord liep door na pauze')
+  // Met de hand naar de korte rokade: de toren hoort nu op f1 te staan, niet meer op h1.
+  await bord.getByRole('button', { name: /Korte rokade/ }).click()
+  await page.waitForTimeout(800)
+  const torens = await bord.evaluate((el) => {
+    const b = el.querySelector('[role="img"]').getBoundingClientRect()
+    return [...el.querySelectorAll('[role="img"] > span[aria-hidden]')]
+      .filter((s) => s.textContent.startsWith('♜') && getComputedStyle(s).opacity !== '0')
+      .map((s) => {
+        const r = s.getBoundingClientRect()
+        return `${'abcdefgh'[Math.round((r.left - b.left) / r.width)]}${8 - Math.round((r.top - b.top) / r.height)}`
+      })
+  })
+  const goed = torens.includes('f1') && !torens.includes('h1')
+  meld(naam, goed, goed ? '' : `torens op ${torens.join(', ')}`)
 }
 
 /* ------------------------------------------------------------------ *
@@ -802,6 +840,7 @@ await opAfstandSpelen()
 await liveMetEenVriendje()
 await promotieMetKeuze()
 await contactformulierIsEerlijk()
+await uitlegbordSpeelt()
 await altijdEenUitweg()
 await tweedeKind()
 
