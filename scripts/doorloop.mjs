@@ -62,6 +62,19 @@ page.on('pageerror', (e) => consolefouten.push(`PAGEERROR: ${e.message}`))
 const ballon = async () =>
   (await page.locator('[class*=ballon]').first().innerText().catch(() => '')).split('\n')[0].trim()
 
+/**
+ * Lost het rekenslot op dat op `p` openstaat. Geeft false als er geen som staat.
+ * Eén plek, zodat de drie stappen die erlangs moeten niet uit elkaar lopen.
+ */
+async function losRekenslot(p) {
+  const som = await p.getByText(/Hoeveel is \d+ × \d+/).innerText().catch(() => '')
+  const m = som.match(/(\d+) × (\d+)/)
+  if (!m) return false
+  await p.getByRole('textbox').fill(String(Number(m[1]) * Number(m[2])))
+  await p.getByRole('button', { name: 'Verder' }).click()
+  return true
+}
+
 async function nieuwProfiel(leeftijd = 6) {
   await page.goto(URL, { waitUntil: 'networkidle' })
   await page.getByRole('textbox').first().fill('Testkind')
@@ -428,11 +441,7 @@ async function opAfstandSpelen() {
   if (!/Wachten op/.test(wacht)) return meld(naam, false, `na verversen geen wachtstand ("${wacht}")`)
   await page.getByRole('button', { name: /versturen/ }).click()
   await page.waitForTimeout(300)
-  const som = await page.getByText(/Hoeveel is \d+ × \d+/).innerText().catch(() => '')
-  const m = som.match(/(\d+) × (\d+)/)
-  if (!m) return meld(naam, false, 'versturen ging niet langs het rekenslot')
-  await page.getByRole('textbox').fill(String(Number(m[1]) * Number(m[2])))
-  await page.getByRole('button', { name: 'Verder' }).click()
+  if (!(await losRekenslot(page))) return meld(naam, false, 'versturen ging niet langs het rekenslot')
   await page.waitForTimeout(400)
   const link = await page.getByRole('textbox', { name: 'Link met de zet' }).inputValue().catch(() => '')
   if (!/\/spelen\/afstand\/#[A-Za-z0-9_-]+$/.test(link)) return meld(naam, false, `geen bruikbare link ("${link}")`)
@@ -608,11 +617,7 @@ async function liveMetEenVriendje() {
     const a = await nieuwApparaat()
     await a.goto(`${BASIS}/spelen/live/`, { waitUntil: 'load' })
     await a.getByRole('button', { name: /Speellink maken/ }).click()
-    const som = await a.getByText(/Hoeveel is \d+ × \d+/).innerText().catch(() => '')
-    const m = som.match(/(\d+) × (\d+)/)
-    if (!m) return meld(naam, false, 'de speellink ging niet langs het rekenslot')
-    await a.getByRole('textbox').fill(String(Number(m[1]) * Number(m[2])))
-    await a.getByRole('button', { name: 'Verder' }).click()
+    if (!(await losRekenslot(a))) return meld(naam, false, 'de speellink ging niet langs het rekenslot')
     const veld = a.getByRole('textbox', { name: 'Speellink' })
     await veld.waitFor({ timeout: 5000 }).catch(() => {})
     const link = await veld.inputValue().catch(() => '')
@@ -739,25 +744,45 @@ async function liveMetEenVriendje() {
  * startpagina.
  * ------------------------------------------------------------------ */
 async function tweedeKind() {
-  const naam = 'tweede kind: profiel via het ouderscherm, daarna wisselen'
-  await page.goto(`${URL}/ouders/`, { waitUntil: 'networkidle' })
-  const som = await page.getByText(/Hoeveel is \d+ × \d+/).innerText().catch(() => '')
-  const m = som.match(/(\d+) × (\d+)/)
-  if (!m) return meld(naam, false, 'geen rekenslot voor het ouderscherm')
-  await page.getByRole('textbox').fill(String(Number(m[1]) * Number(m[2])))
-  await page.getByRole('button', { name: 'Verder' }).click()
-  const knop = page.getByRole('button', { name: /Profiel voor nog een kind/ })
-  if (!(await knop.count())) return meld(naam, false, 'geen knop voor een tweede kind in het ouderscherm')
-  await knop.click()
-  await page.waitForURL((u) => new globalThis.URL(u).pathname === '/')
+  const naam = 'tweede kind: via het ouderscherm, formulier in beeld, terug kan, eigen maatje, wisselen'
+  const naarFormulier = async () => {
+    await page.goto(`${URL}/ouders/`, { waitUntil: 'networkidle' })
+    if (!(await losRekenslot(page))) return 'geen rekenslot voor het ouderscherm'
+    const knop = page.getByRole('button', { name: /Profiel voor nog een kind/ })
+    if (!(await knop.count())) return 'geen knop voor een tweede kind in het ouderscherm'
+    await knop.click()
+    await page.waitForURL(/#nieuw-kind$/)
+    // Het formulier zelf, niet de landingspagina erboven (review 16, L1).
+    const kop = page.getByRole('heading', { name: 'Nieuw profiel' })
+    await kop.waitFor({ timeout: 3000 }).catch(() => {})
+    if (!(await kop.isVisible().catch(() => false))) return 'na de knop staat het formulier niet in beeld'
+    return ''
+  }
+
+  // Eerst weglopen zonder iets te doen: het eerste kind moet gewoon actief blijven,
+  // anders speelt het een les waarvan niets bewaard wordt (review 16, C1 en L2).
+  let fout = await naarFormulier()
+  if (fout) return meld(naam, false, fout)
+  await page.getByRole('button', { name: /Terug naar .*Testkind/ }).click()
+  if (!(await page.getByRole('heading', { name: 'Hoi Testkind!' }).count())) return meld(naam, false, '"terug" bracht het eerste kind niet terug')
+  fout = await naarFormulier()
+  if (fout) return meld(naam, false, fout)
+  await page.goto(`${URL}/lessen/`, { waitUntil: 'networkidle' })
+  await page.goto(URL, { waitUntil: 'networkidle' })
+  if (!(await page.getByRole('heading', { name: 'Hoi Testkind!' }).count())) return meld(naam, false, 'na weglopen was het eerste kind niet meer actief')
+
+  fout = await naarFormulier()
+  if (fout) return meld(naam, false, fout)
+  // Niet zelf een maatje kiezen: het formulier hoort er een te nemen dat nog vrij is (L3).
   await page.getByRole('textbox').first().fill('Broertje')
   await page.getByRole('button', { name: '9', exact: true }).click()
   await page.getByRole('button', { name: /Beginnen/ }).click()
   await page.waitForTimeout(700)
   if (!(await page.getByRole('heading', { name: 'Hoi Broertje!' }).count())) return meld(naam, false, 'het tweede profiel begon niet')
-  const wie = page.getByRole('button', { name: /Testkind/ })
-  if (!(await wie.count())) return meld(naam, false, 'geen "Wie speelt er?" met het eerste kind')
-  await wie.click()
+  const wie = page.locator('section', { hasText: 'Wie speelt er?' }).getByRole('button')
+  const plaatjes = (await wie.allInnerTexts()).map((t) => t.trim().split(' ')[0])
+  if (new Set(plaatjes).size !== plaatjes.length) return meld(naam, false, `twee kinderen met hetzelfde maatje: ${plaatjes.join(' ')}`)
+  await wie.filter({ hasText: 'Testkind' }).click()
   await page.waitForTimeout(300)
   const terug = await page.getByRole('heading', { name: 'Hoi Testkind!' }).count()
   meld(naam, terug > 0, terug ? '' : 'wisselen naar het eerste kind lukte niet')

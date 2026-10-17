@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
 import { GeluidKnop } from '@/ui/GeluidKnop'
@@ -11,6 +11,7 @@ import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
 import { aantalBezit, verzameling } from '@/progress/verzameling'
 import {
   AVATARS,
+  eersteVrijeMaatje,
   sterrenTotaal,
   useProfiel,
   useProfielStore,
@@ -60,6 +61,22 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   // praten zodra er later iets op dit scherm verandert.
   const [vanzelf] = useState(alGetikt)
 
+  // Het ouderscherm stuurt hierheen met #nieuw-kind. Het huidige kind blijft zolang
+  // actief: zette je het eerst op "geen kind", dan kon een kind dat weer ging spelen een
+  // hele les doen waarvan niets bewaard werd. Zestiende review, C1.
+  const [nieuwKind, setNieuwKind] = useState(false)
+  useEffect(() => {
+    const lees = () => setNieuwKind(window.location.hash === '#nieuw-kind')
+    lees()
+    window.addEventListener('hashchange', lees)
+    return () => window.removeEventListener('hashchange', lees)
+  }, [])
+  const sluitNieuwKind = () => {
+    window.history.replaceState(null, '', window.location.pathname)
+    setNieuwKind(false)
+    naarBoven()
+  }
+
   // Vóór de opgeslagen profielen binnen zijn.
   //
   // Dit is precies wat er in de geëxporteerde index.html staat, en dus wat een
@@ -73,6 +90,32 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
     )
   }
 
+  // Alleen het formulier, niet de landingspagina erboven: die stond hier eerst, en een
+  // ouder die net op "nog een kind" had getikt dacht dat hij was uitgelogd. Met een weg
+  // terug naar het kind dat er al was. Zestiende review, L1 en L2.
+  if (profiel && nieuwKind) {
+    return (
+      <main className="page">
+        <div className="stack" style={{ maxWidth: 760, margin: '0 auto' }}>
+          <button type="button" className="btn" style={{ alignSelf: 'flex-start' }} onClick={sluitNieuwKind}>
+            ← Terug naar {profiel.avatar} {profiel.naam}
+          </button>
+          <NieuwProfiel
+            alleenFormulier
+            bestaand={[]}
+            bezet={profielen.map((p) => p.avatar)}
+            onKies={kiesProfiel}
+            onMaak={(naam, leeftijd, avatar) => {
+              const id = maakProfiel(naam, leeftijd, avatar)
+              sluitNieuwKind()
+              return id
+            }}
+          />
+        </div>
+      </main>
+    )
+  }
+
   if (!profiel) {
     return (
       <main className="page">
@@ -80,6 +123,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
           {welkom}
           <NieuwProfiel
             bestaand={profielen.map((p) => ({ id: p.id, naam: p.naam, avatar: p.avatar }))}
+            bezet={profielen.map((p) => p.avatar)}
             onKies={(id) => {
               kiesProfiel(id)
               naarBoven()
@@ -283,7 +327,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
                 <button
                   key={p.id}
                   type="button"
-                  className="btn"
+                  className="btn btn--big"
                   onClick={() => kiesProfiel(p.id)}
                   aria-pressed={p.id === profiel.id}
                   style={p.id === profiel.id ? { borderColor: 'var(--accent)' } : undefined}
@@ -442,10 +486,16 @@ function Rondleiding() {
 
 function NieuwProfiel({
   bestaand,
+  bezet,
+  alleenFormulier = false,
   onKies,
   onMaak,
 }: {
   bestaand: { id: string; naam: string; avatar: string }[]
+  /** De maatjes die al een kind op dit apparaat heeft. */
+  bezet: string[]
+  /** Voor nog een kind, via het ouderscherm: zonder Pips welkom en de links eronder. */
+  alleenFormulier?: boolean
   onKies: (id: string) => void
   onMaak: (naam: string, leeftijd: number, avatar: string) => string
 }) {
@@ -456,7 +506,7 @@ function NieuwProfiel({
   const [vraagNaam, setVraagNaam] = useState(false)
   const naamVeld = useRef<HTMLInputElement>(null)
   const [leeftijd, setLeeftijd] = useState(6)
-  const [avatar, setAvatar] = useState<string>(AVATARS[0])
+  const [avatar, setAvatar] = useState<string>(() => eersteVrijeMaatje(bezet))
 
   return (
     <div className="stack">
@@ -467,12 +517,16 @@ function NieuwProfiel({
       {/* Niet vanzelf praten: dit is het eerste wat een nieuwe bezoeker ziet. Eerst
           vertellen dat Pip praat, dan mag je hem zelf aanzetten. Na "Beginnen" praat hij
           wel uit zichzelf, want dan is er gekozen om te starten. */}
-      <Pip zegt={WELKOM} stemming="blij" vanzelf={false} />
-      <p className="muted" style={{ margin: 0 }}>
-        Pip leest alles voor, dus lezen hoeft nog niet. Zet het geluid van je apparaat
-        aan en tik op de luidspreker <span aria-hidden="true">🔊</span> om hem te horen. Na
-        &ldquo;Beginnen&rdquo; praat hij vanzelf.
-      </p>
+      {!alleenFormulier && (
+        <>
+          <Pip zegt={WELKOM} stemming="blij" vanzelf={false} />
+          <p className="muted" style={{ margin: 0 }}>
+            Pip leest alles voor, dus lezen hoeft nog niet. Zet het geluid van je apparaat
+            aan en tik op de luidspreker <span aria-hidden="true">🔊</span> om hem te horen. Na
+            &ldquo;Beginnen&rdquo; praat hij vanzelf.
+          </p>
+        </>
+      )}
 
       {bestaand.length > 0 && (
         <section className="card stack">
@@ -488,7 +542,7 @@ function NieuwProfiel({
       )}
 
       <section className="card stack">
-        <h2 style={{ fontSize: '1.1rem' }}>Nieuw hier</h2>
+        <h2 style={{ fontSize: '1.1rem' }}>{alleenFormulier ? 'Nieuw profiel' : 'Nieuw hier'}</h2>
         <label className="stack" style={{ gap: 6 }}>
           <span>Hoe heet je?</span>
           <input
@@ -581,10 +635,12 @@ function NieuwProfiel({
         {/* Voor de ouder die eerst wil weten waar hij zijn kind op zet — en meteen de
             enige link vanaf de startpagina naar de twee pagina's die zonder de app te
             lezen zijn. Zonder zo'n link staan ze los in de sitemap en verder nergens. */}
-        <p style={{ fontSize: '1rem', margin: 0, lineHeight: 2 }}>
-          <Link href="/over/">Over Schaakmaatje</Link> · <Link href="/lessen/">Alle lessen</Link> ·{' '}
-          <Link href="/contact/">Contact</Link>
-        </p>
+        {!alleenFormulier && (
+          <p style={{ fontSize: '1rem', margin: 0, lineHeight: 2 }}>
+            <Link href="/over/">Over Schaakmaatje</Link> · <Link href="/lessen/">Alle lessen</Link> ·{' '}
+            <Link href="/contact/">Contact</Link>
+          </p>
+        )}
       </section>
     </div>
   )

@@ -114,6 +114,17 @@ function vanafHetBegin(lesId: string, modus: Modus): boolean {
 
 export const AVATARS = ['🐴', '🦊', '🐻', '🐰', '🦉', '🐢', '🐝', '🦄'] as const
 
+/**
+ * Het eerste maatje dat nog niemand op dit apparaat heeft.
+ *
+ * Het formulier begon altijd bij het paardje. Kiest de ouder niets, dan stonden er bij
+ * "Wie speelt er?" twee keer 🐴, en een kind dat nog niet leest herkent zichzelf alleen
+ * aan het plaatje. Zijn ze allemaal bezet, dan weer het paardje.
+ */
+export function eersteVrijeMaatje(bezet: readonly string[]): string {
+  return AVATARS.find((a) => !bezet.includes(a)) ?? AVATARS[0]
+}
+
 type State = {
   profielen: Profiel[]
   actiefId: string | null
@@ -158,13 +169,6 @@ type State = {
 
   maakProfiel: (naam: string, leeftijd: number, avatar: string) => string
   kiesProfiel: (id: string) => void
-  /**
-   * Geen profiel meer actief, zodat de startpagina het formulier "Nieuw hier" toont.
-   *
-   * Dat formulier verscheen alleen zolang er nog geen enkel profiel was. Een tweede kind
-   * op hetzelfde apparaat kon er dus niet bij, behalve door het eerste te wissen.
-   */
-  nieuwKind: () => void
   verwijderProfiel: (id: string) => void
   zetInstelling: <K extends keyof Instellingen>(sleutel: K, waarde: Instellingen[K]) => void
   /**
@@ -238,10 +242,6 @@ export const useProfielStore = create<State>()(
 
       kiesProfiel(id) {
         set({ actiefId: id })
-      },
-
-      nieuwKind() {
-        set({ actiefId: null })
       },
 
       zetLeeftijd(leeftijd) {

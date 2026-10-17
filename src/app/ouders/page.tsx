@@ -71,7 +71,7 @@ function OuderPaneel() {
   const zetLeeftijd = useProfielStore((s) => s.zetLeeftijd)
   const herstelInstellingen = useProfielStore((s) => s.herstelInstellingen)
   const verwijderProfiel = useProfielStore((s) => s.verwijderProfiel)
-  const nieuwKind = useProfielStore((s) => s.nieuwKind)
+  const profielen = useProfielStore((s) => s.profielen)
   const router = useRouter()
   const gespeeld = useGespeeld()
   const oefendagen = useOefendagen()
@@ -102,12 +102,63 @@ function OuderPaneel() {
     </label>
   )
 
+  // Nog geen enkel kind op dit apparaat. Hier stond dan het hele paneel, met een leeftijd
+  // en schuifjes die stil niets deden: er is niemand om ze voor te bewaren.
+  if (!profiel) {
+    return (
+      <main className="page">
+        <Kop titel="Voor ouders" terug="/" />
+        <div className="stack">
+          <section className="card stack">
+            <h2>Nog geen kind</h2>
+            <p className="muted" style={{ margin: 0 }}>
+              Op dit apparaat is nog geen profiel. Maak er een op de startpagina; daarna
+              staan hier de voortgang en de instellingen.
+            </p>
+            <Link href="/" className="btn btn--primary btn--big">
+              Naar de startpagina
+            </Link>
+          </section>
+          <section className="card stack">
+            <h2>Privacy</h2>
+            <TellenSchakel />
+          </section>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main className="page">
       <Kop titel="Voor ouders" terug="/" />
       <div className="stack">
+        {/* Bovenaan, want alles hieronder hoort bij één kind, en met twee kinderen zag je
+            nergens bij wie. En hier, niet op het kindscherm: een kind van vier dat op een
+            plusje tikt, heeft zo vijf profielen. */}
         <section className="card stack">
-          <h2>Wat kan {profiel?.naam ?? 'je kind'} nu?</h2>
+          <h2>Kinderen op dit apparaat</h2>
+          <p className="muted" style={{ margin: 0 }}>
+            {profielen.length > 1 ? (
+              <>
+                Hieronder zie je {profiel.avatar} {profiel.naam}. Een ander kind kies je op de
+                startpagina bij &ldquo;Wie speelt er?&rdquo;.
+              </>
+            ) : (
+              <>
+                Elk kind krijgt een eigen profiel, met een eigen niveau en eigen sterren.
+                Hieronder zie je {profiel.avatar} {profiel.naam}.
+              </>
+            )}
+          </p>
+          {/* Het huidige kind blijft actief tot het nieuwe er is. Zo kan niemand een les
+              spelen terwijl er geen kind is om de sterren voor te bewaren. */}
+          <button type="button" className="btn" onClick={() => router.push('/#nieuw-kind')}>
+            + Profiel voor nog een kind
+          </button>
+        </section>
+
+        <section className="card stack">
+          <h2>Wat kan {profiel.naam} nu?</h2>
           {/* Elk deel een eigen lijstje-regel die niet afbreekt: in één zin brak "· 6" los
               van "partijen". En voor de ouder ook wanneer er laatst geoefend is; dat
               staat bewust niet bij het kind, zodat het geen druk wordt. */}
@@ -260,26 +311,6 @@ function OuderPaneel() {
               ))}
             </span>
           </label>
-        </section>
-
-        {/* Hier en niet op het kindscherm: een kind van vier dat op een plusje tikt,
-            heeft zo vijf profielen. Achter het rekenslot maakt de ouder er een aan. */}
-        <section className="card stack">
-          <h2>Nog een kind</h2>
-          <p className="muted" style={{ margin: 0 }}>
-            Elk kind krijgt een eigen profiel, met een eigen niveau en eigen sterren. Op de
-            startpagina kies je daarna bij &ldquo;Wie speelt er?&rdquo; wie er aan de beurt is.
-          </p>
-          <button
-            type="button"
-            className="btn"
-            onClick={() => {
-              nieuwKind()
-              router.push('/')
-            }}
-          >
-            + Profiel voor nog een kind
-          </button>
         </section>
 
         <section className="card stack">
