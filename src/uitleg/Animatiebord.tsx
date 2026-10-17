@@ -32,18 +32,26 @@ export function Animatiebord({
   titel,
   beschrijving,
   beelden,
+  kort,
 }: {
   id: string
   titel: string
   beschrijving: string
   beelden: Beeld[]
+  /**
+   * Alleen de zin van nu onder het bord, geen hele stappenlijst. Voor de startpagina,
+   * waar het bord een voorproefje is en het aanmeldformulier niet ver weg mag raken.
+   */
+  kort?: boolean
 }) {
   const [stap, setStap] = useState(0)
   const [speelt, setSpeelt] = useState(false)
   const [inBeeld, setInBeeld] = useState(false)
   /** Bij het terugspringen naar het begin glijden de stukken niet terug, ze staan er gewoon. */
   const [direct, setDirect] = useState(false)
-  const wortel = useRef<HTMLElement>(null)
+  /** Wat een schermlezer hoort. Alleen bij zelf bladeren: tijdens het afspelen zou het door alles heen praten. */
+  const [melding, setMelding] = useState('')
+  const bordRef = useRef<HTMLDivElement>(null)
 
   // Pas na het laden beslissen we of het bord vanzelf gaat spelen. Zonder JavaScript,
   // en in de gebouwde HTML, staat het dus stil op de eerste stap.
@@ -55,13 +63,16 @@ export function Animatiebord({
       if (rustig.matches) setSpeelt(false)
     }
     rustig.addEventListener('change', wissel)
-    const el = wortel.current
+    // We kijken naar het bord zelf, niet naar het hele blok: dat is met de stappenlijst
+    // erbij op een telefoon hoger dan het scherm, en zou dan nooit genoeg in beeld zijn.
+    const el = bordRef.current
     if (!el || typeof IntersectionObserver === 'undefined') {
       setInBeeld(true)
       return () => rustig.removeEventListener('change', wissel)
     }
     const kijker = new IntersectionObserver(([e]) => setInBeeld(e.isIntersecting), {
-      threshold: 0.35,
+      // Ruim in beeld, zodat er op een groot scherm niet twee borden tegelijk spelen.
+      threshold: 0.6,
     })
     kijker.observe(el)
     return () => {
@@ -140,17 +151,28 @@ export function Animatiebord({
   const ga = (n: number) => {
     setSpeelt(false)
     setDirect(false)
-    setStap(Math.max(0, Math.min(beelden.length - 1, n)))
+    const naar = Math.max(0, Math.min(beelden.length - 1, n))
+    setStap(naar)
+    setMelding(`Stap ${naar + 1} van ${beelden.length}: ${beelden[naar].tekst}`)
   }
 
   return (
-    <figure ref={wortel} className={s.figuur} id={id} aria-labelledby={`${id}-kop`}>
+    <figure className={s.figuur} id={id} aria-labelledby={`${id}-kop`}>
       <h3 id={`${id}-kop`} className={s.kop}>
         {titel}
       </h3>
       <div className={s.opstelling}>
         <div className={s.bordkant}>
-          <div className={`${s.bord} ${direct ? s.direct : ''}`} role="img" aria-label={beschrijving}>
+          {/* De coördinaten staan naast het bord in plaats van in de hoek van een veld:
+              daar vielen ze over de stukken en waren ze te klein om d4 te vinden, terwijl
+              de stappen er wel naar verwijzen. */}
+          <div className={s.rand}>
+          <div className={s.rijen} aria-hidden="true">
+            {[8, 7, 6, 5, 4, 3, 2, 1].map((r) => (
+              <span key={r}>{r}</span>
+            ))}
+          </div>
+          <div ref={bordRef} className={`${s.bord} ${direct ? s.direct : ''}`} role="img" aria-label={beschrijving}>
             {allSquares().map((v) => (
               <span key={v} className={klasse(v)}>
                 {beeld.stippen.includes(v) && (
@@ -158,8 +180,6 @@ export function Animatiebord({
                 )}
                 {beeld.ringen.includes(v) && <i className={s.ring} />}
                 {beeld.verboden.includes(v) && <i className={s.kruis} />}
-                {rankOf(v) === 1 && <b className={s.lijn}>{v[0]}</b>}
-                {fileIndex(v) === 0 && <b className={s.rij}>{v[1]}</b>}
               </span>
             ))}
             {beeld.stukken.map((st, i) => {
@@ -182,6 +202,12 @@ export function Animatiebord({
                 {beeld.label}
               </span>
             )}
+          </div>
+          <div className={s.lijnen} aria-hidden="true">
+            {'abcdefgh'.split('').map((l) => (
+              <span key={l}>{l}</span>
+            ))}
+          </div>
           </div>
           <div className={s.knoppen}>
             <button type="button" className={s.knop} onClick={() => ga(stap - 1)} disabled={stap === 0} aria-label="Vorige stap">
@@ -212,16 +238,23 @@ export function Animatiebord({
             </span>
           </div>
         </div>
-        <ol className={s.stappen}>
-          {beelden.map((b, i) => (
-            <li key={i} aria-current={i === stap ? 'step' : undefined}>
-              <button type="button" onClick={() => ga(i)} className={s.stapknop}>
-                {b.tekst}
-              </button>
-            </li>
-          ))}
-        </ol>
+        {kort ? (
+          <p className={s.onderschrift}>{beeld.tekst}</p>
+        ) : (
+          <ol className={s.stappen}>
+            {beelden.map((b, i) => (
+              <li key={i} aria-current={i === stap ? 'step' : undefined}>
+                <button type="button" onClick={() => ga(i)} className={s.stapknop}>
+                  {b.tekst}
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
       </div>
+      <p className={s.verborgen} aria-live="polite">
+        {melding}
+      </p>
     </figure>
   )
 }

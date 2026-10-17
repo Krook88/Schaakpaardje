@@ -635,6 +635,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
               tekst: 'De koning mag niet over een aangevallen veld, dus kort rokeren kan nu niet. Lang wel.',
               bereik: 'e1',
               verboden: ['g1'],
+              markeer: ['f1'],
             },
             { tekst: 'Wit rokeert lang.', zet: 'e1-c1' },
           ],
@@ -693,7 +694,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
           regels: 'echt',
           stappen: [
             { tekst: 'De zwarte koning staat achter zijn drie pionnen.', markeer: ['g8', 'f7', 'g7', 'h7'] },
-            { tekst: 'De toren gaat naar a8: schaak.', zet: 'a1-a8', verwacht: 'mat' },
+            { tekst: 'De toren gaat naar a8 en valt de koning aan.', zet: 'a1-a8', verwacht: 'mat' },
             { tekst: 'Weglopen kan niet, slaan kan niet, ertussen kan niet. Schaakmat!', markeer: ['f7', 'g7', 'h7'] },
           ],
         },

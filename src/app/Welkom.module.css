@@ -90,10 +90,20 @@
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 14px;
+  gap: 8px;
 }
 
+/* Chips van 44 px: groot genoeg voor een duim, en ze breken naast elkaar af. */
 .regels a {
-  display: inline-block;
-  padding-block: 6px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  background: var(--ground);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
 }

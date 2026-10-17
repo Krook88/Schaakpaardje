@@ -133,17 +133,23 @@ export function Welkom() {
           titel="Het paard springt in een L"
           beschrijving={paard.beschrijving}
           beelden={bouwBeelden(paard)}
+          kort
         />
         <p style={{ margin: 0 }}>
           Alle schaakregels staan zo op een bewegend bord, om zelf even op te frissen of
           samen te bekijken:
         </p>
+        {/* Alleen de zes stukken; de rest staat één tik verder. Twaalf links onder elkaar
+            duwden het aanmeldformulier op een telefoon twee schermen naar beneden. */}
         <ul className={styles.regels}>
-          {SCHAAKREGELS.map((o) => (
+          {SCHAAKREGELS.filter((o) => o.stuk).map((o) => (
             <li key={o.slug}>
-              <Link href={`/schaakregels/${o.slug}/`}>{o.vraag}</Link>
+              <Link href={`/schaakregels/${o.slug}/`}>{o.vraag.replace('Hoe loopt ', '').replace('?', '')}</Link>
             </li>
           ))}
+          <li>
+            <Link href="/schaakregels/">Alle schaakregels →</Link>
+          </li>
         </ul>
       </section>
 
