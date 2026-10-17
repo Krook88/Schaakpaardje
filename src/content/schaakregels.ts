@@ -426,8 +426,8 @@ export const SCHAAKREGELS: Onderwerp[] = [
     vraag: 'Hoe loopt de pion?',
     zoektitel: 'Hoe loopt de pion bij schaken? Lopen, slaan en promoveren',
     omschrijving:
-      'De pion loopt recht vooruit, slaat schuin en wordt een dame op de overkant. De eerste keer mag hij twee velden. Bekijk het op een bewegend bord.',
-    kort: 'Recht vooruit, schuin slaan, en op de overkant wordt hij een dame.',
+      'De pion loopt recht vooruit, slaat schuin en promoveert op de overkant: je kiest zelf welk stuk, meestal een dame. Met bewegend bord.',
+    kort: 'Recht vooruit, schuin slaan, en op de overkant kies je wat hij wordt.',
     stuk: 'p',
     antwoord:
       'De pion loopt één veld recht vooruit, en vanaf zijn beginplek mag hij ook twee. Hij slaat schuin vooruit, nooit recht, en hij gaat nooit terug. Haalt hij de overkant, dan wordt hij een ander stuk, meestal een dame.',
@@ -468,7 +468,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
         },
       },
       {
-        kop: 'Pion wordt dame',
+        kop: 'Op de overkant: je kiest zelf',
         tekst: [
           'Haalt een pion de overkant, dan mag hij niet blijven staan als pion. Hij wordt meteen een dame, toren, loper of paard; je kiest zelf. Bijna altijd kies je een dame, want die is het sterkst. Je mag dus best twee dames hebben.',
           'Er is nog één bijzondere pionregel: slaan en passant. Die heeft een eigen pagina.',
@@ -480,7 +480,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
           fen: '8/4P3/8/8/8/8/8/8',
           stappen: [
             { tekst: 'De pion is bijna aan de overkant.', markeer: ['e8'] },
-            { tekst: 'Nog één stap, en hij wordt een dame!', zet: 'e7-e8', wordt: 'q' },
+            { tekst: 'Nog één stap. Nu mag je kiezen wat hij wordt: dame, toren, loper of paard. Hier een dame!', zet: 'e7-e8', wordt: 'q' },
             { tekst: 'Een dame kan meteen alle kanten op.', bereik: 'e8' },
           ],
         },
