@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
 import { LessonPlayer } from '@/lesson/LessonPlayer'
 import { LesUitleg } from '@/lesson/LesUitleg'
-import { SITE, deelkaart } from '@/seo'
+import { SITE, VOOR_KINDEREN, deelkaart, kruimels } from '@/seo'
+import { Gegevens } from '@/ui/Gegevens'
 
 export function generateStaticParams() {
   return ALLE_LESSEN.map((les) => ({ lesId: les.id }))
@@ -51,11 +52,37 @@ export default async function LesPagina({ params }: { params: Promise<{ lesId: s
   const gevonden = zoek(lesId)
   if (!gevonden) notFound()
   const { les, wereld, nummer, aantal } = gevonden
+  const url = `${SITE}/les/${les.id}/`
+  // Een les als leermiddel, met zijn plek in het geheel: Schaakmaatje › Lessen › de les.
+  const gegevens = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      kruimels([
+        { naam: 'Schaakmaatje', url: `${SITE}/` },
+        { naam: 'Lessen', url: `${SITE}/lessen/` },
+        { naam: les.titel, url },
+      ]),
+      {
+        '@type': 'LearningResource',
+        '@id': `${url}#les`,
+        name: les.titel,
+        description: les.doel,
+        teaches: les.geleerd,
+        url,
+        learningResourceType: 'Les',
+        isPartOf: { '@type': 'LearningResource', name: `Wereld ${wereld.nummer}: ${wereld.naam}`, url: `${SITE}/lessen/` },
+        ...VOOR_KINDEREN,
+      },
+    ],
+  }
   return (
-    <LessonPlayer
-      les={les}
-      wereld={wereld}
-      uitleg={<LesUitleg les={les} wereld={wereld} nummer={nummer} aantal={aantal} />}
-    />
+    <>
+      <Gegevens data={gegevens} />
+      <LessonPlayer
+        les={les}
+        wereld={wereld}
+        uitleg={<LesUitleg les={les} wereld={wereld} nummer={nummer} aantal={aantal} />}
+      />
+    </>
   )
 }

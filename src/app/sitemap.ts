@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { ALLE_LESSEN } from '@/content'
+import { SCHAAKREGELS } from '@/content/schaakregels'
 import { SITE } from '@/seo'
 
 /**
@@ -14,10 +15,11 @@ import { SITE } from '@/seo'
 export const dynamic = 'force-static'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const nu = new Date()
+  // Geen lastModified. Hier stond de bouwtijd, dus na elke build zei de sitemap dat
+  // alle pagina's net gewijzigd waren. Google leert daarvan dat de datum niets
+  // betekent en negeert hem daarna ook als hij wél klopt. Geen datum is eerlijker.
   const pad = (p: string, priority: number): MetadataRoute.Sitemap[number] => ({
     url: `${SITE}${p}`,
-    lastModified: nu,
     changeFrequency: 'monthly',
     priority,
   })
@@ -36,6 +38,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     pad('/', 1),
     pad('/over/', 0.9),
     pad('/lessen/', 0.9),
+    pad('/schaakregels/', 0.9),
+    ...SCHAAKREGELS.map((o) => pad(`/schaakregels/${o.slug}/`, 0.8)),
     pad('/contact/', 0.5),
     ...ALLE_LESSEN.map((les) => pad(`/les/${les.id}/`, 0.6)),
   ]

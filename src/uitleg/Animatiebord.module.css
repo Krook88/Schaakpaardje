@@ -1,0 +1,117 @@
+/*
+ * Het bewegende uitlegbord. Dezelfde kleuren en stukken als het bord in de app, zodat
+ * een ouder op de uitlegpagina meteen ziet hoe het er voor het kind uitziet.
+ */
+/* Een container: of de stappen naast of onder het bord staan, hangt af van de ruimte
+   die het bord krijgt, niet van het scherm. Op de smalle startpagina staan ze eronder. */
+.figuur { margin: 0; display: flex; flex-direction: column; gap: 14px; container-type: inline-size; }
+.kop { font-size: 1.15rem; margin: 0; }
+
+.opstelling { display: grid; gap: 16px; align-items: start; }
+@container (min-width: 600px) { .opstelling { grid-template-columns: minmax(0, 360px) 1fr; gap: 28px; } }
+.bordkant { display: flex; flex-direction: column; gap: 10px; width: min(360px, 100%); justify-self: center; }
+
+.bord {
+  position: relative; display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
+  aspect-ratio: 1; width: 100%; border-radius: 12px; overflow: hidden;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 14%, transparent), var(--shadow);
+  container-type: inline-size;
+}
+.veld { position: relative; min-width: 0; min-height: 0; display: grid; place-items: center; }
+.licht { background: var(--light-sq); }
+.donker { background: var(--dark-sq); }
+
+/* De zet die net gedaan is: een zachte gele waas, zoals in de app. */
+.zet::after { content: ''; position: absolute; inset: 0; background: color-mix(in srgb, var(--sel) 38%, transparent); }
+/* Aanwijzen: een oker ring met een donkere rand erbinnen, leesbaar op beide veldkleuren. */
+.markeer::before {
+  content: ''; position: absolute; inset: 0; z-index: 1;
+  box-shadow: inset 0 0 0 4px var(--accent), inset 0 0 0 7px rgba(27, 27, 23, 0.55);
+  animation: aan 0.35s ease-out;
+}
+.schaak::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle, color-mix(in srgb, var(--berry) 75%, transparent) 30%, transparent 72%);
+  animation: aan 0.35s ease-out;
+}
+
+/* Waar het stuk heen kan. Ze komen één voor één op, zodat je het bereik ziet uitwaaieren. */
+.stip, .ring, .kruis { position: absolute; pointer-events: none; z-index: 3; animation: plop 0.32s ease-out backwards; }
+.stip { width: 26%; aspect-ratio: 1; border-radius: 50%; background: var(--zetstip); box-shadow: 0 0 0 2px var(--zetstip-rand); }
+.ring { inset: 6%; border-radius: 50%; border: 4px solid var(--zetstip); box-shadow: 0 0 0 2px var(--zetstip-rand), inset 0 0 0 2px var(--zetstip-rand); }
+.kruis { width: 54%; aspect-ratio: 1; }
+.kruis::before, .kruis::after {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 100%; height: 16%;
+  border-radius: 99px; background: var(--berry); box-shadow: 0 0 0 2px var(--zetstip-rand);
+}
+.kruis::before { transform: translate(-50%, -50%) rotate(45deg); }
+.kruis::after { transform: translate(-50%, -50%) rotate(-45deg); }
+
+.lijn, .rij { position: absolute; font-size: clamp(9px, 2.6cqi, 12px); font-weight: 800; opacity: 0.65; color: var(--ink); line-height: 1; }
+.licht .lijn, .licht .rij { color: #5c6b56; }
+.donker .lijn, .donker .rij { color: #f2ebdd; }
+.lijn { right: 3px; bottom: 2px; }
+.rij { left: 3px; top: 2px; }
+
+/* De stukken liggen in een eigen laag over het bord, zodat ze van veld naar veld kunnen glijden. */
+.stuk {
+  position: absolute; left: 0; top: 0; width: 12.5%; height: 12.5%; z-index: 2;
+  display: grid; place-items: center; pointer-events: none;
+  font-family: 'Schaakstukken', sans-serif; font-variant-emoji: text;
+  font-size: clamp(22px, 9.6cqi, 40px); line-height: 1;
+  filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.28));
+  transition: transform 0.6s cubic-bezier(0.45, 0, 0.2, 1), opacity 0.4s ease;
+}
+.wit { color: #fcf8ef; -webkit-text-stroke: 1.5px #33302a; paint-order: stroke fill; }
+.zwart { color: #2b2823; -webkit-text-stroke: 1.2px #efe7d6; paint-order: stroke fill; }
+.weg { opacity: 0; }
+.direct .stuk { transition: none; }
+
+.label {
+  position: absolute; left: 50%; top: 50%; z-index: 5; translate: -50% -50%;
+  background: var(--surface); color: var(--ink); border: 3px solid var(--berry);
+  border-radius: 999px; padding: 6px 16px; font-weight: 800; font-size: clamp(1rem, 5cqi, 1.4rem);
+  box-shadow: var(--shadow); white-space: nowrap;
+  animation: label 2.4s ease-out forwards;
+}
+
+.knoppen { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.knop {
+  min-width: 48px; min-height: 48px; border-radius: 999px; border: 2px solid var(--line);
+  background: var(--surface); color: var(--ink); font-size: 1.4rem; font-weight: 800; cursor: pointer;
+  display: grid; place-items: center; line-height: 1; box-shadow: var(--shadow);
+}
+.knop:disabled { opacity: 0.4; cursor: default; }
+.knop:focus-visible, .stapknop:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.speel { min-width: 64px; background: var(--accent); color: var(--accent-ink); border-color: transparent; font-size: 1.05rem; }
+.teller { color: var(--muted); font-size: 0.9rem; min-width: 3ch; font-variant-numeric: tabular-nums; }
+
+.stappen { list-style: none; counter-reset: stap; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.stappen li { counter-increment: stap; }
+.stapknop {
+  display: flex; gap: 12px; align-items: flex-start; width: 100%; text-align: left;
+  background: transparent; border: 0; border-radius: var(--radius-sm); padding: 8px 10px;
+  color: var(--muted); font: inherit; cursor: pointer; transition: background 0.25s, color 0.25s;
+}
+.stapknop::before {
+  content: counter(stap); flex: 0 0 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 0.85rem; font-weight: 800; border: 2px solid var(--line); color: var(--muted); background: var(--surface);
+}
+.stappen li[aria-current='step'] .stapknop { background: var(--accent-soft); color: var(--ink); }
+.stappen li[aria-current='step'] .stapknop::before { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+@keyframes aan { from { opacity: 0; } to { opacity: 1; } }
+@keyframes plop { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: scale(1); } }
+@keyframes label {
+  0% { opacity: 0; scale: 0.6; }
+  12% { opacity: 1; scale: 1.08; }
+  20% { scale: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0.92; }
+}
+
+/* Wie beweging uit heeft staan, ziet elke stap meteen in zijn eindstand. */
+@media (prefers-reduced-motion: reduce) {
+  .stuk { transition: none; }
+  .stip, .ring, .kruis, .markeer::before, .schaak::after, .label { animation: none; }
+}

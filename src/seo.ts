@@ -90,3 +90,28 @@ export function deelkaart(kaart: {
     },
   }
 }
+
+/**
+ * Het kruimelpad boven een pagina in de zoekresultaten: "schaakmaatje.nl › Schaakregels ›
+ * Paard" in plaats van een kale URL. Zegt Google ook hoe de pagina's bij elkaar horen.
+ */
+export function kruimels(pad: { naam: string; url: string }[]) {
+  return {
+    '@type': 'BreadcrumbList',
+    itemListElement: pad.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: p.naam,
+      item: p.url,
+    })),
+  }
+}
+
+/** Wat elke uitleg- en lespagina over zichzelf zegt: voor wie, gratis, Nederlands. */
+export const VOOR_KINDEREN = {
+  inLanguage: 'nl-NL',
+  isAccessibleForFree: true,
+  audience: { '@type': 'EducationalAudience', educationalRole: 'student', suggestedMinAge: 3, suggestedMaxAge: 10 },
+  about: { '@type': 'Thing', name: 'Schaken' },
+  publisher: { '@id': `${SITE}/#site` },
+} as const

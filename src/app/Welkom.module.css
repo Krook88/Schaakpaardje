@@ -75,3 +75,25 @@
   border-radius: 50%;
   background: var(--accent-soft);
 }
+
+/* Het bewegende bord met de schaakregels eronder. */
+.uitleg {
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.regels {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+.regels a {
+  display: inline-block;
+  padding-block: 6px;
+}

@@ -45,6 +45,7 @@ export default function Lessen() {
         <header className="stack" style={{ gap: 8 }}>
           <p className="muted" style={{ margin: 0 }}>
             <Link href="/">← Naar de app</Link> · <Link href="/over/">Over Schaakmaatje</Link> ·{' '}
+            <Link href="/schaakregels/">Schaakregels</Link> ·{' '}
             <Link href="/contact/">Contact</Link>
           </p>
           <h1 style={{ fontSize: '1.9rem', margin: 0 }}>Alle schaaklessen</h1>

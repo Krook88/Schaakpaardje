@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { ALLE_LESSEN } from '@/content'
+import { onderwerpBijLes } from '@/content/schaakregels'
 import { vertelTekst, type Lesson, type World } from '@/content/types'
 
 /**
@@ -30,6 +32,10 @@ export function LesUitleg({
   nummer: number
   aantal: number
 }) {
+  const onderwerp = onderwerpBijLes(les.id)
+  const i = ALLE_LESSEN.findIndex((l) => l.id === les.id)
+  const vorige = ALLE_LESSEN[i - 1]
+  const volgende = ALLE_LESSEN[i + 1]
   return (
     <article className="stack" style={{ maxWidth: 680 }}>
       <p className="muted" style={{ margin: 0 }}>
@@ -62,9 +68,33 @@ export function LesUitleg({
         Deze les hoort bij {wereld.naam}. {wereld.belofte}
       </p>
 
+      {/* De regel zelf, op een bewegend bord. Dezelfde stof voor een ouder die wil weten
+          wat het kind hier leert, en de enige plek waar een lespagina iets meer biedt
+          dan Pips eigen zinnen zonder er een tweede uitleg naast te zetten. */}
+      {onderwerp && (
+        <p style={{ margin: 0 }}>
+          Zo werkt het, op een bewegend bord:{' '}
+          <Link href={`/schaakregels/${onderwerp.slug}/`}>{onderwerp.vraag}</Link>
+        </p>
+      )}
+
       <p style={{ margin: 0 }}>
         <Link href="/">Begin met Schaakmaatje</Link>, gratis en zonder account.
       </p>
+
+      <nav aria-label="Andere lessen" className="muted" style={{ margin: 0 }}>
+        {vorige && (
+          <>
+            Vorige les: <Link href={`/les/${vorige.id}/`}>{vorige.titel}</Link>
+          </>
+        )}
+        {vorige && volgende && ' · '}
+        {volgende && (
+          <>
+            Volgende les: <Link href={`/les/${volgende.id}/`}>{volgende.titel}</Link>
+          </>
+        )}
+      </nav>
     </article>
   )
 }
