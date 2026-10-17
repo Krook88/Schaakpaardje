@@ -57,6 +57,6 @@ Geen.
 
 Nog open, buiten deze PR: een kind zonder enig profiel dat via "alle lessen" een les speelt, bewaart niets. Dat bestond al vóór deze PR.
 
-In de herstelronde faalde de live-stap van de doorloop één keer ("zwart sprong naar de nieuwe partij zonder de mat te zien"). Daarna slaagde hij drie keer op rij; de live-code is niet geraakt. Om in de gaten te houden.
+In de herstelronde faalde de live-stap van de doorloop één keer ("zwart sprong naar de nieuwe partij zonder de mat te zien"). Daarna slaagde hij twee keer op rij; de live-code is niet geraakt. Om in de gaten te houden.
 
 Schermafbeeldingen van de layout-reviewer: `/tmp/review-2026-10-17/` (niet in de repo).
