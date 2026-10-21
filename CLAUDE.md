@@ -17,8 +17,8 @@ opgavetype, een nieuw scherm, of een technische laag zoals de zoeker of de offli
 /release-review
 ```
 
-Dat start de coördinator, die de schaakmeester, de layout-reviewer en de
-codebase-reviewer laat kijken en er één oordeel van maakt. Zie `docs/11-releaseproces.md`.
+Dat start de coördinator, die de schaakmeester, de layout-reviewer, de
+codebase-reviewer en de conversie-reviewer laat kijken en er één oordeel van maakt. Zie `docs/11-releaseproces.md`.
 
 ### En dan de feedback verwerken
 

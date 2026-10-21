@@ -1,11 +1,11 @@
 ---
 name: release-review
-description: Draait de volledige release-review van Schaakmaatje. Roept de releasecoördinator aan, die de schaakmeester, de layout-reviewer en de codebase-reviewer laat kijken en er één oordeel van maakt. Gebruik dit vóór elke release, of wanneer de gebruiker om "de review" of "een release-check" vraagt.
+description: Draait de volledige release-review van Schaakmaatje. Roept de releasecoördinator aan, die de schaakmeester, de layout-reviewer, de codebase-reviewer en de conversie-reviewer laat kijken en er één oordeel van maakt. Gebruik dit vóór elke release, of wanneer de gebruiker om "de review" of "een release-check" vraagt.
 ---
 
 # Release-review
 
-Elke release van Schaakmaatje gaat langs drie reviewers. Jij regelt dat niet zelf: je
+Elke release van Schaakmaatje gaat langs vier reviewers. Jij regelt dat niet zelf: je
 start de **releasecoördinator**, en die doet de rest.
 
 ## Wat je doet
