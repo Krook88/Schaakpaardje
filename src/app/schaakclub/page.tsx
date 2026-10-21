@@ -122,16 +122,16 @@ export default function Schaakclub() {
             mat komen daarna, dus een hele partij spelen kan het nog niet. Toch is het een goed
             moment om een club te proberen: je kind hoeft niet eerst de hele app uit te spelen.
           </p>
-          {/* "Gebaseerd op dezelfde aanpak", nooit "hetzelfde stappenplan": Schaakmaatje is
+          {/* "Geïnspireerd op de aanpak", nooit "hetzelfde stappenplan": Schaakmaatje is
               niet de Stappenmethode (auteursrecht, en mat komt hier later). Zie
               docs/02-didactiek-en-doelgroep.md en de pagina /over/. */}
           <p>
-            Schaakmaatje is gebaseerd op dezelfde aanpak als de clubs: eerst de makkelijke
+            Schaakmaatje is geïnspireerd op de aanpak van de clubs: eerst de makkelijke
             stukken, veel korte oefeningen en spelletjes in plaats van lange uitleg. Wie hier
-            begint, herkent op de club dus veel. Alleen mat komt bij ons later: in Stap 1
-            ongeveer halverwege, in Schaakmaatje pas in wereld {mat}, {WERELDEN[mat].naam},
-            zodat je kind eerst alle stukken goed kent. Dat is geen probleem: de trainer
-            begint bij het begin.
+            begint, herkent op de club dus veel. Het grootste verschil is mat: in Stap 1 komt
+            het ongeveer halverwege, in Schaakmaatje pas in wereld {mat},{' '}
+            {WERELDEN[mat].naam}, als je kind de stukken, slaan, aanvallen en schaak al goed
+            kent. Dat is geen probleem: de trainer begint bij het begin.
           </p>
         </div>
       </section>
