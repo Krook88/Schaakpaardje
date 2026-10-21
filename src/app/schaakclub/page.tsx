@@ -72,8 +72,8 @@ export default function Schaakclub() {
           Een schaakclub voor je kind vinden
         </h1>
         <p className={s.lead} style={{ maxWidth: '46ch' }}>
-          Schaakmaatje is een aanloop. Echt schaken leer je aan een bord, met een ander kind
-          tegenover je. Zo vind je een club in de buurt, en zo weet je wanneer je kind eraan
+          Schaakmaatje is geïnspireerd op de aanpak van de clubs, en een aanloop ernaartoe.
+          Echt schaken leer je aan een bord, met een ander kind tegenover je. Zo vind je een club in de buurt, en zo weet je wanneer je kind eraan
           toe is.
         </p>
         {/* Eerst de app proberen is de hoofdknop: wie hier via Google binnenkomt, kent
@@ -122,10 +122,17 @@ export default function Schaakclub() {
             mat komen daarna, dus een hele partij spelen kan het nog niet. Toch is het een goed
             moment om een club te proberen: je kind hoeft niet eerst de hele app uit te spelen.
           </p>
+          {/* "Geïnspireerd op de aanpak", nooit "hetzelfde stappenplan": Schaakmaatje is
+              niet de Stappenmethode (auteursrecht, en mat komt hier later). Zie
+              docs/02-didactiek-en-doelgroep.md en de pagina /over/. */}
           <p>
-            Eén ding gaat op de club anders. In Stap 1 komt mat ongeveer halverwege; in
-            Schaakmaatje pas in wereld {mat}, {WERELDEN[mat].naam}. Dat is geen probleem: de
-            trainer begint bij het begin, en je kind herkent dan al veel van wat er komt.
+            Schaakmaatje is geïnspireerd op de aanpak van de clubs: eerst de makkelijke
+            stukken, veel korte oefeningen en spelletjes in plaats van lange uitleg. Wie hier
+            begint, herkent op de club dus veel. Het grootste verschil is mat: in Stap 1 komt
+            het ongeveer halverwege, in Schaakmaatje pas in wereld {mat},{' '}
+            {WERELDEN[mat].naam}, als je kind de stukken, slaan, aanvallen en schaak al goed
+            kent. Dat is geen probleem: de trainer begint bij het begin.{' '}
+            <Link href={EERSTE_LES}>Probeer de eerste les</Link>.
           </p>
         </div>
       </section>
