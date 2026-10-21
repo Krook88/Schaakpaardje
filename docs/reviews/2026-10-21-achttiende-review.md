@@ -54,3 +54,24 @@ Geen.
 Niet bij deze commit: de eerste `next build` van de codebase-reviewer faalde met
 `PageNotFoundError: /_document`, en de tweede ging goed zonder wijziging. Waarschijnlijk een
 wisselvallige fout in Next 15. Komt hij terug, dan apart uitzoeken.
+
+## SEO en conversie (extra reviewer, buiten de scope van deze commit)
+
+Op verzoek van Kaj keek een vierde reviewer naar vindbaarheid en naar de weg van bezoeker
+naar eerste les. De SEO-basis klopt: canonicals, sitemap, noindex op app-schermen, JSON-LD,
+og-afbeelding en 1.534 tekens statische tekst op "/". De winst zit in conversie (45 views op
+"/" → 24 lessen begonnen → 2 af). Dit hoort bij een volgende fase en staat hier om niet
+kwijt te raken.
+
+| | Bevinding | Status |
+|---|---|---|
+| SEO1 | Van "/" naar de eerste les: vier stappen plus typen, en de knop "Beginnen" springt 2500 px naar beneden. Voorstel: "▶ Probeer de eerste les" rechtstreeks naar de les, naam pas ná de eerste beloning. | Volgende fase |
+| SEO2 | Een les zonder profiel bewaart niets (`store.ts`, `bewaarLes`: `if (!id) return`). Bezoekers via /schaakregels/ en /les/ raken zo stil hun sterren kwijt. Voorstel: gastvoortgang lokaal, overzetten bij `maakProfiel`, en een doorloopregel. | Volgende fase |
+| SEO3 | Na het profiel staat de grote knop op 375×667 net onder de vouw (Rondleiding staat ervoor), terwijl Pip zegt "Druk op de grote knop". | Volgende fase |
+| SEO4 | /schaakregels/-pagina's leiden pas onderaan (y≈4683) naar de app, en dan naar "/". Voorstel: knop "Oefen dit met Pip" onder het antwoord, naar de bijbehorende les. | Volgende fase |
+| SEO5 | Het profielformulier vraagt naam, leeftijd en maatje vóór de eerste les. Voorstel: alleen naam (of overslaan), rest met standaardwaarden. | Volgende fase |
+| SEO6 | H1 op "/" ("Leer schaken met Pip") mist de zoekterm "schaken leren voor kinderen". | Volgende fase |
+| SEO7 | Eerste schermplaatje op "/" is het LCP-element maar laadt lazy. Knoptekst "Beginnen →" zegt een ouder weinig. | Volgende fase |
+| SEO8 | Lestitels met dubbel leesteken ("?:"), omschrijvingen van 168 tekens, merknaam dubbel in de titel van /over/. | Volgende fase |
+| SEO9 | Elke gedeelde pagina toont in WhatsApp hetzelfde og.png. Voorstel: deelkaart per schaakregel, gemaakt bij het bouwen. | Volgende fase |
+| SEO10 | Het tikken op "Beginnen" en "les zonder profiel" worden niet geteld, dus de afhakers zijn niet te splitsen. | Volgende fase |
