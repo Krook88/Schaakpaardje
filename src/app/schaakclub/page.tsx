@@ -73,11 +73,15 @@ export default function Schaakclub() {
           tegenover je. Zo vind je een club in de buurt, en zo weet je wanneer je kind eraan
           toe is.
         </p>
+        {/* Eerst de app proberen is de hoofdknop: wie hier via Google binnenkomt, kent
+            Schaakmaatje nog niet. De clubzoeker staat ernaast als tweede knop. */}
         <div className={s.knoppen}>
-          <a href={CLUBZOEKER} className="btn btn--primary btn--big" target="_blank" rel="noopener noreferrer">
+          <Link href={`/les/${ALLE_LESSEN[0].id}/`} className="btn btn--primary btn--big">
+            <span aria-hidden="true">▶︎</span> Probeer eerst Schaakmaatje, gratis
+          </Link>
+          <a href={CLUBZOEKER} className="btn btn--big" target="_blank" rel="noopener noreferrer">
             Zoek een club bij de schaakbond ↗
           </a>
-          <Link href={`/les/${ALLE_LESSEN[0].id}/`}>Eerst oefenen met Pip</Link>
         </div>
       </section>
 
@@ -165,6 +169,11 @@ export default function Schaakclub() {
           <p>
             Meer over hoe de app werkt staat op <Link href="/over/">de pagina voor ouders</Link>
             , en hoe de stukken lopen bij <Link href="/schaakregels/">de schaakregels</Link>.
+          </p>
+          <p>
+            <Link href={`/les/${ALLE_LESSEN[0].id}/`} className="btn btn--primary btn--big">
+              <span aria-hidden="true">▶︎</span> Probeer de eerste les
+            </Link>
           </p>
         </div>
       </section>
