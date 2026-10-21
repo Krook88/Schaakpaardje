@@ -96,12 +96,13 @@ if (empty($_SESSION['binnen'])) {
 $periode = isset($_GET['dagen']) ? (int) $_GET['dagen'] : 30;
 if (!in_array($periode, [7, 30, 90], true)) $periode = 30;
 
-$totaal = ['Bezoek' => 0, 'pageview' => 0, 'Les begonnen' => 0, 'Les af' => 0, 'Partij' => 0, 'Minispel rondje' => 0];
+$totaal = ['Bezoek' => 0, 'pageview' => 0, 'Profiel gemaakt' => 0, 'Les begonnen' => 0, 'Les af' => 0, 'Partij' => 0, 'Minispel rondje' => 0];
 $lessen = [];
 $duur = [];
 $geoefend = [];
 $partijen = [];
 $spellen = [];
+$lastig = [];
 $schermen = [];
 $verwijzers = [];
 $uren = array_fill(0, 24, 0);
@@ -110,7 +111,7 @@ $dagen = [];
 $leeg = ['bezoek' => 0, 'terug' => 0, 'begonnen' => 0, 'af' => 0, 'partij' => 0, 'rondje' => 0, 'stukken' => 0, 'lang' => 0];
 
 loopDagen($periode, function (string $dag, ?array $r) use (
-    &$totaal, &$lessen, &$duur, &$geoefend, &$partijen, &$spellen, &$schermen, &$verwijzers, &$uren,
+    &$totaal, &$lessen, &$duur, &$geoefend, &$partijen, &$spellen, &$lastig, &$schermen, &$verwijzers, &$uren,
     &$dagen, $leeg
 ) {
     if ($r === null) {
@@ -168,6 +169,13 @@ loopDagen($periode, function (string $dag, ?array $r) use (
             $s = $e['spel'] ?? '?';
             $spellen[$s] = ($spellen[$s] ?? 0) + 1;
             $dagen[$dag]['rondje']++;
+            break;
+        case 'Opgave lastig':
+            $sleutel = ($e['les'] ?? '?') . '|' . ($e['opgave'] ?? '?');
+            $hulp = ($e['hulp'] ?? '') === 'hint' ? 'hint' : 'missers';
+            $o = $lastig[$sleutel] ?? ['hint' => 0, 'missers' => 0];
+            $o[$hulp]++;
+            $lastig[$sleutel] = $o;
             break;
     }
 });
@@ -341,6 +349,7 @@ $h .= '<section><div class="cijfers">';
 foreach ([
     ['Bezoek', 'keer de app geopend'],
     ['pageview', 'schermen bekeken'],
+    ['Profiel gemaakt', 'profielen gemaakt'],
     ['Les begonnen', 'lessen begonnen'],
     ['Les af', 'lessen afgemaakt'],
     ['Partij', 'partijen uitgespeeld'],
@@ -394,7 +403,8 @@ $h .= '</section>';
 
 $fases = ['kijken', 'meedoen', 'zelf', 'toets'];
 $h .= '<section><h2>Lessen: waar haken kinderen af?</h2><p class="zacht">Gestopt = weggegaan vóór het eind, '
-    . 'ook door de tab te sluiten of de tablet op slot te doen. Wie later terugkomt en de les afmaakt, telt ook bij af.</p>';
+    . 'ook door de tab te sluiten of de tablet op slot te doen, één keer per keer dat de les open was '
+    . '(tot 21 oktober 2026 telde elke tabwissel apart). Wie later terugkomt en de les afmaakt, telt ook bij af.</p>';
 if ($lessen) {
     // Twee koprijen: "Gestopt in" boven vier smalle fasekolommen. Met "Gestopt in kijken"
     // als losse koppen was de tabel breder dan het scherm.
@@ -419,6 +429,24 @@ if ($lessen) {
     $h .= '</table>';
 } else {
     $h .= '<p class="zacht">Nog geen lessen.</p>';
+}
+$h .= '</section>';
+
+// Waar lopen kinderen vast: per opgave hoe vaak er om een hint gevraagd of drie keer
+// mis getikt werd. Eén telling per opgave per keer spelen, de lastigste bovenaan.
+$h .= '<section><h2>Opgaven: waar lopen kinderen vast?</h2><p class="zacht">Per opgave: hoe vaak een kind om een hint '
+    . 'vroeg, of (zonder hint) drie keer mis tikte. Opgave "zelf-2" is de tweede opgave in de fase zelf.</p>';
+if ($lastig) {
+    uasort($lastig, function ($a, $b) { return ($b['hint'] + $b['missers']) <=> ($a['hint'] + $a['missers']); });
+    $h .= '<table><tr><th>Les</th><th>Opgave</th><th class="n">Hint</th><th class="n">3 missers</th></tr>';
+    foreach (array_slice($lastig, 0, 30, true) as $sleutel => $o) {
+        [$id, $opgave] = explode('|', $sleutel, 2);
+        $h .= '<tr><td title="' . e($id) . '">' . e($titels[$id] ?? $id) . '</td><td>' . e($opgave) . '</td><td class="n">'
+            . ($o['hint'] ?: '') . '</td><td class="n">' . ($o['missers'] ?: '') . '</td></tr>';
+    }
+    $h .= '</table>';
+} else {
+    $h .= '<p class="zacht">Nog geen opgaven waar een kind vastliep.</p>';
 }
 $h .= '</section>';
 

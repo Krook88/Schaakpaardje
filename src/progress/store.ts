@@ -12,6 +12,7 @@ import { persist } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
 import { DIPLOMAS, type DiplomaSoort } from '@/content/diplomas'
+import { tel } from './tellen'
 
 export type Modus = 'pip' | 'ontdekker' | 'schaker'
 
@@ -237,6 +238,9 @@ export const useProfielStore = create<State>()(
           stickers: { ...s.stickers, [id]: [] },
           gespeeld: { ...s.gespeeld, [id]: { gewonnen: 0, verloren: 0, remise: 0 } },
         }))
+        // Alleen dát er een profiel bijkwam: zo is te zien waar bezoekers afhaken tussen
+        // de startpagina en de eerste les. Naam, leeftijd en avatar gaan nooit mee.
+        tel('Profiel gemaakt')
         return id
       },
 

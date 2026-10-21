@@ -112,7 +112,8 @@ export function LessonPlayer({
   // Tellen waar kinderen afhaken. "Les begonnen" pas na het hervatten (zie hieronder),
   // zodat te zien is of het een nieuwe les is of een halve. "Les gestopt" bij weggaan
   // vóór de beloning: via terug, maar ook als de tab dichtgaat of de tablet op slot
-  // gaat, want zo stopt een kind meestal. Komt het terug, dan mag hij later opnieuw.
+  // gaat, want zo stopt een kind meestal. Eén keer per les: mocht hij na terugkomen
+  // opnieuw, dan telde één kind dat zeven keer van tab wisselde als zeven afhakers.
   const faseNu = useRef<Fase>(fase)
   faseNu.current = kijkTerug ?? fase
   const gestoptGemeld = useRef(false)
@@ -124,7 +125,6 @@ export function LessonPlayer({
     }
     const wissel = () => {
       if (document.visibilityState === 'hidden') meldGestopt()
-      else gestoptGemeld.current = false
     }
     document.addEventListener('visibilitychange', wissel)
     return () => {
@@ -261,6 +261,18 @@ export function LessonPlayer({
     fase, toetsFouten, toetsHints, bewaarLes, bewaarHervatpunt, geefSticker, les.id,
     startFase, voortgang, wereld.id, zinnen,
   ])
+
+  // Tellen bij welke opgave een kind vastloopt: één keer per opgave, zodra het om een
+  // hint vroeg of drie keer mis tikte. Alleen het nummer van de opgave, niets over het kind.
+  const lastigGemeld = useRef('')
+  useEffect(() => {
+    if (!stand || fase === 'kijken' || fase === 'beloning') return
+    const hulp = stand.hints > 0 ? 'hint' : stand.fouten >= 3 ? '3 missers' : null
+    const opgave = `${fase}-${opgaveIndex + 1}`
+    if (!hulp || lastigGemeld.current === opgave) return
+    lastigGemeld.current = opgave
+    tel('Opgave lastig', { les: les.id, opgave, hulp })
+  }, [stand, fase, opgaveIndex, les.id])
 
   const volgendeOpgave = useCallback(() => {
     setHintVelden([])
