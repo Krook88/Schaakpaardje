@@ -8,8 +8,10 @@
 export type Hulp = 'hint' | 'missers'
 
 /**
- * Vanaf hoeveel missers een opgave "lastig" heet. Een quiz met twee of drie knoppen haalt
- * drie missers bijna nooit: na twee foute blijft alleen het goede antwoord over.
+ * Vanaf hoeveel missers een opgave "lastig" heet. Een quiz heeft twee of drie knoppen:
+ * met drie knoppen betekenen twee missers dat het kind alles moest afgaan, met twee dat
+ * het hetzelfde foute antwoord nog eens koos. Drie missers haalt een quiz bijna nooit.
+ * (Foute knoppen blijven staan; een dubbeltik op dezelfde telt het lesscherm niet mee.)
  */
 export function missersDrempel(kind: string): number {
   return kind === 'quiz' ? 2 : 3

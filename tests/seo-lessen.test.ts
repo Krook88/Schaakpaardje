@@ -18,5 +18,7 @@ describe('zoekgegevens van de lessen', () => {
   it('kort op een woordgrens', () => {
     expect(kort('een twee drie', 9)).toBe('een twee…')
     expect(kort('kort', 9)).toBe('kort')
+    expect(kort('abcdefghi jkl', 9)).toHaveLength(9)
+    expect(kort('eenheellangwoordzonderspatie', 9)).toBe('eenheell…')
   })
 })

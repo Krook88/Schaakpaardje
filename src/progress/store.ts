@@ -201,7 +201,7 @@ type State = {
 const nieuwId = () => Math.random().toString(36).slice(2, 10)
 
 /**
- * Voortgang van wie nog geen profiel heeft.
+ * Voortgang van wie nog geen profiel heeft: lessen, stickers, partijen en verslagen bots.
  *
  * Een ouder die via Google op een les of schaakregel landt, moet meteen kunnen spelen,
  * zonder eerst een formulier. Zonder deze plek gooide `bewaarLes` de sterren stilletjes
@@ -260,7 +260,8 @@ export const useProfielStore = create<State>()(
           stickers: { ...zonder(s.stickers, GAST), [id]: s.stickers[GAST] ?? [] },
           hervatpunt: { ...zonder(s.hervatpunt, GAST), ...(s.hervatpunt[GAST] ? { [id]: s.hervatpunt[GAST] } : {}) },
           oefendagen: { ...zonder(s.oefendagen, GAST), ...(s.oefendagen?.[GAST] ? { [id]: s.oefendagen[GAST] } : {}) },
-          gespeeld: { ...s.gespeeld, [id]: { gewonnen: 0, verloren: 0, remise: 0 } },
+          verslagen: { ...zonder(s.verslagen, GAST), ...(s.verslagen[GAST] ? { [id]: s.verslagen[GAST] } : {}) },
+          gespeeld: { ...zonder(s.gespeeld, GAST), [id]: s.gespeeld[GAST] ?? { gewonnen: 0, verloren: 0, remise: 0 } },
         }))
         // Alleen dát er een profiel bijkwam: zo is te zien waar bezoekers afhaken tussen
         // de startpagina en de eerste les. Naam, leeftijd en avatar gaan nooit mee.
@@ -319,6 +320,8 @@ export const useProfielStore = create<State>()(
           const { [id]: _s, ...stickers } = s.stickers
           const { [id]: _g, ...gespeeld } = s.gespeeld
           const { [id]: _d, ...oefendagen } = s.oefendagen ?? {}
+          const { [id]: _h, ...hervatpunt } = s.hervatpunt
+          const { [id]: _b, ...verslagen } = s.verslagen
           const profielen = s.profielen.filter((p) => p.id !== id)
           return {
             profielen,
@@ -327,6 +330,8 @@ export const useProfielStore = create<State>()(
             stickers,
             gespeeld,
             oefendagen,
+            hervatpunt,
+            verslagen,
             actiefId: s.actiefId === id ? (profielen[0]?.id ?? null) : s.actiefId,
           }
         })
@@ -377,8 +382,7 @@ export const useProfielStore = create<State>()(
        * opfrisser mag nooit een cijfer veranderen: het is oefenen, geen toets.
        */
       bewaarOpfrissing(lesId) {
-        const id = get().actiefId
-        if (!id) return
+        const id = wie(get())
         set((s) => {
           const vanProfiel = s.voortgang[id] ?? {}
           const bestaand = vanProfiel[lesId]
@@ -393,8 +397,7 @@ export const useProfielStore = create<State>()(
       },
 
       bewaarOverwinning(botId) {
-        const id = get().actiefId
-        if (!id) return
+        const id = wie(get())
         set((s) => {
           const lijst = s.verslagen[id] ?? []
           if (lijst.includes(botId)) return {}
@@ -413,8 +416,7 @@ export const useProfielStore = create<State>()(
       },
 
       bewaarPartij(uitslag, profielId) {
-        const id = profielId ?? get().actiefId
-        if (!id) return
+        const id = profielId ?? wie(get())
         get().bewaarOefendag(id)
         set((s) => {
           const huidig = s.gespeeld[id] ?? { gewonnen: 0, verloren: 0, remise: 0 }
@@ -530,13 +532,13 @@ const LEGE_VERSLAGEN: string[] = []
 /** Van wie heeft dit kind al eens gewonnen? */
 export function useVerslagen(): string[] {
   return useProfielStore(
-    useShallow((s) => (s.actiefId ? (s.verslagen[s.actiefId] ?? LEGE_VERSLAGEN) : LEGE_VERSLAGEN)),
+    useShallow((s) => s.verslagen[wie(s)] ?? LEGE_VERSLAGEN),
   )
 }
 
 export function useGespeeld() {
   return useProfielStore(
-    useShallow((s) => (s.actiefId ? s.gespeeld[s.actiefId] : undefined)),
+    useShallow((s) => s.gespeeld[wie(s)]),
   )
 }
 

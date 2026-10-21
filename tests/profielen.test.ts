@@ -57,7 +57,7 @@ describe('nog een kind', () => {
 describe('spelen als gast', () => {
   beforeEach(() => {
     emmer.clear()
-    useProfielStore.setState({ ...leeg, profielen: [], actiefId: null, voortgang: {}, stickers: {}, hervatpunt: {}, oefendagen: {} })
+    useProfielStore.setState({ ...leeg, profielen: [], actiefId: null, voortgang: {}, stickers: {}, hervatpunt: {}, oefendagen: {}, gespeeld: {}, verslagen: {} })
   })
 
   it('de sterren van een gast blijven staan en gaan mee naar het eerste profiel', () => {
@@ -76,5 +76,32 @@ describe('spelen als gast', () => {
     expect(s().voortgang.gast).toBeUndefined()
     s().maakProfiel('Daan', 9, '🦊')
     expect(voortgangVan(s())).toEqual({})
+  })
+
+  it('ook partijen en verslagen bots van een gast gaan mee', () => {
+    const s = useProfielStore.getState
+    s().bewaarPartij('gewonnen')
+    s().bewaarOverwinning('mila')
+    const noor = s().maakProfiel('Noor', 5, '🐴')
+    expect(s().gespeeld[noor]).toEqual({ gewonnen: 1, verloren: 0, remise: 0 })
+    expect(s().verslagen[noor]).toEqual(['mila'])
+    expect(s().gespeeld.gast).toBeUndefined()
+    expect(s().verslagen.gast).toBeUndefined()
+  })
+
+  it('laatste profiel weg, dan als gast spelen, dan een nieuw profiel: alleen de gaststerren', () => {
+    const s = useProfielStore.getState
+    const oud = s().maakProfiel('Oud', 7, '🐴')
+    s().bewaarLes('weide-1', { sterren: 3, fouten: 0, hints: 0 })
+    s().bewaarHervatpunt('weide-2', 'zelf')
+    s().verwijderProfiel(oud)
+    expect(s().actiefId).toBeNull()
+    // Wat van het verwijderde kind was, is helemaal weg, ook hervatpunt en verslagen.
+    expect(s().hervatpunt[oud]).toBeUndefined()
+    expect(voortgangVan(s())).toEqual({})
+
+    s().bewaarLes('toren-1', { sterren: 2, fouten: 1, hints: 0 })
+    s().maakProfiel('Nieuw', 6, '🦊')
+    expect(Object.keys(voortgangVan(s()))).toEqual(['toren-1'])
   })
 })

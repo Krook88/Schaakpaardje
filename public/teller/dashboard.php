@@ -437,7 +437,7 @@ $h .= '</section>';
 // uit de eerste werelden altijd bovenaan, alleen omdat daar de meeste kinderen zijn.
 $h .= '<section><h2>Opgaven: waar lopen kinderen vast?</h2><p class="zacht">Per opgave: hoe vaak een kind om een hint '
     . 'vroeg, en hoe vaak het vaak mis tikte (3 keer, bij een quiz 2 keer). "Vast" is het hoogste van de twee, als deel '
-    . 'van hoe vaak de les begon. De lastigste bovenaan.</p>';
+    . 'van hoe vaak de les begon. De lastigste bovenaan. "zelf 2" is de tweede opgave in de fase zelf.</p>';
 if ($lastig) {
     $rijen = [];
     foreach ($lastig as $sleutel => $o) {
@@ -450,14 +450,16 @@ if ($lastig) {
     usort($rijen, function ($a, $b) {
         return ($b['pct'] ?? -1) <=> ($a['pct'] ?? -1) ?: $b['vast'] <=> $a['vast'];
     });
-    $h .= '<table class="lessen"><tr><th>Les</th><th>Opgave</th><th class="n">Begon</th><th class="n">Hint</th>'
-        . '<th class="n">Vaak mis</th><th class="n">Vast</th></tr>';
+    // "Vast" direct na de les: daarop staat de tabel gesorteerd, en op een telefoon viel
+    // hij als laatste kolom buiten beeld (negentiende review, L2).
+    $h .= '<table class="lessen"><tr><th>Les</th><th class="n">Vast</th><th>Opgave</th><th class="n">Begon</th>'
+        . '<th class="n">Hint</th><th class="n">Vaak mis</th></tr>';
     foreach (array_slice($rijen, 0, 30) as $r) {
-        // "zelf-2" is de plek in de fase; voor het lezen "zelf, opgave 2".
-        $plek = preg_replace('/^([a-z]+)-(\d+)$/', '$1, opgave $2', $r['opgave']);
-        $h .= '<tr><td title="' . e($r['id']) . '">' . e($titels[$r['id']] ?? $r['id']) . '</td><td>' . e($plek)
-            . '</td><td class="n">' . $r['begon'] . '</td><td class="n">' . ($r['o']['hint'] ?: '') . '</td><td class="n">'
-            . ($r['o']['missers'] ?: '') . '</td><td class="n">' . ($r['pct'] === null ? '' : $r['pct'] . '%') . '</td></tr>';
+        // "zelf-2" is de plek in de fase; voor het lezen "zelf 2" (kort, past op een telefoon).
+        $plek = preg_replace('/^([a-z]+)-(\d+)$/', '$1 $2', $r['opgave']);
+        $h .= '<tr><td title="' . e($r['id']) . '">' . e($titels[$r['id']] ?? $r['id']) . '</td><td class="n">'
+            . ($r['pct'] === null ? '' : $r['pct'] . '%') . '</td><td>' . e($plek) . '</td><td class="n">' . $r['begon']
+            . '</td><td class="n">' . ($r['o']['hint'] ?: '') . '</td><td class="n">' . ($r['o']['missers'] ?: '') . '</td></tr>';
     }
     $h .= '</table><p class="zacht">Het opgavenummer is de plek in de fase: wordt er in een les een opgave verschoven, '
         . 'dan tellen oude en nieuwe tellingen onder hetzelfde nummer.</p>';

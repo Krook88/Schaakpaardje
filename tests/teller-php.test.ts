@@ -121,7 +121,7 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect(open).toContain('toren-1')
     expect(open).toContain('profielen gemaakt')
     expect(open).toContain('Opgaven: waar lopen kinderen vast?')
-    expect(open).toContain('zelf, opgave 1')
+    expect(open).toContain('<td>zelf 1</td>')
   })
 
   it('raden wordt afgeremd: na 10 mislukte pogingen in een uur gaat niemand er meer in', async () => {

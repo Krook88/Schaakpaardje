@@ -92,9 +92,9 @@ export default function Schaakclub() {
           <p>
             Er is een trainer die ziet wat je kind doet en waar het vastloopt. Op de meeste
             Nederlandse clubs leren kinderen met de Stappenmethode, en na elke stap kunnen ze
-            een examen doen voor een diploma. Na Stap 1 is dat het pionnendiploma. Veel
-            clubs spelen ook mee in een jeugdcompetitie, met teams van kinderen van dezelfde
-            leeftijd.
+            een examen doen voor een diploma: na Stap 1 het Stap 1-diploma, op veel clubs het
+            pionnendiploma genoemd. Veel clubs spelen ook mee in een jeugdcompetitie, met teams
+            van kinderen van ongeveer dezelfde leeftijd of sterkte.
           </p>
         </div>
       </section>
@@ -110,8 +110,9 @@ export default function Schaakclub() {
           </p>
           <p>
             Wie in Schaakmaatje de werelden tot en met {WERELDEN[pionnen].naam} (wereld{' '}
-            {pionnen}) gedaan heeft, weet hoe alle stukken lopen. Dat is een goed moment om een
-            club te proberen. Je kind hoeft niet eerst de hele app uit te spelen.
+            {pionnen}) gedaan heeft, weet hoe alle stukken lopen, op de rokade na. Schaak en
+            mat komen daarna, dus een hele partij spelen kan het nog niet. Toch is het een goed
+            moment om een club te proberen: je kind hoeft niet eerst de hele app uit te spelen.
           </p>
           <p>
             Eén ding gaat op de club anders. In Stap 1 komt mat ongeveer halverwege; in

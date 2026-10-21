@@ -866,7 +866,9 @@ async function gastHoudtZijnSterren() {
       }
     }
     await p.getByText('Bewaar je sterren').waitFor({ timeout: 8000 }).catch(() => {})
-    if (!(await p.getByText('Bewaar je sterren').count())) return meld(naam, false, 'geen "Bewaar je sterren" bij de beloning')
+    if (!(await p.getByText('Bewaar je sterren').count())) {
+      return meld(naam, false, 'geen "Bewaar je sterren" bij de beloning (kloppen de antwoorden van weide-1 hierboven nog?)')
+    }
     await p.getByRole('link', { name: 'Kies een naam' }).click()
     await p.waitForTimeout(800)
     await p.getByRole('textbox').first().fill('Gastkind')

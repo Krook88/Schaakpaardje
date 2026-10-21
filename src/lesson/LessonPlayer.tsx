@@ -371,10 +371,11 @@ export function LessonPlayer({
         const tip = 'foutTip' in r.stand.opgave ? r.stand.opgave.foutTip : undefined
         reageer(false, false, tip)
         if (fase === 'toets') setToetsFouten((n) => n + 1)
-        lastig.misser(les.id, opgaveNu, r.stand.opgave.kind)
+        // Dezelfde foute knop nog eens (een dubbeltik) is geen tweede misser.
+        if (index !== quizFout) lastig.misser(les.id, opgaveNu, r.stand.opgave.kind)
       }
     },
-    [stand, reageer, fase, lastig, les.id, opgaveNu],
+    [stand, reageer, fase, lastig, les.id, opgaveNu, quizFout],
   )
 
   const vraagHint = useCallback(() => {
@@ -520,20 +521,6 @@ export function LessonPlayer({
             )}
           </div>
 
-          {geladen && !profiel && (
-            <div className="card stack center">
-              <p style={{ margin: 0 }}>
-                <strong>Bewaar je sterren</strong>
-              </p>
-              <p className="muted" style={{ margin: 0 }}>
-                Kies een naam, dan houdt Pip ze voor je bij. Alles blijft op dit apparaat.
-              </p>
-              <Link href="/#beginnen" className="btn">
-                Kies een naam
-              </Link>
-            </div>
-          )}
-
           {nieuweWereld && (
             <div
               className={`card ${styles.poort}`}
@@ -561,6 +548,18 @@ export function LessonPlayer({
               </Link>
             )}
           </div>
+          {/* Voor de ouder, en ónder de knoppen: als grote kaart erboven duwde hij
+              "Volgende les" op een telefoon onder de vouw, en een kind dat niet leest
+              tikte op het grootste vlak en stond in een formulier (negentiende review, L1).
+              De sterren zijn al bewaard; dit is alleen om ze onder een naam te zetten. */}
+          {geladen && !profiel && (
+            <p className="muted" style={{ margin: 0, textAlign: 'center' }}>
+              Bewaar je sterren onder een naam:{' '}
+              <Link href="/#beginnen" style={{ display: 'inline-block', padding: '10px 4px' }}>
+                kies een naam
+              </Link>
+            </p>
+          )}
         </div>
       </div>
     )

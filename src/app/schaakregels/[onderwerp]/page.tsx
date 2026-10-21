@@ -91,7 +91,7 @@ export default async function Onderwerp({ params }: { params: Promise<{ onderwer
               Nu staat hij direct onder het antwoord, en hij gaat rechtstreeks naar de
               les: een les speelt ook zonder profiel. */}
           {lessen[0] && (
-            <Link href={`/les/${lessen[0].id}/`} className="btn btn--primary" style={{ marginTop: 12 }}>
+            <Link href={`/les/${o.oefenEerst ?? lessen[0].id}/`} className="btn btn--primary" style={{ marginTop: 12 }}>
               <span aria-hidden="true">▶︎</span> Oefen dit met Pip, gratis
             </Link>
           )}
@@ -158,7 +158,7 @@ export default async function Onderwerp({ params }: { params: Promise<{ onderwer
           ))}
         </ul>
         <p>
-          <Link href={`/les/${(lessen[0] ?? ALLE_LESSEN[0]).id}/`} className="btn btn--primary btn--big">
+          <Link href={`/les/${o.oefenEerst ?? (lessen[0] ?? ALLE_LESSEN[0]).id}/`} className="btn btn--primary btn--big">
             Begin met Schaakmaatje →
           </Link>
         </p>

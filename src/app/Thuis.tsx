@@ -567,7 +567,7 @@ function NieuwProfiel({
           )}
         </label>
         {/* Direct onder de vraag om een naam: dat is het moment waarop een ouder twijfelt. */}
-        <p className="muted" style={{ fontSize: '0.85rem', margin: 0 }}>
+        <p className="muted" style={{ fontSize: '0.95rem', margin: 0 }}>
           Alles blijft op dit apparaat. Er gaat niets over je kind naar internet en je hoeft nergens een
           account voor te maken.
         </p>
@@ -598,9 +598,12 @@ function NieuwProfiel({
             een vrij maatje al gekozen. De leeftijd blijft wel open, want die bepaalt
             hoe Pip praat en wat er openstaat. */}
         <details>
-          <summary style={{ cursor: 'pointer', minHeight: 44, display: 'flex', alignItems: 'center', gap: 8 }}>
-            Maatje: <span style={{ fontSize: 26 }} aria-hidden="true">{avatar}</span>
-            <span className="muted">(tik om te kiezen)</span>
+          {/* Als knop, zodat je ziet dat je erop kunt tikken (de flex-summary verloor het
+              driehoekje). Het gekozen maatje staat erin, ook voor de schermlezer. */}
+          <summary className="btn" style={{ listStyle: 'none', justifyContent: 'flex-start', gap: 10 }}>
+            <span style={{ fontSize: 26 }} aria-hidden="true">{avatar}</span>
+            <span>Ander maatje kiezen</span>
+            <span className="visually-hidden">, nu gekozen: {avatar}</span>
           </summary>
         <fieldset style={{ border: 0, padding: 0, margin: '8px 0 0' }} className="stack">
           <legend className="visually-hidden">Kies een maatje</legend>

@@ -125,9 +125,12 @@ export const MAX_OMSCHRIJVING = 155
 /** Inkorten op een woordgrens, met een beletselteken als er iets afgaat. */
 export function kort(tekst: string, max = MAX_OMSCHRIJVING): string {
   if (tekst.length <= max) return tekst
-  // Tot en met teken max: valt daar een spatie, dan blijft het woord ervoor heel.
+  // De eerste max tekens (index 0 tot max - 1). Knippen bij de laatste spatie daarin laat
+  // hooguit max - 1 tekens over, plus het beletselteken. Geen spatie: dan hard afkappen.
   const stuk = tekst.slice(0, max)
-  return `${stuk.slice(0, stuk.lastIndexOf(' ')).replace(/[,.;:]$/, '')}…`
+  const grens = stuk.lastIndexOf(' ')
+  const kop = grens > 0 ? stuk.slice(0, grens) : tekst.slice(0, max - 1)
+  return `${kop.replace(/[,.;:]$/, '')}…`
 }
 
 /**
