@@ -75,6 +75,9 @@ describe('anoniem tellen', () => {
   it('een zelf ingetypt adres gaat niet mee, alleen de schermen van de app', () => {
     expect(pad('/les/toren-1/')).toBe('/les/toren-1/')
     expect(pad('/')).toBe('/')
+    expect(pad('/schaakregels/')).toBe('/schaakregels/')
+    expect(pad('/schaakclub/')).toBe('/schaakclub/')
+    expect(pad('/schaakregels/en-passant/')).toBe('/schaakregels/en-passant/')
     expect(pad('/mijn-naam-is-daan/')).toBe('/onbekend/')
     expect(pad('/les/Daan Jansen/')).toBe('/onbekend/')
   })
@@ -100,6 +103,8 @@ describe('wat er geteld wordt, ligt vast', () => {
     'Minispel rondje': ['spel', 'rondje'],
     Bezoek: ['geoefend'],
     Speelduur: ['duur'],
+    'Profiel gemaakt': [],
+    'Opgave lastig': ['les', 'opgave', 'hulp'],
   }
   const bestanden = (map: string): string[] =>
     readdirSync(map).flatMap((n) => {

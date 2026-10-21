@@ -50,7 +50,7 @@ function opDeSite(): boolean {
 export type Eigenschappen = Record<string, string | number>
 
 /** De schermen van de app. Een ander pad is door iemand ingetypt en gaat niet mee. */
-const BEKEND = /^\/(|(les|lessen|kaart|spel|spelen|stal|ouders|over|diploma|opfrissen|contact)(\/[a-z0-9-]+)?\/)$/
+const BEKEND = /^\/(|(les|lessen|kaart|spel|spelen|stal|ouders|over|diploma|opfrissen|contact|schaakregels|schaakclub)(\/[a-z0-9-]+)?\/)$/
 
 /**
  * Het pad zonder hekje en zonder vraagteken: in het hekje van een afstandslink staat de

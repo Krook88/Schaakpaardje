@@ -221,7 +221,7 @@ async function quizRekentGoedGoed() {
  * Overal moet minstens één knop of link staan die ergens heen gaat.
  * ------------------------------------------------------------------ */
 async function altijdEenUitweg() {
-  const schermen = ['/', '/kaart/', '/lessen/', '/over/', '/schaakregels/', '/schaakregels/paard/', '/stal/', '/spelen/', '/opfrissen/', '/les/weide-1/']
+  const schermen = ['/', '/kaart/', '/lessen/', '/over/', '/schaakregels/', '/schaakregels/paard/', '/schaakclub/', '/stal/', '/spelen/', '/opfrissen/', '/les/weide-1/']
   const zonder = []
   for (const pad of schermen) {
     await page.goto(URL + pad, { waitUntil: 'networkidle' })
@@ -826,6 +826,62 @@ async function tweedeKind() {
   meld(naam, terug > 0, terug ? '' : 'wisselen naar het eerste kind lukte niet')
 }
 
+/* ------------------------------------------------------------------ *
+ * Wie zonder profiel speelt, houdt zijn sterren.
+ *
+ * Op de startpagina staat "Probeer de eerste les", en via Google landt een ouder
+ * rechtstreeks op een les. Zonder profiel gooide de opslag de sterren stilletjes weg
+ * (`if (!id) return`). Nu: eerste les spelen als gast, bij de beloning een naam kiezen,
+ * en dan staat het kind niet weer bij "De eerste les". Achttiende review, SEO2.
+ * ------------------------------------------------------------------ */
+async function gastHoudtZijnSterren() {
+  const naam = 'eerste les zonder profiel: na een naam kiezen staan de sterren er nog'
+  const ctx = await browser.newContext({ viewport: { width: 420, height: 950 } })
+  const p = await ctx.newPage()
+  try {
+    await p.goto(URL, { waitUntil: 'networkidle' })
+    await p.getByRole('link', { name: /Probeer de eerste les/ }).click()
+    await p.waitForURL(/\/les\/weide-1\//)
+    await p.waitForTimeout(700)
+    for (let i = 0; i < 10 && !(await p.getByRole('button', { name: /Ik ga het proberen/ }).count()); i++) {
+      await p.getByRole('button', { name: /Verder/ }).first().click().catch(() => {})
+      await p.waitForTimeout(400)
+    }
+    await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
+    await p.waitForTimeout(600)
+    // De antwoorden van weide-1, opgave voor opgave: meedoen, zelf (2), toets (2).
+    const opgaven = [['a1', 'c1', 'e1', 'g1'], ['b1', 'd1', 'f1', 'h1'], ['a8', 'c8', 'e8', 'g8'], ['d4', 'e5'], ['d5', 'e4']]
+    for (const velden of opgaven) {
+      for (const veld of velden) {
+        await p.locator(`[data-square="${veld}"]`).click()
+        await p.waitForTimeout(250)
+      }
+      // Pip prijst, dan komt de volgende opgave (of de knop naar de volgende fase).
+      await p.waitForTimeout(2500)
+      for (let i = 0; i < 6; i++) {
+        const door = p.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ })
+        if (!(await door.count())) break
+        await door.first().click()
+        await p.waitForTimeout(450)
+      }
+    }
+    await p.getByText('Bewaar je sterren').waitFor({ timeout: 8000 }).catch(() => {})
+    if (!(await p.getByText('Bewaar je sterren').count())) {
+      return meld(naam, false, 'geen "Bewaar je sterren" bij de beloning (kloppen de antwoorden van weide-1 hierboven nog?)')
+    }
+    await p.getByRole('link', { name: 'Kies een naam' }).click()
+    await p.waitForTimeout(800)
+    await p.getByRole('textbox').first().fill('Gastkind')
+    await p.getByRole('button', { name: /^Beginnen/ }).click()
+    await p.waitForTimeout(800)
+    const knop = await p.locator('a[href*="/les/"]').first().innerText().catch(() => '')
+    const goed = /Verder leren/.test(knop)
+    meld(naam, goed, goed ? '' : `de grote knop zegt "${knop.replace(/\s+/g, ' ')}"`)
+  } finally {
+    await ctx.close()
+  }
+}
+
 console.log(`Doorloop tegen ${URL}\n`)
 await pipZwijgtBijBinnenkomst()
 await nieuwProfiel()
@@ -843,6 +899,7 @@ await contactformulierIsEerlijk()
 await uitlegbordSpeelt()
 await altijdEenUitweg()
 await tweedeKind()
+await gastHoudtZijnSterren()
 
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 

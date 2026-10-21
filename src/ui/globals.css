@@ -141,3 +141,6 @@ a { color: inherit; }
 
 /* Invoervelden (contactformulier): een placeholder die ook in donker te lezen is. */
 .veld::placeholder { color: var(--muted); opacity: 1; }
+
+/* Een summary die eruitziet als knop: zonder het driehoekje van Safari. */
+summary.btn::-webkit-details-marker { display: none; }

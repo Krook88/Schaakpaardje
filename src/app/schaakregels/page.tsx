@@ -106,8 +106,8 @@ export default function Schaakregels() {
           op <Link href="/over/">de pagina voor ouders</Link>.
         </p>
         <p>
-          <Link href="/" className="btn btn--primary btn--big">
-            Begin met Schaakmaatje →
+          <Link href={`/les/${ALLE_LESSEN[0].id}/`} className="btn btn--primary btn--big">
+            Probeer de eerste les →
           </Link>
         </p>
       </section>

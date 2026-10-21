@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
 import { LessonPlayer } from '@/lesson/LessonPlayer'
 import { LesUitleg } from '@/lesson/LesUitleg'
-import { SITE, VOOR_KINDEREN, deelkaart, kruimels } from '@/seo'
+import { SITE, VOOR_KINDEREN, deelkaart, kruimels, lesOmschrijving, lesZoektitel } from '@/seo'
 import { Gegevens } from '@/ui/Gegevens'
 
 export function generateStaticParams() {
@@ -36,8 +36,8 @@ export async function generateMetadata({
   if (!gevonden) return {}
   const { les, wereld } = gevonden
   return {
-    title: `${les.titel}: schaakles voor kinderen`,
-    description: `${les.doel} Gratis schaakles uit ${wereld.naam}, met Pip het schaakpaardje. Voor kinderen van 3 tot 10 jaar.`,
+    title: lesZoektitel(les.titel),
+    description: lesOmschrijving(les.doel, wereld.naam),
     alternates: { canonical: `${SITE}/les/${les.id}/` },
     ...deelkaart({
       titel: `${les.titel} | Schaakmaatje`,

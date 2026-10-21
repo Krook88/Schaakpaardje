@@ -212,14 +212,6 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
           vanzelf={vanzelf}
         />
 
-        {/* De rondleiding, alleen zolang er nog niets gedaan is.
-            Wie hier voor het eerst komt kreeg vier knoppen en een lege stal, zonder
-            dat ergens stond wat dit is of wat je moet doen. Voor de ouder ernaast is
-            dat net zo goed onduidelijk als voor het kind. Zodra de eerste les gedaan
-            is verdwijnt hij vanzelf: uitleg die blijft staan als je het al weet is
-            geen uitleg meer maar meubilair. */}
-        {eersteKeer && <Rondleiding />}
-
         {/* Voortgang zonder letters: elke wereld één plaatje, in kleur als hij uit is.
             Het loopt van links naar rechts vol, en dat is de hele boodschap.
 
@@ -298,6 +290,16 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
             </Link>
           </div>
         </div>
+
+        {/* De rondleiding, alleen zolang er nog niets gedaan is, en ónder de grote knop:
+            Pip zegt "druk op de grote knop", en boven de knop schoof de rondleiding hem
+            op een telefoon net onder de vouw.
+            Wie hier voor het eerst komt kreeg vier knoppen en een lege stal, zonder
+            dat ergens stond wat dit is of wat je moet doen. Voor de ouder ernaast is
+            dat net zo goed onduidelijk als voor het kind. Zodra de eerste les gedaan
+            is verdwijnt hij vanzelf: uitleg die blijft staan als je het al weet is
+            geen uitleg meer maar meubilair. */}
+        {eersteKeer && <Rondleiding />}
 
         {/* De stal: wat er te verzamelen valt. Hier stond een raster van 48 identieke
             medailles — je zag dus niet wát je verdiend had, alleen hoevéél. En daarna
@@ -564,6 +566,11 @@ function NieuwProfiel({
             </small>
           )}
         </label>
+        {/* Direct onder de vraag om een naam: dat is het moment waarop een ouder twijfelt. */}
+        <p className="muted" style={{ fontSize: '0.95rem', margin: 0 }}>
+          Alles blijft op dit apparaat. Er gaat niets over je kind naar internet en je hoeft nergens een
+          account voor te maken.
+        </p>
 
         <fieldset style={{ border: 0, padding: 0, margin: 0 }} className="stack">
           <legend>Hoe oud ben je?</legend>
@@ -587,8 +594,19 @@ function NieuwProfiel({
           </div>
         </fieldset>
 
-        <fieldset style={{ border: 0, padding: 0, margin: 0 }} className="stack">
-          <legend>Kies een maatje</legend>
+        {/* Het maatje is leuk, maar geen reden om later te beginnen: dichtgeklapt, met
+            een vrij maatje al gekozen. De leeftijd blijft wel open, want die bepaalt
+            hoe Pip praat en wat er openstaat. */}
+        <details>
+          {/* Als knop, zodat je ziet dat je erop kunt tikken (de flex-summary verloor het
+              driehoekje). Het gekozen maatje staat erin, ook voor de schermlezer. */}
+          <summary className="btn" style={{ listStyle: 'none', justifyContent: 'flex-start', gap: 10 }}>
+            <span style={{ fontSize: 26 }} aria-hidden="true">{avatar}</span>
+            <span>Ander maatje kiezen</span>
+            <span className="visually-hidden">, nu gekozen: {avatar}</span>
+          </summary>
+        <fieldset style={{ border: 0, padding: 0, margin: '8px 0 0' }} className="stack">
+          <legend className="visually-hidden">Kies een maatje</legend>
           <div className="row">
             {AVATARS.map((a) => (
               <button
@@ -609,6 +627,7 @@ function NieuwProfiel({
             ))}
           </div>
         </fieldset>
+        </details>
 
         <button
           type="button"
@@ -628,17 +647,13 @@ function NieuwProfiel({
         >
           Beginnen →
         </button>
-        <p className="muted" style={{ fontSize: '0.85rem' }}>
-          Alles blijft op dit apparaat. Er gaat niets over je kind naar internet en je hoeft nergens een
-          account voor te maken.
-        </p>
         {/* Voor de ouder die eerst wil weten waar hij zijn kind op zet — en meteen de
             enige link vanaf de startpagina naar de twee pagina's die zonder de app te
             lezen zijn. Zonder zo'n link staan ze los in de sitemap en verder nergens. */}
         {!alleenFormulier && (
           <p style={{ fontSize: '1rem', margin: 0, lineHeight: 2 }}>
             <Link href="/over/">Over Schaakmaatje</Link> · <Link href="/lessen/">Alle lessen</Link> ·{' '}
-            <Link href="/contact/">Contact</Link>
+            <Link href="/schaakclub/">Schaakclub</Link> · <Link href="/contact/">Contact</Link>
           </p>
         )}
       </section>

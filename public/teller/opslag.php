@@ -26,10 +26,12 @@ const TELLINGEN = [
     'Minispel rondje' => ['spel', 'rondje'],
     'Bezoek' => ['geoefend'],
     'Speelduur' => ['duur'],
+    'Profiel gemaakt' => [],
+    'Opgave lastig' => ['les', 'opgave', 'hulp'],
 ];
 
 /** Dezelfde regel als `pad()` in src/progress/tellen.ts: alleen schermen van de app. */
-const BEKEND_PAD = '#^/(|(les|lessen|kaart|spel|spelen|stal|ouders|over|diploma|opfrissen|contact)(/[a-z0-9-]+)?/|onbekend/)$#';
+const BEKEND_PAD = '#^/(|(les|lessen|kaart|spel|spelen|stal|ouders|over|diploma|opfrissen|contact|schaakregels|schaakclub)(/[a-z0-9-]+)?/|onbekend/)$#';
 
 /** Grootste dagbestand. Daarboven wordt niets meer bewaard: zo kan niemand de schijf vullen. */
 const MAX_DAG = 1024 * 1024; // ruim 10.000 echte tellingen

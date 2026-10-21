@@ -86,6 +86,18 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect((await fetch(`${BASIS}/teller/opslag.php`)).status).toBe(403)
   })
 
+  it('een profiel zonder eigenschappen, een lastige opgave, en de schaakregelpagina\'s komen binnen', async () => {
+    expect((await stuur({ name: 'Profiel gemaakt', url: '/' })).status).toBe(204)
+    expect((await stuur({ name: 'Profiel gemaakt', url: '/', props: { naam: 'daan' } })).status).toBe(400)
+    const lastig = { name: 'Opgave lastig', url: '/les/weide-1/', props: { les: 'weide-1', opgave: 'zelf-1', hulp: 'missers' } }
+    expect((await stuur(lastig)).status).toBe(204)
+    expect((await stuur({ name: 'pageview', url: '/schaakregels/en-passant/' })).status).toBe(204)
+    const regels = bewaard()
+    expect(regels).toContainEqual(expect.objectContaining({ n: 'Profiel gemaakt', p: '/' }))
+    expect(regels).toContainEqual(expect.objectContaining({ n: 'Opgave lastig', e: lastig.props }))
+    expect(regels).toContainEqual(expect.objectContaining({ n: 'pageview', p: '/schaakregels/en-passant/' }))
+  })
+
   it('het dashboard vraagt een wachtwoord en toont dan de tellingen', async () => {
     const zonder = await (await fetch(`${BASIS}/teller/dashboard.php`)).text()
     expect(zonder).toContain('nog geen wachtwoord')
@@ -107,6 +119,9 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     const open = await (await fetch(`${BASIS}/teller/dashboard.php`, { headers: { cookie: koekje } })).text()
     expect(open).toContain('Lessen: waar haken kinderen af?')
     expect(open).toContain('toren-1')
+    expect(open).toContain('profielen gemaakt')
+    expect(open).toContain('Opgaven: waar lopen kinderen vast?')
+    expect(open).toContain('<td>zelf 1</td>')
   })
 
   it('raden wordt afgeremd: na 10 mislukte pogingen in een uur gaat niemand er meer in', async () => {

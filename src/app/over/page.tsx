@@ -29,7 +29,8 @@ const OVER_OMSCHRIJVING =
  * kind naar internet.
  */
 export const metadata: Metadata = {
-  title: 'Over Schaakmaatje: schaken leren voor kinderen van 3 tot 10 jaar',
+  // absolute: de merknaam staat er al in, het sjabloon zette hem er nog eens achter.
+  title: { absolute: 'Over Schaakmaatje: schaken leren voor kinderen van 3 tot 10' },
   description: OVER_OMSCHRIJVING,
   alternates: { canonical: `${SITE}/over/` },
   ...deelkaart({
@@ -67,7 +68,7 @@ const VRAGEN: [string, string][] = [
   ],
   [
     'Vervangt dit de schaakclub?',
-    'Nee. Schaken leer je echt aan een bord met iemand tegenover je, en op een club leert je kind ook winnen en verliezen van een ander kind. De app is een aanloop: wie binnenkomt, kent de stukken en de regels al. Speel daarom ook thuis; op deze pagina staan tips.',
+    'Nee. Schaken leer je echt aan een bord met iemand tegenover je, en op een club leert je kind ook winnen en verliezen van een ander kind. De app is een aanloop: wie binnenkomt, kent de stukken en de regels al. Hoe je een club vindt, staat op schaakmaatje.nl/schaakclub.',
   ],
   [
     'Een fout gezien of een vraag?',
@@ -363,7 +364,7 @@ export default function Over() {
             De hoefijzers zijn van de app zelf. Het zijn geen officiële diploma&apos;s, en
             ze zeggen niet of je kind het pionnendiploma zou halen. Wil je kind dat diploma,
             dan is een club of schaakles op school de weg. Als aanloop daarnaartoe is de app
-            goed te gebruiken.
+            goed te gebruiken. <Link href="/schaakclub/">Zo vind je een schaakclub</Link>.
           </p>
         </div>
       </section>

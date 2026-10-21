@@ -51,6 +51,7 @@ describe('de schaakregelpagina’s', () => {
     for (const o of SCHAAKREGELS) {
       expect(o.lessen.length, o.slug).toBeGreaterThan(0)
       for (const id of o.lessen) expect(lessen.has(id), `${o.slug} → ${id}`).toBe(true)
+      if (o.oefenEerst) expect(lessen.has(o.oefenEerst), `${o.slug} → ${o.oefenEerst}`).toBe(true)
     }
   })
 

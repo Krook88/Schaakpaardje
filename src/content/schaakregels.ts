@@ -40,6 +40,11 @@ export type Onderwerp = {
   vragen: [string, string][]
   /** De lessen waarin een kind dit zelf oefent. */
   lessen: string[]
+  /**
+   * Waar de knop "Oefen dit met Pip" heen gaat, als dat niet de eerste les van `lessen`
+   * kan zijn omdat die voorkennis vraagt die een kind via Google nog niet heeft.
+   */
+  oefenEerst?: string
 }
 
 export const SCHAAKREGELS: Onderwerp[] = [
@@ -770,6 +775,9 @@ export const SCHAAKREGELS: Onderwerp[] = [
       ['Wanneer leert mijn kind pat in de app?', 'In wereld 10, samen met mat. Pas als je mat kent, heeft het zin om het verschil met pat te leren.'],
     ],
     lessen: ['mat-3'],
+    // mat-3 vraagt naar het verschil tussen pat en mat. Een kind dat via deze pagina
+    // binnenkomt kent mat misschien nog niet: dan eerst mat-1 (negentiende review, S6).
+    oefenEerst: 'mat-1',
   },
 ]
 
