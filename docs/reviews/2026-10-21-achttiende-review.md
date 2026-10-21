@@ -75,3 +75,14 @@ langs de negentiende review.
 | SEO8 | Lestitels met dubbel leesteken ("?:"), omschrijvingen van 168 tekens, merknaam dubbel in de titel van /over/. | **Opgelost**: `lesZoektitel` (geen "?:" meer) en `lesOmschrijving` (≤ 155 tekens) in `src/seo.ts`, vastgelegd voor alle 49 lessen in `tests/seo-lessen.test.ts`; /over/ met `title.absolute`. De titels van de schaakregelpagina's (69–73 tekens) niet aangepakt: Google kapt rond 60 af, maar de vraag staat vooraan en blijft leesbaar. |
 | SEO9 | Elke gedeelde pagina toont in WhatsApp hetzelfde og.png. Voorstel: deelkaart per schaakregel, gemaakt bij het bouwen. | **Niet gedaan.** Een deelkaart per schaakregel vraagt een nieuw bouwscript voor afbeeldingen; dat is een eigen klus. Volgende fase. |
 | SEO10 | Het tikken op "Beginnen" en "les zonder profiel" worden niet geteld, dus de afhakers zijn niet te splitsen. | **Niet gedaan, met reden.** `Les begonnen` een eigenschap `profiel` geven laat de server elke telling weigeren van apparaten die de oude app nog in de cache hebben (de server eist precies de vaste eigenschappen). Met `Profiel gemaakt` en de schermtellingen van `/` en `/les/weide-1/` is de afhaker nu al te splitsen. |
+
+## Na de herstelronde
+
+- `npm run check` groen (488 tests), doorloop 17/17 met de nieuwe regel `gastHoudtZijnSterren`.
+- Nieuw, op verzoek van Kaj na het Search Console-rapport (ouders zochten op "schaakclub
+  den haag" en "schaakclub amsterdam"): de pagina `/schaakclub/` voor ouders. Wanneer is je
+  kind eraan toe, de clubzoeker van de KNSB, wat vraag je bij de club. Geen lijst met
+  clubs: die houden wij niet bij. Gelinkt vanaf de startpagina, het profielscherm en /over/,
+  in de sitemap, en `schaakclub` toegevoegd aan de bekende schermen van de teller.
+
+Herstelronde en clubpagina gaan samen langs de negentiende review.

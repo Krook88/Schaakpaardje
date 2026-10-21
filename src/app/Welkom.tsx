@@ -167,7 +167,8 @@ export function Welkom() {
         Geen reclame, geen account, geen aankopen in de app. Alles blijft op dit
         apparaat staan en na de eerste keer werkt het ook zonder internet.{' '}
         <Link href="/over/">Lees meer voor ouders</Link> of bekijk{' '}
-        <Link href="/lessen/">alle {lessen} lessen</Link>.
+        <Link href="/lessen/">alle {lessen} lessen</Link>. Klaar voor het echte bord?{' '}
+        <Link href="/schaakclub/">Zo vind je een schaakclub</Link>.
       </p>
 
       {/* Het doel van "Beginnen →". Het stond op het formulier, maar dat is een

@@ -76,6 +76,7 @@ describe('anoniem tellen', () => {
     expect(pad('/les/toren-1/')).toBe('/les/toren-1/')
     expect(pad('/')).toBe('/')
     expect(pad('/schaakregels/')).toBe('/schaakregels/')
+    expect(pad('/schaakclub/')).toBe('/schaakclub/')
     expect(pad('/schaakregels/en-passant/')).toBe('/schaakregels/en-passant/')
     expect(pad('/mijn-naam-is-daan/')).toBe('/onbekend/')
     expect(pad('/les/Daan Jansen/')).toBe('/onbekend/')

@@ -221,7 +221,7 @@ async function quizRekentGoedGoed() {
  * Overal moet minstens één knop of link staan die ergens heen gaat.
  * ------------------------------------------------------------------ */
 async function altijdEenUitweg() {
-  const schermen = ['/', '/kaart/', '/lessen/', '/over/', '/schaakregels/', '/schaakregels/paard/', '/stal/', '/spelen/', '/opfrissen/', '/les/weide-1/']
+  const schermen = ['/', '/kaart/', '/lessen/', '/over/', '/schaakregels/', '/schaakregels/paard/', '/schaakclub/', '/stal/', '/spelen/', '/opfrissen/', '/les/weide-1/']
   const zonder = []
   for (const pad of schermen) {
     await page.goto(URL + pad, { waitUntil: 'networkidle' })
@@ -870,7 +870,7 @@ async function gastHoudtZijnSterren() {
     await p.getByRole('link', { name: 'Kies een naam' }).click()
     await p.waitForTimeout(800)
     await p.getByRole('textbox').first().fill('Gastkind')
-    await p.getByRole('button', { name: 'Beginnen', exact: true }).click()
+    await p.getByRole('button', { name: /^Beginnen/ }).click()
     await p.waitForTimeout(800)
     const knop = await p.locator('a[href*="/les/"]').first().innerText().catch(() => '')
     const goed = /Verder leren/.test(knop)
