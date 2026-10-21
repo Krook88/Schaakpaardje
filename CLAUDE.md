@@ -17,8 +17,8 @@ opgavetype, een nieuw scherm, of een technische laag zoals de zoeker of de offli
 /release-review
 ```
 
-Dat start de coördinator, die de schaakmeester, de layout-reviewer en de
-codebase-reviewer laat kijken en er één oordeel van maakt. Zie `docs/11-releaseproces.md`.
+Dat start de coördinator, die de schaakmeester, de layout-reviewer, de
+codebase-reviewer en de conversie-reviewer laat kijken en er één oordeel van maakt. Zie `docs/11-releaseproces.md`.
 
 ### En dan de feedback verwerken
 
@@ -31,7 +31,8 @@ Een review die in `docs/reviews/` blijft liggen is weggegooid werk. Na elk rappo
 4. Pas daarna begint de volgende fase.
 
 Bij tegenstrijdig advies weegt: **klopt het schaken** > kan een kind het bedienen >
-is het mooi > is de code netjes. Een fout in de schaakregels is altijd blokkerend: wat
+komt een nieuwe bezoeker bij de eerste les > is het mooi > is de code netjes. Conversie
+nooit ten koste van de privacy, de didactiek of door een kind onder druk te zetten. Een fout in de schaakregels is altijd blokkerend: wat
 een kind hier verkeerd leert, moet het bij de club weer afleren.
 
 ## Commando's

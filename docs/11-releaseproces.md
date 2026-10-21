@@ -1,8 +1,8 @@
 # 11. Het releaseproces
 
-Elke release van Schaakmaatje gaat langs drie reviewers, gecoördineerd door een vierde.
-Dat is geen bureaucratie: bij een leer-app voor kinderen zijn dit drie heel verschillende
-soorten fout, en niemand ziet ze alle drie tegelijk.
+Elke release van Schaakmaatje gaat langs vier reviewers, gecoördineerd door een vijfde.
+Dat is geen bureaucratie: bij een leer-app voor kinderen zijn dit vier heel verschillende
+soorten fout, en niemand ziet ze alle vier tegelijk.
 
 ## De reviewers
 
@@ -11,7 +11,13 @@ soorten fout, en niemand ziet ze alle drie tegelijk.
 | **schaakmeester** | Kloppen de regels, de stellingen en de opbouw? Deugt de didactiek? | kleur, code |
 | **layout-reviewer** | Ziet het er goed uit, kan een kind van vijf het bedienen? Contrast, raakvlakken, licht en donker | schaakregels, code |
 | **codebase-reviewer** | Correctheid, tests, onderhoudbaarheid, risico's | schaakregels, vormgeving |
-| **release-coordinator** | Bundelt de drie, weegt, schrijft het rapport, geeft één oordeel | doet zelf geen review |
+| **conversie-reviewer** | Komt een ouder die via Google of een link binnenkomt bij de eerste les? Zoektitels, koppen, de hoofdknop van elke pagina | schaakregels, kleur, code |
+| **release-coordinator** | Bundelt de vier, weegt, schrijft het rapport, geeft één oordeel | doet zelf geen review |
+
+De conversie-reviewer kwam erbij in oktober 2026. De pagina `/schaakclub/` had als
+hoofdknop een link naar de schaakbond: bezoekers gingen weg voordat ze de app gezien
+hadden. De andere drie reviewers keken ernaar en vonden de tekst juist, de knop mooi en
+de code netjes. Niemand vroeg waar de bezoeker heen ging.
 
 De definities staan in `.claude/agents/`. Ze zijn met opzet smal gehouden: een reviewer
 die overal iets van vindt, wordt niet meer serieus genomen.
@@ -48,7 +54,7 @@ Of rechtstreeks: start de agent `release-coordinator` en geef mee wat er verande
 
 De coördinator:
 1. bepaalt de scope (`git log` sinds de vorige review in `docs/reviews/`),
-2. laat de drie reviewers parallel kijken,
+2. laat de vier reviewers parallel kijken,
 3. bundelt en ontdubbelt de bevindingen,
 4. schrijft `docs/reviews/JJJJ-MM-DD-<naam>.md`,
 5. geeft één oordeel: **GO**, **GO MITS** of **NO-GO**.
@@ -59,8 +65,10 @@ Bij tegenstrijdig advies:
 1. **Klopt het schaken?** Een fout in de regels is altijd blokkerend. Wat een kind hier
    verkeerd leert, moet het bij de club weer afleren.
 2. **Kan een kind van de doelgroep het bedienen?**
-3. **Is het mooi?**
-4. **Is de code netjes?**
+3. **Komt een nieuwe bezoeker bij de eerste les?** Nooit ten koste van de privacy, de
+   didactiek of door een kind onder druk te zetten.
+4. **Is het mooi?**
+5. **Is de code netjes?**
 
 ## Wat een release tegenhoudt
 - Een falende typecheck, test, contentcontrole of build.
