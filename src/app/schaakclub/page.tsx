@@ -21,6 +21,9 @@ import s from '../over/Over.module.css'
 /** De clubzoeker van de schaakbond (KNSB), met een filter op jeugd. */
 const CLUBZOEKER = 'https://schaakbond.nl/spelers/volwassenen/zoek-een-schaakclub/'
 
+/** Waar "Probeer eerst Schaakmaatje" heen gaat: de eerste les, ook zonder profiel. */
+const EERSTE_LES = `/les/${ALLE_LESSEN[0].id}/`
+
 const OMSCHRIJVING =
   'Wanneer is je kind klaar voor een schaakclub, hoe vind je een club met jeugd bij jou in de buurt, en wat vraag je bij de eerste keer? Voor ouders.'
 
@@ -73,11 +76,16 @@ export default function Schaakclub() {
           tegenover je. Zo vind je een club in de buurt, en zo weet je wanneer je kind eraan
           toe is.
         </p>
+        {/* Eerst de app proberen is de hoofdknop: wie hier via Google binnenkomt, kent
+            Schaakmaatje nog niet. De clubzoeker staat ernaast als tweede knop. */}
         <div className={s.knoppen}>
-          <a href={CLUBZOEKER} className="btn btn--primary btn--big" target="_blank" rel="noopener noreferrer">
-            Zoek een club bij de schaakbond ↗
+          <Link href={EERSTE_LES} className="btn btn--primary btn--big">
+            <span aria-hidden="true">▶︎</span> Probeer eerst Schaakmaatje, gratis
+          </Link>
+          <a href={CLUBZOEKER} className="btn btn--big" target="_blank" rel="noopener noreferrer">
+            Zoek een club bij de schaakbond <span aria-hidden="true">↗</span>
+            <span className="visually-hidden"> (opent in een nieuw tabblad)</span>
           </a>
-          <Link href={`/les/${ALLE_LESSEN[0].id}/`}>Eerst oefenen met Pip</Link>
         </div>
       </section>
 
@@ -165,6 +173,11 @@ export default function Schaakclub() {
           <p>
             Meer over hoe de app werkt staat op <Link href="/over/">de pagina voor ouders</Link>
             , en hoe de stukken lopen bij <Link href="/schaakregels/">de schaakregels</Link>.
+          </p>
+          <p>
+            <Link href={EERSTE_LES} className="btn btn--primary btn--big">
+              <span aria-hidden="true">▶︎</span> Probeer de eerste les
+            </Link>
           </p>
         </div>
       </section>
