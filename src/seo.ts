@@ -118,3 +118,30 @@ export const VOOR_KINDEREN = {
   about: { '@type': 'Thing', name: 'Schaken' },
   publisher: { '@id': `${SITE}/#site` },
 } as const
+
+/** Hoe lang een omschrijving mag zijn voor Google hem afkapt. */
+export const MAX_OMSCHRIJVING = 155
+
+/** Inkorten op een woordgrens, met een beletselteken als er iets afgaat. */
+export function kort(tekst: string, max = MAX_OMSCHRIJVING): string {
+  if (tekst.length <= max) return tekst
+  // Tot en met teken max: valt daar een spatie, dan blijft het woord ervoor heel.
+  const stuk = tekst.slice(0, max)
+  return `${stuk.slice(0, stuk.lastIndexOf(' ')).replace(/[,.;:]$/, '')}…`
+}
+
+/**
+ * De zoektitel van een les. Een titel die op een vraagteken eindigt kreeg er een
+ * dubbele punt achter ("Staat mijn stuk te pakken?: schaakles"); nu volgt er een zin.
+ */
+export function lesZoektitel(titel: string): string {
+  return /[?!]$/.test(titel) ? `${titel} Schaakles voor kinderen` : `${titel}: schaakles voor kinderen`
+}
+
+/** De zoekomschrijving van een les, binnen de lengte die Google laat staan. */
+export function lesOmschrijving(doel: string, wereld: string): string {
+  const lang = `${doel} Gratis schaakles uit ${wereld}, met Pip het schaakpaardje. Voor kinderen van 3 tot 10 jaar.`
+  if (lang.length <= MAX_OMSCHRIJVING) return lang
+  const korter = `${doel} Gratis schaakles met Pip, voor kinderen van 3 tot 10.`
+  return kort(korter.length <= MAX_OMSCHRIJVING ? korter : doel)
+}

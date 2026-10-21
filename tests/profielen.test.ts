@@ -49,3 +49,32 @@ describe('nog een kind', () => {
     expect(eersteVrijeMaatje([...AVATARS])).toBe('🐴')
   })
 })
+
+/**
+ * Spelen zonder profiel. Een ouder die via Google op een les landt, of op "Probeer de
+ * eerste les" tikt, speelt als gast. Daarvoor gooide `bewaarLes` de sterren stilletjes weg.
+ */
+describe('spelen als gast', () => {
+  beforeEach(() => {
+    emmer.clear()
+    useProfielStore.setState({ ...leeg, profielen: [], actiefId: null, voortgang: {}, stickers: {}, hervatpunt: {}, oefendagen: {} })
+  })
+
+  it('de sterren van een gast blijven staan en gaan mee naar het eerste profiel', () => {
+    const s = useProfielStore.getState
+    s().bewaarLes('weide-1', { sterren: 3, fouten: 0, hints: 0 })
+    s().geefSticker('weide-1')
+    s().bewaarHervatpunt('weide-2', 'zelf')
+    expect(voortgangVan(s())['weide-1']?.sterren).toBe(3)
+
+    const noor = s().maakProfiel('Noor', 5, '🐴')
+    expect(voortgangVan(s())['weide-1']?.sterren).toBe(3)
+    expect(s().stickers[noor]).toEqual(['weide-1'])
+    expect(s().hervatpunt[noor]).toEqual({ 'weide-2': 'zelf' })
+    expect(s().oefendagen[noor]?.aantal).toBe(1)
+    // En de gast is leeg: een tweede kind erft niets van het eerste.
+    expect(s().voortgang.gast).toBeUndefined()
+    s().maakProfiel('Daan', 9, '🦊')
+    expect(voortgangVan(s())).toEqual({})
+  })
+})

@@ -29,7 +29,8 @@ const OVER_OMSCHRIJVING =
  * kind naar internet.
  */
 export const metadata: Metadata = {
-  title: 'Over Schaakmaatje: schaken leren voor kinderen van 3 tot 10 jaar',
+  // absolute: de merknaam staat er al in, het sjabloon zette hem er nog eens achter.
+  title: { absolute: 'Over Schaakmaatje: schaken leren voor kinderen van 3 tot 10' },
   description: OVER_OMSCHRIJVING,
   alternates: { canonical: `${SITE}/over/` },
   ...deelkaart({

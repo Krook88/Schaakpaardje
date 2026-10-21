@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { lesMet } from '@/content'
+import { ALLE_LESSEN, lesMet } from '@/content'
 import { SCHAAKREGELS, onderwerpMet } from '@/content/schaakregels'
 import { SITE, VOOR_KINDEREN, deelkaart, kruimels } from '@/seo'
 import { Gegevens } from '@/ui/Gegevens'
@@ -87,6 +87,14 @@ export default async function Onderwerp({ params }: { params: Promise<{ onderwer
         <div className={s.heldTekst}>
           <h1>{o.vraag}</h1>
           <p className={s.antwoord}>{o.antwoord}</p>
+          {/* Wie via Google op deze vraag landt, zag de weg naar de app pas na 4700 px.
+              Nu staat hij direct onder het antwoord, en hij gaat rechtstreeks naar de
+              les: een les speelt ook zonder profiel. */}
+          {lessen[0] && (
+            <Link href={`/les/${lessen[0].id}/`} className="btn btn--primary" style={{ marginTop: 12 }}>
+              <span aria-hidden="true">▶︎</span> Oefen dit met Pip, gratis
+            </Link>
+          )}
         </div>
       </header>
 
@@ -150,7 +158,7 @@ export default async function Onderwerp({ params }: { params: Promise<{ onderwer
           ))}
         </ul>
         <p>
-          <Link href="/" className="btn btn--primary btn--big">
+          <Link href={`/les/${(lessen[0] ?? ALLE_LESSEN[0]).id}/`} className="btn btn--primary btn--big">
             Begin met Schaakmaatje →
           </Link>
         </p>

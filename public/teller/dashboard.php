@@ -57,11 +57,11 @@ function pagina(string $titel, string $inhoud): void
         . 'body{margin:0;background:var(--bg);color:var(--tekst);font:16px/1.45 system-ui,sans-serif}'
         . 'main{max-width:960px;margin:0 auto;padding:16px}h1{font-size:1.5rem;margin:8px 0 16px}'
         . 'h2{font-size:1.1rem;margin:0 0 10px}section{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:14px 16px;margin:0 0 14px;overflow-x:auto}'
-        . '.cijfers{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}'
+        . '.cijfers{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}'
         . '.cijfer b{display:block;font-size:1.7rem}.cijfer span,.zacht{color:var(--zacht);font-size:.9rem}'
         . 'table{border-collapse:collapse;width:100%;font-size:.92rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--rand);white-space:nowrap}'
         . 'th{color:var(--zacht);font-weight:600}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}th.midden{text-align:center}'
-        . 'table.lessen th,table.lessen td{padding:5px 6px}table.lessen td:first-child{white-space:normal;min-width:9em}'
+        . 'table.lessen th,table.lessen td{padding:5px 6px}table.lessen td:first-child{white-space:normal;min-width:9em;overflow-wrap:anywhere}'
         . '.balk{height:10px;background:var(--groen);border-radius:5px;min-width:2px}.rood{background:var(--accent)}'
         . 'form.rij{display:flex;gap:8px;flex-wrap:wrap;align-items:center}button,input{font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--rand);background:var(--kaart);color:var(--tekst)}'
         . 'button[aria-pressed=true]{border-color:var(--accent);font-weight:700}'
@@ -403,8 +403,8 @@ $h .= '</section>';
 
 $fases = ['kijken', 'meedoen', 'zelf', 'toets'];
 $h .= '<section><h2>Lessen: waar haken kinderen af?</h2><p class="zacht">Gestopt = weggegaan vóór het eind, '
-    . 'ook door de tab te sluiten of de tablet op slot te doen, één keer per keer dat de les open was '
-    . '(tot 21 oktober 2026 telde elke tabwissel apart). Wie later terugkomt en de les afmaakt, telt ook bij af.</p>';
+    . 'ook door de tab te sluiten of de tablet op slot te doen. Eén keer per keer dat de les open was, '
+    . 'in de fase van de eerste keer weggaan. Wie later terugkomt en de les afmaakt, telt ook bij af.</p>';
 if ($lessen) {
     // Twee koprijen: "Gestopt in" boven vier smalle fasekolommen. Met "Gestopt in kijken"
     // als losse koppen was de tabel breder dan het scherm.
@@ -432,19 +432,35 @@ if ($lessen) {
 }
 $h .= '</section>';
 
-// Waar lopen kinderen vast: per opgave hoe vaak er om een hint gevraagd of drie keer
-// mis getikt werd. Eén telling per opgave per keer spelen, de lastigste bovenaan.
+// Waar lopen kinderen vast: per opgave hoe vaak er om een hint gevraagd of vaak mis
+// getikt werd, als deel van hoe vaak de les begon. Absolute aantallen zetten de lessen
+// uit de eerste werelden altijd bovenaan, alleen omdat daar de meeste kinderen zijn.
 $h .= '<section><h2>Opgaven: waar lopen kinderen vast?</h2><p class="zacht">Per opgave: hoe vaak een kind om een hint '
-    . 'vroeg, of (zonder hint) drie keer mis tikte. Opgave "zelf-2" is de tweede opgave in de fase zelf.</p>';
+    . 'vroeg, en hoe vaak het vaak mis tikte (3 keer, bij een quiz 2 keer). "Vast" is het hoogste van de twee, als deel '
+    . 'van hoe vaak de les begon. De lastigste bovenaan.</p>';
 if ($lastig) {
-    uasort($lastig, function ($a, $b) { return ($b['hint'] + $b['missers']) <=> ($a['hint'] + $a['missers']); });
-    $h .= '<table><tr><th>Les</th><th>Opgave</th><th class="n">Hint</th><th class="n">3 missers</th></tr>';
-    foreach (array_slice($lastig, 0, 30, true) as $sleutel => $o) {
+    $rijen = [];
+    foreach ($lastig as $sleutel => $o) {
         [$id, $opgave] = explode('|', $sleutel, 2);
-        $h .= '<tr><td title="' . e($id) . '">' . e($titels[$id] ?? $id) . '</td><td>' . e($opgave) . '</td><td class="n">'
-            . ($o['hint'] ?: '') . '</td><td class="n">' . ($o['missers'] ?: '') . '</td></tr>';
+        $begon = isset($lessen[$id]) ? $lessen[$id]['nieuw'] + $lessen[$id]['hervat'] : 0;
+        $vast = max($o['hint'], $o['missers']);
+        $rijen[] = ['id' => $id, 'opgave' => $opgave, 'o' => $o, 'begon' => $begon,
+            'pct' => $begon ? min(100, (int) round($vast / $begon * 100)) : null, 'vast' => $vast];
     }
-    $h .= '</table>';
+    usort($rijen, function ($a, $b) {
+        return ($b['pct'] ?? -1) <=> ($a['pct'] ?? -1) ?: $b['vast'] <=> $a['vast'];
+    });
+    $h .= '<table class="lessen"><tr><th>Les</th><th>Opgave</th><th class="n">Begon</th><th class="n">Hint</th>'
+        . '<th class="n">Vaak mis</th><th class="n">Vast</th></tr>';
+    foreach (array_slice($rijen, 0, 30) as $r) {
+        // "zelf-2" is de plek in de fase; voor het lezen "zelf, opgave 2".
+        $plek = preg_replace('/^([a-z]+)-(\d+)$/', '$1, opgave $2', $r['opgave']);
+        $h .= '<tr><td title="' . e($r['id']) . '">' . e($titels[$r['id']] ?? $r['id']) . '</td><td>' . e($plek)
+            . '</td><td class="n">' . $r['begon'] . '</td><td class="n">' . ($r['o']['hint'] ?: '') . '</td><td class="n">'
+            . ($r['o']['missers'] ?: '') . '</td><td class="n">' . ($r['pct'] === null ? '' : $r['pct'] . '%') . '</td></tr>';
+    }
+    $h .= '</table><p class="zacht">Het opgavenummer is de plek in de fase: wordt er in een les een opgave verschoven, '
+        . 'dan tellen oude en nieuwe tellingen onder hetzelfde nummer.</p>';
 } else {
     $h .= '<p class="zacht">Nog geen opgaven waar een kind vastliep.</p>';
 }

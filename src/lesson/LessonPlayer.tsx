@@ -30,11 +30,13 @@ import {
   useInstellingen,
   useHervatpunt,
   useModus,
+  useProfiel,
   useProfielStore,
   useToestandGeladen,
   useVoortgang,
   wereldIsAf,
 } from '@/progress/store'
+import { maakLastigMelder, maakStopMelder } from './lesTellingen'
 import { tel } from '@/progress/tellen'
 import styles from './LessonPlayer.module.css'
 
@@ -103,26 +105,33 @@ export function LessonPlayer({
   // Dezelfde categorieën, maar in de toon die bij deze speler past. "Hoppa! Precies
   // goed" is voor een vierjarige precies raak en voor een tienjarige precies mis.
   const zinnen = useMemo(() => pipZinnen(modus === 'schaker'), [modus])
+  // Geen profiel: het kind speelt als gast (via "Probeer de eerste les" of Google). De
+  // sterren zijn al bewaard; bij de beloning vragen we of het ze onder een naam wil houden.
+  const profiel = useProfiel()
   const voortgang = useVoortgang()
   const geladen = useToestandGeladen()
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
   const { zegTip, afbreken: tipAfbreken } = gebruikTip(setZin)
 
+  // Bij welke opgave loopt een kind vast? Zie `maakLastigMelder`. Het nummer is de plek
+  // in de fase ("zelf-2"); verschuift er een opgave, dan schuift het nummer mee.
+  const lastig = useMemo(
+    () => maakLastigMelder((l, o, h) => tel('Opgave lastig', { les: l, opgave: o, hulp: h })),
+    [],
+  )
+  const opgaveNu = `${fase}-${opgaveIndex + 1}`
+
   // Tellen waar kinderen afhaken. "Les begonnen" pas na het hervatten (zie hieronder),
   // zodat te zien is of het een nieuwe les is of een halve. "Les gestopt" bij weggaan
   // vóór de beloning: via terug, maar ook als de tab dichtgaat of de tablet op slot
-  // gaat, want zo stopt een kind meestal. Eén keer per les: mocht hij na terugkomen
-  // opnieuw, dan telde één kind dat zeven keer van tab wisselde als zeven afhakers.
+  // gaat, want zo stopt een kind meestal. Eén keer per les (zie `maakStopMelder`); de
+  // fase is die van de eerste keer weggaan. Een nieuwe les krijgt een nieuwe melder.
   const faseNu = useRef<Fase>(fase)
   faseNu.current = kijkTerug ?? fase
-  const gestoptGemeld = useRef(false)
   useEffect(() => {
-    const meldGestopt = () => {
-      if (faseNu.current === 'beloning' || gestoptGemeld.current) return
-      gestoptGemeld.current = true
-      tel('Les gestopt', { les: les.id, fase: faseNu.current })
-    }
+    const meld = maakStopMelder((f) => tel('Les gestopt', { les: les.id, fase: f }))
+    const meldGestopt = () => meld(faseNu.current)
     const wissel = () => {
       if (document.visibilityState === 'hidden') meldGestopt()
     }
@@ -262,18 +271,6 @@ export function LessonPlayer({
     startFase, voortgang, wereld.id, zinnen,
   ])
 
-  // Tellen bij welke opgave een kind vastloopt: één keer per opgave, zodra het om een
-  // hint vroeg of drie keer mis tikte. Alleen het nummer van de opgave, niets over het kind.
-  const lastigGemeld = useRef('')
-  useEffect(() => {
-    if (!stand || fase === 'kijken' || fase === 'beloning') return
-    const hulp = stand.hints > 0 ? 'hint' : stand.fouten >= 3 ? '3 missers' : null
-    const opgave = `${fase}-${opgaveIndex + 1}`
-    if (!hulp || lastigGemeld.current === opgave) return
-    lastigGemeld.current = opgave
-    tel('Opgave lastig', { les: les.id, opgave, hulp })
-  }, [stand, fase, opgaveIndex, les.id])
-
   const volgendeOpgave = useCallback(() => {
     setHintVelden([])
     setQuizFout(null)
@@ -338,6 +335,7 @@ export function LessonPlayer({
           setTimeout(() => setShake(veld), 0)
           reageer(false, false, foutZin(r.stand, r.reden))
           if (fase === 'toets') setToetsFouten((n) => n + 1)
+          lastig.misser(les.id, opgaveNu, r.stand.opgave.kind)
           break
         }
         case 'sla':
@@ -355,7 +353,7 @@ export function LessonPlayer({
           break
       }
     },
-    [stand, instellingen.effecten, reageer, fase, zinnen],
+    [stand, instellingen.effecten, reageer, fase, zinnen, lastig, les.id, opgaveNu],
   )
 
   const opQuiz = useCallback(
@@ -373,9 +371,10 @@ export function LessonPlayer({
         const tip = 'foutTip' in r.stand.opgave ? r.stand.opgave.foutTip : undefined
         reageer(false, false, tip)
         if (fase === 'toets') setToetsFouten((n) => n + 1)
+        lastig.misser(les.id, opgaveNu, r.stand.opgave.kind)
       }
     },
-    [stand, reageer, fase],
+    [stand, reageer, fase, lastig, les.id, opgaveNu],
   )
 
   const vraagHint = useCallback(() => {
@@ -388,7 +387,8 @@ export function LessonPlayer({
     // ontsnapt aan `npm run audio:dekking` en wordt dus stilletjes niet ingesproken.
     setZin(r.velden.length ? HINT_GEGEVEN : kies(zinnen.AANMOEDIGING, 'moed'))
     if (fase === 'toets') setToetsHints((n) => n + 1)
-  }, [stand, fase, zinnen])
+    lastig.hint(les.id, opgaveNu)
+  }, [stand, fase, zinnen, lastig, les.id, opgaveNu])
 
   /* ---------- wat er op het bord te zien is ---------- */
 
@@ -519,6 +519,20 @@ export function LessonPlayer({
               </p>
             )}
           </div>
+
+          {geladen && !profiel && (
+            <div className="card stack center">
+              <p style={{ margin: 0 }}>
+                <strong>Bewaar je sterren</strong>
+              </p>
+              <p className="muted" style={{ margin: 0 }}>
+                Kies een naam, dan houdt Pip ze voor je bij. Alles blijft op dit apparaat.
+              </p>
+              <Link href="/#beginnen" className="btn">
+                Kies een naam
+              </Link>
+            </div>
+          )}
 
           {nieuweWereld && (
             <div

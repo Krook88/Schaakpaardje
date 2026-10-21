@@ -64,34 +64,44 @@ export function Welkom() {
         <span aria-hidden="true" style={{ fontSize: 64, lineHeight: 1 }}>
           🐴
         </span>
-        {/* clamp, want op een smalle telefoon raakte "Leer schaken met Pip" de rand. */}
+        {/* De kop draagt de zoekterm ("schaken leren voor kinderen"); op "Pip" zoekt
+            niemand. clamp, want op een smalle telefoon raakte de kop de rand. */}
+        <p className="muted" style={{ margin: 0, fontWeight: 600 }}>Met Pip het schaakpaardje</p>
         <h1 style={{ fontSize: 'clamp(1.6rem, 7.5vw, 2.1rem)', margin: 0, lineHeight: 1.15 }}>
-          Leer schaken met Pip
+          Schaken leren voor kinderen
         </h1>
         <p style={{ fontSize: '1.15rem', margin: 0, maxWidth: 460 }}>
           Een gratis Nederlandse schaakapp voor kinderen van 3 tot 10 jaar. Van het bord
           leren kennen tot je eerste echte partij, in {werelden} werelden en {lessen}{' '}
           lessen.
         </p>
-        {/* Wie al overtuigd is hoeft niet langs drie schermafbeeldingen te scrollen om
-            het formulier te vinden. Een gewone ankerlink, dus hij werkt ook zonder
+        {/* Meteen spelen, zonder formulier. Op 45 bezoeken van de startpagina begonnen
+            er 24 aan een les: de weg liep via een sprong van 2500 px naar een formulier
+            met naam, leeftijd en maatje. Een les speelt ook zonder profiel, en wat het
+            kind haalt wordt bewaard tot het een naam kiest (zie GAST in de store). */}
+        <Link href={`/les/${ALLE_LESSEN[0].id}/`} className="btn btn--primary btn--big" style={{ marginTop: 4 }}>
+          <span aria-hidden="true">▶︎</span> Probeer de eerste les
+        </Link>
+        {/* Een gewone ankerlink naar het formulier, dus hij werkt ook zonder
             JavaScript en ook in de gebouwde HTML. */}
-        <a href="#beginnen" className="btn btn--primary btn--big" style={{ marginTop: 4 }}>
-          Beginnen →
+        <a href="#beginnen" style={{ fontSize: '1rem' }}>
+          Of maak eerst een profiel voor je kind
         </a>
       </header>
 
       {/* Zien wat je krijgt, vóór je de naam van je kind invult. Op een telefoon
           schuiven ze opzij; vanaf een tablet staan ze naast elkaar. */}
       <ul className={styles.schermen}>
-        {SCHERMEN.map((s) => (
+        {SCHERMEN.map((s, i) => (
           <li key={s.bron} className="stack" style={{ gap: 10 }}>
             <img
               src={s.bron}
               alt={s.titel}
               width={400}
               height={640}
-              loading="lazy"
+              // Het eerste plaatje is het grootste element in beeld: niet lui laden.
+              loading={i === 0 ? 'eager' : 'lazy'}
+              fetchPriority={i === 0 ? 'high' : undefined}
               className={styles.plaatje}
             />
             <div>
