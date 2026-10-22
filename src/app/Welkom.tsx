@@ -168,7 +168,7 @@ export function Welkom() {
         apparaat staan en na de eerste keer werkt het ook zonder internet.{' '}
         <Link href="/over/">Lees meer voor ouders</Link> of bekijk{' '}
         <Link href="/lessen/">alle {lessen} lessen</Link>. Klaar voor het echte bord?{' '}
-        <Link href="/schaakclub/">Zo vind je een schaakclub</Link>. Of bekijk{' '}
+        <Link href="/schaakclub/">Zo vind je een schaakclub</Link>, of bekijk{' '}
         <Link href="/sitemap/">alle pagina&apos;s</Link>.
       </p>
 

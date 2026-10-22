@@ -5,6 +5,7 @@ import { ALLE_LESSEN } from '@/content'
 import { SITE, deelkaart } from '@/seo'
 import { LESSEN_PER_WERELD, REGELS, VOOR_OUDERS } from '@/vindbaar'
 import s from '../over/Over.module.css'
+import k from './Sitemap.module.css'
 
 /**
  * Alle pagina's op één leesbare pagina: voor een ouder die iets zoekt, en voor Google.
@@ -64,7 +65,7 @@ export default function Sitemap() {
 
       <section>
         <Kop stuk="♔">Voor ouders</Kop>
-        <ul className={s.tekst} style={{ paddingLeft: 22 }}>
+        <ul className={k.lijst}>
           {VOOR_OUDERS.filter((p) => p.pad !== '/sitemap/').map((p) => (
             <li key={p.pad}>
               <Link href={p.pad}>{p.naam}</Link>
@@ -75,7 +76,7 @@ export default function Sitemap() {
 
       <section>
         <Kop stuk="♖">Schaakregels</Kop>
-        <ul className={s.tekst} style={{ paddingLeft: 22 }}>
+        <ul className={k.lijst}>
           {REGELS.map((p) => (
             <li key={p.pad}>
               <Link href={p.pad}>{p.naam}</Link>
@@ -86,13 +87,14 @@ export default function Sitemap() {
 
       <section>
         <Kop stuk="♘">Lessen, per wereld</Kop>
-        <div className={s.tekst}>
+        <div className={k.werelden}>
           {LESSEN_PER_WERELD.map((w, i) => (
-            <div key={w.wereld}>
-              <h3 style={{ fontSize: '1.05rem', margin: '0 0 6px' }}>
-                Wereld {i}: {w.wereld}
+            <div key={w.wereld} className={k.wereld}>
+              <h3>
+                <span className={k.nummer}>Wereld {i}</span>
+                {w.wereld}
               </h3>
-              <ul style={{ paddingLeft: 22, margin: 0 }}>
+              <ul className={k.lijst}>
                 {w.lessen.map((p) => (
                   <li key={p.pad}>
                     <Link href={p.pad}>{p.naam}</Link>
@@ -103,6 +105,13 @@ export default function Sitemap() {
           ))}
         </div>
       </section>
+
+      {/* Na 15 werelden scrollen nog een weg terug naar de app. */}
+      <p style={{ margin: 0 }}>
+        <Link href={`/les/${ALLE_LESSEN[0].id}/`} className="btn btn--primary btn--big">
+          <span aria-hidden="true">▶︎</span> Probeer de eerste les
+        </Link>
+      </p>
     </main>
   )
 }
