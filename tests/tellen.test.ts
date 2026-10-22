@@ -77,6 +77,7 @@ describe('anoniem tellen', () => {
     expect(pad('/')).toBe('/')
     expect(pad('/schaakregels/')).toBe('/schaakregels/')
     expect(pad('/schaakclub/')).toBe('/schaakclub/')
+    expect(pad('/sitemap/')).toBe('/sitemap/')
     expect(pad('/schaakregels/en-passant/')).toBe('/schaakregels/en-passant/')
     expect(pad('/mijn-naam-is-daan/')).toBe('/onbekend/')
     expect(pad('/les/Daan Jansen/')).toBe('/onbekend/')
@@ -124,6 +125,15 @@ describe('wat er geteld wordt, ligt vast', () => {
       }
     }
     expect(gevonden.length).toBeGreaterThanOrEqual(Object.keys(TOEGESTAAN).length)
+  })
+
+  it('de app en de server kennen dezelfde schermen', () => {
+    // Uit beide patronen het rijtje schermnamen halen: "les|lessen|kaart|...".
+    const schermen = (tekst: string) => tekst.match(/\(\|\(([a-z|]+)\)/)?.[1].split('|').sort()
+    const ts = schermen(readFileSync('src/progress/tellen.ts', 'utf8').split('const BEKEND')[1])
+    const php = schermen(readFileSync('public/teller/opslag.php', 'utf8').split('const BEKEND_PAD')[1])
+    expect(ts).toBeDefined()
+    expect(php).toEqual(ts)
   })
 
   it('de teller op de server kent precies dezelfde lijst', () => {

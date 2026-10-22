@@ -1,0 +1,15 @@
+/*
+ * /sitemap/: lange lijsten met links, voor een ouder met een telefoon.
+ * Tweeëntwintigste review: tussen de lessenlinks zat 6px, dat is mis-tikken met een duim.
+ */
+
+/* Elke link een raakvlak van ongeveer 44px, in alle lijsten hetzelfde ritme. */
+.lijst { list-style: disc; padding-left: 22px; margin: 0; display: flex; flex-direction: column; }
+.lijst a { display: inline-block; padding-block: 10px; }
+.lijst a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+/* De werelden: onder elkaar op een telefoon, in een raster vanaf een tablet. */
+.werelden { display: grid; gap: 24px 32px; }
+@media (min-width: 760px) { .werelden { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); } }
+.wereld h3 { font-size: 1.15rem; margin: 0 0 2px; }
+.nummer { display: block; color: var(--muted); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }

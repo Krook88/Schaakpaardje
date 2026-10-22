@@ -118,6 +118,77 @@ function main() {
   laatOpnamesMetRust()
   lessenVoorDeTeller()
   stempelDeCacheversie()
+  controleerSitemap()
+}
+
+/**
+ * Elke URL in sitemap.xml moet een echte pagina zijn die zichzelf als canonical noemt en
+ * niet op noindex staat. Zo niet, dan zegt de sitemap tegen Google "indexeer dit" en de
+ * pagina zelf "niet mij": Google gelooft dan geen van beide. Pas na het hernoemen van
+ * de blokhaakmappen, want daarvoor staan de lespagina's nog op de verkeerde plek.
+ */
+export function sitemapFouten(uit: string): string[] {
+  const bestand = join(uit, 'sitemap.xml')
+  if (!existsSync(bestand)) return ['geen sitemap.xml']
+  const urls = [...readFileSync(bestand, 'utf8').matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => m[1])
+  if (!urls.length) return ['sitemap.xml is leeg']
+  const fouten: string[] = []
+  for (const url of urls) {
+    const pagina = join(uit, new URL(url).pathname, 'index.html')
+    if (!existsSync(pagina)) {
+      fouten.push(`${url}: bestaat niet`)
+      continue
+    }
+    const html = readFileSync(pagina, 'utf8')
+    const canonical = canonicalVan(html)
+    if (canonical !== url) fouten.push(`${url}: canonical is ${canonical ?? 'leeg'}`)
+    if (staatOpNoindex(html)) fouten.push(`${url}: staat op noindex`)
+  }
+  // En andersom: een pagina die zichzelf als canonical noemt en niet op noindex staat,
+  // wil gevonden worden, dus hoort hij in de sitemap. Een nieuwe pagina dieper in de
+  // boom (zoals /schaakclub/den-haag/) ontsnapte anders aan tests/sitemap.test.ts.
+  const inSitemap = new Set(urls)
+  const origin = new URL(urls[0]).origin
+  for (const html of alleBestanden(uit).filter((b) => b.endsWith('index.html'))) {
+    const tekst = readFileSync(html, 'utf8')
+    const canonical = canonicalVan(tekst)
+    if (!canonical || staatOpNoindex(tekst)) continue
+    const eigen = `${origin}${html.slice(uit.length).replace(/index\.html$/, '')}`
+    if (canonical === eigen && !inSitemap.has(eigen)) fouten.push(`${eigen}: wil gevonden worden, maar staat niet in de sitemap`)
+  }
+  // En wat de bezoeker ziet: de pagina /sitemap/ moet elke pagina uit sitemap.xml linken.
+  const leesbaar = join(uit, 'sitemap', 'index.html')
+  if (existsSync(leesbaar)) {
+    const html = readFileSync(leesbaar, 'utf8')
+    for (const url of urls) {
+      const pad = new URL(url).pathname
+      if (pad !== '/sitemap/' && !html.includes(`href="${pad}"`)) fouten.push(`${url}: ontbreekt op de pagina /sitemap/`)
+    }
+  }
+  return fouten
+}
+
+/** De canonical van een pagina, ongeacht de volgorde van de attributen. */
+function canonicalVan(html: string): string | undefined {
+  const tag = html.match(/<link\b[^>]*\brel="canonical"[^>]*>/)?.[0]
+  return tag?.match(/\bhref="([^"]+)"/)?.[1]
+}
+
+/** Staat er ergens een robots-meta met noindex, ongeacht de volgorde van de attributen? */
+function staatOpNoindex(html: string): boolean {
+  return [...html.matchAll(/<meta\b[^>]*\bname="robots"[^>]*>/g)].some((m) => /noindex/.test(m[0]))
+}
+
+function controleerSitemap() {
+  const fouten = sitemapFouten(UIT)
+  if (fouten.length) {
+    console.error('De sitemap klopt niet met de pagina\'s:')
+    fouten.slice(0, 10).forEach((f) => console.error(`  ${f}`))
+    if (fouten.length > 10) console.error(`  … en ${fouten.length - 10} meer`)
+    process.exit(1)
+  }
+  const aantal = readFileSync(join(UIT, 'sitemap.xml'), 'utf8').split('<loc>').length - 1
+  console.log(`Hosting-klaar: sitemap gecontroleerd, ${aantal} pagina's bestaan en mogen gevonden worden.`)
 }
 
 /**

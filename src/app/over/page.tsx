@@ -153,8 +153,9 @@ export default function Over() {
             <li>Niets van je kind online</li>
           </ul>
           <div className={s.knoppen}>
-            <Link href="/" className="btn btn--primary btn--big">
-              Beginnen →
+            {/* Rechtstreeks naar de eerste les: via "/" kostte het een tik extra. */}
+            <Link href={`/les/${ALLE_LESSEN[0].id}/`} className="btn btn--primary btn--big">
+              <span aria-hidden="true">▶︎</span> Probeer de eerste les
             </Link>
             <Link href="/lessen/">Bekijk alle {lessen} lessen</Link>
           </div>
@@ -474,8 +475,8 @@ export default function Over() {
           handig om dat eerste stukje samen te doen. Op een telefoon of tablet zet je
           Schaakmaatje via het deelmenu van je browser op het beginscherm.
         </p>
-        <Link href="/" className="btn btn--primary btn--big">
-          Beginnen →
+        <Link href={`/les/${ALLE_LESSEN[0].id}/`} className="btn btn--primary btn--big">
+          <span aria-hidden="true">▶︎</span> Probeer de eerste les
         </Link>
       </section>
     </main>
