@@ -64,13 +64,18 @@ is overgeslagen, omdat er geen schaakinhoud veranderd is.
 
 ## Buiten deze fase
 
-- **De doorloopregel "live" faalt wisselend** ("zwart sprong naar de nieuwe partij
-  zonder de mat te zien").
-  - Op `main` (e3a3c62), zonder deze wijzigingen, faalde hij 2 van de 3 keer.
-  - Deze fase heeft er dus niets mee te maken. Hij verdient wel een eigen onderzoek.
+- **De doorloopregel "live" faalde wisselend** ("zwart sprong naar de nieuwe partij
+  zonder de mat te zien"). Ook op `main` (e3a3c62) faalde hij, 2 van de 3 keer.
+  - → **Onderzocht en opgelost.** Het was een fout in de test, niet in de app.
+  - De test zet zwart offline en laat wit dan meteen mat zetten. Een kijkverzoek van
+    zwart dat al openstond, kwam ondanks offline gewoon terug, met de mat erin.
+  - Nagemeten: in de mislukte runs stond bij zwart al "🏆 Je vriendje wint!" vóór wit
+    op "Nog een keer" tikte. Zwart had de mat dus gezien en ging daarna terecht door
+    naar de nieuwe partij.
+  - De doorloop wacht nu tot zwart zelf merkt dat de verbinding weg is, en pas dan
+    zet wit mat. Daarna 5 van de 5 keer groen.
 
 ## Controles
 
 - `npm run check`: groen, 495 tests.
-- `npm run doorloop`: 18 van de 19 in orde. Alleen de wisselende live-regel hierboven
-  faalde.
+- `npm run doorloop`: 19 van de 19 in orde. De live-regel los 5 keer gedraaid: 5 van de 5 in orde.

@@ -742,6 +742,12 @@ async function liveMetEenVriendje() {
     // van 16 oktober, punt 1.
     if (!(await wacht(() => magZetten(a, 'h5')))) return meld(naam, false, 'wit kon de matzet niet doen')
     await b.context().setOffline(true)
+    // Eerst zeker weten dat zwart echt niets meer binnenkrijgt. Een kijkverzoek dat al
+    // openstond, komt ondanks offline gewoon terug, en zette wit te vroeg mat, dan zag
+    // zwart die mat via dat verzoek nog wél. Dan ging zwart terecht meteen door naar de
+    // nieuwe partij, en faalde deze regel zonder dat er iets mis was (2 van de 3 keer).
+    if (!(await wacht(async () => /verbinding|bereiken/.test(await ballonB()), 35000)))
+      return meld(naam, false, 'zwart merkte niet dat de verbinding weg was')
     await zet(a, 'h5', 'f7')
     if (!(await wacht(async () => /wint/.test(await a.locator('p.muted[aria-live=polite]').innerText()))))
       return meld(naam, false, 'wit zag zijn eigen mat niet')
