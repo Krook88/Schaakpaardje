@@ -74,6 +74,16 @@ is overgeslagen, omdat er geen schaakinhoud veranderd is.
     naar de nieuwe partij.
   - De doorloop wacht nu tot zwart zelf merkt dat de verbinding weg is, en pas dan
     zet wit mat. Daarna 5 van de 5 keer groen.
+- **Een mat die op de achtergrond binnenkwam, telde als gezien.** Dit vond ik tijdens het
+  onderzoek hierboven, en Kaj vroeg het ook op te lossen.
+  - Wat er gebeurde: stond de app van een kind op de achtergrond toen de mat binnenkwam,
+    en tikte het vriendje snel op "Nog een keer", dan zag het kind bij terugkomen meteen
+    de nieuwe partij.
+  - → **Opgelost.** `src/play/LiveScherm.tsx` onthoudt nu of het einde binnenkwam terwijl
+    het scherm zichtbaar was (`eindeGezien`). Zo niet, dan blijft de uitslag staan, met
+    de bestaande knop "▶️ Naar de nieuwe partij" eronder.
+  - De doorloopregel "live" speelt dit nu na met een derde partij. Op de oude build faalt
+    die regel, met de fix slaagt hij (3 van de 3 keer los, plus de volledige doorloop).
 
 ## Controles
 

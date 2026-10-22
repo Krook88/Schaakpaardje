@@ -771,7 +771,45 @@ async function liveMetEenVriendje() {
     const terug = await wacht(async () => (await b.locator('[data-square]').first().getAttribute('data-square')) === 'h1')
     const zinB = await b.locator('[class*=ballon]').first().innerText().catch(() => '')
     const goed = terug && /nieuwe partij/i.test(zinB) && (await wacht(() => magZetten(a, 'e2')))
-    meld(naam, goed, goed ? '' : `halverwege opnieuw: bord gedraaid ${terug}, Pip zei "${zinB.split('\n')[0]}"`)
+    if (!goed) return meld(naam, false, `halverwege opnieuw: bord gedraaid ${terug}, Pip zei "${zinB.split('\n')[0]}"`)
+
+    // De mat komt binnen terwijl de app van zwart op de achtergrond staat, en wit tikt
+    // meteen op "Nog een keer". Het einde stond dan wel op het scherm van zwart, maar er
+    // keek niemand: bij terugkomen moet zwart het tóch nog zien.
+    for (const [p, van, naar, ander, kijk] of [
+      [a, 'e2', 'e4', b, 'e4'],
+      [b, 'e7', 'e5', a, 'e5'],
+      [a, 'f1', 'c4', b, 'c4'],
+      [b, 'b8', 'c6', a, 'c6'],
+      [a, 'd1', 'h5', b, 'h5'],
+      [b, 'g8', 'f6', a, 'f6'],
+    ]) {
+      if (!(await wacht(() => magZetten(p, van)))) return meld(naam, false, `derde partij: ${van} kon niet zetten`)
+      await zet(p, van, naar)
+      if (!(await wacht(() => stuk(ander, kijk)))) return meld(naam, false, `derde partij: ${van}-${naar} kwam niet over`)
+    }
+    const zichtbaar = (p, ja) =>
+      p.evaluate((ja) => {
+        Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => (ja ? 'visible' : 'hidden') })
+        Object.defineProperty(document, 'hidden', { configurable: true, get: () => !ja })
+        document.dispatchEvent(new Event('visibilitychange'))
+      }, ja)
+    await zichtbaar(b, false)
+    await zet(a, 'h5', 'f7')
+    // Het kijkverzoek dat al openstond, brengt de mat nog binnen, op de achtergrond.
+    if (!(await wacht(async () => /wint/.test(await b.locator('p.muted[aria-live=polite]').innerText()))))
+      return meld(naam, false, 'derde partij: de mat kwam niet aan bij zwart')
+    await a.getByRole('button', { name: /🔁 Nog een keer/ }).click()
+    await a.waitForTimeout(500)
+    await zichtbaar(b, true)
+    await b.waitForTimeout(2500)
+    const zagEinde = /wint/.test(await b.locator('p.muted[aria-live=polite]').innerText().catch(() => ''))
+    const knopNieuw = await b.getByRole('button', { name: /▶️ Naar de nieuwe partij/ }).count()
+    meld(
+      naam,
+      zagEinde && knopNieuw > 0,
+      zagEinde && knopNieuw ? '' : 'mat op de achtergrond: zwart zag bij terugkomen meteen de nieuwe partij',
+    )
   } finally {
     for (const ctx of apparaten) await ctx.close()
     php.kill()

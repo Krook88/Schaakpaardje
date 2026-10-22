@@ -123,6 +123,13 @@ export function LiveScherm() {
    */
   const volgendeRef = useRef<LivePartij | null>(null)
   const [volgende, setVolgende] = useState(false)
+  /**
+   * Is het einde van de partij die nu staat ook echt in beeld geweest? Kwam de mat binnen
+   * terwijl de app op de achtergrond stond, en tikte het vriendje daarna snel op "Nog
+   * een keer", dan zag dit kind bij terugkomen meteen de nieuwe partij. Het einde stond
+   * wel op het scherm, alleen keek er niemand. Alleen een zichtbaar scherm telt.
+   */
+  const eindeGezien = useRef(false)
   // `fen` staat apart van `partij`, omdat een eigen zet `partij.game` ter plekke wijzigt:
   // dan verandert het object niet en zou React het bord niet opnieuw tekenen.
   const [fen, setFen] = useState<string | null>(null)
@@ -160,6 +167,7 @@ export function LiveScherm() {
       setFen(nieuw.game.fen)
       const jij = nieuw.jij
       const status = nieuw.game.status()
+      eindeGezien.current = status.over && document.visibilityState === 'visible'
       const ikDeedLaatste = jij !== null && nieuw.zetten.length > 0 && (nieuw.zetten.length % 2 === 1 ? 'w' : 'b') === jij
 
       // Een afgelopen partij één keer meetellen. De telling naar de teller gaat alleen
@@ -233,6 +241,13 @@ export function LiveScherm() {
       }
       const oud = partijRef.current
       if (!isNieuwer(oud, nieuw)) return
+      // Het einde staat al op het scherm, maar is nog niet gezien: laten staan, met de
+      // knop naar de nieuwe partij eronder.
+      if (oud && !zelf && oud.jij && nieuw.ronde > oud.ronde && oud.game.status().over && !eindeGezien.current) {
+        volgendeRef.current = nieuw
+        setVolgende(true)
+        return
+      }
       if (oud && !zelf && oud.jij && nieuw.ronde > oud.ronde && !oud.game.status().over) {
         const vorig = leesStand({ ...nieuw, ronde: oud.ronde, zetten: nieuw.vorige, vorige: [], jij: oud.jij, wit: oud.wit, zwart: oud.zwart, ander: oud.ander })
         if (vorig?.game.status().over) {
