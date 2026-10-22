@@ -100,10 +100,10 @@ export default function Sitemap() {
       <section>
         <Kop stuk="♘">Lessen, per wereld</Kop>
         <div className={k.werelden}>
-          {LESSEN_PER_WERELD.map((w, i) => (
+          {LESSEN_PER_WERELD.map((w) => (
             <div key={w.wereld} className={k.wereld}>
               <h3>
-                <span className={k.nummer}>Wereld {i}</span>
+                <span className={k.nummer}>Wereld {w.nummer}</span>
                 {w.wereld}
               </h3>
               <ul className={k.lijst}>

@@ -28,7 +28,8 @@ export const REGELS: Vindbaar[] = [
 ]
 
 /** De lessen per wereld, in de volgorde van de app. */
-export const LESSEN_PER_WERELD: { wereld: string; lessen: Vindbaar[] }[] = WERELDEN.map((w) => ({
+export const LESSEN_PER_WERELD: { nummer: number; wereld: string; lessen: Vindbaar[] }[] = WERELDEN.map((w) => ({
+  nummer: w.nummer,
   wereld: w.naam,
   lessen: w.lessen.map((l) => ({ pad: `/les/${l.id}/`, naam: l.titel })),
 }))

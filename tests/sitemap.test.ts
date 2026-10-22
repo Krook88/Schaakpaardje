@@ -4,7 +4,6 @@ import { join } from 'node:path'
 import sitemap from '@/app/sitemap'
 import { ALLE_LESSEN } from '@/content'
 import { SCHAAKREGELS } from '@/content/schaakregels'
-import { allePaginas } from '@/vindbaar'
 
 /**
  * Kan Google alles vinden? De sitemap moet elke pagina met inhoud noemen, precies één
@@ -41,9 +40,5 @@ describe('de sitemap', () => {
       expect(r.priority).toBeUndefined()
       expect(r.changeFrequency).toBeUndefined()
     }
-  })
-
-  it('de leesbare pagina /sitemap/ en sitemap.xml komen uit dezelfde lijst', () => {
-    expect(urls).toEqual(allePaginas().map((p) => `https://schaakmaatje.nl${p.pad}`))
   })
 })

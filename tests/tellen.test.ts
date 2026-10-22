@@ -127,6 +127,15 @@ describe('wat er geteld wordt, ligt vast', () => {
     expect(gevonden.length).toBeGreaterThanOrEqual(Object.keys(TOEGESTAAN).length)
   })
 
+  it('de app en de server kennen dezelfde schermen', () => {
+    // Uit beide patronen het rijtje schermnamen halen: "les|lessen|kaart|...".
+    const schermen = (tekst: string) => tekst.match(/\(\|\(([a-z|]+)\)/)?.[1].split('|').sort()
+    const ts = schermen(readFileSync('src/progress/tellen.ts', 'utf8').split('const BEKEND')[1])
+    const php = schermen(readFileSync('public/teller/opslag.php', 'utf8').split('const BEKEND_PAD')[1])
+    expect(ts).toBeDefined()
+    expect(php).toEqual(ts)
+  })
+
   it('de teller op de server kent precies dezelfde lijst', () => {
     const php = readFileSync('public/teller/opslag.php', 'utf8')
     const blok = php.slice(php.indexOf('const TELLINGEN'), php.indexOf('];', php.indexOf('const TELLINGEN')))
