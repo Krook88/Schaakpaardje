@@ -653,7 +653,8 @@ function NieuwProfiel({
         {!alleenFormulier && (
           <p style={{ fontSize: '1rem', margin: 0, lineHeight: 2 }}>
             <Link href="/over/">Over Schaakmaatje</Link> · <Link href="/lessen/">Alle lessen</Link> ·{' '}
-            <Link href="/schaakclub/">Schaakclub</Link> · <Link href="/contact/">Contact</Link>
+            <Link href="/schaakclub/">Schaakclub</Link> · <Link href="/contact/">Contact</Link> ·{' '}
+            <Link href="/sitemap/">Alle pagina&apos;s</Link>
           </p>
         )}
       </section>

@@ -118,6 +118,40 @@ function main() {
   laatOpnamesMetRust()
   lessenVoorDeTeller()
   stempelDeCacheversie()
+  controleerSitemap()
+}
+
+/**
+ * Elke URL in sitemap.xml moet een echte pagina zijn die zichzelf als canonical noemt en
+ * niet op noindex staat. Zo niet, dan zegt de sitemap tegen Google "indexeer dit" en de
+ * pagina zelf "niet mij": Google gelooft dan geen van beide. Pas na het hernoemen van
+ * de blokhaakmappen, want daarvoor staan de lespagina's nog op de verkeerde plek.
+ */
+export function controleerSitemap() {
+  const bestand = join(UIT, 'sitemap.xml')
+  if (!existsSync(bestand)) {
+    console.error('Geen sitemap.xml in out/.')
+    process.exit(1)
+  }
+  const urls = [...readFileSync(bestand, 'utf8').matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => m[1])
+  const fouten: string[] = []
+  for (const url of urls) {
+    const pagina = join(UIT, new URL(url).pathname, 'index.html')
+    if (!existsSync(pagina)) {
+      fouten.push(`${url}: bestaat niet`)
+      continue
+    }
+    const html = readFileSync(pagina, 'utf8')
+    const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1]
+    if (canonical !== url) fouten.push(`${url}: canonical is ${canonical ?? 'leeg'}`)
+    if (/name="robots" content="[^"]*noindex/.test(html)) fouten.push(`${url}: staat op noindex`)
+  }
+  if (fouten.length) {
+    console.error('De sitemap klopt niet met de pagina\'s:')
+    fouten.slice(0, 10).forEach((f) => console.error(`  ${f}`))
+    process.exit(1)
+  }
+  console.log(`Hosting-klaar: sitemap gecontroleerd, ${urls.length} pagina's bestaan en mogen gevonden worden.`)
 }
 
 /**
