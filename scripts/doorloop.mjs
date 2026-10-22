@@ -827,6 +827,56 @@ async function tweedeKind() {
 }
 
 /* ------------------------------------------------------------------ *
+ * Wie zonder profiel op "Probeer de eerste les" tikt, schrikt niet.
+ *
+ * De tik op die knop telt voor de browser als toestemming voor geluid, dus Pip begon
+ * meteen te praten en liet ouders schrikken (gemeld door Kaj). Een gast begint nu
+ * stil, ziet dat het geluid uit staat, en zet het met één knop aan.
+ * ------------------------------------------------------------------ */
+async function gastBegintStil() {
+  const naam = 'eerste les zonder profiel: stil, met een knop om het geluid aan te zetten'
+  const ctx = await browser.newContext({ viewport: { width: 420, height: 950 } })
+  await ctx.addInitScript(() => {
+    window.__gezegd = []
+    const s = window.speechSynthesis
+    if (s) {
+      const echt = s.speak.bind(s)
+      s.speak = (u) => {
+        window.__gezegd.push(u.text)
+        echt(u)
+      }
+    }
+    const play = HTMLMediaElement.prototype.play
+    HTMLMediaElement.prototype.play = function () {
+      window.__gezegd.push(this.src)
+      return play.call(this)
+    }
+  })
+  const p = await ctx.newPage()
+  const gezegd = () => p.evaluate(() => window.__gezegd.length)
+  try {
+    await p.goto(URL, { waitUntil: 'networkidle' })
+    await p.getByRole('link', { name: /Probeer de eerste les/ }).click()
+    await p.waitForURL(/\/les\/weide-1\//)
+    await p.waitForTimeout(1200)
+    const stil = await gezegd()
+    if (stil > 0) return meld(naam, false, `Pip praatte ${stil} keer zonder dat het geluid aan stond`)
+    const knop = p.getByRole('button', { name: /^Geluid aan$/ })
+    if (!(await knop.count())) return meld(naam, false, 'geen melding dat het geluid uit staat')
+    await knop.click()
+    await p.waitForTimeout(400)
+    await p.getByRole('button', { name: /Verder/ }).first().click()
+    await p.waitForTimeout(1200)
+    const weg = (await knop.count()) === 0
+    const praat = (await gezegd()) > 0
+    if (!weg) return meld(naam, false, 'de melding bleef staan nadat het geluid aan ging')
+    meld(naam, praat, praat ? '' : 'na "Geluid aan" zei Pip bij de volgende zin niets')
+  } finally {
+    await ctx.close()
+  }
+}
+
+/* ------------------------------------------------------------------ *
  * Wie zonder profiel speelt, houdt zijn sterren.
  *
  * Op de startpagina staat "Probeer de eerste les", en via Google landt een ouder
@@ -899,6 +949,7 @@ await contactformulierIsEerlijk()
 await uitlegbordSpeelt()
 await altijdEenUitweg()
 await tweedeKind()
+await gastBegintStil()
 await gastHoudtZijnSterren()
 
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))

@@ -21,8 +21,6 @@ import { useInstellingen, useProfielStore } from '@/progress/store'
 export function GeluidKnop({ className = '' }: { className?: string }) {
   const { spraak, effecten } = useInstellingen()
   const zetInstelling = useProfielStore((s) => s.zetInstelling)
-  const actief = useProfielStore((s) => s.actiefId)
-  if (!actief) return null
   const aan = spraak || effecten
   return (
     <button

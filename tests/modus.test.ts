@@ -7,6 +7,7 @@ import {
   useProfielStore,
   instellingenVan,
   STANDAARD_INSTELLINGEN,
+  GAST,
   type LesResultaat,
   type Modus,
 } from '@/progress/store'
@@ -230,5 +231,29 @@ describe('instellingen terugzetten naar de modus', () => {
     useProfielStore.getState().zetLeeftijd(9)
     useProfielStore.getState().herstelInstellingen()
     expect(instellingenVan(useProfielStore.getState())).toEqual(standaardInstellingen('schaker'))
+  })
+})
+
+describe('geluid zonder profiel', () => {
+  it('begint stil, zodat "Probeer de eerste les" niemand laat schrikken', () => {
+    useProfielStore.setState({ profielen: [], actiefId: null, voortgang: {}, instellingen: {} })
+    const { spraak, effecten } = instellingenVan(useProfielStore.getState())
+    expect(spraak).toBe(false)
+    expect(effecten).toBe(false)
+  })
+
+  it('laat de gast het geluid zelf aanzetten', () => {
+    useProfielStore.setState({ profielen: [], actiefId: null, voortgang: {}, instellingen: {} })
+    useProfielStore.getState().zetInstelling('spraak', true)
+    expect(instellingenVan(useProfielStore.getState()).spraak).toBe(true)
+    expect(instellingenVan(useProfielStore.getState()).effecten).toBe(false)
+  })
+
+  it('geeft een nieuw profiel gewoon geluid, en ruimt de keuze van de gast op', () => {
+    useProfielStore.setState({ profielen: [], actiefId: null, voortgang: {}, instellingen: {} })
+    useProfielStore.getState().zetInstelling('spraak', true)
+    useProfielStore.getState().maakProfiel('Sanne', 6, '🐴')
+    expect(instellingenVan(useProfielStore.getState())).toEqual(standaardInstellingen('ontdekker'))
+    expect(useProfielStore.getState().instellingen[GAST]).toBeUndefined()
   })
 })

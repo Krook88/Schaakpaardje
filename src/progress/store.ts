@@ -50,6 +50,21 @@ export const STANDAARD_INSTELLINGEN: Instellingen = {
   blunderWaarschuwing: true,
 }
 
+/**
+ * Zonder profiel begint het geluid uit.
+ *
+ * Wie op de startpagina "Probeer de eerste les" aantikt, is meestal een ouder die even
+ * kijkt, op een telefoon in de trein of naast een slapend kind. Pip begon dan meteen
+ * te praten en dat liet schrikken. Een gast krijgt daarom stilte, met bovenin het
+ * lesscherm een melding dat Pip kan voorlezen en één knop om het aan te zetten (zie
+ * GeluidMelding). Wie een profiel maakt, heeft bewust gekozen: daar staat het aan.
+ */
+export const GAST_INSTELLINGEN: Instellingen = {
+  ...STANDAARD_INSTELLINGEN,
+  spraak: false,
+  effecten: false,
+}
+
 /** Leeftijd bepaalt de modus; de ouder kan hem daarna zelf bijstellen. */
 export function modusVoorLeeftijd(leeftijd: number): Modus {
   if (leeftijd <= 5) return 'pip'
@@ -256,7 +271,7 @@ export const useProfielStore = create<State>()(
           profielen: [...s.profielen, profiel],
           actiefId: id,
           voortgang: { ...zonder(s.voortgang, GAST), [id]: s.voortgang[GAST] ?? {} },
-          instellingen: { ...s.instellingen, [id]: standaardInstellingen(profiel.modus) },
+          instellingen: { ...zonder(s.instellingen, GAST), [id]: standaardInstellingen(profiel.modus) },
           stickers: { ...zonder(s.stickers, GAST), [id]: s.stickers[GAST] ?? [] },
           hervatpunt: { ...zonder(s.hervatpunt, GAST), ...(s.hervatpunt[GAST] ? { [id]: s.hervatpunt[GAST] } : {}) },
           oefendagen: { ...zonder(s.oefendagen, GAST), ...(s.oefendagen?.[GAST] ? { [id]: s.oefendagen[GAST] } : {}) },
@@ -338,12 +353,13 @@ export const useProfielStore = create<State>()(
       },
 
       zetInstelling(sleutel, waarde) {
-        const id = get().actiefId
-        if (!id) return
+        // Ook voor de gast: die moet het geluid zelf aan kunnen zetten.
+        const id = wie(get())
+        const basis = id === GAST ? GAST_INSTELLINGEN : STANDAARD_INSTELLINGEN
         set((s) => ({
           instellingen: {
             ...s.instellingen,
-            [id]: { ...STANDAARD_INSTELLINGEN, ...s.instellingen[id], [sleutel]: waarde },
+            [id]: { ...basis, ...s.instellingen[id], [sleutel]: waarde },
           },
         }))
       },
@@ -499,7 +515,8 @@ export function useModus(): Modus {
 
 export function instellingenVan(state: State): Instellingen {
   const id = state.actiefId
-  return { ...STANDAARD_INSTELLINGEN, ...(id ? state.instellingen[id] : undefined) }
+  if (!id) return { ...GAST_INSTELLINGEN, ...state.instellingen[GAST] }
+  return { ...STANDAARD_INSTELLINGEN, ...state.instellingen[id] }
 }
 
 export function useInstellingen(): Instellingen {
