@@ -178,6 +178,18 @@ export function setVoiceConfig(next: Partial<Config>) {
   if (zin) void speak(zin)
 }
 
+/**
+ * De zin die het laatst gevraagd is, ook als hij stil bleef.
+ *
+ * Wie het geluid aanzet, wil Pip horen. Zonder dit bleef de zin die al in beeld stond
+ * stil en kwam de stem pas bij de volgende; een ouder die het even probeert, denkt dan
+ * dat het niet werkt, en een kind dat niet leest mist Pips kennismaking.
+ */
+let laatsteZin: string | null = null
+export function zegLaatsteZinNogEens() {
+  if (laatsteZin) void speak(laatsteZin, true)
+}
+
 export function getVoiceConfig(): Config {
   return { ...config }
 }
@@ -257,6 +269,7 @@ export function kies(varianten: readonly string[], groep = 'algemeen'): string {
  */
 export async function speak(tekst: string, opVerzoek = false): Promise<void> {
   if (!tekst) return
+  laatsteZin = tekst
   const mijnBeurt = ++beurt
   stopSpeaking()
   if (typeof window === 'undefined') return

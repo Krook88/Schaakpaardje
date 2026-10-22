@@ -864,16 +864,71 @@ async function gastBegintStil() {
     const knop = p.getByRole('button', { name: /^Geluid aan$/ })
     if (!(await knop.count())) return meld(naam, false, 'geen melding dat het geluid uit staat')
     await knop.click()
-    await p.waitForTimeout(400)
-    await p.getByRole('button', { name: /Verder/ }).first().click()
-    await p.waitForTimeout(1200)
-    const weg = (await knop.count()) === 0
+    await p.waitForTimeout(800)
+    // Meteen de zin die in beeld staat, niet pas de volgende: wie het geluid aanzet,
+    // wil horen dat het werkt (conversie- en codebase-review, oktober 2026).
     const praat = (await gezegd()) > 0
-    if (!weg) return meld(naam, false, 'de melding bleef staan nadat het geluid aan ging')
-    meld(naam, praat, praat ? '' : 'na "Geluid aan" zei Pip bij de volgende zin niets')
+    if ((await knop.count()) > 0) return meld(naam, false, 'de melding bleef staan nadat het geluid aan ging')
+    if (!praat) return meld(naam, false, 'na "Geluid aan" las Pip de zin in beeld niet voor')
+    // Wie daarna zelf de bel uitzet, krijgt de melding niet terug.
+    await p.getByRole('button', { name: 'Geluid uitzetten' }).click()
+    await p.waitForTimeout(400)
+    const terug = await knop.count()
+    meld(naam, terug === 0, terug ? 'na de bel uit kwam de melding terug' : '')
   } finally {
     await ctx.close()
   }
+}
+
+/* ------------------------------------------------------------------ *
+ * Een kind mét profiel hoort Pip meteen op een scherm dat het rechtstreeks opent.
+ *
+ * Bij het openen is het profiel nog niet ingelezen en gelden even de gastinstellingen
+ * (geluid uit). Werden die toegepast, dan viel de eerste zin op /spelen/ weg. En
+ * andersom: staat Pip bij het profiel uit, dan blijft hij ook bij het openen stil.
+ * Codebase-review, oktober 2026.
+ * ------------------------------------------------------------------ */
+async function profielHoortPipDirect() {
+  const naam = 'met profiel /spelen/ direct openen: Pip praat als het aan staat, en zwijgt als het uit staat'
+  const proef = async (spraak) => {
+    const ctx = await browser.newContext({ viewport: { width: 420, height: 950 } })
+    await ctx.addInitScript((spraak) => {
+      if (!sessionStorage.getItem('klaar')) {
+        sessionStorage.setItem('klaar', '1')
+        localStorage.setItem('schaakmaatje-v1', JSON.stringify({ version: 0, state: {
+          profielen: [{ id: 'p1', naam: 'Kim', leeftijd: 6, modus: 'ontdekker', avatar: '🐴', gemaakt: '2026-01-01' }],
+          actiefId: 'p1', instellingen: { p1: { spraak, effecten: spraak } } } }))
+      }
+      window.__gezegd = []
+      const s = window.speechSynthesis
+      if (s) {
+        const echt = s.speak.bind(s)
+        s.speak = (u) => {
+          window.__gezegd.push(u.text)
+          echt(u)
+        }
+      }
+      const play = HTMLMediaElement.prototype.play
+      HTMLMediaElement.prototype.play = function () {
+        window.__gezegd.push(this.src)
+        return play.call(this)
+      }
+    }, spraak)
+    const p = await ctx.newPage()
+    try {
+      await p.goto(`${URL}/spelen/`, { waitUntil: 'networkidle' })
+      // De browser laat pas geluid toe na een tik; een tik op de kop telt.
+      await p.locator('h1, h2').first().click()
+      await p.waitForTimeout(1500)
+      return await p.evaluate(() => window.__gezegd.length)
+    } finally {
+      await ctx.close()
+    }
+  }
+  const aan = await proef(true)
+  const uit = await proef(false)
+  if (aan === 0) return meld(naam, false, 'met spraak aan zei Pip niets')
+  meld(naam, uit === 0, uit ? `met spraak uit praatte Pip toch (${uit} keer)` : '')
 }
 
 /* ------------------------------------------------------------------ *
@@ -950,6 +1005,7 @@ await uitlegbordSpeelt()
 await altijdEenUitweg()
 await tweedeKind()
 await gastBegintStil()
+await profielHoortPipDirect()
 await gastHoudtZijnSterren()
 
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))

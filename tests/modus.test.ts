@@ -256,4 +256,19 @@ describe('geluid zonder profiel', () => {
     expect(instellingenVan(useProfielStore.getState())).toEqual(standaardInstellingen('ontdekker'))
     expect(useProfielStore.getState().instellingen[GAST]).toBeUndefined()
   })
+
+  it('zet de gast bij herstellen terug naar stil', () => {
+    useProfielStore.setState({ profielen: [], actiefId: null, voortgang: {}, instellingen: {} })
+    useProfielStore.getState().zetInstelling('spraak', true)
+    useProfielStore.getState().herstelInstellingen()
+    expect(instellingenVan(useProfielStore.getState()).spraak).toBe(false)
+  })
+
+  it('is weer stil als het laatste profiel verwijderd is (bewust: dan ben je weer gast)', () => {
+    useProfielStore.setState({ profielen: [], actiefId: null, voortgang: {}, instellingen: {} })
+    useProfielStore.getState().maakProfiel('Sanne', 6, '🐴')
+    const id = useProfielStore.getState().actiefId!
+    useProfielStore.getState().verwijderProfiel(id)
+    expect(instellingenVan(useProfielStore.getState()).spraak).toBe(false)
+  })
 })

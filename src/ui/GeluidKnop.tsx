@@ -1,5 +1,6 @@
 'use client'
 
+import { zegLaatsteZinNogEens } from '@/audio/voice'
 import { useInstellingen, useProfielStore } from '@/progress/store'
 
 /**
@@ -32,6 +33,7 @@ export function GeluidKnop({ className = '' }: { className?: string }) {
       onClick={() => {
         zetInstelling('spraak', !aan)
         zetInstelling('effecten', !aan)
+        if (!aan) zegLaatsteZinNogEens()
       }}
       style={{ minWidth: 56 }}
     >

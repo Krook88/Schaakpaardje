@@ -322,7 +322,7 @@ export const useProfielStore = create<State>()(
       herstelInstellingen() {
         set((s) => {
           const id = s.actiefId
-          if (!id) return s
+          if (!id) return { instellingen: zonder(s.instellingen, GAST) }
           const modus = s.profielen.find((p) => p.id === id)?.modus ?? 'pip'
           return { instellingen: { ...s.instellingen, [id]: standaardInstellingen(modus) } }
         })
