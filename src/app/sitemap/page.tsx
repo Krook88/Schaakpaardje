@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { ALLE_LESSEN } from '@/content'
-import { SITE, deelkaart } from '@/seo'
+import { SITE, deelkaart, kruimels } from '@/seo'
+import { Gegevens } from '@/ui/Gegevens'
 import { LESSEN_PER_WERELD, REGELS, VOOR_OUDERS } from '@/vindbaar'
 import s from '../over/Over.module.css'
 import k from './Sitemap.module.css'
@@ -44,9 +45,18 @@ function Kop({ stuk, children }: { stuk: string; children: ReactNode }) {
   )
 }
 
+const GEGEVENS = {
+  '@context': 'https://schema.org',
+  ...kruimels([
+    { naam: 'Schaakmaatje', url: `${SITE}/` },
+    { naam: "Alle pagina's", url: `${SITE}/sitemap/` },
+  ]),
+}
+
 export default function Sitemap() {
   return (
     <main className={s.pagina}>
+      <Gegevens data={GEGEVENS} />
       <p style={{ margin: 0 }}>
         <Link href="/" className={s.terug}>
           ← Naar de app
@@ -55,7 +65,9 @@ export default function Sitemap() {
 
       <section>
         <p className={s.oogje}>Overzicht</p>
-        <h1 style={{ fontSize: 'clamp(1.9rem, 6.2vw, 3rem)', lineHeight: 1.05 }}>Alle pagina&apos;s</h1>
+        <h1 style={{ fontSize: 'clamp(1.9rem, 6.2vw, 3rem)', lineHeight: 1.05 }}>
+          Alle pagina&apos;s: schaakregels en schaaklessen voor kinderen
+        </h1>
         <div className={s.knoppen}>
           <Link href={`/les/${ALLE_LESSEN[0].id}/`} className="btn btn--primary btn--big">
             <span aria-hidden="true">▶︎</span> Probeer de eerste les

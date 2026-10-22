@@ -31,7 +31,7 @@ export const SLOGAN = 'Leer schaken met Pip het schaakpaardje'
  * intikt — leren schaken, kinderen, leeftijd — en niet wat wij van de app vinden.
  */
 export const OMSCHRIJVING =
-  'Gratis Nederlandse schaakapp voor kinderen van 3 tot 10 jaar. Pip het schaakpaardje leest alles voor, dus lezen hoeft nog niet. Zonder account, zonder reclame.'
+  'Gratis Nederlandse schaakapp voor kinderen van 3 tot 10. Pip het schaakpaardje leest alles voor, dus lezen hoeft nog niet. Zonder account, zonder reclame.'
 
 /**
  * Een kop koffie, als iemand daar zin in heeft.

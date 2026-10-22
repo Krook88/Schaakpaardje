@@ -146,6 +146,17 @@ export function controleerSitemap() {
     if (canonical !== url) fouten.push(`${url}: canonical is ${canonical ?? 'leeg'}`)
     if (/name="robots" content="[^"]*noindex/.test(html)) fouten.push(`${url}: staat op noindex`)
   }
+  // En andersom: een pagina die zichzelf als canonical noemt en niet op noindex staat,
+  // wil gevonden worden, dus hoort hij in de sitemap. Een nieuwe pagina dieper in de
+  // boom (zoals /schaakclub/den-haag/) ontsnapte anders aan tests/sitemap.test.ts.
+  const inSitemap = new Set(urls)
+  for (const html of alleBestanden(UIT).filter((b) => b.endsWith('index.html'))) {
+    const tekst = readFileSync(html, 'utf8')
+    const canonical = tekst.match(/<link rel="canonical" href="([^"]+)"/)?.[1]
+    if (!canonical || /name="robots" content="[^"]*noindex/.test(tekst)) continue
+    const eigen = `${new URL(urls[0]).origin}${html.slice(UIT.length).replace(/index\.html$/, '')}`
+    if (canonical === eigen && !inSitemap.has(eigen)) fouten.push(`${eigen}: wil gevonden worden, maar staat niet in de sitemap`)
+  }
   if (fouten.length) {
     console.error('De sitemap klopt niet met de pagina\'s:')
     fouten.slice(0, 10).forEach((f) => console.error(`  ${f}`))
