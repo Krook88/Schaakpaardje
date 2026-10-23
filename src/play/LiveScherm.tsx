@@ -15,7 +15,6 @@ import {
   LIVE_DRUK,
   LIVE_GEEN_INTERNET,
   LIVE_GEEN_VERBINDING,
-  LIVE_GEWONNEN,
   LIVE_JIJ_ZWART,
   LIVE_KAPOT,
   LIVE_KIJK_NIEUW,
@@ -28,6 +27,7 @@ import {
   LIVE_WACHT_OP_VRIENDJE,
   LIVE_WEG,
   ONDERPROMOTIE_SCHAAK,
+  PARTIJ_GEWONNEN,
   PARTIJ_REMISE,
   PROMOTIE_ANDERS,
   PROMOTIE_GEKOZEN,
@@ -100,11 +100,14 @@ type Fase = 'laden' | 'start' | 'spel' | 'vol' | 'kapot'
  * opent, speelt zwart. Daarna wacht het scherm op de server tot er iets verandert (long
  * polling), zolang het in beeld is.
  */
-/** Wat Pip zegt bij een afgelopen partij, gezien vanaf dit kind. */
+/**
+ * Wat Pip zegt bij een afgelopen partij, gezien vanaf dit kind. Zonder vraag erachter:
+ * soms staat er "Nog een keer", soms "Naar de nieuwe partij" (het vriendje begon al).
+ */
 function uitslagZin(p: LivePartij): string {
   const status = p.game.status()
   const ikDeedLaatste = p.jij !== null && p.zetten.length > 0 && (p.zetten.length % 2 === 1 ? 'w' : 'b') === p.jij
-  return status.over && status.reason === 'mat' ? (ikDeedLaatste ? LIVE_GEWONNEN : AFSTAND_VRIENDJE_WINT) : PARTIJ_REMISE[0]
+  return status.over && status.reason === 'mat' ? (ikDeedLaatste ? PARTIJ_GEWONNEN[0] : AFSTAND_VRIENDJE_WINT) : PARTIJ_REMISE[0]
 }
 
 export function LiveScherm() {
