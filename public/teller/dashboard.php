@@ -111,6 +111,7 @@ $partijen = [];
 $spellen = [];
 $lastig = [];
 $binnenkomst = [];
+$profielNa = [];
 $schermen = [];
 $verwijzers = [];
 $uren = array_fill(0, 24, 0);
@@ -119,7 +120,7 @@ $dagen = [];
 $leeg = ['bezoek' => 0, 'terug' => 0, 'begonnen' => 0, 'af' => 0, 'partij' => 0, 'rondje' => 0, 'stukken' => 0, 'lang' => 0];
 
 loopDagen($periode, function (string $dag, ?array $r) use (
-    &$totaal, &$lessen, &$duur, &$geoefend, &$partijen, &$spellen, &$lastig, &$binnenkomst, &$schermen, &$verwijzers, &$uren,
+    &$totaal, &$lessen, &$duur, &$geoefend, &$partijen, &$spellen, &$lastig, &$binnenkomst, &$profielNa, &$schermen, &$verwijzers, &$uren,
     &$dagen, $leeg
 ) {
     if ($r === null) {
@@ -155,12 +156,19 @@ loopDagen($periode, function (string $dag, ?array $r) use (
             $dagen[$dag]['stukken']++;
             if (in_array($k, ['5 tot 15 min', '15 tot 30 min', '30 min of meer'], true)) $dagen[$dag]['lang']++;
             break;
+        case 'Profiel gemaakt':
+            $k = $e['na'] ?? '?';
+            $profielNa[$k] = ($profielNa[$k] ?? 0) + 1;
+            break;
         case 'Les begonnen':
         case 'Les af':
         case 'Les gestopt':
+        case 'Eerste opgave':
             $id = $e['les'] ?? '?';
-            $l = $lessen[$id] ?? ['nieuw' => 0, 'hervat' => 0, 'af' => 0, 'sterren' => 0, 'gestopt' => []];
-            if ($n === 'Les begonnen') {
+            $l = $lessen[$id] ?? ['nieuw' => 0, 'hervat' => 0, 'speelde' => 0, 'af' => 0, 'sterren' => 0, 'gestopt' => []];
+            if ($n === 'Eerste opgave') {
+                $l['speelde']++;
+            } elseif ($n === 'Les begonnen') {
                 $nieuw = ($e['hervat'] ?? 'nee') !== 'ja';
                 $l[$nieuw ? 'nieuw' : 'hervat']++;
                 if ($nieuw) $dagen[$dag]['begonnen']++;
@@ -423,7 +431,8 @@ $eerste = $volgorde ? (string) array_search(0, $volgorde, true) : '';
 $nieuwApparaat = $geoefend['nog niet'] ?? 0;
 $stappen = [
     ['Nieuw apparaat opende de app', $nieuwApparaat],
-    ['Eerste les begonnen' . ($eerste !== '' ? ' (' . ($titels[$eerste] ?? $eerste) . ')' : ''), $lessen[$eerste]['nieuw'] ?? 0],
+    ['Eerste les geopend' . ($eerste !== '' ? ' (' . ($titels[$eerste] ?? $eerste) . ')' : ''), $lessen[$eerste]['nieuw'] ?? 0],
+    ['Eerste les gespeeld (eerste tik op een opgave)', $lessen[$eerste]['speelde'] ?? 0],
     ['Eerste les af', $lessen[$eerste]['af'] ?? 0],
     ['Profiel gemaakt', $totaal['Profiel gemaakt']],
 ];
@@ -433,6 +442,14 @@ foreach ($stappen as [$label, $n]) {
     $h .= '<tr><td>' . e($label) . '</td><td class="n">' . $n . '</td><td>' . balk((int) $n, max(1, $nieuwApparaat)) . '</td></tr>';
 }
 $h .= '</table>';
+if ($profielNa) {
+    $h .= '<p class="zacht" style="margin:10px 0 0">Profielen gemaakt: ';
+    $delen = [];
+    foreach (['geen les', '1 les', '2 of meer'] as $k) {
+        if (isset($profielNa[$k])) $delen[] = $profielNa[$k] . ' na ' . e($k === 'geen les' ? 'nog geen les' : ($k === '1 les' ? '1 les' : '2 of meer lessen'));
+    }
+    $h .= implode(', ', $delen) . ' als gast.</p>';
+}
 if ($binnenkomst) {
     arsort($binnenkomst);
     $h .= '<h3 style="font-size:.95rem;margin:14px 0 6px">Waar komt een nieuw apparaat binnen?</h3><table>';
@@ -451,16 +468,19 @@ $h .= '<section><h2>Lessen: waar haken kinderen af?</h2><p class="zacht">Gestopt
 if ($lessen) {
     // Twee koprijen: "Gestopt in" boven vier smalle fasekolommen. Met "Gestopt in kijken"
     // als losse koppen was de tabel breder dan het scherm.
-    $h .= '<table class="lessen"><tr><th rowspan="2">Les</th><th rowspan="2" class="n">Begon</th><th rowspan="2" class="n">Hervat</th>'
-        . '<th rowspan="2" class="n">Af</th><th rowspan="2" class="n">Af %</th><th rowspan="2" class="n" title="Gemiddeld aantal sterren">★</th>'
+    // "Begon" is de pagina openen, "Speelde" de eerste tik op een opgave. Af % gaat over
+    // wie speelde: wie alleen de uitleg las (of een zoekmachine) is niet afgehaakt.
+    $h .= '<table class="lessen"><tr><th rowspan="2">Les</th><th rowspan="2" class="n">Begon</th><th rowspan="2" class="n">Speelde</th><th rowspan="2" class="n">Hervat</th>'
+        . '<th rowspan="2" class="n">Af</th><th rowspan="2" class="n" title="Van wie speelde">Af %</th><th rowspan="2" class="n" title="Gemiddeld aantal sterren">★</th>'
         . '<th colspan="4" class="midden">Gestopt in</th></tr><tr>';
     foreach ($fases as $f) $h .= '<th class="n">' . e($f) . '</th>';
     $h .= '</tr>';
     foreach ($lessen as $id => $l) {
         $begonnen = $l['nieuw'];
-        $pct = $begonnen ? round($l['af'] / $begonnen * 100) : null;
+        $speelde = $l['speelde'] ?? 0;
+        $pct = $speelde ? min(100, round($l['af'] / $speelde * 100)) : null;
         $h .= '<tr><td title="' . e($id) . '">' . e($titels[$id] ?? $id) . '</td><td class="n">' . $begonnen
-            . '</td><td class="n">' . $l['hervat'] . '</td><td class="n">' . $l['af'] . '</td><td class="n">'
+            . '</td><td class="n">' . $speelde . '</td><td class="n">' . $l['hervat'] . '</td><td class="n">' . $l['af'] . '</td><td class="n">'
             . ($pct === null ? '' : $pct . '%') . '</td><td class="n">'
             . ($l['af'] ? number_format($l['sterren'] / $l['af'], 1, ',', '') : '') . '</td>';
         foreach ($fases as $f) {

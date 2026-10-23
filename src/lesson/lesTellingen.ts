@@ -62,3 +62,17 @@ export function maakStopMelder(stuur: (fase: string) => void) {
     stuur(fase)
   }
 }
+
+/**
+ * Doet iets één keer, en daarna nooit meer. Voor "Eerste opgave": de lespagina openen
+ * telt al als "Les begonnen", ook voor wie alleen de uitleg leest (of voor een zoekmachine).
+ * Pas de eerste tik op het bord of op een quizknop zegt dat het kind echt ging spelen.
+ */
+export function eenKeer(doe: () => void): () => void {
+  let gedaan = false
+  return () => {
+    if (gedaan) return
+    gedaan = true
+    doe()
+  }
+}

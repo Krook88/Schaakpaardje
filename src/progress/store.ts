@@ -12,7 +12,7 @@ import { persist } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
 import { DIPLOMAS, type DiplomaSoort } from '@/content/diplomas'
-import { tel } from './tellen'
+import { naKlasse, tel } from './tellen'
 
 export type Modus = 'pip' | 'ontdekker' | 'schaker'
 
@@ -250,6 +250,8 @@ export const useProfielStore = create<State>()(
           avatar,
           gemaakt: new Date().toISOString(),
         }
+        // Hoeveel lessen er als gast al af waren: voor de telling hieronder.
+        const alsGast = Object.keys(get().voortgang[GAST] ?? {}).length
         // Wat er als gast gespeeld is, gaat mee naar dit profiel: de sterren van de les
         // die een kind speelde vóór het een naam had, blijven staan.
         set((s) => ({
@@ -263,9 +265,9 @@ export const useProfielStore = create<State>()(
           verslagen: { ...zonder(s.verslagen, GAST), ...(s.verslagen[GAST] ? { [id]: s.verslagen[GAST] } : {}) },
           gespeeld: { ...zonder(s.gespeeld, GAST), [id]: s.gespeeld[GAST] ?? { gewonnen: 0, verloren: 0, remise: 0 } },
         }))
-        // Alleen dát er een profiel bijkwam: zo is te zien waar bezoekers afhaken tussen
-        // de startpagina en de eerste les. Naam, leeftijd en avatar gaan nooit mee.
-        tel('Profiel gemaakt')
+        // Alleen dát er een profiel bijkwam, en na hoeveel lessen als gast (in klassen).
+        // Naam, leeftijd en avatar gaan nooit mee.
+        tel('Profiel gemaakt', { na: naKlasse(alsGast) })
         return id
       },
 

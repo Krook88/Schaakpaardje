@@ -26,7 +26,8 @@ const TELLINGEN = [
     'Minispel rondje' => ['spel', 'rondje'],
     'Bezoek' => ['geoefend'],
     'Speelduur' => ['duur'],
-    'Profiel gemaakt' => [],
+    'Profiel gemaakt' => ['na'],
+    'Eerste opgave' => ['les'],
     'Opgave lastig' => ['les', 'opgave', 'hulp'],
 ];
 

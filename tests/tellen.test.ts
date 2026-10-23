@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { BOT, dagenKlasse, duurKlasse, pad, tel, telScherm, zetTellen } from '@/progress/tellen'
+import { BOT, dagenKlasse, duurKlasse, naKlasse, pad, tel, telScherm, zetTellen } from '@/progress/tellen'
 
 /**
  * Wat er naar buiten gaat, ligt hier vast. De belofte aan ouders is: niets óver een
@@ -95,6 +95,12 @@ describe('anoniem tellen', () => {
     expect(pad('/les/Daan Jansen/')).toBe('/onbekend/')
   })
 
+  it('lessen vóór het profiel in klassen', () => {
+    expect(naKlasse(0)).toBe('geen les')
+    expect(naKlasse(1)).toBe('1 les')
+    expect(naKlasse(7)).toBe('2 of meer')
+  })
+
   it('geoefende dagen in klassen', () => {
     expect(dagenKlasse(1)).toBe('1 dag')
     expect(dagenKlasse(4)).toBe('3 tot 5 dagen')
@@ -116,7 +122,8 @@ describe('wat er geteld wordt, ligt vast', () => {
     'Minispel rondje': ['spel', 'rondje'],
     Bezoek: ['geoefend'],
     Speelduur: ['duur'],
-    'Profiel gemaakt': [],
+    'Profiel gemaakt': ['na'],
+    'Eerste opgave': ['les'],
     'Opgave lastig': ['les', 'opgave', 'hulp'],
   }
   const bestanden = (map: string): string[] =>
