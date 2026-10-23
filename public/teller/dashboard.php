@@ -93,6 +93,13 @@ if (empty($_SESSION['binnen'])) {
 
 /* ---------- tellen ---------- */
 
+/**
+ * Vanaf deze dag tellen zoekmachines niet meer mee (index.php weigert ze). Eerdere dagen
+ * laat het dashboard weg: daarin opende Googlebot elke les uit de sitemap één keer, en dat
+ * drukte "Af %" en "lessen afgemaakt" nog weken. De dagbestanden blijven gewoon bestaan.
+ */
+const SCHOON_VANAF = '2026-10-23';
+
 $periode = isset($_GET['dagen']) ? (int) $_GET['dagen'] : 30;
 if (!in_array($periode, [7, 30, 90], true)) $periode = 30;
 
@@ -103,6 +110,7 @@ $geoefend = [];
 $partijen = [];
 $spellen = [];
 $lastig = [];
+$binnenkomst = [];
 $schermen = [];
 $verwijzers = [];
 $uren = array_fill(0, 24, 0);
@@ -111,13 +119,14 @@ $dagen = [];
 $leeg = ['bezoek' => 0, 'terug' => 0, 'begonnen' => 0, 'af' => 0, 'partij' => 0, 'rondje' => 0, 'stukken' => 0, 'lang' => 0];
 
 loopDagen($periode, function (string $dag, ?array $r) use (
-    &$totaal, &$lessen, &$duur, &$geoefend, &$partijen, &$spellen, &$lastig, &$schermen, &$verwijzers, &$uren,
+    &$totaal, &$lessen, &$duur, &$geoefend, &$partijen, &$spellen, &$lastig, &$binnenkomst, &$schermen, &$verwijzers, &$uren,
     &$dagen, $leeg
 ) {
     if ($r === null) {
         $dagen[$dag] = $leeg;
         return;
     }
+    if ($dag < SCHOON_VANAF) return;
     $n = $r['n'] ?? '';
     $e = $r['e'] ?? [];
     if (isset($totaal[$n])) $totaal[$n]++;
@@ -128,6 +137,12 @@ loopDagen($periode, function (string $dag, ?array $r) use (
             $geoefend[$k] = ($geoefend[$k] ?? 0) + 1;
             $dagen[$dag]['bezoek']++;
             if (!in_array($k, ['nog niet', '1 dag', '?'], true)) $dagen[$dag]['terug']++;
+            // Waar komt een nieuw apparaat binnen? Het pad van het eerste scherm, in groepen.
+            if ($k === 'nog niet') {
+                $p = $r['p'] ?? '';
+                $groep = $p === '/' ? 'startpagina' : (preg_match('#^/(les|schaakregels|schaakclub|over|sitemap|lessen)/#', $p, $m) ? $m[1] : 'overig');
+                $binnenkomst[$groep] = ($binnenkomst[$groep] ?? 0) + 1;
+            }
             break;
         case 'pageview':
             $p = $r['p'] ?? '?';
@@ -358,8 +373,8 @@ foreach ([
     $h .= '<div class="cijfer"><b>' . $totaal[$k] . '</b><span>' . e($label) . '</span></div>';
 }
 $h .= '</div><p class="zacht" style="margin:10px 0 0">Er zijn geen ID\'s, dus "unieke bezoekers" bestaan hier niet: '
-    . 'een bezoek is één keer de app openen. Tijden in UTC. Zoekmachines tellen sinds 23 oktober 2026 niet mee; '
-    . 'daarvoor opende Googlebot elke les uit de sitemap één keer.</p></section>';
+    . 'een bezoek is één keer de app openen. Tijden in UTC. Alleen vanaf ' . e(SCHOON_VANAF) . ': daarvóór telde '
+    . 'Googlebot mee, die elke les uit de sitemap één keer opende. Zoekmachines tellen nu niet meer mee.</p></section>';
 
 $kolom = function (string $k) use ($dagen) {
     return array_map(function ($d) use ($k) { return $d[$k]; }, $dagen);
@@ -399,6 +414,33 @@ if ($berichten) {
     }
 } else {
     $h .= '<p class="zacht">Nog geen berichten.</p>';
+}
+$h .= '</section>';
+
+// De trechter: van een nieuw apparaat naar de eerste les, af, en een profiel. Zonder ID's
+// zijn het losse aantallen naast elkaar, geen gevolgde paden.
+$eerste = $volgorde ? (string) array_search(0, $volgorde, true) : '';
+$nieuwApparaat = $geoefend['nog niet'] ?? 0;
+$stappen = [
+    ['Nieuw apparaat opende de app', $nieuwApparaat],
+    ['Eerste les begonnen' . ($eerste !== '' ? ' (' . ($titels[$eerste] ?? $eerste) . ')' : ''), $lessen[$eerste]['nieuw'] ?? 0],
+    ['Eerste les af', $lessen[$eerste]['af'] ?? 0],
+    ['Profiel gemaakt', $totaal['Profiel gemaakt']],
+];
+$h .= '<section><h2>Van binnenkomst naar profiel</h2><p class="zacht">Losse aantallen in dezelfde periode, geen gevolgde '
+    . 'bezoekers: er zijn geen ID\'s. Een kind kan ook zonder profiel spelen; de sterren gaan mee als er later een komt.</p><table>';
+foreach ($stappen as [$label, $n]) {
+    $h .= '<tr><td>' . e($label) . '</td><td class="n">' . $n . '</td><td>' . balk((int) $n, max(1, $nieuwApparaat)) . '</td></tr>';
+}
+$h .= '</table>';
+if ($binnenkomst) {
+    arsort($binnenkomst);
+    $h .= '<h3 style="font-size:.95rem;margin:14px 0 6px">Waar komt een nieuw apparaat binnen?</h3><table>';
+    foreach ($binnenkomst as $g => $n) {
+        $h .= '<tr><td>' . e($g === 'les' ? 'een les' : ($g === 'startpagina' || $g === 'overig' ? $g : '/' . $g . '/')) . '</td><td class="n">' . $n . '</td><td>'
+            . balk($n, max($binnenkomst)) . '</td></tr>';
+    }
+    $h .= '</table>';
 }
 $h .= '</section>';
 

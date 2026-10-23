@@ -34,7 +34,7 @@ const TELLINGEN = [
  * Zoekmachines en meetprogramma's: dezelfde lijst als `BOT` in src/progress/tellen.ts.
  * De User-Agent wordt alleen gelezen om te weigeren, en nooit bewaard.
  */
-const BOT = '#googlebot|google-inspectiontool|adsbot|bingbot|bingpreview|yandex|baiduspider|duckduckbot|slurp|applebot|petalbot|semrush|ahrefs|mj12bot|dotbot|facebookexternalhit|crawler|spider|headlesschrome|lighthouse|pagespeed|gtmetrix|python-requests|curl\/|wget#i';
+const BOT = '#googlebot|google-inspectiontool|googleother|storebot-google|google-read-aloud|mediapartners-google|apis-google|adsbot|bingbot|bingpreview|yandexbot|yandexrender|gptbot|oai-searchbot|claudebot|amazonbot|perplexitybot|baiduspider|duckduckbot|slurp|applebot|petalbot|semrush|ahrefs|mj12bot|dotbot|facebookexternalhit|crawler|spider|headlesschrome|lighthouse|pagespeed|gtmetrix|python-requests|curl\/|wget#i';
 
 function isBot(): bool
 {

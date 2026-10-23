@@ -43,7 +43,7 @@ export function zetTellen(aan: boolean) {
  * lijst staat in public/teller/opslag.php: de server weigert ze hoe dan ook; dit scheelt
  * alleen het versturen. Geen "bot" los: dat zit ook in telefoonmerken als Cubot.
  */
-export const BOT = /googlebot|google-inspectiontool|adsbot|bingbot|bingpreview|yandex|baiduspider|duckduckbot|slurp|applebot|petalbot|semrush|ahrefs|mj12bot|dotbot|facebookexternalhit|crawler|spider|headlesschrome|lighthouse|pagespeed|gtmetrix|python-requests|curl\/|wget/i
+export const BOT = /googlebot|google-inspectiontool|googleother|storebot-google|google-read-aloud|mediapartners-google|apis-google|adsbot|bingbot|bingpreview|yandexbot|yandexrender|gptbot|oai-searchbot|claudebot|amazonbot|perplexitybot|baiduspider|duckduckbot|slurp|applebot|petalbot|semrush|ahrefs|mj12bot|dotbot|facebookexternalhit|crawler|spider|headlesschrome|lighthouse|pagespeed|gtmetrix|python-requests|curl\/|wget/i
 
 /** Is dit een kruiper of een geautomatiseerde browser, en geen mens? */
 export function isBot(): boolean {

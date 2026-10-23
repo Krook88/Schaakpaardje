@@ -13,7 +13,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 // Een zoekmachine die de app doorloopt is geen bezoeker. Wel "gelukt" antwoorden: een
 // foutcode laat hem alleen opnieuw proberen.
+// Wie zelf met curl test: geef -A 'Mozilla/5.0' mee, anders telt het niet. De kop zegt
+// dat, zodat een 204 zonder tellingen niet op een kapotte teller lijkt.
 if (isBot()) {
+    header('X-Teller: genegeerd');
     http_response_code(204);
     exit;
 }
