@@ -747,9 +747,17 @@ async function liveMetEenVriendje() {
       return meld(naam, false, 'wit zag zijn eigen mat niet')
     await a.getByRole('button', { name: /🔁 Nog een keer/ }).click()
     await a.waitForTimeout(500)
+    // Wie zelf op "Nog een keer" tikt, gaat meteen door: geen knop "Naar de nieuwe partij"
+    // voor iets wat je zelf deed. Codebase-review 26, punt 2.
+    if (await a.getByRole('button', { name: /▶️ Naar de nieuwe partij/ }).count())
+      return meld(naam, false, 'wit tikte zelf op "Nog een keer" en kreeg toch "Naar de nieuwe partij"')
     await b.context().setOffline(false)
     const zagMat = await wacht(async () => /wint/.test(await b.locator('p.muted[aria-live=polite]').innerText()), 10000)
     if (!zagMat) return meld(naam, false, 'zwart sprong naar de nieuwe partij zonder de mat te zien')
+    // En Pip zegt dan de uitslag, niet meer dat hij het vriendje niet bereikt: de mat kan
+    // binnenkomen terwijl er net "geen verbinding" stond. Schaakreview 26, punt 1.
+    const pipB = await wacht(async () => /gewonnen/i.test((await b.locator('[class*=ballon]').first().innerText().catch(() => ''))), 5000)
+    if (!pipB) return meld(naam, false, `bij de mat zei Pip tegen zwart: "${(await b.locator('[class*=ballon]').first().innerText().catch(() => '')).split('\n')[0]}"`)
     if (!(await b.getByRole('button', { name: /▶️ Naar de nieuwe partij/ }).count())) return meld(naam, false, 'geen knop naar de nieuwe partij')
     await b.getByRole('button', { name: /▶️ Naar de nieuwe partij/ }).click()
     const gewisseld = await wacht(async () => (await a.locator('[data-square]').first().getAttribute('data-square')) === 'h1')
@@ -883,23 +891,40 @@ async function gastHoudtZijnSterren() {
 }
 
 console.log(`Doorloop tegen ${URL}\n`)
-await pipZwijgtBijBinnenkomst()
-await nieuwProfiel()
-await opdrachtKomtTerug()
-await minispelEindigt()
-await dagTeltNaMinispel()
-await quizRekentGoedGoed()
-await onmogelijkeZetKrijgtRegelzin()
-await opdrachtKomtTerugNaTipje()
-await samenSpelenKentDeWinnaar()
-await opAfstandSpelen()
-await liveMetEenVriendje()
-await promotieMetKeuze()
-await contactformulierIsEerlijk()
-await uitlegbordSpeelt()
-await altijdEenUitweg()
-await tweedeKind()
-await gastHoudtZijnSterren()
+// DOORLOOP_ALLEEN=live npm run doorloop: alleen de regels waarvan de naam erop past,
+// om één wisselvallige regel een paar keer achter elkaar te draaien.
+const ALLEEN = process.env.DOORLOOP_ALLEEN ? new RegExp(process.env.DOORLOOP_ALLEEN, 'i') : null
+// nieuwProfiel draait altijd mee: de regels erna gaan uit van dat profiel.
+let gedraaid = 0
+for (const regel of [
+  pipZwijgtBijBinnenkomst,
+  nieuwProfiel,
+  opdrachtKomtTerug,
+  minispelEindigt,
+  dagTeltNaMinispel,
+  quizRekentGoedGoed,
+  onmogelijkeZetKrijgtRegelzin,
+  opdrachtKomtTerugNaTipje,
+  samenSpelenKentDeWinnaar,
+  opAfstandSpelen,
+  liveMetEenVriendje,
+  promotieMetKeuze,
+  contactformulierIsEerlijk,
+  uitlegbordSpeelt,
+  altijdEenUitweg,
+  tweedeKind,
+  gastHoudtZijnSterren,
+]) {
+  if (!ALLEEN || ALLEEN.test(regel.name) || regel === nieuwProfiel) {
+    if (regel !== nieuwProfiel || ALLEEN?.test(regel.name)) gedraaid++
+    await regel()
+  }
+}
+if (ALLEEN && !gedraaid) {
+  console.error(`Geen regel past op DOORLOOP_ALLEEN=${process.env.DOORLOOP_ALLEEN}.`)
+  await browser.close()
+  process.exit(1)
+}
 
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 
