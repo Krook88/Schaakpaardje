@@ -233,7 +233,17 @@ export function LiveScherm() {
       }
       const oud = partijRef.current
       if (!isNieuwer(oud, nieuw)) return
-      if (oud && !zelf && oud.jij && nieuw.ronde > oud.ronde && !oud.game.status().over) {
+      // Het vriendje begon een nieuwe ronde terwijl hier het einde van de vorige al staat:
+      // dat einde laten staan, met de knop naar de nieuwe partij. Anders zag dit kind de mat
+      // maar even, of helemaal niet: kwam de uitslag binnen terwijl er "geen verbinding"
+      // stond, dan sprong het scherm bij terugkomst meteen door. De doorloop ving dat af en
+      // toe; welke van de twee hij zag, hing af van wanneer het laatste kijkverzoek terugkwam.
+      if (oud && !zelf && oud.jij && nieuw.ronde > oud.ronde && oud.game.status().over) {
+        volgendeRef.current = nieuw
+        setVolgende(true)
+        return
+      }
+      if (oud && !zelf && oud.jij && nieuw.ronde > oud.ronde) {
         const vorig = leesStand({ ...nieuw, ronde: oud.ronde, zetten: nieuw.vorige, vorige: [], jij: oud.jij, wit: oud.wit, zwart: oud.zwart, ander: oud.ander })
         if (vorig?.game.status().over) {
           volgendeRef.current = nieuw

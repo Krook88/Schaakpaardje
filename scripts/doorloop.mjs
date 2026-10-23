@@ -883,23 +883,30 @@ async function gastHoudtZijnSterren() {
 }
 
 console.log(`Doorloop tegen ${URL}\n`)
-await pipZwijgtBijBinnenkomst()
-await nieuwProfiel()
-await opdrachtKomtTerug()
-await minispelEindigt()
-await dagTeltNaMinispel()
-await quizRekentGoedGoed()
-await onmogelijkeZetKrijgtRegelzin()
-await opdrachtKomtTerugNaTipje()
-await samenSpelenKentDeWinnaar()
-await opAfstandSpelen()
-await liveMetEenVriendje()
-await promotieMetKeuze()
-await contactformulierIsEerlijk()
-await uitlegbordSpeelt()
-await altijdEenUitweg()
-await tweedeKind()
-await gastHoudtZijnSterren()
+// DOORLOOP_ALLEEN=live npm run doorloop: alleen de regels waarvan de naam erop past,
+// om één wisselvallige regel een paar keer achter elkaar te draaien.
+const ALLEEN = process.env.DOORLOOP_ALLEEN ? new RegExp(process.env.DOORLOOP_ALLEEN, 'i') : null
+for (const regel of [
+  pipZwijgtBijBinnenkomst,
+  nieuwProfiel,
+  opdrachtKomtTerug,
+  minispelEindigt,
+  dagTeltNaMinispel,
+  quizRekentGoedGoed,
+  onmogelijkeZetKrijgtRegelzin,
+  opdrachtKomtTerugNaTipje,
+  samenSpelenKentDeWinnaar,
+  opAfstandSpelen,
+  liveMetEenVriendje,
+  promotieMetKeuze,
+  contactformulierIsEerlijk,
+  uitlegbordSpeelt,
+  altijdEenUitweg,
+  tweedeKind,
+  gastHoudtZijnSterren,
+]) {
+  if (!ALLEEN || ALLEEN.test(regel.name)) await regel()
+}
 
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 
