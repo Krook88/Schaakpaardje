@@ -36,7 +36,7 @@ import {
   useVoortgang,
   wereldIsAf,
 } from '@/progress/store'
-import { maakLastigMelder, maakStopMelder } from './lesTellingen'
+import { eenKeer, maakLastigMelder, maakStopMelder } from './lesTellingen'
 import { tel } from '@/progress/tellen'
 import styles from './LessonPlayer.module.css'
 
@@ -121,6 +121,16 @@ export function LessonPlayer({
     [],
   )
   const opgaveNu = `${fase}-${opgaveIndex + 1}`
+  // De eerste tik op een opgave: het kind speelt echt, en kijkt niet alleen rond. Niet bij
+  // een hervatte les: die telde al als gespeeld toen hij nieuw begon, en anders werd één
+  // kind dat morgen verdergaat twee keer "speelde" en de les maar half zo vaak "af".
+  const hervatteLes = useRef(false)
+  const eersteOpgave = useMemo(
+    () => eenKeer(() => {
+      if (!hervatteLes.current) tel('Eerste opgave', { les: les.id })
+    }),
+    [les.id],
+  )
 
   // Tellen waar kinderen afhaken. "Les begonnen" pas na het hervatten (zie hieronder),
   // zodat te zien is of het een nieuwe les is of een halve. "Les gestopt" bij weggaan
@@ -235,6 +245,7 @@ export function LessonPlayer({
     if (!geladen || hervatGedaan.current) return
     hervatGedaan.current = true
     const halfAf = Boolean(hervat && VOLGORDE.includes(hervat as Fase))
+    hervatteLes.current = halfAf
     tel('Les begonnen', { les: les.id, hervat: halfAf ? 'ja' : 'nee' })
     if (halfAf) startFase(hervat as Fase)
   }, [geladen, hervat, startFase, les.id])
@@ -315,6 +326,7 @@ export function LessonPlayer({
   const opVeld = useCallback(
     (veld: Square) => {
       if (!stand || stand.klaar) return
+      eersteOpgave()
       const r = tik(stand, veld)
       setStand(r.stand)
       setHintVelden([])
@@ -353,12 +365,13 @@ export function LessonPlayer({
           break
       }
     },
-    [stand, instellingen.effecten, reageer, fase, zinnen, lastig, les.id, opgaveNu],
+    [stand, instellingen.effecten, reageer, fase, zinnen, lastig, les.id, opgaveNu, eersteOpgave],
   )
 
   const opQuiz = useCallback(
     (index: number) => {
       if (!stand) return
+      eersteOpgave()
       const r = antwoordQuiz(stand, index)
       setStand(r.stand)
       if (r.goed) {
@@ -375,7 +388,7 @@ export function LessonPlayer({
         if (index !== quizFout) lastig.misser(les.id, opgaveNu, r.stand.opgave.kind)
       }
     },
-    [stand, reageer, fase, lastig, les.id, opgaveNu, quizFout],
+    [stand, reageer, fase, lastig, les.id, opgaveNu, quizFout, eersteOpgave],
   )
 
   const vraagHint = useCallback(() => {

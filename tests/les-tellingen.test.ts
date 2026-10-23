@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { maakLastigMelder, maakStopMelder } from '@/lesson/lesTellingen'
+import { eenKeer, maakLastigMelder, maakStopMelder } from '@/lesson/lesTellingen'
 
 /**
  * Wanneer het lesscherm "Opgave lastig" en "Les gestopt" telt. Achttiende review, C1:
@@ -66,5 +66,14 @@ describe('les gestopt', () => {
     const gemeld: string[] = []
     maakStopMelder((f) => gemeld.push(f))('beloning')
     expect(gemeld).toEqual([])
+  })
+})
+
+describe('eerste opgave', () => {
+  it('telt één keer, ook bij elke volgende tik', () => {
+    let keer = 0
+    const tik = eenKeer(() => keer++)
+    for (let i = 0; i < 5; i++) tik()
+    expect(keer).toBe(1)
   })
 })
