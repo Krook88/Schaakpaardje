@@ -40,6 +40,6 @@ Schaakmeester en codebase-reviewer, de codebase-reviewer daarna nog eens op de h
 | C3 | Na "Naar de nieuwe partij" zei Pip "je vriendje begint", terwijl het kind al aan zet was. | **Opgelost**: Pip noemt dan de beurt, met de juiste stemming bij schaak. |
 | C4 | `DOORLOOP_ALLEEN` eindigde groen als er geen regel paste, en `nieuwProfiel` viel weg. | **Opgelost**: exit 1 (na het sluiten van de browser), en `nieuwProfiel` draait altijd mee. |
 | C5 | `bezig` telt niet: een zet en "Nog een keer" vlak na elkaar konden elkaars vlag uitzetten. | **Opgelost**: "Nog een keer" wacht als er al iets loopt. |
-| S2 | Pip zegt "Nog een keer?", terwijl de knop dan "Naar de nieuwe partij" heet. | **Bewust zo gelaten.** Een nieuwe zin moet ingesproken worden (ElevenLabs-credits). Volgens de schaakmeester begrijpt een kind van 5 het wel. |
+| S2 | Pip zegt "Nog een keer?", terwijl de knop dan "Naar de nieuwe partij" heet. | **Opgelost na de review, op verzoek van Kaj**: Pip zegt nu "Gewonnen! Mooi gespeeld." (`PARTIJ_GEWONNEN[0]`), zonder vraag erachter, zodat het bij beide knoppen past. Die zin bestond al en is al ingesproken: geen nieuwe credits. |
 
 `npm run check` groen (504 tests), doorloop 17/17.
