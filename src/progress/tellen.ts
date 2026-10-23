@@ -121,7 +121,9 @@ export function duurKlasse(ms: number): string {
  * Hoeveel lessen er al af waren toen er een profiel kwam, in klassen. Zo is te zien of
  * ouders eerst laten spelen (als gast) en pas daarna een naam kiezen.
  */
-export function naKlasse(lessen: number): string {
+export function naKlasse(lessen: number, alEenProfiel = false): string {
+  // Een broertje of zusje erbij: dat is geen ouder die meteen een profiel maakt.
+  if (alEenProfiel) return 'al een profiel'
   if (lessen <= 0) return 'geen les'
   if (lessen === 1) return '1 les'
   return '2 of meer'

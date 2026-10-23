@@ -121,8 +121,16 @@ export function LessonPlayer({
     [],
   )
   const opgaveNu = `${fase}-${opgaveIndex + 1}`
-  // De eerste tik op een opgave: het kind speelt echt, en kijkt niet alleen rond.
-  const eersteOpgave = useMemo(() => eenKeer(() => tel('Eerste opgave', { les: les.id })), [les.id])
+  // De eerste tik op een opgave: het kind speelt echt, en kijkt niet alleen rond. Niet bij
+  // een hervatte les: die telde al als gespeeld toen hij nieuw begon, en anders werd één
+  // kind dat morgen verdergaat twee keer "speelde" en de les maar half zo vaak "af".
+  const hervatteLes = useRef(false)
+  const eersteOpgave = useMemo(
+    () => eenKeer(() => {
+      if (!hervatteLes.current) tel('Eerste opgave', { les: les.id })
+    }),
+    [les.id],
+  )
 
   // Tellen waar kinderen afhaken. "Les begonnen" pas na het hervatten (zie hieronder),
   // zodat te zien is of het een nieuwe les is of een halve. "Les gestopt" bij weggaan
@@ -237,6 +245,7 @@ export function LessonPlayer({
     if (!geladen || hervatGedaan.current) return
     hervatGedaan.current = true
     const halfAf = Boolean(hervat && VOLGORDE.includes(hervat as Fase))
+    hervatteLes.current = halfAf
     tel('Les begonnen', { les: les.id, hervat: halfAf ? 'ja' : 'nee' })
     if (halfAf) startFase(hervat as Fase)
   }, [geladen, hervat, startFase, les.id])

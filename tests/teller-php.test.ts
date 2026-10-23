@@ -148,7 +148,7 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect(open).toContain('<td>zelf 1</td>')
     expect(open).toContain('Van binnenkomst naar profiel')
     expect(open).toContain('Speelde')
-    expect(open).toContain('na nog geen les als gast')
+    expect(open).toContain('meteen (nog geen les)')
 
     // Van vóór de botfilter (SCHOON_VANAF in dashboard.php) telt niets mee.
     writeFileSync(join(dataMap(), 'dag-2026-10-21.ndjson'), JSON.stringify({ u: '01', n: 'Les begonnen', p: '/les/googlebot-1/', e: { les: 'googlebot-1', hervat: 'nee' } }) + '\n')

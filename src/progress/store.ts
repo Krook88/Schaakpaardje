@@ -267,7 +267,8 @@ export const useProfielStore = create<State>()(
         }))
         // Alleen dát er een profiel bijkwam, en na hoeveel lessen als gast (in klassen).
         // Naam, leeftijd en avatar gaan nooit mee.
-        tel('Profiel gemaakt', { na: naKlasse(alsGast) })
+        const na = naKlasse(alsGast, get().profielen.length > 1)
+        tel('Profiel gemaakt', { na })
         return id
       },
 

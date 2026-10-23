@@ -99,6 +99,7 @@ describe('anoniem tellen', () => {
     expect(naKlasse(0)).toBe('geen les')
     expect(naKlasse(1)).toBe('1 les')
     expect(naKlasse(7)).toBe('2 of meer')
+    expect(naKlasse(0, true)).toBe('al een profiel')
   })
 
   it('geoefende dagen in klassen', () => {
