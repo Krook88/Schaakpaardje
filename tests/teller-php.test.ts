@@ -89,6 +89,8 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
   it('een profiel zonder eigenschappen, een lastige opgave, en de schaakregelpagina\'s komen binnen', async () => {
     expect((await stuur({ name: 'Profiel gemaakt', url: '/', props: { na: 'geen les' } })).status).toBe(204)
     expect((await stuur({ name: 'Profiel gemaakt', url: '/', props: { naam: 'daan' } })).status).toBe(400)
+    // Een tabblad met de vorige versie stuurt hem nog zonder 'na': die telt gewoon mee.
+    expect((await stuur({ name: 'Profiel gemaakt', url: '/' })).status).toBe(204)
     expect((await stuur({ name: 'Eerste opgave', url: '/les/weide-1/', props: { les: 'weide-1' } })).status).toBe(204)
     const lastig = { name: 'Opgave lastig', url: '/les/weide-1/', props: { les: 'weide-1', opgave: 'zelf-1', hulp: 'missers' } }
     expect((await stuur(lastig)).status).toBe(204)

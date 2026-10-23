@@ -65,7 +65,10 @@ function schoonmaken(array $in): ?array
     sort($sleutels);
     $nodig = TELLINGEN[$naam];
     sort($nodig);
-    if ($sleutels !== $nodig) return null;
+    // Overgang (oktober 2026): 'Profiel gemaakt' kreeg de eigenschap 'na'. Een tabblad dat nog
+    // de vorige versie draait, stuurt hem zonder; die telling is nog steeds waar, dus niet weigeren.
+    $oudProfiel = $naam === 'Profiel gemaakt' && $sleutels === [];
+    if ($sleutels !== $nodig && !$oudProfiel) return null;
     if ($gekregen) {
         foreach ($gekregen as $k => $v) {
             if (!in_array($k, TELLINGEN[$naam], true)) return null;
