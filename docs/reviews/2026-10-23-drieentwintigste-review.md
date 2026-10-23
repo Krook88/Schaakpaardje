@@ -32,3 +32,16 @@ geen schaakinhoud, geen schermen voor kinderen.
 
 Het contactformulier en live spelen filteren bewust niet op bots. Een ouder met een vreemde
 User-Agent zou anders zonder melding zijn bericht kwijtraken.
+
+## Na de publicatie (vierentwintigste review, klein)
+
+De eerste echte publicatie (run 33) uploadde alles, maar de controle erna faalde. Die stap
+testte de teller met curl, en curl staat sinds deze ronde zelf in de botlijst: hij kreeg 204 in
+plaats van 400. Reparatie in `.github/workflows/publiceren.yml`:
+- de controles gebruiken een gewone browser-User-Agent;
+- een nieuwe regel gaat na dat Googlebot `X-Teller: genegeerd` krijgt.
+
+Lokaal tegen PHP getest: een browser krijgt 400, standaard-curl 204, en Googlebot krijgt de kop.
+De codebase-reviewer vond niets blokkerends. Zijn drie kleine punten zijn verwerkt: geen dubbele
+"000" bij een mislukte verbinding, de kop wordt op zijn waarde gecontroleerd, en het commentaar
+klopt nu.
