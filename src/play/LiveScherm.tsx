@@ -100,6 +100,13 @@ type Fase = 'laden' | 'start' | 'spel' | 'vol' | 'kapot'
  * opent, speelt zwart. Daarna wacht het scherm op de server tot er iets verandert (long
  * polling), zolang het in beeld is.
  */
+/** Wat Pip zegt bij een afgelopen partij, gezien vanaf dit kind. */
+function uitslagZin(p: LivePartij): string {
+  const status = p.game.status()
+  const ikDeedLaatste = p.jij !== null && p.zetten.length > 0 && (p.zetten.length % 2 === 1 ? 'w' : 'b') === p.jij
+  return status.over && status.reason === 'mat' ? (ikDeedLaatste ? LIVE_GEWONNEN : AFSTAND_VRIENDJE_WINT) : PARTIJ_REMISE[0]
+}
+
 export function LiveScherm() {
   const geladen = useToestandGeladen()
   const profiel = useProfiel()
@@ -187,7 +194,7 @@ export function LiveScherm() {
         setStemming('blij')
       } else if (status.over) {
         if (!nieuweZet && oud !== null) return
-        zeg(status.reason === 'mat' ? (ikDeedLaatste ? LIVE_GEWONNEN : AFSTAND_VRIENDJE_WINT) : PARTIJ_REMISE[0])
+        zeg(uitslagZin(nieuw))
         setStemming('trots')
         if (nieuweZet && !ikDeedLaatste && instellingen.effecten) (status.reason === 'mat' ? sfx.schaak : sfx.zet)()
       } else if (nieuweZet && !ikDeedLaatste) {
@@ -278,8 +285,16 @@ export function LiveScherm() {
       // De verbinding is terug: Pip mag niet blijven zeggen dat hij niemand bereikt.
       // Layoutreview van 16 oktober, punt 2.
       if (wasWeg && a.soort === 'goed') {
-        const p = isNieuwer(partijRef.current, a.stand) ? a.stand : partijRef.current
-        if (p && p.jij && !p.game.status().over) {
+        // Wat er straks in beeld staat. Begon het vriendje intussen een nieuwe ronde terwijl
+        // hier het einde van de vorige staat, dan blijft dat einde staan (zie `toon`), en dan
+        // hoort Pip de uitslag te zeggen, niet "ik kan je vriendje niet bereiken".
+        const oud = partijRef.current
+        const houdtEinde = !zelf && oud !== null && oud.jij !== null && oud.game.status().over && a.stand.ronde > oud.ronde
+        const p = houdtEinde || !isNieuwer(oud, a.stand) ? oud : a.stand
+        if (p && p.jij && p.game.status().over) {
+          zeg(uitslagZin(p))
+          setStemming('trots')
+        } else if (p && p.jij) {
           zeg(p.ander === 'nog-niet' ? LIVE_WACHT_OP_VRIENDJE : p.game.turn === p.jij ? zinVoorJouwBeurt(p) : LIVE_DENKT_NA)
           setStemming('blij')
         } else if (p && !p.jij) zeg(LIVE_VOL)
@@ -573,7 +588,16 @@ export function LiveScherm() {
     const p = partijRef.current
     setZeker(false)
     if (!p || !kamerRef.current || !sleutelRef.current) return
-    verwerk(await live.opnieuw(kamerRef.current, sleutelRef.current, p.ronde), true)
+    // Zolang dit verzoek loopt, geen kijkantwoorden verwerken: het openstaande kijkverzoek
+    // wordt door deze nieuwe ronde wakker en kan eerder terug zijn. Dan leek het alsof het
+    // vriendje opnieuw begon, en kreeg dit kind "Naar de nieuwe partij" voor iets wat het
+    // zelf deed. Codebase-review 26, punt 2. Het antwoord hierop bevat de stand al.
+    bezig.current = true
+    try {
+      verwerk(await live.opnieuw(kamerRef.current, sleutelRef.current, p.ronde), true)
+    } finally {
+      bezig.current = false
+    }
   }
 
   /** Het einde van de vorige ronde is gezien: door naar de ronde die al klaarstond. */
@@ -581,7 +605,11 @@ export function LiveScherm() {
     const n = volgendeRef.current
     volgendeRef.current = null
     setVolgende(false)
-    if (n) toonStand(n, partijRef.current)
+    if (!n) return
+    toonStand(n, partijRef.current)
+    // Zette het vriendje al terwijl dit kind nog naar het einde keek: dan is dit kind nu
+    // aan zet, en dat hoort Pip te zeggen. Codebase-review 26, punt 3.
+    if (n.zetten.length > 0 && n.jij !== null && n.game.turn === n.jij) zeg(zinVoorJouwBeurt(n))
   }
 
   const zelfBeginnen = () => {
