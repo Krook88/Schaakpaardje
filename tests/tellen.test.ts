@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { dagenKlasse, duurKlasse, pad, tel, telScherm, zetTellen } from '@/progress/tellen'
+import { BOT, dagenKlasse, duurKlasse, pad, tel, telScherm, zetTellen } from '@/progress/tellen'
 
 /**
  * Wat er naar buiten gaat, ligt hier vast. De belofte aan ouders is: niets óver een
@@ -54,6 +54,18 @@ describe('anoniem tellen', () => {
     tel('Bezoek')
     telScherm()
     expect(verstuurd).toHaveLength(0)
+  })
+
+  it('een zoekmachine of geautomatiseerde browser telt niet mee', () => {
+    zetSite('schaakmaatje.nl')
+    vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' })
+    tel('Les begonnen', { les: 'mat-1', hervat: 'nee' })
+    vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0 Chrome/130', webdriver: true })
+    telScherm()
+    expect(verstuurd).toHaveLength(0)
+    vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0 (Linux; Android 12; CUBOT KINGKONG 7) Chrome/130 Mobile' })
+    tel('Bezoek', { geoefend: 'nog niet' })
+    expect(verstuurd).toHaveLength(1)
   })
 
   it('als een ouder het uitzet, gaat er niets weg; weer aan, dan wel', () => {
@@ -125,6 +137,11 @@ describe('wat er geteld wordt, ligt vast', () => {
       }
     }
     expect(gevonden.length).toBeGreaterThanOrEqual(Object.keys(TOEGESTAAN).length)
+  })
+
+  it('de app en de server herkennen dezelfde zoekmachines', () => {
+    const php = readFileSync('public/teller/opslag.php', 'utf8').match(/const BOT = '#(.+)#i';/)?.[1]
+    expect(php).toBe(BOT.source)
   })
 
   it('de app en de server kennen dezelfde schermen', () => {

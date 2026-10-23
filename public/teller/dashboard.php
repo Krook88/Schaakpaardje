@@ -358,7 +358,8 @@ foreach ([
     $h .= '<div class="cijfer"><b>' . $totaal[$k] . '</b><span>' . e($label) . '</span></div>';
 }
 $h .= '</div><p class="zacht" style="margin:10px 0 0">Er zijn geen ID\'s, dus "unieke bezoekers" bestaan hier niet: '
-    . 'een bezoek is één keer de app openen. Tijden in UTC.</p></section>';
+    . 'een bezoek is één keer de app openen. Tijden in UTC. Zoekmachines tellen sinds 23 oktober 2026 niet mee; '
+    . 'daarvoor opende Googlebot elke les uit de sitemap één keer.</p></section>';
 
 $kolom = function (string $k) use ($dagen) {
     return array_map(function ($d) use ($k) { return $d[$k]; }, $dagen);

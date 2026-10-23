@@ -11,6 +11,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     exit;
 }
+// Een zoekmachine die de app doorloopt is geen bezoeker. Wel "gelukt" antwoorden: een
+// foutcode laat hem alleen opnieuw proberen.
+if (isBot()) {
+    http_response_code(204);
+    exit;
+}
 // Een telling is klein. Wat langer is, is geen telling.
 $ruw = file_get_contents('php://input', false, null, 0, 2048);
 $in = json_decode($ruw ?: '', true);

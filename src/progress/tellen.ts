@@ -37,6 +37,20 @@ export function zetTellen(aan: boolean) {
   }
 }
 
+/**
+ * Zoekmachines en meetprogramma's. Googlebot voert JavaScript uit om een pagina te lezen,
+ * en telde zo elke les uit de sitemap één keer als "begonnen" (oktober 2026). Dezelfde
+ * lijst staat in public/teller/opslag.php: de server weigert ze hoe dan ook; dit scheelt
+ * alleen het versturen. Geen "bot" los: dat zit ook in telefoonmerken als Cubot.
+ */
+export const BOT = /googlebot|google-inspectiontool|adsbot|bingbot|bingpreview|yandex|baiduspider|duckduckbot|slurp|applebot|petalbot|semrush|ahrefs|mj12bot|dotbot|facebookexternalhit|crawler|spider|headlesschrome|lighthouse|pagespeed|gtmetrix|python-requests|curl\/|wget/i
+
+/** Is dit een kruiper of een geautomatiseerde browser, en geen mens? */
+export function isBot(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return navigator.webdriver === true || BOT.test(navigator.userAgent ?? '')
+}
+
 function opDeSite(): boolean {
   if (typeof window === 'undefined') return false
   const h = window.location.hostname
@@ -62,7 +76,7 @@ export function pad(pathname: string): string {
 }
 
 function stuur(naam: string, props?: Eigenschappen, referrer?: string) {
-  if (!opDeSite() || !tellenAan()) return
+  if (!opDeSite() || !tellenAan() || isBot()) return
   try {
     void fetch(ADRES, {
       method: 'POST',

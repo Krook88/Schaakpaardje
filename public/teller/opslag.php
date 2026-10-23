@@ -30,6 +30,18 @@ const TELLINGEN = [
     'Opgave lastig' => ['les', 'opgave', 'hulp'],
 ];
 
+/**
+ * Zoekmachines en meetprogramma's: dezelfde lijst als `BOT` in src/progress/tellen.ts.
+ * De User-Agent wordt alleen gelezen om te weigeren, en nooit bewaard.
+ */
+const BOT = '#googlebot|google-inspectiontool|adsbot|bingbot|bingpreview|yandex|baiduspider|duckduckbot|slurp|applebot|petalbot|semrush|ahrefs|mj12bot|dotbot|facebookexternalhit|crawler|spider|headlesschrome|lighthouse|pagespeed|gtmetrix|python-requests|curl\/|wget#i';
+
+function isBot(): bool
+{
+    $ua = isset($_SERVER['HTTP_USER_AGENT']) && is_string($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+    return preg_match(BOT, $ua) === 1;
+}
+
 /** Dezelfde regel als `pad()` in src/progress/tellen.ts: alleen schermen van de app. */
 const BEKEND_PAD = '#^/(|(les|lessen|kaart|spel|spelen|stal|ouders|over|diploma|opfrissen|contact|schaakregels|schaakclub|sitemap)(/[a-z0-9-]+)?/|onbekend/)$#';
 
