@@ -123,7 +123,7 @@ $verwijzers = [];
 $uren = array_fill(0, 24, 0);
 /** Per dag de cijfers voor het verloop. */
 $dagen = [];
-$leeg = ['bezoek' => 0, 'terug' => 0, 'begonnen' => 0, 'speelde' => 0, 'af' => 0, 'partij' => 0, 'rondje' => 0, 'stukken' => 0, 'lang' => 0];
+$leeg = ['bezoek' => 0, 'terug' => 0, 'begonnen' => 0, 'speelde' => 0, 'af' => 0, 'afGemeten' => 0, 'partij' => 0, 'rondje' => 0, 'stukken' => 0, 'lang' => 0];
 
 loopDagen($periode, function (string $dag, ?array $r) use (
     &$totaal, &$lessen, &$duur, &$geoefend, &$partijen, &$spellen, &$lastig, &$binnenkomst, &$profielNa, &$schermen, &$verwijzers, &$uren,
@@ -181,7 +181,10 @@ loopDagen($periode, function (string $dag, ?array $r) use (
                 if ($nieuw) $dagen[$dag]['begonnen']++;
             } elseif ($n === 'Les af') {
                 $l['af']++;
-                if ($dag >= SPEELDE_VANAF) $l['afGemeten']++;
+                if ($dag >= SPEELDE_VANAF) {
+                    $l['afGemeten']++;
+                    $dagen[$dag]['afGemeten']++;
+                }
                 $dagen[$dag]['af']++;
                 $l['sterren'] += (int) ($e['sterren'] ?? 0);
             } else {
@@ -411,7 +414,7 @@ $h .= '</table></details></section>';
 $per = $periode <= 7 ? 'per dag' : 'per week';
 $h .= '<section><h2>Wordt het beter? (' . $per . ')</h2><p class="zacht">Percentages, zodat een drukke week niet '
     . 'vanzelf beter lijkt. Een punt verschijnt pas vanaf 5 metingen.</p><div class="raster">'
-    . lijn('Lessen afgemaakt', perStuk($dagen, $periode, 'af', 'speelde'), 'Van de gespeelde lessen, hoeveel er af kwamen.')
+    . lijn('Lessen afgemaakt', perStuk($dagen, $periode, 'afGemeten', 'speelde'), 'Van de gespeelde lessen, hoeveel er af kwamen.')
     . lijn('Komt terug', perStuk($dagen, $periode, 'terug', 'bezoek'), 'Bezoeken van een apparaat waarop al op 2 of meer dagen geoefend is.')
     . lijn('Speelt 5 minuten of langer', perStuk($dagen, $periode, 'lang', 'stukken'), 'Van de speelstukken, hoeveel 5 minuten of langer duurden.')
     . '</div></section>';
