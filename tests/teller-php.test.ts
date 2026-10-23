@@ -98,6 +98,29 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect(regels).toContainEqual(expect.objectContaining({ n: 'pageview', p: '/schaakregels/en-passant/' }))
   })
 
+  it('een zoekmachine krijgt "gelukt", maar er wordt niets bewaard', async () => {
+    const voor = bewaard().length
+    const googlebot = 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+    for (const ua of [googlebot, 'Mozilla/5.0 HeadlessChrome/130.0.0.0', 'Mozilla/5.0 (compatible; bingbot/2.0)']) {
+      const r = await fetch(`${BASIS}/teller/index.php`, {
+        method: 'POST',
+        headers: { 'User-Agent': ua },
+        body: JSON.stringify({ name: 'Les begonnen', url: '/les/mat-1/', props: { les: 'mat-1', hervat: 'nee' } }),
+      })
+      expect(r.status).toBe(204)
+      expect(r.headers.get('x-teller')).toBe('genegeerd')
+    }
+    expect(bewaard().length).toBe(voor)
+    // Een gewone telefoon met "bot" in de merknaam telt wél.
+    const cubot = await fetch(`${BASIS}/teller/index.php`, {
+      method: 'POST',
+      headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 12; CUBOT KINGKONG 7) AppleWebKit/537.36 Chrome/130 Mobile Safari/537.36' },
+      body: JSON.stringify({ name: 'pageview', url: '/' }),
+    })
+    expect(cubot.status).toBe(204)
+    expect(bewaard().length).toBe(voor + 1)
+  })
+
   it('het dashboard vraagt een wachtwoord en toont dan de tellingen', async () => {
     const zonder = await (await fetch(`${BASIS}/teller/dashboard.php`)).text()
     expect(zonder).toContain('nog geen wachtwoord')
@@ -122,6 +145,12 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect(open).toContain('profielen gemaakt')
     expect(open).toContain('Opgaven: waar lopen kinderen vast?')
     expect(open).toContain('<td>zelf 1</td>')
+    expect(open).toContain('Van binnenkomst naar profiel')
+
+    // Van vóór de botfilter (SCHOON_VANAF in dashboard.php) telt niets mee.
+    writeFileSync(join(dataMap(), 'dag-2026-10-21.ndjson'), JSON.stringify({ u: '01', n: 'Les begonnen', p: '/les/googlebot-1/', e: { les: 'googlebot-1', hervat: 'nee' } }) + '\n')
+    const oud = await (await fetch(`${BASIS}/teller/dashboard.php?dagen=90`, { headers: { cookie: koekje } })).text()
+    expect(oud).not.toContain('googlebot-1')
   })
 
   it('raden wordt afgeremd: na 10 mislukte pogingen in een uur gaat niemand er meer in', async () => {
