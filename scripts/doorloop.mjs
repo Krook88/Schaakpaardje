@@ -916,12 +916,13 @@ for (const regel of [
   gastHoudtZijnSterren,
 ]) {
   if (!ALLEEN || ALLEEN.test(regel.name) || regel === nieuwProfiel) {
-    if (regel !== nieuwProfiel) gedraaid++
+    if (regel !== nieuwProfiel || ALLEEN?.test(regel.name)) gedraaid++
     await regel()
   }
 }
 if (ALLEEN && !gedraaid) {
   console.error(`Geen regel past op DOORLOOP_ALLEEN=${process.env.DOORLOOP_ALLEEN}.`)
+  await browser.close()
   process.exit(1)
 }
 

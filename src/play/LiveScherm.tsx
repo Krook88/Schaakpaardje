@@ -587,7 +587,9 @@ export function LiveScherm() {
   const nogEenKeer = async () => {
     const p = partijRef.current
     setZeker(false)
-    if (!p || !kamerRef.current || !sleutelRef.current) return
+    // Loopt er nog een zet of een eerdere "Nog een keer", dan wachten: de vlag `bezig` telt
+    // niet, dus twee verzoeken door elkaar zouden hem te vroeg uitzetten.
+    if (!p || !kamerRef.current || !sleutelRef.current || bezig.current) return
     // Zolang dit verzoek loopt, geen kijkantwoorden verwerken: het openstaande kijkverzoek
     // wordt door deze nieuwe ronde wakker en kan eerder terug zijn. Dan leek het alsof het
     // vriendje opnieuw begon, en kreeg dit kind "Naar de nieuwe partij" voor iets wat het
@@ -609,7 +611,11 @@ export function LiveScherm() {
     toonStand(n, partijRef.current)
     // Zette het vriendje al terwijl dit kind nog naar het einde keek: dan is dit kind nu
     // aan zet, en dat hoort Pip te zeggen. Codebase-review 26, punt 3.
-    if (n.zetten.length > 0 && n.jij !== null && n.game.turn === n.jij) zeg(zinVoorJouwBeurt(n))
+    if (n.zetten.length > 0 && n.jij !== null && n.game.turn === n.jij) {
+      zeg(zinVoorJouwBeurt(n))
+      const st = n.game.status()
+      setStemming(!st.over && st.check ? 'verrast' : 'blij')
+    }
   }
 
   const zelfBeginnen = () => {
