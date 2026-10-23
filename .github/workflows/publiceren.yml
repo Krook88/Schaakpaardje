@@ -157,12 +157,12 @@ jobs:
           # of de tellingen open staan, is erger dan een rode.
           fout=0
           # Met de User-Agent van een gewone browser: curl staat in de botlijst van de
-          # teller en krijgt daar altijd 204, ook als PHP niet draait.
-          code() { curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (publicatiecontrole)" "$@" || echo "000"; }
+          # teller en krijgt daar altijd 204, dus de 400-controle zou nooit slagen.
+          code() { curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (publicatiecontrole)" "$@" || true; }
           c=$(code -X POST -d '{}' https://schaakmaatje.nl/teller/index.php)
           if [ "$c" = "400" ]; then echo "De teller draait."; else echo "::error::/teller/index.php gaf $c in plaats van 400. Draait PHP?"; fout=1; fi
           # En de botfilter zelf: een kruiper krijgt 204 met X-Teller: genegeerd.
-          kop=$(curl -s -o /dev/null -D - -A "Googlebot/2.1" -X POST -d '{}' https://schaakmaatje.nl/teller/index.php | tr -d '\r' | grep -i '^x-teller:' || true)
+          kop=$(curl -s -o /dev/null -D - -A "Googlebot/2.1" -X POST -d '{}' https://schaakmaatje.nl/teller/index.php | tr -d '\r' | grep -i '^x-teller: *genegeerd' || true)
           if [ -n "$kop" ]; then echo "Zoekmachines tellen niet mee."; else echo "::error::/teller/index.php weigert Googlebot niet."; fout=1; fi
           c=$(code -X POST -d '{}' https://schaakmaatje.nl/teller/bericht.php)
           if [ "$c" = "400" ]; then echo "Het contactformulier draait."; else echo "::error::/teller/bericht.php gaf $c in plaats van 400."; fout=1; fi
