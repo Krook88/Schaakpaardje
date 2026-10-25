@@ -122,6 +122,46 @@ Oordeel: niets blokkerends. "Zou ik aan speltesters geven", maar eerst G1 en G2.
 
 Daarna: `npm run check` groen (508 tests), `npm run doorloop` 21 van 21.
 
+## Vierde ronde: spelervaring als geheel (`79e48a7` en verder)
+
+Kaj vroeg om de spelontwerper onafhankelijk naar het hele spel te laten kijken. Diens
+bevindingen B1–B8 en de kleine punten zijn verwerkt in `79e48a7`. Daarna keken alle vijf de
+reviewers. Hieronder staan schaakmeester (S), codebase (C) en conversie (V). Layout en de
+spelontwerper werden door een tijdslimiet onderbroken en zijn hervat; hun uitslag volgt.
+
+**Wat er in `79e48a7` veranderde**
+- Een les is gedaan bij één ster (`LES_GEDAAN_BIJ`), met "Nog een keer" voor de toets.
+- Geen hoefijzerbelofte meer; "Nieuw in je stal!" op de beloning en na een gewonnen partij.
+- Op het doel tikken en slepen werken.
+- Hulp na 3 en 5 missers.
+- Stille tussentikken.
+- Pip reageert in partijen.
+- De veilige knop bij de blunderwaarschuwing is de opvallende.
+- "Schaak" pas na wereld 9.
+- "Ik ken de stukken al" voor schakers.
+- De bel, de eindknoppen, de verlies-telling (naar het ouderscherm) en tekstpunten.
+
+| | Bevinding | Status |
+|---|---|---|
+| S1 / C1 (**blokkerend**) | In een zetopgave met een vast stuk werd een zet met een ander stuk goed gerekend. "Speel Pf3" nam de pion f2-f3 aan, ook in de toets (notatie-2, notatie-3, koning-2). | **Opgelost** (`d589491`): bij de zet telt alleen het vaste stuk; van gedachten veranderen kost geen fout. Een test speelt elke zetopgave na met elk ander eigen stuk, en die test faalt aantoonbaar zonder de reparatie. |
+| S-K1 (klein) | Op Notatie-eiland koos een tik op het doel vanzelf het stuk, terwijl dat juist de lesstof is. | **Opgelost**: automatisch kiezen bij een zetopgave alleen als er één eigen stuk staat. |
+| S2 (belangrijk) | "Verder leren" na de verste les kon Torenburcht overslaan. | **Opgelost**: weer de vaste volgorde. Alleen na "Ik ken de stukken al" begint het later (instelling `beginWereld`). Er is een test voor. |
+| S3 (belangrijk) | Bij één ster is er geen vangnet voor mat. | **Opgelost**: de poort naar Matklif vraagt twee sterren op de laatste schaakles (`POORT_NAAR_MAT`), met een test. De beloning verbergt dan "Volgende les" en Pip zegt `MAT_POORT`. De opfrisser met voorrang voor lessen met één ster is **niet gedaan**: de opfrisser weegt de moeite al mee. |
+| S4 (belangrijk) | "Ik laat het even voor", terwijl er niets werd voorgedaan. | **Opgelost**: na vijf missers wijst Pip het antwoord echt aan (bij een zet het doelveld), met de zin `VOORDOEN`. |
+| S5 / C2 (belangrijk) | Slepen in een aanwijsopgave kostte een fout. | **Opgelost**: Board-prop `sleep='veld'` in lessen, opfrisser en minispel. |
+| S6 (belangrijk) | "Kijk eens in je stal!" ook als er niets nieuws in stond. | **Opgelost**: `WERELD_AF_STAL` alleen als er iets nieuw is. |
+| S-K (klein) | Hulpaanbod in de toets; "Goed gezien!" bij elke slagzet; "zet hem gauw veilig"; onderpromotie zei "schaak"; "bijna aan de overkant" al op de zesde rij. | **Allemaal opgelost.** |
+| C3 (belangrijk) | De bel kon geluid aanzetten dat de ouder had uitgezet, ook voor een ander profiel. | **Opgelost**: de bel onthoudt per kind wat er vóór zijn tik stond en zet alleen dat terug. Het ouderscherm wist die herinnering. Als de ouder Pip al had uitgezet, zegt de bel niets. |
+| C4 (klein) | Losse eindjes bij slepen. | **Opgelost**: pointer capture, een kortere klikpauze en een timer die wordt opgeruimd. De doorloop sleept nu ook met een vinger (CDP touch). |
+| C5 (klein) | Een leeg veld telt nu als misser. | **Zo bedoeld**: een tik op het doel is een zet, en een zet naar een veld waar het stuk niet kan komen is een misser, net als met tik-tik. |
+| C6 (klein) | "Nog een keer" telde als afhaken en als tweede "Les af". | **Opgelost**: `alAf`. |
+| C7 (klein) | `'schaak-1'` stond los in de code. | **Opgelost**: `SCHAAK_LES` in `src/content/index.ts` (niet in voice.ts, want dan wordt het ingesproken), met test. Overal `schaakZinnen()`. |
+| C8 / V3 (klein) | Docs en STER2 noemden nog twee sterren. | **Opgelost.** |
+| V1 (klein) | "Ik ken de stukken al" niet na een gastles. | **Opgelost**: de knop verschijnt zolang er buiten De Weide nog niets gedaan is. |
+| V2 (klein) | Geen zicht op het gebruik van die knop. | **Opgelost**: een losse telling `Stukken overgeslagen`, in beide vaste lijsten. |
+
+Daarna: `npm run check` groen (516 tests), `npm run doorloop` 23 van 23.
+
 ## Wat nog moet vóór de release
 
 `npm run audio:render`. Kaj heeft credits en draait het. Luister daarbij naar "d vier" (S10).
