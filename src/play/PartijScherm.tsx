@@ -505,7 +505,8 @@ export function PartijScherm({ botId }: { botId: string }) {
                   setStemming('blij')
                 }}
               >
-                <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>↩︎</span> Andere zet
+                {/* Niet ↩︎: dat staat ook op "Terugnemen", met een andere betekenis. */}
+                <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>🤔</span> Andere zet
               </button>
               <button
                 type="button"
@@ -516,7 +517,8 @@ export function PartijScherm({ botId }: { botId: string }) {
                   voerUit(t.van, t.naar, t.promotie)
                 }}
               >
-                <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1 }}>✔︎</span> Toch doen
+                {/* Geen vinkje: dat betekent voor een kind "goed". */}
+                <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1 }}>➜</span> Toch doen
               </button>
             </div>
           </div>

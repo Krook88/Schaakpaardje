@@ -180,10 +180,10 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
                 nieuwRondje(1)
               }}
             >
-              <span aria-hidden="true">↺</span> Nog een keer
+              <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>↺</span> Nog een keer
             </button>
             <Link href="/kaart/" className="btn btn--primary btn--big">
-              <span aria-hidden="true">🗺️</span> Naar de kaart
+              <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>🗺️</span> Naar de kaart
             </Link>
           </div>
         </div>

@@ -23,7 +23,10 @@ export function NieuwInStal({ stukken }: { stukken: StalStuk[] }) {
           className={`card ${styles.nieuwKaart}`}
           style={{ '--toon': stuk.toon } as React.CSSProperties}
         >
-          <span className={styles.teken} aria-hidden="true">
+          <span
+            className={`${styles.teken} ${styles.nieuwTeken} ${stuk.soort === 'stuk' ? '' : styles.inKleur}`}
+            aria-hidden="true"
+          >
             {stuk.teken}
           </span>
           <span>
@@ -31,6 +34,10 @@ export function NieuwInStal({ stukken }: { stukken: StalStuk[] }) {
               Nieuw in je stal!
             </span>
             <strong>{stuk.naam}</strong>
+          </span>
+          {/* Een pijltje: het is een knop naar de stal, en dat zag je er niet aan. */}
+          <span className={styles.nieuwPijl} aria-hidden="true">
+            ›
           </span>
         </Link>
       ))}

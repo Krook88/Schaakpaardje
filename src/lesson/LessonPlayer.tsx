@@ -728,8 +728,11 @@ export function LessonPlayer({
     // stilzwijgend: je maakte Torenburcht af, drukte op "volgende les" en stond
     // ineens in Loperbos zonder dat er iets gevierd was. Terwijl dit precies het
     // moment is waar een kind vier lessen lang naartoe heeft gewerkt.
+    // Alleen als die les ook echt open is: voor Matklif zijn twee sterren nodig, en dan
+    // stond er "Een nieuwe wereld gaat open!" terwijl Pip zei dat het nog niet kon.
+    const volgendeOpen = Boolean(volgende && isOntgrendeld(volgende.id, voortgang, modus))
     const nieuweWereld =
-      volgende && volgende.wereldId !== wereld.id ? (wereldMet(volgende.wereldId) ?? null) : null
+      volgende && volgendeOpen && volgende.wereldId !== wereld.id ? (wereldMet(volgende.wereldId) ?? null) : null
     return (
       <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
         <Kop titel="Klaar!" terug="/kaart/" />
@@ -759,10 +762,43 @@ export function LessonPlayer({
                 Sticker verdiend!
               </Link>
             )}
-            {wereldKlaar && (
+            {/* Niet bij de dichte poort naar Matklif: dan vraagt Pip om nog een keer. */}
+            {wereldKlaar && (volgendeOpen || !volgende) && (
               <p>
                 🐴 <strong>{wereld.naam}</strong> is helemaal uit!
               </p>
+            )}
+          </div>
+
+          {/* De knoppen direct onder de sterren, en "Volgende les" vooraan. Met de kaarten
+              "Nieuw in je stal!" en "Een nieuwe wereld" erboven zakte de grote knop op een
+              telefoon onder de vouw, en zag een kind alleen "Nog een keer" (layoutreview). */}
+          <div className="row" style={{ justifyContent: 'center' }}>
+            {volgendeOpen && (
+              <Link href={`/les/${volgende!.id}/`} className="btn btn--primary btn--big">
+                <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>▶︎</span> Volgende les
+              </Link>
+            )}
+            <Link href="/kaart/" className="btn">
+              <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>🗺️</span> Naar de kaart
+            </Link>
+            {/* Pip zei "nog eentje proberen?" en er was geen knop voor. Alleen de toets
+                opnieuw: daar gaan de sterren over, en de uitleg en het oefenen nog eens
+                doen voelt als straf. Is de volgende les dicht (de poort naar Matklif),
+                dan is dit de grote knop: daar vraagt Pip dan ook om. */}
+            {sterren < 3 && (
+              <button
+                type="button"
+                className={volgendeOpen ? 'btn' : 'btn btn--primary btn--big'}
+                onClick={() => {
+                  setToetsFouten(0)
+                  setToetsHints(0)
+                  setStemming('denkt')
+                  startFase('toets')
+                }}
+              >
+                <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>↺</span> Nog een keer
+              </button>
             )}
           </div>
 
@@ -785,34 +821,6 @@ export function LessonPlayer({
               </div>
             </div>
           )}
-          <div className="row" style={{ justifyContent: 'center' }}>
-            {/* Pip zei "nog eentje proberen?" en er was geen knop voor. Alleen de toets
-                opnieuw: daar gaan de sterren over, en de uitleg en het oefenen nog eens
-                doen voelt als straf. */}
-            {sterren < 3 && (
-              <button
-                type="button"
-                className="btn"
-                onClick={() => {
-                  setToetsFouten(0)
-                  setToetsHints(0)
-                  setStemming('denkt')
-                  startFase('toets')
-                }}
-              >
-                <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>↺</span> Nog een keer
-              </button>
-            )}
-            <Link href="/kaart/" className="btn">
-              <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>🗺️</span> Naar de kaart
-            </Link>
-            {/* Alleen als die les ook echt open is: voor Matklif zijn twee sterren nodig. */}
-            {volgende && isOntgrendeld(volgende.id, voortgang, modus) && (
-              <Link href={`/les/${volgende.id}/`} className="btn btn--primary btn--big">
-                <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>▶︎</span> Volgende les
-              </Link>
-            )}
-          </div>
           {/* Voor de ouder, en ónder de knoppen: als grote kaart erboven duwde hij
               "Volgende les" op een telefoon onder de vouw, en een kind dat niet leest
               tikte op het grootste vlak en stond in een formulier (negentiende review, L1).

@@ -105,10 +105,15 @@
   color: inherit; text-decoration: none;
   border: 3px solid hsl(var(--toon) 45% 55%);
   background: hsl(var(--toon) 55% 94%);
-  animation: nieuwBinnen 0.7s ease-out 0.5s 2;
 }
+/* Alleen het teken springt, niet de kaart: een kaart over de volle breedte die
+   vergroot en draait, liep buiten het scherm (layoutreview). */
+.nieuwKaart .nieuwTeken { display: inline-block; animation: nieuwBinnen 0.7s ease-out 0.5s 2; }
+.nieuwPijl { margin-left: auto; font-size: 1.6rem; line-height: 1; color: var(--muted); }
+/* Een maatje in kleur, zoals in de partij: als lijntekening oogde het niet als cadeau. */
+.inKleur { font-variant-emoji: emoji; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .nieuwKaart { background: hsl(var(--toon) 22% 20%); }
 }
 :root[data-theme='dark'] .nieuwKaart { background: hsl(var(--toon) 22% 20%); }
-@media (prefers-reduced-motion: reduce) { .nieuwKaart { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .nieuwKaart .nieuwTeken { animation: none; } }

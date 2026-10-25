@@ -162,6 +162,22 @@ spelontwerper werden door een tijdslimiet onderbroken en zijn hervat; hun uitsla
 
 Daarna: `npm run check` groen (516 tests), `npm run doorloop` 23 van 23.
 
+### Layout, vierde ronde (L4)
+
+Niets blokkerends. Op `79e48a7` liet de hint bij `captureAll` een pion oplichten die niet aan
+te tikken was; dat was op `d589491` al opgelost door de reparatie van S1/C1.
+
+| | Bevinding | Status |
+|---|---|---|
+| L4-1 (belangrijk) | Met de kaarten "Nieuw in je stal!" en "Een nieuwe wereld" zakte "Volgende les" op een telefoon onder de vouw; alleen "Nog een keer" was nog te zien. | **Opgelost**: de knoppen staan nu direct onder de sterren, met "Volgende les" vooraan. Er is geen doorloopregel voor: daarvoor moet een toets in de doorloop helemaal uitgespeeld worden, en dat volgt pas in de volgende fase. |
+| L4-2 (belangrijk) | Bij de dichte poort naar Matklif stond er "Een nieuwe wereld gaat open!" en "Schaakmeer is helemaal uit!", terwijl Pip om nog een keer vroeg. | **Opgelost**: beide verschijnen alleen als de volgende les ook echt open is. "Nog een keer" is dan de grote knop. |
+| L4-3 (belangrijk) | De kaart "Nieuw in je stal!" liep tijdens zijn animatie buiten het scherm. | **Opgelost**: alleen het teken springt. |
+| L4-4 (klein) | ✔︎ op "Toch doen" en ↩︎ op "Andere zet", terwijl ↩︎ ook op "Terugnemen" staat. | **Opgelost**: ➜ op "Toch doen" en 🤔 op "Andere zet". |
+| L4-5 (klein) | De stalkaart zag er niet aanklikbaar uit. | **Opgelost**: een › rechts. |
+| L4-6 (klein) | Een nieuw maatje stond als lijntekening. | **Opgelost**: in kleur op de kaart; in de stal zelf blijft de bestaande stijl. |
+| L4-7 (klein) | ↺ was kleiner op het minispel-eindscherm. | **Opgelost.** |
+| L4-8, L4-9 (klein) | Een sleep die buiten het bord eindigt laat het stuk geselecteerd; de opdracht verdwijnt even na een hulpaanbod. | **Zo gelaten**: het eerste is gelijk aan één tik. Voor het tweede komt de opdracht na 4 s terug, net als na elke tip. |
+
 ## Wat nog moet vóór de release
 
 `npm run audio:render`. Kaj heeft credits en draait het. Luister daarbij naar "d vier" (S10).
