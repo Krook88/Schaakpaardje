@@ -18,8 +18,10 @@ Elke les volgt dezelfde vaste lus, zodat kinderen het patroon herkennen:
 1. **Kijken** (30–60 s) — Pip vertelt + animatie. Overslaan mag na 1× gezien.
 2. **Meedoen** (1–2 min) — begeleide opgave met glow op het goede veld.
 3. **Zelf doen** (2–4 min) — 3–8 opgaven, oplopend, hint na 2 pogingen.
-4. **Minispel of sterrentoets** — 1–3 sterren; 2 sterren opent de volgende les,
-   3 sterren geeft een sticker. Wereld af = **hoefijzer-diploma** met naam van het kind.
+4. **Minispel of sterrentoets** — 1–3 sterren; de toets uitspelen (1 ster) opent de
+   volgende les, 3 sterren geeft een sticker. (Tot oktober 2026 was dat 2 sterren; zie
+   `LES_GEDAAN_BIJ` in `src/progress/store.ts` voor waarom.) Hoefijzer-diploma's horen
+   bij een reeks werelden, zie `src/content/diplomas.ts`.
 
 Voortgang is **lineair met zijpaden**: het pad is één lijn (duidelijk voor kleuters),
 maar naast elke wereld staat een optioneel "oefenveldje" met extra puzzels.

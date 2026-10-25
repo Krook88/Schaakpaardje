@@ -8,6 +8,7 @@ import { alGetikt, kies } from '@/audio/voice'
 import { EERSTE_KEER, WELKOM, pipZinnen } from '@/content/voice'
 import { lesMet, WERELDEN } from '@/content'
 import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
+import { tel } from '@/progress/tellen'
 import { aantalBezit, geldigeStickers, verzameling } from '@/progress/verzameling'
 import stalStyles from '@/progress/Stal.module.css'
 import {
@@ -146,6 +147,11 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   const verderLes = lesMet(verder.id)
   // De verste wereld die voor deze modus vanaf het begin openstaat (voor een schaker
   // Waardevallei): daar begint wie de stukken al kent.
+  // Ook als het kind als gast al in De Weide begon: dan gaat die voortgang mee naar het
+  // profiel, en zag een negenjarige de knop anders nooit (conversie-review).
+  const nogInDeWeide = WERELDEN.filter((w) => w.nummer > 0).every((w) =>
+    w.lessen.every((l) => !voortgang[l.id]),
+  )
   const naDeStukken =
     [...WERELDEN].reverse().find((w) => w.nummer > 0 && isOntgrendeld(w.lessen[0].id, {}, profiel.modus)) ?? null
   const totaal = sterrenTotaal(voortgang)
@@ -270,8 +276,13 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
           {/* Een negenjarige begon bij "Dit is een schaakbord". Wie de stukken al kent, mag
               meteen naar de eerste wereld na de stukken; die staat voor een schaker al
               open. De grote knop blijft het pad vanaf het begin (spelontwerper). */}
-          {eersteKeer && profiel.modus === 'schaker' && naDeStukken && (
-            <Link href={`/les/${naDeStukken.lessen[0].id}/`} className="btn btn--big" style={{ minHeight: 76 }}>
+          {nogInDeWeide && profiel.modus === 'schaker' && naDeStukken && (
+            <Link
+              href={`/les/${naDeStukken.lessen[0].id}/`}
+              className="btn btn--big"
+              style={{ minHeight: 76 }}
+              onClick={() => tel('Stukken overgeslagen')}
+            >
               <span aria-hidden="true" style={{ fontSize: 32 }}>
                 {naDeStukken.emoji}
               </span>

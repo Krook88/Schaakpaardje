@@ -62,7 +62,7 @@ export const OPLOSSING = [
 
 /** Eén ster is ook door: zie LES_GEDAAN_BIJ. Nog een keer mag, moet niet. */
 export const STER1 = ['Je hebt een ster! Je mag door, of doe hem nog een keer.'] as const
-export const STER2 = ['Twee sterren! De volgende les staat open.'] as const
+export const STER2 = ['Twee sterren! Goed gedaan.'] as const
 export const STER3 = ['Drie sterren! Je krijgt er een sticker bij.'] as const
 
 /**
@@ -337,7 +337,7 @@ export const BIJNA_OUDER = [
 export const AANMOEDIGING_OUDER = ['Rustig kijken.', 'Neem de tijd.', 'Je komt er wel.'] as const
 
 export const STER1_OUDER = ['Eén ster. Door naar de volgende, of nog een keer?'] as const
-export const STER2_OUDER = ['Twee sterren. De volgende les staat open.'] as const
+export const STER2_OUDER = ['Twee sterren. Goed gedaan.'] as const
 export const STER3_OUDER = ['Drie sterren, en een sticker erbij.'] as const
 
 export const WERELD_AF_OUDER = [
