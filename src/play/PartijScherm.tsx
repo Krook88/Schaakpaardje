@@ -20,10 +20,7 @@ import {
   SAMEN_SPELEN,
   SAMEN_WIT_WINT,
   SAMEN_ZWART_WINT,
-  SCHAAK_TEGEN_JOU,
-  SCHAAK_VAN_JOU,
-  KONING_AANGEVALLEN,
-  KONING_VAN_DE_ANDER,
+  schaakZinnen,
   ZET_TERUGGENOMEN,
   pipZinnen,
   PARTIJ_GESLAGEN,
@@ -35,6 +32,7 @@ import { Game, blunderVerlies, isPromotie, materialBalance } from '@/engine/game
 import { getBot, KidBot } from '@/engine/bots'
 import { lesGedaan, useInstellingen, useModus, useProfielStore, useVerslagen, useVoortgang } from '@/progress/store'
 import { STALSTUKKEN, type StalStuk } from '@/content/stal'
+import { SCHAAK_LES } from '@/content'
 import { NieuwInStal } from '@/progress/NieuwInStal'
 import { OPSTELLING } from './opstellingen'
 import { SamenKiezer, type Speler } from './SamenKiezer'
@@ -58,7 +56,7 @@ export function PartijScherm({ botId }: { botId: string }) {
   const bewaarOverwinning = useProfielStore((s) => s.bewaarOverwinning)
   const verslagen = useVerslagen()
   // Het woord "schaak" pas na de eerste schaakles (wereld 9).
-  const kentSchaak = lesGedaan(useVoortgang(), 'schaak-1')
+  const kentSchaak = lesGedaan(useVoortgang(), SCHAAK_LES)
   /** Het maatje dat met deze winst in de stal kwam, als het er nog niet stond. */
   const [nieuwMaatje, setNieuwMaatje] = useState<StalStuk | null>(null)
 
@@ -175,14 +173,7 @@ export function PartijScherm({ botId }: { botId: string }) {
           // zin voor allebei zou de helft van de meldingen omdraaien — precies het
           // begrip dat wereld 9 net heeft aangeleerd.
           const tegenHetKind = samen || status.turn === 'w'
-          setZin(
-            kies(
-              tegenHetKind
-                ? kentSchaak ? SCHAAK_TEGEN_JOU : KONING_AANGEVALLEN
-                : kentSchaak ? SCHAAK_VAN_JOU : KONING_VAN_DE_ANDER,
-              'schaak',
-            ),
-          )
+          setZin(kies(schaakZinnen(tegenHetKind, kentSchaak), 'schaak'))
           setStemming('verrast')
         }
         return false
@@ -248,7 +239,7 @@ export function PartijScherm({ botId }: { botId: string }) {
         if (gedaan.isCapture) {
           setZin(kies(PARTIJ_GESLAGEN, 'geslagen'))
           setStemming('juicht')
-        } else if (gedaan.stuk === 'p' && Number(naar[1]) >= 6 && !pionBijnaGezegd.current) {
+        } else if (gedaan.stuk === 'p' && Number(naar[1]) >= 7 && !pionBijnaGezegd.current) {
           pionBijnaGezegd.current = true
           setZin(PARTIJ_PION_BIJNA)
           setStemming('verrast')

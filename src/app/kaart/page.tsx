@@ -11,6 +11,7 @@ import {
   useVoortgang,
   volgendeOpenLes,
   lesGedaan,
+  useInstellingen,
   wereldIsAf,
 } from '@/progress/store'
 import styles from './Kaart.module.css'
@@ -39,7 +40,7 @@ export default function Kaart() {
   const modus = useModus()
   const geladen = useToestandGeladen()
   // Waar het kind gebleven is: de enige plek op de hele kaart waar Pip staat.
-  const hier = volgendeOpenLes(voortgang, modus).id
+  const hier = volgendeOpenLes(voortgang, modus, useInstellingen().beginWereld).id
 
   // Zonder deze pauze toont de voorgerenderde HTML alle lessen op slot, en flitst dat
   // even in beeld voordat de echte voortgang er is.

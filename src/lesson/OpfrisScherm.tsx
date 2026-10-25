@@ -264,6 +264,7 @@ export function OpfrisScherm() {
               marks={marks}
               shake={shake}
               onSquare={opVeld}
+              sleep={opgave.kind === 'tapSquares' || opgave.kind === 'tapMoves' ? 'veld' : 'zet'}
               disabled={stand.klaar}
               showCoordinates={instellingen.coordinaten}
               label={'vraag' in opgave ? opgave.vraag : huidig.lesTitel}

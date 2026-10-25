@@ -354,10 +354,33 @@ async function zoalsEenKleuterZet() {
   await p.mouse.up()
   const sleepGoed = await goedGezet(p)
   await ctx.close()
+
+  // En met een vinger, zoals op een tablet: daar gaat het om, en daar zijn de
+  // pointer-events anders (impliciet vasthouden, touch-action).
+  const tablet = await browser.newContext({ viewport: { width: 820, height: 1180 }, hasTouch: true })
+  const t = await tablet.newPage()
+  await naarDeOpgave(t)
+  const cdp = await tablet.newCDPSession(t)
+  const a = await t.locator('[data-square="e4"]').boundingBox()
+  const b = await t.locator('[data-square="e6"]').boundingBox()
+  const punt = (box) => [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }]
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: punt(a) })
+  for (let i = 1; i <= 5; i++) {
+    const tussen = { x: a.x + ((b.x - a.x) * i) / 5, y: a.y + ((b.y - a.y) * i) / 5, width: a.width, height: a.height }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: punt(tussen) })
+  }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  const vingerGoed = await goedGezet(t)
+  await tablet.close()
   meld(
     'slepen en meteen op het doel tikken werken',
-    tikGoed && sleepGoed,
-    [!vraagErIs && 'de opgave nooit bereikt', vraagErIs && !tikGoed && 'tik op e8 deed niets', !sleepGoed && 'slepen e4→e7 deed niets']
+    tikGoed && sleepGoed && vingerGoed,
+    [
+      !vraagErIs && 'de opgave nooit bereikt',
+      vraagErIs && !tikGoed && 'tik op e8 deed niets',
+      !sleepGoed && 'slepen e4→e7 deed niets',
+      !vingerGoed && 'slepen met een vinger deed niets',
+    ]
       .filter(Boolean)
       .join('; '),
   )
@@ -393,8 +416,8 @@ async function hulpNaMissers() {
     await p.locator('[data-square="h8"]').click()
     await p.waitForTimeout(250)
   }
-  // OPLOSSING: "Ik laat het even voor." of "Deze doen we samen."
-  const voorgedaan = /laat het even voor|doen we samen/i.test(
+  // VOORDOEN: "Kijk, ik wijs het aan. Tik maar waar het oplicht."
+  const voorgedaan = /ik wijs het aan/i.test(
     await p.locator('[class*=ballon]').first().innerText().catch(() => ''),
   )
   await ctx.close()

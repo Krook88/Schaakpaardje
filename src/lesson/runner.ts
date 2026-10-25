@@ -221,17 +221,28 @@ export function tik(stand: OpgaveStand, veld: Square): TikResultaat {
   if (!stand.geselecteerd) {
     const teKiezen = stand.actiefStuk ?? null
     if (teKiezen && veld !== teKiezen) {
-      // Bij reach en captureAll speel je met één vast stuk.
-      if (stuk && o.kind !== 'move') {
+      const eigen = stand.board[teKiezen]?.color
+      // Een ánder eigen stuk aantikken is fout: de opgave hoort bij één vast stuk. Hier
+      // werd het een tijdje geselecteerd, en dan rekende "Speel Pf3" de pion f2-f3 goed,
+      // ook in de toets (schaakmeester, codebase-review).
+      if (stuk && stuk.color === eigen) {
         return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1 }, uit: 'fout' }
       }
       // Meteen op de plek tikken waar het stuk heen moet. Dat deed een kind van drie bij
       // "Zet de toren eens omhoog", en er gebeurde niets: geen geluid, geen schudden,
       // geen zin (spelontwerper). Er is maar één stuk dat hier kan gaan, dus is dit
-      // gewoon de zet: eerst dat stuk pakken, dan dit veld.
-      if (!stuk || stuk.color !== stand.board[teKiezen]?.color) {
-        return tik({ ...stand, geselecteerd: teKiezen }, veld)
+      // gewoon de zet: eerst dat stuk pakken, dan dit veld. Een leeg veld waar het stuk
+      // niet heen kan, telt daarmee als misser, net als met tik-tik.
+      //
+      // Bij een zetopgave alleen als dat stuk het énige eigen stuk op het bord is. Op
+      // Notatie-eiland ("Speel Pf3") is wélk stuk er loopt juist de lesstof; daar moet
+      // het kind het zelf pakken.
+      const enige = Object.values(stand.board).filter((p) => p.color === eigen).length === 1
+      if (o.kind !== 'move' || enige) return tik({ ...stand, geselecteerd: teKiezen }, veld)
+      if (stuk) {
+        return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1 }, uit: 'fout' }
       }
+      return { stand, uit: 'genegeerd' }
     }
     if (!stuk) return { stand, uit: 'genegeerd' }
     return { stand: { ...stand, geselecteerd: veld, misser: null }, uit: 'geselecteerd' }
@@ -247,6 +258,9 @@ export function tik(stand: OpgaveStand, veld: Square): TikResultaat {
   //
   // Bij 'reach' en 'captureAll' kan dat niet: daar hoort de hele opgave bij één stuk,
   // en met een ander stuk zetten zou de puzzel stukmaken.
+  //
+  // Heeft de opgave een vast stuk (`from`), dan telt een zet met een ander stuk wel als
+  // fout; dat vangt het vangnet hieronder, bij de zet zelf.
   const eigenKleur = stand.board[van]?.color
   if (o.kind === 'move' && stuk && stuk.color === eigenKleur) {
     return { stand: { ...stand, geselecteerd: veld, misser: null }, uit: 'geselecteerd' }
@@ -260,6 +274,10 @@ export function tik(stand: OpgaveStand, veld: Square): TikResultaat {
   const slaat = mogelijk.captures.includes(veld)
 
   if (o.kind === 'move') {
+    // Laatste vangnet: met een vast stuk telt alleen een zet van dát stuk.
+    if (stand.actiefStuk && van !== stand.actiefStuk) {
+      return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1, geselecteerd: null }, uit: 'fout' }
+    }
     if (!o.goed.includes(veld)) {
       return {
         stand: { ...stand, misser: veld, fouten: stand.fouten + 1, geselecteerd: null },

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Kop } from '@/ui/Kop'
+import { vergeetBel } from '@/ui/GeluidKnop'
 import { Rekenslot } from '@/ui/Rekenslot'
 import { Sterren } from '@/ui/Sterren'
 import { KOFFIE } from '@/seo'
@@ -96,7 +97,10 @@ function OuderPaneel() {
         aria-label={label}
         aria-describedby={uitleg ? `uitleg-${sleutel}` : undefined}
         checked={Boolean(instellingen[sleutel])}
-        onChange={(e) => zetInstelling(sleutel, e.target.checked as never)}
+        onChange={(e) => {
+          if (sleutel === 'spraak' || sleutel === 'effecten') vergeetBel()
+          zetInstelling(sleutel, e.target.checked as never)
+        }}
         style={{ width: 44, height: 44, flexShrink: 0 }}
       />
     </label>

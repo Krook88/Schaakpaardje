@@ -17,6 +17,19 @@ function lees(opslag: () => Storage, sleutel: string): string | null {
     return null
   }
 }
+/** De ouder zet het geluid zelf: dan vergeet de bel wat hij onthield. */
+export function vergeetBel() {
+  schrijf(() => localStorage, STIL_VIA_BEL, null)
+}
+
+function leesVlag(): { id: string; spraak: boolean; effecten: boolean } | null {
+  try {
+    const v = JSON.parse(lees(() => localStorage, STIL_VIA_BEL) ?? 'null')
+    return v && typeof v.id === 'string' ? v : null
+  } catch {
+    return null
+  }
+}
 function schrijf(opslag: () => Storage, sleutel: string, waarde: string | null) {
   try {
     if (waarde === null) opslag().removeItem(sleutel)
@@ -40,8 +53,8 @@ function schrijf(opslag: () => Storage, sleutel: string, waarde: string | null) 
  *
  * Een kleuter die uit nieuwsgierigheid op de bel tikte, had daarna een app zonder stem
  * en wist niet waarom — ook de volgende dag nog (spelontwerper). Nu zegt Pip eerst dat
- * hij stil wordt, en begint een nieuw bezoek weer met geluid. Wat de ouder in het
- * ouderscherm uitzet, blijft wel uit: dat loopt niet via deze knop.
+ * hij stil wordt, en begint een nieuw bezoek weer zoals het vóór die tik was. Wat de
+ * ouder in het ouderscherm zet, blijft staan: de bel onthoudt alleen zijn eigen tik.
  *
  * Een bel en geen luidspreker: de luidspreker staat al in Pips ballon en betekent daar
  * "zeg het nog eens", bijna het omgekeerde. Twee keer hetzelfde plaatje met een
@@ -53,17 +66,21 @@ export function GeluidKnop({ className = '' }: { className?: string }) {
   const actief = useProfielStore((s) => s.actiefId)
   const aan = spraak || effecten
 
-  // Een nieuw bezoek: stond het geluid uit via de bel, dan gaat het weer aan.
+  // Een nieuw bezoek: stond het geluid uit via de bel, dan komt terug wat er vóór die
+  // tik stond. Alleen voor het kind dat op de bel tikte, en alleen als er sindsdien niets
+  // aan veranderd is: wat een ouder in het ouderscherm zet, wint (codebase-review).
   useEffect(() => {
     if (!actief) return
     if (lees(() => sessionStorage, DEZE_KEER)) return
-    if (lees(() => localStorage, STIL_VIA_BEL)) {
-      zetInstelling('spraak', true)
-      zetInstelling('effecten', true)
-      schrijf(() => localStorage, STIL_VIA_BEL, null)
-    }
     schrijf(() => sessionStorage, DEZE_KEER, '1')
-  }, [actief, zetInstelling])
+    const vlag = leesVlag()
+    if (!vlag || vlag.id !== actief) return
+    schrijf(() => localStorage, STIL_VIA_BEL, null)
+    if (!spraak && !effecten) {
+      zetInstelling('spraak', vlag.spraak)
+      zetInstelling('effecten', vlag.effecten)
+    }
+  }, [actief, zetInstelling, spraak, effecten])
 
   if (!actief) return null
   return (
@@ -74,19 +91,24 @@ export function GeluidKnop({ className = '' }: { className?: string }) {
       aria-label={aan ? 'Geluid uitzetten' : 'Geluid aanzetten'}
       title={aan ? 'Geluid uitzetten' : 'Geluid aanzetten'}
       onClick={() => {
+        if (!actief) return
         if (aan) {
-          // Eerst zeggen, dan pas stil: anders gebeurt er voor het kind gewoon niets.
-          schrijf(() => localStorage, STIL_VIA_BEL, '1')
-          void speak(EVEN_STIL, true).then(async () => {
-            await wachtTotUitgesproken()
+          schrijf(() => localStorage, STIL_VIA_BEL, JSON.stringify({ id: actief, spraak, effecten }))
+          const stil = () => {
             zetInstelling('spraak', false)
             zetInstelling('effecten', false)
-          })
+          }
+          // Eerst zeggen, dan pas stil: anders gebeurt er voor het kind gewoon niets. Maar
+          // niet als de ouder Pip al had uitgezet.
+          if (!spraak) return stil()
+          void speak(EVEN_STIL).then(() => wachtTotUitgesproken()).then(stil)
         } else {
+          const vlag = leesVlag()
           schrijf(() => localStorage, STIL_VIA_BEL, null)
-          zetInstelling('spraak', true)
-          zetInstelling('effecten', true)
-          void speak(WEER_GELUID, true)
+          const terug = vlag && vlag.id === actief ? vlag : { spraak: true, effecten: true }
+          zetInstelling('spraak', terug.spraak)
+          zetInstelling('effecten', terug.effecten)
+          if (terug.spraak) void speak(WEER_GELUID, true)
         }
       }}
       style={{ minWidth: 56 }}

@@ -50,6 +50,13 @@ type Props = {
   /** Veld dat net fout was; schudt één keer. */
   shake?: Square | null
   label?: string
+  /**
+   * Wat een sleep betekent. 'zet' (standaard): twee tikken, eerst het stuk en dan het
+   * veld. 'veld': alleen het veld waar je loslaat — voor opgaven waarin je velden
+   * aanwijst. Daar kostte een sleep eerst een fout, omdat de tik op het stuk zelf geen
+   * goed antwoord is (schaakmeester, codebase-review).
+   */
+  sleep?: 'zet' | 'veld'
 }
 
 /** Vinkje en kruisje zijn getekend, niet als emoji: die zien er op elk toestel anders uit. */
@@ -100,6 +107,7 @@ export function Board({
   marks = {},
   onSquare,
   disabled = false,
+  sleep = 'zet',
   showCoordinates = false,
   shake = null,
   label = 'Schaakbord',
@@ -147,6 +155,10 @@ export function Board({
   const opVeld = useRef(onSquare)
   opVeld.current = onSquare
   const negeerKlikTot = useRef(0)
+  const tweedeTik = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => {
+    if (tweedeTik.current) clearTimeout(tweedeTik.current)
+  }, [])
   const laatLos = (e: React.PointerEvent) => {
     const van = sleepVan
     setSleepVan(null)
@@ -154,9 +166,12 @@ export function Board({
     const onder = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>('[data-square]')
     const naar = onder?.dataset.square as Square | undefined
     if (!naar || naar === van) return
-    negeerKlikTot.current = Date.now() + 500
+    // Alleen de klik die de browser direct na het loslaten stuurt; een echte tik daarna
+    // moet gewoon werken.
+    negeerKlikTot.current = Date.now() + 250
+    if (sleep === 'veld') return void opVeld.current?.(naar)
     if (selected !== van) opVeld.current?.(van)
-    setTimeout(() => opVeld.current?.(naar), 0)
+    tweedeTik.current = setTimeout(() => opVeld.current?.(naar), 0)
   }
 
   const ranks = orientation === 'w' ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8]
@@ -244,8 +259,16 @@ export function Board({
                     setFocusVeld(sq)
                     onSquare?.(sq)
                   }}
-                  onPointerDown={() => {
-                    if (piece && !disabled && onSquare) setSleepVan(sq)
+                  onPointerDown={(e) => {
+                    if (!piece || disabled || !onSquare) return
+                    setSleepVan(sq)
+                    // Vasthouden, zodat het loslaten hier altijd aankomt — ook buiten het
+                    // bord. Anders bleef een veld oplichten na loslaten naast het bord.
+                    try {
+                      e.currentTarget.setPointerCapture(e.pointerId)
+                    } catch {
+                      // Oudere browsers: dan gewoon zonder.
+                    }
                   }}
                   onKeyDown={(e) => opToets(e, sq)}
                   onFocus={() => setFocusVeld(sq)}

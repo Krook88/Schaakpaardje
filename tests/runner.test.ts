@@ -368,3 +368,41 @@ describe('meteen op het doel tikken', () => {
     expect(tik(startOpgave(naarDeSter), 'e8').uit).toBe('klaar')
   })
 })
+
+describe('een dwars kind dat het verkeerde stuk pakt', () => {
+  // "Speel Pf3" rekende een tijdje de pion f2-f3 goed, ook in de toets: het andere stuk
+  // werd gewoon geselecteerd en alleen het doelveld werd nagekeken. Dit speelt elke
+  // zetopgave met een vast stuk na met elk ander eigen stuk, zoals een kind dat sleept
+  // of verkeerd kiest.
+  it('rekent geen enkele zet met een ander stuk goed', async () => {
+    const { ALLE_LESSEN } = await import('@/content')
+    const fout: string[] = []
+    for (const les of ALLE_LESSEN) {
+      for (const o of [...les.meedoen, ...les.zelf, ...les.toets]) {
+        if (o.kind !== 'move' || !o.from) continue
+        const start = startOpgave(o)
+        const kleur = start.board[o.from]?.color
+        for (const [veld, stuk] of Object.entries(start.board)) {
+          if (veld === o.from || stuk.color !== kleur) continue
+          for (const doel of o.goed) {
+            // Via selecteren, en via eerst het goede stuk en dan van gedachten veranderen.
+            for (const route of [[veld, doel], [o.from, veld, doel]]) {
+              let stand = start
+              let uit = ''
+              for (const tikveld of route) {
+                const r = tik(stand, tikveld as never)
+                stand = r.stand
+                uit = r.uit
+              }
+              // Goed gerekend terwijl het vaste stuk nog op zijn plek staat: dan liep er een ander.
+              if ((uit === 'goed' || uit === 'klaar') && stand.board[o.from]) {
+                fout.push(`${les.id}: ${route.join('→')} ("${o.vraag}")`)
+              }
+            }
+          }
+        }
+      }
+    }
+    expect(fout).toEqual([])
+  })
+})

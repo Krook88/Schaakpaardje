@@ -23,7 +23,8 @@ import {
 import {
   HINT_AANGEBODEN,
   HINT_GEGEVEN,
-  OPLOSSING,
+  MAT_POORT,
+  VOORDOEN,
   OPNIEUW_PROBEREN,
   VERDER_UITLEG,
   pipZinnen,
@@ -52,6 +53,7 @@ import {
   useVerslagen,
   useVoortgang,
   wereldIsAf,
+  isOntgrendeld,
 } from '@/progress/store'
 import { eenKeer, maakLastigMelder, maakStopMelder } from './lesTellingen'
 import { tel } from '@/progress/tellen'
@@ -176,9 +178,12 @@ export function LessonPlayer({
   // fase is die van de eerste keer weggaan. Een nieuwe les krijgt een nieuwe melder.
   const faseNu = useRef<Fase>(fase)
   faseNu.current = kijkTerug ?? fase
+  // Is de beloning al een keer gehaald? Dan is wie bij "Nog een keer" weggaat geen
+  // afhaker, en telt een tweede keer uitspelen niet als nog een "Les af" (codebase-review).
+  const alAf = useRef(false)
   useEffect(() => {
     const meld = maakStopMelder((f) => tel('Les gestopt', { les: les.id, fase: f }))
-    const meldGestopt = () => meld(faseNu.current)
+    const meldGestopt = () => meld(alAf.current ? 'beloning' : faseNu.current)
     const wissel = () => {
       if (document.visibilityState === 'hidden') meldGestopt()
     }
@@ -402,7 +407,8 @@ export function LessonPlayer({
       setSterren(behaald)
       setFase('beloning')
       bewaarLes(les.id, { sterren: behaald, fouten: toetsFouten, hints: toetsHints })
-      tel('Les af', { les: les.id, sterren: behaald })
+      if (!alAf.current) tel('Les af', { les: les.id, sterren: behaald })
+      alAf.current = true
       bewaarHervatpunt(les.id, null)
       if (behaald === 3) geefSticker(`${les.id}`)
       sfx.diploma()
@@ -420,10 +426,14 @@ export function LessonPlayer({
       }
       const wereldKlaar = wereldIsAf(wereld.id, na)
       const hadAl = new Set(verzameling(voortgang, verslagen).filter((v) => v.bezit).map((v) => v.id))
-      setNieuwInStal(verzameling(na, verslagen).filter((v) => v.bezit && !hadAl.has(v.id)))
+      const nieuw = verzameling(na, verslagen).filter((v) => v.bezit && !hadAl.has(v.id))
+      setNieuwInStal(nieuw)
+      const volgendeDicht = Boolean(volgendeLes(les.id)) && !isOntgrendeld(volgendeLes(les.id)!.id, na, modus)
       setZin(
-        wereldKlaar
-          ? kies(zinnen.WERELD_AF, 'wereld')
+        volgendeDicht
+          ? MAT_POORT
+          : wereldKlaar
+          ? kies(nieuw.length ? zinnen.WERELD_AF_STAL : zinnen.WERELD_AF, 'wereld')
           : kies(behaald === 3 ? zinnen.STER3 : behaald === 2 ? zinnen.STER2 : zinnen.STER1, 'sterren'),
       )
       return
@@ -431,7 +441,7 @@ export function LessonPlayer({
     startFase(volgende)
   }, [
     fase, toetsFouten, toetsHints, bewaarLes, bewaarHervatpunt, geefSticker, les.id,
-    startFase, voortgang, wereld.id, zinnen, verslagen,
+    startFase, voortgang, wereld.id, zinnen, verslagen, modus,
   ])
 
   const volgendeOpgave = useCallback(() => {
@@ -518,17 +528,23 @@ export function LessonPlayer({
            * toets: daar zou dat een ster kosten waar het kind niet om vroeg.
            */
           if (r.stand.fouten === 5 && fase !== 'toets') {
-            const h = geefHint(r.stand)
+            // Het antwoord aanwijzen, niet alleen een eerste aanzet: bij een zetopgave
+            // is de eerste hint het stuk dat het kind al kent, en dan klopte "ik laat
+            // het even voor" niet met wat er op het bord gebeurde (schaakmeester).
+            let h = geefHint(r.stand)
+            if (r.stand.opgave.kind === 'move' && r.stand.hints === 0) h = geefHint(h.stand)
             setStand(h.stand)
             setHintVelden(h.velden)
             setStemming('denkt')
             setHulpWiebel(false)
             if (instellingen.effecten) sfx.fout()
-            zegTip(kies(OPLOSSING, 'oplossing'), 'vraag' in r.stand.opgave ? r.stand.opgave.vraag : '')
+            zegTip(VOORDOEN, 'vraag' in r.stand.opgave ? r.stand.opgave.vraag : '')
             break
           }
-          if (r.stand.fouten === 3) setHulpWiebel(true)
-          reageer(false, false, r.stand.fouten === 3 ? kies(HINT_AANGEBODEN, 'hulp') : foutZin(r.stand, r.reden))
+          // In de toets geen aanbod: daar kost hulp een ster.
+          const bied = r.stand.fouten === 3 && fase !== 'toets'
+          if (bied) setHulpWiebel(true)
+          reageer(false, false, bied ? kies(HINT_AANGEBODEN, 'hulp') : foutZin(r.stand, r.reden))
           break
         }
         case 'sla':
@@ -790,7 +806,8 @@ export function LessonPlayer({
             <Link href="/kaart/" className="btn">
               <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>🗺️</span> Naar de kaart
             </Link>
-            {volgende && (
+            {/* Alleen als die les ook echt open is: voor Matklif zijn twee sterren nodig. */}
+            {volgende && isOntgrendeld(volgende.id, voortgang, modus) && (
               <Link href={`/les/${volgende.id}/`} className="btn btn--primary btn--big">
                 <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>▶︎</span> Volgende les
               </Link>
@@ -915,6 +932,7 @@ export function LessonPlayer({
               onSquare={opVeld}
               disabled={stand.klaar}
               shake={shake}
+              sleep={opgave.kind === 'tapSquares' || opgave.kind === 'tapMoves' ? 'veld' : 'zet'}
               showCoordinates={instellingen.coordinaten || Boolean(les.toonCoordinaten)}
               label={'vraag' in opgave ? opgave.vraag : les.titel}
             />

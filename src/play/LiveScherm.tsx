@@ -49,6 +49,7 @@ import {
   useToestandGeladen,
   useVoortgang,
 } from '@/progress/store'
+import { SCHAAK_LES } from '@/content'
 import { tel } from '@/progress/tellen'
 import { zetCode } from './afstand'
 import {
@@ -92,7 +93,10 @@ function zinVoorJouwBeurt(p: LivePartij, kentSchaak: boolean): string {
   // Wie schaak staat en het niet hoort, ziet alleen dat de stukken niet willen. En een
   // paard met schaak is juist de reden om geen dame te nemen: dan beide zeggen.
   const st = p.game.status()
-  if (!st.over && st.check) return onder >= 0 ? ONDERPROMOTIE_SCHAAK[onder] : kies(schaakZinnen(true, kentSchaak), 'schaak')
+  // De uitleg over de onderpromotie zegt "schaak": die pas na wereld 9.
+  if (!st.over && st.check) {
+    return onder >= 0 && kentSchaak ? ONDERPROMOTIE_SCHAAK[onder] : kies(schaakZinnen(true, kentSchaak), 'schaak')
+  }
   return onder >= 0 ? AFSTAND_ONDERPROMOTIE[onder] : AFSTAND_JOUW_BEURT
 }
 
@@ -121,7 +125,7 @@ function uitslagZin(p: LivePartij): string {
 export function LiveScherm() {
   // Het woord "schaak" pas na de eerste schaakles (wereld 9). Als ref: de zin wordt in
   // afgeleide callbacks gekozen, en die hoeven daarvoor niet opnieuw te ontstaan.
-  const kentSchaakNu = lesGedaan(useVoortgang(), 'schaak-1')
+  const kentSchaakNu = lesGedaan(useVoortgang(), SCHAAK_LES)
   const kentSchaak = useRef(kentSchaakNu)
   kentSchaak.current = kentSchaakNu
   const geladen = useToestandGeladen()

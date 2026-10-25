@@ -24,6 +24,7 @@ import {
   useVoortgang,
   volgendeOpenLes,
   lesGedaan,
+  useInstellingen,
   isOntgrendeld,
   wereldIsAf,
   type LesResultaat,
@@ -56,6 +57,8 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   const kiesProfiel = useProfielStore((s) => s.kiesProfiel)
   const maakProfiel = useProfielStore((s) => s.maakProfiel)
   const voortgang = useVoortgang()
+  const instellingen = useInstellingen()
+  const zetInstelling = useProfielStore((s) => s.zetInstelling)
   const stickers = geldigeStickers(useStickers())
   const verslagen = useVerslagen()
   const oefendagen = useOefendagen()
@@ -143,7 +146,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
     )
   }
 
-  const verder = volgendeOpenLes(voortgang, profiel.modus)
+  const verder = volgendeOpenLes(voortgang, profiel.modus, instellingen.beginWereld)
   const verderLes = lesMet(verder.id)
   // De verste wereld die voor deze modus vanaf het begin openstaat (voor een schaker
   // Waardevallei): daar begint wie de stukken al kent.
@@ -281,7 +284,10 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
               href={`/les/${naDeStukken.lessen[0].id}/`}
               className="btn btn--big"
               style={{ minHeight: 76 }}
-              onClick={() => tel('Stukken overgeslagen')}
+              onClick={() => {
+                tel('Stukken overgeslagen')
+                zetInstelling('beginWereld', naDeStukken.nummer)
+              }}
             >
               <span aria-hidden="true" style={{ fontSize: 32 }}>
                 {naDeStukken.emoji}

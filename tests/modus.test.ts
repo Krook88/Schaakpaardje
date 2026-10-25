@@ -236,11 +236,32 @@ describe('instellingen terugzetten naar de modus', () => {
 })
 
 describe('verder waar je was', () => {
-  it('gaat na een sprong vooruit daar verder, niet terug naar de eerste les', () => {
+  it('gaat verder in Waardevallei voor wie zelf "Ik ken de stukken al" koos', () => {
     const waarde = WERELDEN.find((w) => w.nummer === 7)!
     const gedaan: Record<string, LesResultaat> = {
       [waarde.lessen[0].id]: { sterren: 2, fouten: 0, hints: 0, laatst: '' },
     }
-    expect(volgendeOpenLes(gedaan, 'schaker').id).toBe(waarde.lessen[1].id)
+    expect(volgendeOpenLes(gedaan, 'schaker', 7).id).toBe(waarde.lessen[1].id)
+  })
+
+  it('slaat geen wereld over voor wie alleen even vooruit keek', () => {
+    // Een ontdekker die één les in Loperbos deed, moet daarna niet Torenburcht
+    // overslaan: het Damepaleis bouwt op toren én loper.
+    const loper = WERELDEN.find((w) => w.id === 'loper')!
+    const gedaan: Record<string, LesResultaat> = {
+      [loper.lessen[0].id]: { sterren: 3, fouten: 0, hints: 0, laatst: '' },
+    }
+    expect(volgendeOpenLes(gedaan, 'ontdekker').id).toBe(ALLE_LESSEN[0].id)
+  })
+})
+
+describe('de poort naar Matklif', () => {
+  it('vraagt twee sterren op de laatste les voor mat, waar elders één genoeg is', () => {
+    const i = ALLE_LESSEN.findIndex((l) => l.wereldId === 'mat')
+    expect(i).toBeGreaterThan(0)
+    const voor = ALLE_LESSEN[i - 1].id
+    const met = (sterren: 1 | 2): Record<string, LesResultaat> => ({ [voor]: { sterren, fouten: 0, hints: 0, laatst: '' } })
+    expect(isOntgrendeld(ALLE_LESSEN[i].id, met(1), 'schaker')).toBe(false)
+    expect(isOntgrendeld(ALLE_LESSEN[i].id, met(2), 'schaker')).toBe(true)
   })
 })

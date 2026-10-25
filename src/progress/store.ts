@@ -39,6 +39,11 @@ export type Instellingen = {
   ondertiteling: boolean
   coordinaten: boolean
   blunderWaarschuwing: boolean
+  /**
+   * Vanaf welke wereld "Verder leren" begint. 0 is vanaf het begin. Alleen anders als
+   * een schaker zelf "Ik ken de stukken al" kiest; dan begint hij bij Waardevallei.
+   */
+  beginWereld: number
 }
 
 export const STANDAARD_INSTELLINGEN: Instellingen = {
@@ -48,6 +53,7 @@ export const STANDAARD_INSTELLINGEN: Instellingen = {
   ondertiteling: true,
   coordinaten: false,
   blunderWaarschuwing: true,
+  beginWereld: 0,
 }
 
 /** Leeftijd bepaalt de modus; de ouder kan hem daarna zelf bijstellen. */
@@ -555,6 +561,9 @@ export function useGespeeld() {
  * terug naar dezelfde les. Hulp vragen werd zo iets wat je beter niet doet
  * (spelontwerper). Eén ster betekent: je hebt de toets uitgespeeld. Meer sterren en de
  * sticker blijven te halen met "Nog een keer". Het pad moet doorlopen, niet perfectioneren.
+ *
+ * Omdat `sterrenVoor` nooit nul geeft, betekent "gedaan" hiermee: er is een resultaat.
+ * Eén uitzondering, de poort naar Matklif: zie `isOntgrendeld`.
  */
 export const LES_GEDAAN_BIJ = 1
 
@@ -575,8 +584,18 @@ export function isOntgrendeld(
   // niemand gaat dus per ongeluk open door een vergeten argument.
   if (vanafHetBegin(lesId, modus)) return true
   const vorige = ALLE_LESSEN[index - 1]
+  // De poort naar Matklif is strenger. Eén ster is daar te weinig: wie schaak nog niet
+  // begrijpt (de toets is met genoeg proberen uit te tikken), kan mat niet leren. Daar
+  // gelden de oude twee sterren op de laatste schaakles (schaakmeester).
+  const les = ALLE_LESSEN[index]
+  if (les.wereldId === POORT_NAAR_MAT && vorige.wereldId !== POORT_NAAR_MAT) {
+    return (voortgang[vorige.id]?.sterren ?? 0) >= 2
+  }
   return lesGedaan(voortgang, vorige.id)
 }
+
+/** De wereld waar mat begint. Zie `isOntgrendeld`. */
+export const POORT_NAAR_MAT = 'mat'
 
 export function wereldIsAf(wereldId: string, voortgang: Record<string, LesResultaat>): boolean {
   const wereld = WERELDEN.find((w) => w.id === wereldId)
@@ -599,24 +618,26 @@ export function sterrenTotaal(voortgang: Record<string, LesResultaat>): number {
 }
 
 /**
- * De knop "verder waar je was": de eerstvolgende open les na de verste les die gedaan is.
+ * De knop "verder waar je was": de eerste les in de vaste volgorde die open is en nog
+ * niet gedaan.
  *
- * De grote knop volgt het pad in de vaste volgorde. Wie nog niets deed, begint bij de
- * eerste les, ook als er voor een oudere beginner werelden vooruit openstaan. Wie vooruit
- * is gesprongen, gaat daar verder; pas als daarna niets meer open is, komen de lessen
- * die eerder zijn overgeslagen.
+ * De grote knop volgt het pad, ook als er voor een oudere beginner werelden vooruit
+ * openstaan: een ontdekker die even in Loperbos kijkt, moet niet daarna Torenburcht
+ * overslaan, want het Damepaleis bouwt op allebei (schaakmeester).
+ *
+ * Eén uitzondering: wie zelf "Ik ken de stukken al" koos (`beginWereld`), begint vanaf
+ * die wereld. Een negenjarige werd anders na elke les teruggestuurd naar "Licht en
+ * donker" (spelontwerper). Is daar alles gedaan, dan komen de overgeslagen lessen.
  */
-export function volgendeOpenLes(voortgang: Record<string, LesResultaat>, modus: Modus = 'pip') {
+export function volgendeOpenLes(
+  voortgang: Record<string, LesResultaat>,
+  modus: Modus = 'pip',
+  beginWereld = 0,
+) {
   const open = (l: (typeof ALLE_LESSEN)[number]) =>
     !lesGedaan(voortgang, l.id) && isOntgrendeld(l.id, voortgang, modus)
-  // Verder waar je was: na de verste les die gedaan is. Een negenjarige die met "Ik ken
-  // de stukken al" in Waardevallei begon, werd anders steeds teruggestuurd naar "Licht en
-  // donker" (spelontwerper). Op het gewone pad is dat dezelfde les als hiervoor.
-  let verste = -1
-  ALLE_LESSEN.forEach((l, i) => {
-    if (lesGedaan(voortgang, l.id)) verste = i
-  })
-  return ALLE_LESSEN.slice(verste + 1).find(open) ?? ALLE_LESSEN.find(open) ?? ALLE_LESSEN[0]
+  const vanaf = ALLE_LESSEN.filter((l) => (WERELDEN.find((w) => w.id === l.wereldId)?.nummer ?? 0) >= beginWereld)
+  return vanaf.find(open) ?? ALLE_LESSEN.find(open) ?? ALLE_LESSEN[0]
 }
 
 /** Op hoeveel dagen het actieve kind geoefend heeft. Nul als het nog niets deed. */

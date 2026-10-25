@@ -50,6 +50,9 @@ export const HINT_AANGEBODEN = [
   'Wil je hulp van mij?',
 ] as const
 
+/** Na vijf missers (niet in de toets): Pip wijst het antwoord aan. */
+export const VOORDOEN = 'Kijk, ik wijs het aan. Tik maar waar het oplicht.'
+
 export const HINT_KIJK_HIER = [
   'Kijk eens naar het veld dat oplicht.',
   'Ik laat een veld zien. Kijk daar eens.',
@@ -62,6 +65,8 @@ export const OPLOSSING = [
 
 /** Eén ster is ook door: zie LES_GEDAAN_BIJ. Nog een keer mag, moet niet. */
 export const STER1 = ['Je hebt een ster! Je mag door, of doe hem nog een keer.'] as const
+/** Eén ster op de laatste schaakles: Matklif vraagt er twee (zie POORT_NAAR_MAT). */
+export const MAT_POORT = 'Een ster! Voor Matklif moet je schaak nog wat beter kennen. Doe deze nog een keer, dan lukt het vast.'
 export const STER2 = ['Twee sterren! Goed gedaan.'] as const
 export const STER3 = ['Drie sterren! Je krijgt er een sticker bij.'] as const
 
@@ -71,8 +76,15 @@ export const STER3 = ['Drie sterren! Je krijgt er een sticker bij.'] as const
  */
 export const WERELD_AF = [
   'Deze hele wereld is uit! Wat ben jij goed bezig.',
-  'Deze wereld is helemaal uit. Kijk eens in je stal!',
+  'Deze wereld is helemaal uit. Wat knap!',
 ] as const
+/**
+ * Alleen als er met deze wereld ook echt iets in de stal kwam. Na De Weide of
+ * Waardevallei staat er niets nieuws, en dan ging het kind weer voor niets zoeken
+ * (schaakmeester).
+ */
+export const WERELD_AF_STAL = 'Deze wereld is helemaal uit. Kijk eens in je stal!'
+export const WERELD_AF_STAL_OUDER = 'Wereld uitgespeeld. Er staat iets nieuws in je stal.'
 
 export const PARTIJ_START = [
   'Veel plezier. Denk eerst even na, dan pas zetten.',
@@ -94,7 +106,8 @@ export const PARTIJ_VERLOREN = [
  * een verteller, geen maatje (spelontwerper). Nu reageert hij kort als het kind slaat,
  * en één keer als een pion bijna aan de overkant is.
  */
-export const PARTIJ_GESLAGEN = ['Hap! Die is van jou.', 'Mooi, die heb je.', 'Goed gezien!'] as const
+// Neutraal: "Goed gezien!" klonk ook bij een slagzet die daarna de dame weggaf.
+export const PARTIJ_GESLAGEN = ['Hap! Die is van jou.', 'Die heb je gepakt.'] as const
 export const PARTIJ_PION_BIJNA = 'Kijk, je pion is bijna aan de overkant!'
 
 /** Het pionnenspel, als de pion van de ander als eerste de overkant haalt. */
@@ -122,7 +135,8 @@ export const SCHAAK_VAN_JOU = [
  * Een kind uit De Weide hoorde in een partij "Pas op, schaak! Los het eerst op." — een
  * woord dat pas drie werelden later wordt uitgelegd (spelontwerper, schaakmeester).
  */
-export const KONING_AANGEVALLEN = ['Pas op, je koning wordt aangevallen! Zet hem gauw veilig.'] as const
+// Niet "zet hem veilig": dat klinkt als weglopen, terwijl slaan of ertussen zetten ook mag.
+export const KONING_AANGEVALLEN = ['Pas op, je koning wordt aangevallen! Zorg dat hij veilig is.'] as const
 export const KONING_VAN_DE_ANDER = ['Mooi, jij valt de koning van de ander aan!'] as const
 /** De schaakzinnen voor dit kind: met het woord "schaak" pas na wereld 9. */
 export function schaakZinnen(tegenJou: boolean, kentSchaak: boolean): readonly string[] {
@@ -342,7 +356,7 @@ export const STER3_OUDER = ['Drie sterren, en een sticker erbij.'] as const
 
 export const WERELD_AF_OUDER = [
   'Deze wereld is uit. Goed bezig.',
-  'Wereld uitgespeeld. Kijk eens in je stal.',
+  'Wereld uitgespeeld. Mooi werk.',
 ] as const
 
 export const WELKOM_TERUG_OUDER = [
@@ -374,6 +388,7 @@ export function pipZinnen(ouder: boolean) {
     STER2: ouder ? STER2_OUDER : STER2,
     STER3: ouder ? STER3_OUDER : STER3,
     WERELD_AF: ouder ? WERELD_AF_OUDER : WERELD_AF,
+    WERELD_AF_STAL: ouder ? [WERELD_AF_STAL_OUDER] : [WERELD_AF_STAL],
     WELKOM_TERUG: ouder ? WELKOM_TERUG_OUDER : WELKOM_TERUG,
     PARTIJ_VERLOREN: ouder ? PARTIJ_VERLOREN_OUDER : PARTIJ_VERLOREN,
   } satisfies Record<string, readonly string[]>

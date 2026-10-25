@@ -211,6 +211,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
             selected={stand.geselecteerd}
             marks={marks}
             onSquare={opVeld}
+            sleep={stand.opgave.kind === 'tapSquares' || stand.opgave.kind === 'tapMoves' ? 'veld' : 'zet'}
             disabled={stand.klaar}
             shake={shake}
             showCoordinates={instellingen.coordinaten || Boolean(spel.toonCoordinaten)}

@@ -37,6 +37,7 @@ import {
   useToestandGeladen,
   useVoortgang,
 } from '@/progress/store'
+import { SCHAAK_LES } from '@/content'
 import { codeer, leesIn, zetCode, type AfstandPartij } from './afstand'
 import { PromotieKiezer } from './PromotieKiezer'
 import { tel } from '@/progress/tellen'
@@ -92,7 +93,7 @@ function markeerEigen(code: string) {
 export function AfstandScherm() {
   // Het woord "schaak" pas na de eerste schaakles (wereld 9). Als ref: de zin wordt in
   // afgeleide callbacks gekozen, en die hoeven daarvoor niet opnieuw te ontstaan.
-  const kentSchaakNu = lesGedaan(useVoortgang(), 'schaak-1')
+  const kentSchaakNu = lesGedaan(useVoortgang(), SCHAAK_LES)
   const kentSchaak = useRef(kentSchaakNu)
   kentSchaak.current = kentSchaakNu
   const geladen = useToestandGeladen()
@@ -179,7 +180,12 @@ export function AfstandScherm() {
         // Wie schaak staat en het niet hoort, ziet alleen dat de stukken niet willen. Een
         // paard met schaak is juist de reden om geen dame te nemen: dan beide zeggen.
         const onder = laatste?.[4] ? 'rbn'.indexOf(laatste[4]) : -1
-        setZin(onder >= 0 ? ONDERPROMOTIE_SCHAAK[onder] : kies(schaakZinnen(true, kentSchaak.current), 'schaak'))
+        // De uitleg over de onderpromotie zegt "schaak": die pas na wereld 9.
+        setZin(
+          onder >= 0 && kentSchaak.current
+            ? ONDERPROMOTIE_SCHAAK[onder]
+            : kies(schaakZinnen(true, kentSchaak.current), 'schaak'),
+        )
         setStemming('verrast')
       } else {
         // Een pion die geen dame werd: zonder uitleg staat er ineens een paard.
