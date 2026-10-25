@@ -1,7 +1,6 @@
 # Zevenentwintigste review, 25 oktober 2026
 
-**Oordeel: GO voor de code. Vóór de release moet nog `npm run audio:render` draaien, en Kaj
-beslist of dat eerst moet.** Geen van de reviewers vond iets blokkerends. De belangrijke punten
+**Oordeel: GO.** Vóór de release moet nog `npm run audio:render` draaien. Kaj doet dat. Geen van de reviewers vond iets blokkerends. De belangrijke punten
 zijn opgelost of hieronder met een reden afgehandeld.
 
 ## Scope
@@ -21,7 +20,8 @@ Aanleiding: een ouder van een vijfjarige meldde vijf dingen.
 |---|---|
 | `f4205d1` | Punt 1 t/m 4: het lesscherm past in het scherm, "Verder" wiebelt met een handje, nieuwe prijszinnen, de quiz wordt voorgelezen, doorloopregel `verderInBeeld` |
 | `c8c9236` | Punt 5 (stickers) en de bevindingen van schaakmeester en codebase-reviewer |
-| volgende commit | Bevindingen van de layout-reviewer |
+| `c19b512` | Bevindingen van de layout-reviewer, eerste ronde |
+| `34d894c` en de commit daarna | Bevindingen van de tweede ronde (stickers) |
 
 ## Reviewers
 
@@ -62,12 +62,40 @@ schaakmeester, layout-reviewer en codebase-reviewer rechtstreeks gestart, alle d
 | L9 (klein) | Liggend is de knoppenrij breder dan het bord. | **Niet opgelost**: de bordmaat komt uit een container query die de rij erbuiten niet kan lezen. Het is cosmetisch en de knop blijft in beeld. |
 | L10 (klein) | De bolletjes van de teller braken af op één losse bol. | **Opgelost**: kleiner en dichter op elkaar onder 420 px (`Teller.module.css`). |
 
-## Na de review gebouwd, nog niet gereviewd
+## Tweede ronde: stickers (`c8c9236`) en de layoutfixes (`c19b512`)
 
-Stickers (punt 5, `c8c9236`):
-- **Stal:** bovenaan een stickerplank per begonnen wereld, met het plaatje van de les. Tikken
-  op een sticker laat Pip zeggen welke les het is of hoe je hem krijgt (`STICKER_HOE`).
-- **Beginscherm:** de nieuwste stickers als plaatjes.
+Aanleiding punt 5: de stickers bestonden alleen als getal ("Plus 5 stickers"). Wat er gebouwd is:
+- **Stal:** bovenaan een stickerplank per begonnen wereld.
+- **Beginscherm:** de nieuwste stickers.
 - **Beloning:** de sticker zelf.
 
-Er is een unittest voor `stickerPlanken`. Dit gaat mee in de volgende review.
+Een sticker is overal hetzelfde ronde plaatje als dat van de les, in de kleur van zijn wereld.
+Gereviewd door schaakmeester, codebase-reviewer en layout-reviewer. Geen van de drie vond iets
+blokkerends.
+
+| | Bevinding | Status |
+|---|---|---|
+| S6 (belangrijk) | `STICKER_HOE` ("Haal drie sterren") was een opdracht om perfect te zijn, de enige in de stal. Hints tellen mee in de sterren, dus een kind kon leren dat je beter geen hulp vraagt. De zin klopte ook niet voor een les die nog dicht zat. | **Opgelost**: de zin is nu een uitnodiging ("…als de toets in één keer lukt. Dat mag ook later nog.") en er is een eigen zin voor een dichte les (`STICKER_NOG_DICHT`). |
+| S7 (belangrijk, zat er al) | In notatie-2 gaf een 🐴 naast de P het antwoord weg. | **Opgelost**: neutrale bolletjes. |
+| S8 (klein) | "Wat is schaakmat?. Die heb je!" | **Opgelost**: `STICKER_HEB_JE` noemt geen titel. |
+| S9 (klein) | "Helemaal goed gedaan" komt ook na een fout. | **Opgelost**: "Top! Goed gedaan." |
+| S10 (klein) | Klinkt "d vier" goed? | **Open**: luisteren na `audio:render`. Klinkt het verkeerd, dan wordt het "dee vier" in `uitspraak`. |
+| S11 / C-K4 (klein) | Een sticker van een les die niet bestaat telde mee. | **Opgelost**: `geldigeStickers()` met test. |
+| C-B1 (belangrijk) | Met "Pip praat" uit bleef een tik op een sticker of een vak in de stal meestal stil, omdat twee sprekers elkaar afbraken. | **Opgelost**: één spreker per tik (`tikOp`, `spreekNaTik`). |
+| C-K1 (klein) | Het beurtnummer werd pas na de `await` vastgelegd. | **Opgelost**, ook bij `VERDER_UITLEG`. |
+| C-K2 (klein) | Na twee fouten las Pip alleen het goede antwoord voor, en dat is aanwijzen. | **Opgelost**: met nog één antwoord over leest Pip niets voor. |
+| C-K3 (klein) | De uitspraak werd op twee plekken berekend. | **Opgelost**: `uitspraakVan()` in `types.ts`. |
+| C-K5 (klein) | De doorloop testte opnieuw voorlezen na een fout niet. | **Opgelost**: de doorloop tikt nu eerst fout en controleert dat het foute antwoord niet meer voorgelezen wordt. Dat een tik op de luidspreker het voorlezen stopt, zit er niet in: in de testbrowser is het voorlezen te snel voorbij om daar betrouwbaar tussen te tikken. |
+| C-K6 (klein) | Weinig dekking op `stickerPlanken`. | **Opgelost**: twee gevallen erbij. |
+| L-B1 (belangrijk) | Lange titels liepen tot 15 px over het stickervak. | **Opgelost**: het vak groeit mee, de naam is hooguit drie regels. Gemeten op 360×640: 0 van 15 lopen eroverheen. |
+| L-B2 (belangrijk) | Op het beginscherm stonden losse plaatjes in plaats van stickers. | **Opgelost**: dezelfde ronde sticker als in de stal, maar kleiner. |
+| L-K1 (klein) | `aria-label` op een `div` zonder rol werd genegeerd. | **Opgelost**: `role="img"`. |
+| L-K2 (klein) | Op 360/375 zijn de bordvelden 41–42 px, net onder 44. | **Niet opgelost**: met een kleinere zijmarge wijkt het lesscherm af van de rest van de app, en het verschil is 2 px. Het was 37,5 px. |
+| L-K3, L-K4 | L9 en "Opnieuw" onder de vouw op 360/375. | Bewust zo gelaten, zie de eerste ronde. |
+| L-K5 (klein) | Van de beloning was geen weg naar de stal. | **Opgelost**: de sticker is een link naar `/stal/#stickers`. |
+
+Daarna: `npm run check` groen (508 tests), `npm run doorloop` 20 van 20.
+
+## Wat nog moet vóór de release
+
+`npm run audio:render`. Kaj heeft credits en draait het. Luister daarbij naar "d vier" (S10).

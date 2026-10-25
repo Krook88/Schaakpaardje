@@ -673,12 +673,14 @@ export function LessonPlayer({
                 de stal staat. Alleen "Sticker verdiend!" zei een kind niet wát het
                 had, en dus ook niet wat het in de stal moest zoeken. */}
             {sterren >= 3 && (
-              <p className={styles.sticker}>
+              // Een link naar de plank waar hij nu staat: wie wil zien waar zijn
+              // sticker heen gaat, hoeft dat niet zelf te zoeken.
+              <Link href="/stal/#stickers" className={styles.sticker}>
                 <span className={styles.stickerRond} aria-hidden="true">
                   {les.icoon}
                 </span>
                 Sticker verdiend!
-              </p>
+              </Link>
             )}
             {wereldKlaar && (
               <p>

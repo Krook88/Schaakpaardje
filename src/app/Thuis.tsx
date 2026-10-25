@@ -9,6 +9,7 @@ import { EERSTE_KEER, WELKOM, pipZinnen } from '@/content/voice'
 import { lesMet, WERELDEN } from '@/content'
 import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
 import { aantalBezit, geldigeStickers, verzameling } from '@/progress/verzameling'
+import stalStyles from '@/progress/Stal.module.css'
 import {
   AVATARS,
   eersteVrijeMaatje,
@@ -318,13 +319,25 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
               hier "Plus 5 stickers" en kon nergens terugvinden welke het had. De
               nieuwste vooraan; de hele verzameling staat in de stal. */}
           {stickers.length > 0 && (
-            <div className="row" style={{ gap: 6 }} aria-label={`${stickers.length} stickers verdiend`}>
+            <div className="row" style={{ gap: 6 }} role="img" aria-label={`${stickers.length} stickers verdiend`}>
               <span aria-hidden="true" style={{ fontSize: 22 }}>🏅</span>
-              {[...stickers].reverse().slice(0, 6).map((id) => (
-                <span key={id} aria-hidden="true" title={lesMet(id)?.titel} style={{ fontSize: 24 }}>
-                  {lesMet(id)?.icoon}
-                </span>
-              ))}
+              {/* Hetzelfde rondje in de kleur van de wereld als in de stal: als losse
+                  plaatjes herkende een kind ze hier niet als zijn stickers. */}
+              {[...stickers].reverse().slice(0, 6).map((id) => {
+                const les = lesMet(id)
+                const toon = WERELDEN.find((w) => w.id === les?.wereldId)?.toon ?? 0
+                return (
+                  <span
+                    key={id}
+                    aria-hidden="true"
+                    title={les?.titel}
+                    className={stalStyles.mini}
+                    style={{ '--toon': toon } as React.CSSProperties}
+                  >
+                    {les?.icoon}
+                  </span>
+                )
+              })}
               {stickers.length > 6 && (
                 <span className="muted" style={{ fontSize: '0.85rem' }}>
                   +{stickers.length - 6}

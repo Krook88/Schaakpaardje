@@ -71,3 +71,21 @@
   border: 3px solid hsl(var(--toon) 45% 58%);
 }
 .mist .stickerTeken { filter: grayscale(1); opacity: 0.3; border-style: dashed; }
+
+/* Een sticker groeit mee met zijn naam. Vierkant liepen titels van drie regels ("Koningen
+   blijven van elkaar af") tot 15 px over de onderrand (layoutreview). Hooguit drie
+   regels; de hele titel staat in het aria-label en Pip zegt welke les het is. */
+.sticker { aspect-ratio: auto; align-content: start; padding-top: 10px; }
+.sticker .naam {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+/* De kleine sticker op het beginscherm: hetzelfde rondje als in de stal, kleiner. */
+.mini {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: inline-grid; place-items: center;
+  font-size: 18px; line-height: 1;
+  background: var(--surface);
+  border: 2px solid hsl(var(--toon) 45% 58%);
+}
