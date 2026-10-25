@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { onSubtitle, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import styles from './Pip.module.css'
 
@@ -57,6 +57,7 @@ export function Pip({
   klein = false,
   vanzelf = true,
   onKlaar,
+  onPratend,
 }: {
   zegt?: string
   stemming?: PipStemming
@@ -70,6 +71,12 @@ export function Pip({
    */
   vanzelf?: boolean
   onKlaar?: () => void
+  /**
+   * Of Pip nu aan het woord is. Het lesscherm laat daaraan de knop "Verder" pas
+   * oplichten als Pip klaar is: een kind dat niet leest wist anders niet wanneer het
+   * erop mocht tikken.
+   */
+  onPratend?: (pratend: boolean) => void
 }) {
   const [ondertitel, setOndertitel] = useState<string | null>(null)
   const [pratend, setPratend] = useState(false)
@@ -81,6 +88,14 @@ export function Pip({
    * anders raakt de toetsenbordfocus kwijt midden in een les.
    */
   const [puls, setPuls] = useState(0)
+
+  // Via een ref, zodat een nieuwe functie bij elke hertekening van de ouder Pip niet
+  // opnieuw laat beginnen met praten.
+  const meldPratend = useRef(onPratend)
+  meldPratend.current = onPratend
+  useEffect(() => {
+    meldPratend.current?.(pratend)
+  }, [pratend])
 
   useEffect(() => {
     onSubtitle(setOndertitel)
@@ -95,10 +110,15 @@ export function Pip({
     if (!zegt || !vanzelf) return
     let actueel = true
     setPratend(true)
+    // Pas wachten als speak() het geluid echt gestart heeft. Hier stond het wachten
+    // direct achter speak(), maar die haalt eerst het manifest op: het wachten pakte dan
+    // nog de vorige, al afgelopen zin, en Pip was "klaar" voor hij begon. Bovengrens
+    // ruim boven de langste uitlegzin, zodat de knop "Verder" niet te vroeg oplicht.
     void speak(zegt)
-    void wachtTotUitgesproken().then(() => {
-      if (actueel) setPratend(false)
-    })
+      .then(() => wachtTotUitgesproken(15000))
+      .then(() => {
+        if (actueel) setPratend(false)
+      })
     return () => {
       actueel = false
       setPratend(false)

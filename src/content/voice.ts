@@ -16,10 +16,16 @@ export const PRIJS = [
   'Yes! Volgende.',
 ] as const
 
+/**
+ * Als een opgave helemaal af is. Hier stond "Dat was de laatste. Netjes!", en dat klonk
+ * als de laatste opgave van de les terwijl het alleen het laatste vinkje was — een kind
+ * verwachtte daarna de beloning en kreeg nog een opgave. "Je hebt ze allemaal" ging om
+ * dezelfde reden weg: deze zinnen komen ook na een quiz en na een opgave met één veld.
+ */
 export const PRIJS_LAATSTE = [
-  'Top! Je hebt ze allemaal.',
+  'Top! Helemaal goed gedaan.',
   'Klaar! En alles goed.',
-  'Dat was de laatste. Netjes!',
+  'Netjes! Die is af.',
 ] as const
 
 export const BIJNA = [
@@ -144,6 +150,16 @@ export const WELKOM_TERUG = [
 export const EERSTE_KEER =
   'Welkom in mijn stal! Druk op de grote knop, dan gaan we samen beginnen.'
 
+/**
+ * Als een kind in de uitleg blijft wachten nadat Pip is uitgepraat.
+ *
+ * De knop "Verder" was nooit uitgelegd: een kind van vijf wist niet wanneer het erop
+ * mocht tikken. Hij wiebelt nu zodra Pip klaar is, en blijft het kind dan nog even
+ * stil, dan zegt Pip één keer per les wat de bedoeling is. Geen kleur en geen woord
+ * op de knop: die kan het niet lezen, en een kleur klopt niet in beide thema's.
+ */
+export const VERDER_UITLEG = 'Klaar met luisteren? Tik dan op de knop die wiebelt.'
+
 /** Bij een partijtje samen op één tablet, als er geen tegenstander gekozen is. */
 export const SAMEN_SPELEN = 'Samen spelen! Wit begint.'
 /** Uitslag bij samen spelen. Geen namen: die verschillen per kind en kunnen niet ingesproken worden. */
@@ -249,7 +265,7 @@ export const PRIJS_OUDER = [
 export const PRIJS_LAATSTE_OUDER = [
   'Alles gevonden. Netjes.',
   'Compleet, en alles goed.',
-  'Dat was de laatste.',
+  'Netjes, die is af.',
 ] as const
 
 export const BIJNA_OUDER = [

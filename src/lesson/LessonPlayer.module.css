@@ -179,3 +179,74 @@
 @keyframes tekstversieAan {
   to { opacity: 1; }
 }
+
+/* Het lesscherm past in één scherm, zonder scrollen.
+   Het bord had een vaste bovengrens (70vh), maar alles erboven — de kop, de wereldband,
+   de fasebalk en Pips ballon — telde daar niet in mee. Op een liggende tablet viel het
+   bord daardoor half onder de rand en stond "Verder" helemaal buiten beeld, en op een
+   telefoon zat het bord te laag. Nu is het lesscherm precies zo hoog als het scherm,
+   en krijgt het bord de ruimte die overblijft: zo groot als past, en nooit kleiner
+   dan een bruikbaar bord (dan mag de pagina alsnog scrollen). */
+.lesscherm {
+  min-height: 100vh; min-height: 100dvh;
+  display: flex; flex-direction: column;
+  padding-bottom: 14px;
+}
+.lesinhoud { flex: 1 1 auto; min-height: 0; }
+.bordvlak {
+  position: relative;
+  flex: 1 1 0;
+  min-height: min(300px, calc(100vw - 36px));
+}
+/* De meetlat voor het bord. Absoluut, want als gewoon flexvak rekende Chrome de hoogte
+   van de container als nul (100cqh werd 0px) en verdween het bord. */
+.bordpast {
+  position: absolute; inset: 0;
+  container-type: size;
+  display: flex; justify-content: center; align-items: flex-start;
+}
+.bordpast .bord { width: min(100cqw, 100cqh, 620px); max-width: none; margin: 0; }
+/* Op een lage telefoon telt elke regel: dan wat minder lucht tussen de blokken. */
+@media (max-height: 760px) {
+  .lesscherm { padding-top: 6px; }
+  .lesinhoud { gap: 10px; }
+  .wereldband { padding: 4px 12px; }
+}
+
+/* De knop "Verder" blijft in beeld, ook als het scherm toch te klein is. */
+.knoppenOnder { position: sticky; bottom: 8px; z-index: 2; }
+.verderPlek { position: relative; display: inline-flex; }
+
+/* Pip is uitgepraat: nu ben jij. De knop gaat zachtjes wiebelen, zodat een kind dat
+   niet leest ziet wanneer het mag tikken. Tijdens Pips zin staat hij stil. */
+.verderKlaar { animation: verderWiebel 1.6s ease-in-out infinite; }
+@keyframes verderWiebel {
+  0%, 60%, 100% { transform: scale(1) rotate(0); }
+  70% { transform: scale(1.07) rotate(-2deg); }
+  80% { transform: scale(1.07) rotate(2deg); }
+  90% { transform: scale(1.04) rotate(0); }
+}
+/* En wie dan nog wacht, krijgt een handje dat naar de knop wijst. */
+.wijsHand {
+  position: absolute; right: 100%; top: 50%;
+  margin-right: 6px; font-size: 38px; line-height: 1;
+  transform: translateY(-50%);
+  animation: wijzen 0.9s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes wijzen {
+  0%, 100% { transform: translate(0, -50%); }
+  50% { transform: translate(8px, -50%); }
+}
+
+/* Het quizantwoord dat Pip nu voorleest. */
+.quizVoorgelezen {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent), var(--shadow);
+  transform: scale(1.02);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .verderKlaar { animation: none; box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow); }
+  .wijsHand { animation: none; }
+}

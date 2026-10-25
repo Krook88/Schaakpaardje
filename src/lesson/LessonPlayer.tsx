@@ -10,8 +10,8 @@ import { Sterren } from '@/ui/Sterren'
 import { Teller } from '@/ui/Teller'
 import { gebruikTip } from '@/ui/gebruikTip'
 import { sfx } from '@/audio/sfx'
-import { kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
-import { HINT_GEGEVEN, OPNIEUW_PROBEREN, pipZinnen } from '@/content/voice'
+import { getVoiceConfig, kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
+import { HINT_GEGEVEN, OPNIEUW_PROBEREN, VERDER_UITLEG, pipZinnen } from '@/content/voice'
 import { volgendeLes, wereldMet, type Lesson, type World } from '@/content'
 import { vertelTekst, vertelWijzers } from '@/content/types'
 import { type Square } from '@/engine/board'
@@ -95,6 +95,16 @@ export function LessonPlayer({
   const [toetsFouten, setToetsFouten] = useState(0)
   const [toetsHints, setToetsHints] = useState(0)
   const [sterren, setSterren] = useState<0 | 1 | 2 | 3>(0)
+  /** Praat Pip nog in de uitleg? Zolang wel, wiebelt de knop "Verder" nog niet. */
+  const [pipPraat, setPipPraat] = useState(true)
+  /** Het wijzende handje naast "Verder", voor wie na Pips zin blijft wachten. */
+  const [wijsVerder, setWijsVerder] = useState(false)
+  const verderUitgelegd = useRef(false)
+  /** Welk quizantwoord Pip nu voorleest, om het te laten oplichten. */
+  const [voorgelezen, setVoorgelezen] = useState<number | null>(null)
+  const voorleesBeurt = useRef(0)
+  /** Telt op bij "Opnieuw", zodat Pip de antwoorden dan opnieuw voorleest. */
+  const [quizPoging, setQuizPoging] = useState(0)
 
   const bewaarLes = useProfielStore((s) => s.bewaarLes)
   const bewaarHervatpunt = useProfielStore((s) => s.bewaarHervatpunt)
@@ -215,6 +225,76 @@ export function LessonPlayer({
    * verwisseling niet nog eens per ongeluk te maken.
    */
   const ruweOpgave = opgaven[opgaveIndex]
+
+  /*
+   * Wanneer mag ik op "Verder" tikken?
+   *
+   * Dat was nooit uitgelegd, en een kind van vijf wist het dus niet: het tikte midden in
+   * Pips zin, of zat te wachten op iets wat niet kwam. Nu gaat de knop wiebelen zodra
+   * Pip uitgepraat is. Blijft het kind daarna stil, dan komt er een handje bij dat naar
+   * de knop wijst, en een beetje later zegt Pip het één keer per les ook hardop. Niet
+   * voor de schakers: die lezen de knop zelf.
+   */
+  useEffect(() => {
+    setWijsVerder(false)
+    if (fase !== 'kijken' || pipPraat) return
+    const hand = setTimeout(() => setWijsVerder(true), 2500)
+    const zeg = setTimeout(() => {
+      if (verderUitgelegd.current || modus === 'schaker') return
+      verderUitgelegd.current = true
+      void speak(VERDER_UITLEG)
+    }, 7000)
+    return () => {
+      clearTimeout(hand)
+      clearTimeout(zeg)
+    }
+  }, [fase, pipPraat, vertelIndex, modus])
+
+  /*
+   * Een quiz voorlezen aan wie nog niet leest.
+   *
+   * De plaatjes op de knoppen helpen, maar "👣 je gaat op zijn veld staan" begrijp je
+   * niet van het plaatje alleen. Een kind van vijf zat bij de toetsvraag dus te raden.
+   * Nu leest Pip na de vraag elk antwoord voor, en licht die knop op terwijl hij het
+   * zegt: dan weet het kind welk plaatje bij welke woorden hoort. Tikken mag altijd,
+   * ook halverwege; dan houdt Pip op.
+   *
+   * De antwoorden komen uit `stand.opgave`, niet uit de ruwe opgave: alleen die heeft de
+   * volgorde waarin ze op het scherm staan (zie `ruweOpgave`).
+   */
+  const leesQuizVoor = modus !== 'schaker'
+  const standNu = useRef(stand)
+  standNu.current = stand
+  useEffect(() => {
+    const s = standNu.current
+    if (!leesQuizVoor || !s || s.opgave.kind !== 'quiz' || s.klaar) return
+    if (fase === 'kijken' || fase === 'beloning') return
+    if (!getVoiceConfig().spraak) return
+    const mijn = ++voorleesBeurt.current
+    const nogAanDeBeurt = () => mijn === voorleesBeurt.current
+    const pauze = (ms: number) => new Promise((klaar) => setTimeout(klaar, ms))
+    const opties = s.opgave.opties.map((o) => o.label)
+    void (async () => {
+      // Eerst de vraag zelf laten uitspreken; die zegt Pip vanuit zijn ballon.
+      await pauze(700)
+      await wachtTotUitgesproken(15000)
+      for (let i = 0; i < opties.length; i++) {
+        if (!nogAanDeBeurt()) return
+        setVoorgelezen(i)
+        await speak(opties[i])
+        await wachtTotUitgesproken()
+        await pauze(350)
+      }
+      if (!nogAanDeBeurt()) return
+      setVoorgelezen(null)
+      // De ballon toont tijdens het voorlezen het antwoord; zo komt de vraag terug.
+      stopSpeaking()
+    })()
+    return () => {
+      voorleesBeurt.current++
+      setVoorgelezen(null)
+    }
+  }, [ruweOpgave, quizPoging, fase, leesQuizVoor])
 
   /* ---------- fase- en opgavewissels ---------- */
 
@@ -372,6 +452,9 @@ export function LessonPlayer({
     (index: number) => {
       if (!stand) return
       eersteOpgave()
+      // Het kind kiest: Pip houdt op met voorlezen.
+      voorleesBeurt.current++
+      setVoorgelezen(null)
       const r = antwoordQuiz(stand, index)
       setStand(r.stand)
       if (r.goed) {
@@ -448,16 +531,21 @@ export function LessonPlayer({
     const dezeZin = les.vertel[vertelIndex]
     const spoor = dezeZin ? vertelWijzers(dezeZin) : []
     return (
-      <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
+      <div
+        className={`page ${styles.wereldpagina} ${styles.lesscherm}`}
+        style={{ '--toon': wereld.toon } as React.CSSProperties}
+      >
         <Kop titel={les.titel} terug="/kaart/" />
         <WereldBand wereld={wereld} />
         <FaseBalk nu="kijken" />
-        <div className="stack">
+        <div className={`stack ${styles.lesinhoud}`}>
           <Pip
             zegt={dezeZin ? vertelTekst(dezeZin) : ''}
             stemming={vertelIndex === 0 ? 'blij' : 'denkt'}
+            onPratend={setPipPraat}
           />
           {les.vertelFen && (
+            <div className={styles.bordvlak}><div className={styles.bordpast}>
             <div className={styles.bord}>
               {/* De sleutel is de zin, niet het bord: bij elke nieuwe zin begint het
                   spoor opnieuw te lopen in plaats van te blijven staan waar het stond. */}
@@ -469,14 +557,21 @@ export function LessonPlayer({
                 label={`Uitleg bij ${les.titel}`}
               />
             </div>
+            </div></div>
           )}
-          <div className={`row ${styles.kolom}`} style={{ justifyContent: 'space-between' }}>
+          <div className={`row ${styles.kolom} ${styles.knoppenOnder}`} style={{ justifyContent: 'space-between' }}>
             <span className="muted">
               {vertelIndex + 1} van {les.vertel.length}
             </span>
+            <span className={styles.verderPlek}>
+            {wijsVerder && (
+              <span className={styles.wijsHand} aria-hidden="true">
+                👉
+              </span>
+            )}
             <button
               type="button"
-              className="btn btn--primary btn--big"
+              className={`btn btn--primary btn--big ${pipPraat ? '' : styles.verderKlaar}`}
               onClick={() => {
                 if (!laatste) return setVertelIndex((i) => i + 1)
                 // Kwam het kind hier vanuit een opgave, dan gaat het daar ook weer
@@ -495,6 +590,7 @@ export function LessonPlayer({
               </span>{' '}
               {!laatste ? 'Verder' : kijkTerug ? 'Terug naar de opgave' : 'Ik ga het proberen'}
             </button>
+            </span>
           </div>
         </div>
       </div>
@@ -583,7 +679,10 @@ export function LessonPlayer({
   const opgave = stand.opgave
 
   return (
-    <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
+    <div
+      className={`page ${styles.wereldpagina} ${styles.lesscherm}`}
+      style={{ '--toon': wereld.toon } as React.CSSProperties}
+    >
       {/* Zonder "· Meedoen": de fase staat al in de stappenrij eronder, en op een smal
           scherm duwde die toevoeging de titel naar vijf regels. */}
       <Kop titel={les.titel} terug="/kaart/" />
@@ -599,7 +698,7 @@ export function LessonPlayer({
         }}
       />
 
-      <div className="stack">
+      <div className={`stack ${styles.lesinhoud}`}>
         <Pip zegt={zin} stemming={stemming} klein />
 
         {/* Bij één opgave zei die ene losse stip niets; dan laten we hem weg. */}
@@ -625,7 +724,7 @@ export function LessonPlayer({
                 type="button"
                 className={`btn btn--big ${styles.quizKnop} ${
                   quizGoed === i ? styles.quizJuist : quizFout === i ? styles.quizMis : ''
-                }`}
+                } ${voorgelezen === i ? styles.quizVoorgelezen : ''}`}
                 onClick={() => opQuiz(i)}
                 disabled={stand.klaar}
               >
@@ -649,6 +748,7 @@ export function LessonPlayer({
             ))}
           </div>
         ) : (
+          <div className={styles.bordvlak}><div className={styles.bordpast}>
           <div className={styles.bord}>
             <Board
               position={stand.board}
@@ -661,6 +761,7 @@ export function LessonPlayer({
               label={'vraag' in opgave ? opgave.vraag : les.titel}
             />
           </div>
+          </div></div>
         )}
 
         {/* Hoe ver je bent, vlak onder het bord waar je kijkt — niet weggestopt naast
@@ -705,6 +806,7 @@ export function LessonPlayer({
               setShake(null)
               setQuizFout(null)
               setQuizGoed(null)
+              setQuizPoging((n) => n + 1)
               setZin('vraag' in opgave ? opgave.vraag : '')
             }}
           >

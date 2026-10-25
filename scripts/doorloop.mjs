@@ -165,6 +165,37 @@ async function minispelEindigt() {
 }
 
 /* ------------------------------------------------------------------ *
+ * Bord en "Verder" passen in beeld, en "Verder" laat zien wanneer hij aan de beurt is.
+ *
+ * Gemeld door een ouder van een vijfjarige: het bord stond te laag, "Verder" viel soms
+ * buiten beeld, en ze wist niet wanneer ze erop mocht tikken. Het bord had een vaste
+ * bovengrens (70vh) waar de kop, de fasebalk en Pips ballon niet in meetelden; op een
+ * liggende tablet stond de knop daardoor helemaal onder de rand. Dat zie je alleen
+ * door het scherm echt op die maten te openen.
+ * ------------------------------------------------------------------ */
+async function verderInBeeld() {
+  const maten = [[375, 667], [390, 844], [768, 1024], [1024, 768]]
+  const mis = []
+  let wijst = false
+  for (const [breed, hoog] of maten) {
+    const ctx = await browser.newContext({ viewport: { width: breed, height: hoog } })
+    const p = await ctx.newPage()
+    await p.goto(`${URL}/les/toren-1/`, { waitUntil: 'networkidle' })
+    await p.waitForTimeout(3500)
+    const bord = await p.locator('[role=group]').first().boundingBox()
+    const knop = await p.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ }).first().boundingBox()
+    if (!bord || bord.y + bord.height > hoog + 1 || bord.width < 260)
+      mis.push(`${breed}×${hoog}: bord ${bord ? `${Math.round(bord.width)} breed, onderkant ${Math.round(bord.y + bord.height)}` : 'weg'}`)
+    if (!knop || knop.y + knop.height > hoog + 1) mis.push(`${breed}×${hoog}: Verder buiten beeld`)
+    // Pip is uitgepraat (of zwijgt in de testbrowser): de knop wiebelt en het handje wijst.
+    if (await p.locator('[class*=verderKlaar]').count() && await p.locator('[class*=wijsHand]').count()) wijst = true
+    await ctx.close()
+  }
+  meld('bord en "Verder" passen in beeld', mis.length === 0, mis.join('; '))
+  meld('"Verder" wijst zichzelf aan als Pip klaar is', wijst)
+}
+
+/* ------------------------------------------------------------------ *
  * 3. Het goede quizantwoord wordt goed gerekend.
  *
  * Het scherm tekende de antwoorden in de ene volgorde en de lesmotor keek de andere
@@ -903,6 +934,7 @@ for (const regel of [
   minispelEindigt,
   dagTeltNaMinispel,
   quizRekentGoedGoed,
+  verderInBeeld,
   onmogelijkeZetKrijgtRegelzin,
   opdrachtKomtTerugNaTipje,
   samenSpelenKentDeWinnaar,
