@@ -6,7 +6,14 @@ import { Pip } from '@/ui/Pip'
 import { Confetti } from '@/ui/Confetti'
 import { getVoiceConfig, speak } from '@/audio/voice'
 import { SOORTNAAM, type StalSoort } from '@/content/stal'
-import { STAL_VOL, STICKER_HEB_JE, STICKER_HOE, STICKER_NOG_DICHT } from '@/content/voice'
+import {
+  STAL_ALLEEN_STICKERS,
+  STAL_VOL,
+  STICKER_HEB_JE,
+  STICKER_HOE,
+  STICKER_NIEUW,
+  STICKER_NOG_DICHT,
+} from '@/content/voice'
 import { aantalBezit, geldigeStickers, perSoort, stickerPlanken, verzameling } from './verzameling'
 import {
   isOntgrendeld,
@@ -46,6 +53,17 @@ export function StalScherm() {
    * nieuwe zin zegt Pip zelf; met de stem uit, of bij dezelfde zin nog eens, spreken
    * we hem hier, en dan pas na het tekenen, zodat Pip hem niet meteen weer afbreekt.
    */
+  /*
+   * Kwam het kind hier via zijn nieuwe sticker op het beloningsscherm? Dan zegt Pip dat,
+   * en glimt die sticker even. Hier stond een #stickers-link: die scrolde Pip uit beeld,
+   * en Pip zei de gewone telzin, zonder te laten zien welke sticker nieuw was.
+   * Uit de adresbalk en niet via useSearchParams: dit is een statische export.
+   */
+  const [nieuw, setNieuw] = useState<string | null>(null)
+  useEffect(() => {
+    setNieuw(new URLSearchParams(window.location.search).get('nieuw'))
+  }, [])
+
   const spreekNaTik = useRef(false)
   useEffect(() => {
     if (!spreekNaTik.current || !uitgelicht) return
@@ -66,17 +84,22 @@ export function StalScherm() {
   const compleet = heeft === alles.length
   const stickerRijen = stickerPlanken(stickers, voortgang)
 
+  const nieuweSticker = nieuw && stickers.includes(nieuw) ? nieuw : null
   const zin = uitgelicht
     ? uitgelicht.zin
-    : compleet
+    : nieuweSticker
+      ? STICKER_NIEUW
+      : compleet
       ? STAL_VOL
+      : heeft === 0 && stickers.length > 0
+      ? STAL_ALLEEN_STICKERS
       : `Je hebt er ${heeft} van de ${alles.length}. Tik op een leeg plekje, dan vertel ik hoe je hem krijgt.`
 
   return (
     <main className="page">
       <Kop titel="Mijn stal" terug="/" />
       <div className="stack">
-        <Pip zegt={zin} stemming={uitgelicht?.bezit || compleet ? 'trots' : 'blij'} klein />
+        <Pip zegt={zin} stemming={uitgelicht?.bezit || compleet || nieuweSticker ? 'trots' : 'blij'} klein />
 
         <div className="card stack" style={{ position: 'relative', overflow: 'hidden' }}>
           {compleet && <Confetti />}
@@ -112,7 +135,9 @@ export function StalScherm() {
                     <button
                       key={vak.id}
                       type="button"
-                      className={`${styles.vak} ${styles.sticker} ${vak.bezit ? styles.heeft : styles.mist}`}
+                      className={`${styles.vak} ${styles.sticker} ${vak.bezit ? styles.heeft : styles.mist} ${
+                        vak.id === nieuweSticker ? styles.nieuw : ''
+                      }`}
                       style={{ '--toon': vak.toon } as React.CSSProperties}
                       onClick={() => {
                         const zegt = vak.bezit

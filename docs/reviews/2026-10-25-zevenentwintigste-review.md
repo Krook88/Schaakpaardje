@@ -96,6 +96,32 @@ blokkerends.
 
 Daarna: `npm run check` groen (508 tests), `npm run doorloop` 20 van 20.
 
+## Derde ronde: spelontwerper (nieuwe reviewer)
+
+Kaj vroeg om een echte maker van kinderspellen. Daarvoor is er een nieuwe agent,
+`.claude/agents/spelontwerper.md`. De eerste spelontwerper speelde de vijf oplossingen als
+vijfjarige "Lot", met een nagebootste stem zodat de timing te meten was. Daarnaast speelt
+een tweede, onafhankelijke spelontwerper de hele app; zijn uitslag volgt hieronder in een
+eigen ronde.
+
+Oordeel: niets blokkerends. "Zou ik aan speltesters geven", maar eerst G1 en G2.
+
+| | Bevinding | Status |
+|---|---|---|
+| G1 (belangrijk) | Midden in de les zei Pip "Klaar! Goed gedaan." "Klaar!" is ook de kop van het beloningsscherm, dus het klonk weer als het einde van de les. | **Opgelost**: "Gelukt! Goed gedaan." |
+| G2 (belangrijk) | Na de eerste sticker zei de stal "Je hebt er 0 van de 16", en op het beginscherm stond "Nog leeg" met de sticker eronder. | **Opgelost**: een eigen zin als er stickers zijn maar nog geen stukken (`STAL_ALLEEN_STICKERS`), en geen "Nog leeg" naast stickers. |
+| G3 (belangrijk) | Via de sticker binnengekomen: Pip stond uit beeld, zei een algemene zin, en niets liet zien welke sticker nieuw was. | **Opgelost**: de link is nu `/stal/?nieuw=<les>` en scrolt niet. Pip zegt "Daar is hij!" en de nieuwe sticker springt en krijgt een gouden rand. Er is een doorloopregel voor. |
+| G4 (belangrijk) | 🔊 op het voorgelezen antwoord leek "tik om te horen", maar een tik kiest dat antwoord. | **Opgelost**: een praatwolkje 💬. |
+| G5 (belangrijk) | Na een tik op de luidspreker in Pips ballon kwam alleen de vraag terug, niet de antwoorden. | **Opgelost**: Pip heeft een `onHerhaal`, en daarna leest hij de antwoorden opnieuw voor. |
+| G-K1 (klein) | Het handje wees ook bij schakers. | **Opgelost**: geen handje in modus schaker. |
+| G-K2 (klein) | Tijdens het voorlezen verdween de vraag uit de ballon. | **Opgelost**: `speak(..., { ondertitel: false })`. |
+| G-K3 (klein) | "of …?" bij het laatste antwoord. | **Niet nu**: dat zijn nieuwe zinnen voor elke quiz. Eerst horen hoe het met opnames klinkt. |
+| G-K4 (klein, bestond al) | Bij opgaven met meerdere velden breekt elke tik de lof van de vorige af. | **Niet in deze PR**: dat is een ander gedrag dan waar deze PR over gaat. Het staat op de lijst voor de volgende fase. |
+| G-K5 (klein, bestond al) | Pip zwijgt op het beginscherm direct na "Beginnen". | **Niet in deze PR**, staat op de lijst voor de volgende fase. |
+| G-K6 (klein) | Vanuit de stal is er geen "verder spelen". | **Niet nu**: het beginscherm is één tik terug, en daar staat "Verder leren". Wordt opnieuw gewogen bij de onafhankelijke review. |
+
+Daarna: `npm run check` groen (508 tests), `npm run doorloop` 21 van 21.
+
 ## Wat nog moet vóór de release
 
 `npm run audio:render`. Kaj heeft credits en draait het. Luister daarbij naar "d vier" (S10).

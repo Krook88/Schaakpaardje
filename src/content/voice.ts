@@ -19,13 +19,14 @@ export const PRIJS = [
 /**
  * Als een opgave helemaal af is. Hier stond "Dat was de laatste. Netjes!", en dat klonk
  * als de laatste opgave van de les terwijl het alleen het laatste vinkje was — een kind
- * verwachtte daarna de beloning en kreeg nog een opgave. "Je hebt ze allemaal" ging om
+ * verwachtte daarna de beloning en kreeg nog een opgave. Om dezelfde reden geen "Klaar!":
+ * zo heet het beloningsscherm (spelontwerper). "Je hebt ze allemaal" ging om
  * dezelfde reden weg, en "alles goed" ook: deze zinnen komen ook na een quiz, na een
  * opgave met één veld, en na een opgave waar eerst een fout in zat.
  */
 export const PRIJS_LAATSTE = [
   'Top! Goed gedaan.',
-  'Klaar! Goed gedaan.',
+  'Gelukt! Goed gedaan.',
   'Netjes! Die is af.',
 ] as const
 
@@ -236,6 +237,14 @@ export const STICKER_HOE = 'Deze sticker krijg je als de toets in één keer luk
 export const STICKER_NOG_DICHT = 'Deze les komt nog. Daar hoort deze sticker bij.'
 /** Bij een sticker die je wél hebt. Zonder de lestitel: vijf daarvan zijn een vraag. */
 export const STICKER_HEB_JE = 'Deze sticker heb je verdiend!'
+/** Wie vanaf de beloning op zijn nieuwe sticker tikt, komt hier binnen. */
+export const STICKER_NIEUW = 'Daar is hij! Je nieuwe sticker staat in je stal.'
+/**
+ * Als er stickers zijn maar nog geen stukken. De gewone telzin zei dan "Je hebt er 0 van
+ * de 16", en een kind dat niet leest hoorde alleen die nul — over de sticker die het
+ * net gekregen had (spelontwerper).
+ */
+export const STAL_ALLEEN_STICKERS = 'Kijk, je stickers staan al in je stal! Tik erop, dan vertel ik welke les het is.'
 
 export const KENNISMAKING = 'Leuk je te ontmoeten! We beginnen bij het bord.'
 export const TEGEN_WIE = 'Tegen wie wil je spelen? Begin gerust makkelijk hoor.'

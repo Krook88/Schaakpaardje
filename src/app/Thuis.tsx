@@ -311,7 +311,8 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <h2 style={{ fontSize: '1.1rem' }}>Mijn stal</h2>
             <span className="muted">
-              {inStal > 0 ? `${inStal} van de ${stalVakken.length}` : 'Nog leeg'}
+              {/* Geen "Nog leeg" met een sticker er pal onder. */}
+              {inStal > 0 ? `${inStal} van de ${stalVakken.length}` : stickers.length ? '' : 'Nog leeg'}
             </span>
           </div>
           <Stalrij vakken={stalVakken} />

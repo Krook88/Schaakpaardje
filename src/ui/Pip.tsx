@@ -58,6 +58,7 @@ export function Pip({
   vanzelf = true,
   onKlaar,
   onPratend,
+  onHerhaal,
 }: {
   zegt?: string
   stemming?: PipStemming
@@ -77,6 +78,8 @@ export function Pip({
    * erop mocht tikken.
    */
   onPratend?: (pratend: boolean) => void
+  /** Het kind vroeg zelf om de zin nog eens (Pip of de luidspreker aangetikt). */
+  onHerhaal?: () => void
 }) {
   const [ondertitel, setOndertitel] = useState<string | null>(null)
   const [pratend, setPratend] = useState(false)
@@ -140,6 +143,7 @@ export function Pip({
         className={`${styles.pip} ${pratend ? styles.pratend : ''}`}
         onClick={() => {
           if (zegt) void speak(zegt, true)
+          onHerhaal?.()
           onKlaar?.()
         }}
         aria-label={zegt ? `Pip zegt: ${zegt}. Tik om het nog eens te horen.` : 'Pip'}
@@ -164,7 +168,10 @@ export function Pip({
             <button
               type="button"
               className={styles.luister}
-              onClick={() => void speak(zegt, true)}
+              onClick={() => {
+                void speak(zegt, true)
+                onHerhaal?.()
+              }}
               aria-label="Zeg het nog eens"
               title="Zeg het nog eens"
             >

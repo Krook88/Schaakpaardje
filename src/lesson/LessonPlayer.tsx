@@ -247,7 +247,8 @@ export function LessonPlayer({
   useEffect(() => {
     setWijsVerder(false)
     if (fase !== 'kijken' || pipPraat) return
-    const hand = setTimeout(() => setWijsVerder(true), 2500)
+    // Geen handje voor de schakers: een negenjarige voelt zich daar betutteld door.
+    const hand = setTimeout(() => setWijsVerder(modus !== 'schaker'), 2500)
     const zeg = setTimeout(() => {
       if (verderUitgelegd.current || modus === 'schaker') return
       // Alleen als Pip ook echt kan praten. Met de stem uit verving deze zin anders de
@@ -320,7 +321,9 @@ export function LessonPlayer({
         setVoorgelezen(i)
         // Het nummer meteen pakken, niet na het wachten: tikt het kind tijdens het
         // laden van het geluid op de luidspreker, dan hoort dat nummer bij zijn zin.
-        const zin = speak(zeg)
+        // Zonder ondertitel: de vraag blijft in de ballon staan; het lampje op de
+        // knop zegt al welk antwoord Pip voorleest (spelontwerper).
+        const zin = speak(zeg, false, { ondertitel: false })
         verwacht = spreekBeurt()
         await zin
         await wachtTotUitgesproken()
@@ -675,7 +678,7 @@ export function LessonPlayer({
             {sterren >= 3 && (
               // Een link naar de plank waar hij nu staat: wie wil zien waar zijn
               // sticker heen gaat, hoeft dat niet zelf te zoeken.
-              <Link href="/stal/#stickers" className={styles.sticker}>
+              <Link href={`/stal/?nieuw=${les.id}`} className={styles.sticker}>
                 <span className={styles.stickerRond} aria-hidden="true">
                   {les.icoon}
                 </span>
@@ -759,7 +762,16 @@ export function LessonPlayer({
       />
 
       <div className={`stack ${styles.lesinhoud}`}>
-        <Pip zegt={zin} stemming={stemming} klein />
+        <Pip
+          zegt={zin}
+          stemming={stemming}
+          klein
+          // Vraagt het kind de vraag nog eens, dan komen de antwoorden er ook weer
+          // achteraan. Anders hoorde juist wie om herhaling vroeg maar de helft.
+          onHerhaal={() => {
+            if (opgave.kind === 'quiz' && !stand.klaar) setQuizPoging((n) => n + 1)
+          }}
+        />
 
         {/* Bij één opgave zei die ene losse stip niets; dan laten we hem weg. */}
         {opgaven.length > 1 && (
@@ -804,12 +816,12 @@ export function LessonPlayer({
                   )
                 )}
                 <span className={styles.quizTekst}>{optie.label}</span>
-                {/* Een luidsprekertje, geen accentrand: oplichten in de accentkleur
-                    betekent elders "hier moet je zijn", en dan leest een kind het
-                    antwoord dat Pip toevallig voorleest als een hint. */}
+                {/* Een praatwolkje, geen accentrand en geen luidspreker: oplichten in
+                    de accentkleur betekent elders "hier moet je zijn", en 🔊 betekent
+                    overal "tik om het te horen" — hier zou die tik het antwoord kiezen. */}
                 {voorgelezen === i && (
                   <span className={styles.quizSpreekt} aria-hidden="true">
-                    🔊
+                    💬
                   </span>
                 )}
               </button>

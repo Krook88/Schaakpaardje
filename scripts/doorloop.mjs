@@ -283,6 +283,39 @@ async function quizWordtVoorgelezen() {
 }
 
 /* ------------------------------------------------------------------ *
+ * Een nieuwe sticker is in de stal terug te vinden, en Pip zegt geen "nul".
+ *
+ * Een kind van vijf vond zijn stickers niet terug: ze bestonden alleen als getal. En toen
+ * ze er wel stonden, zei Pip bij binnenkomst "Je hebt er 0 van de 16" — over de sticker
+ * die het net gekregen had. Dat hoor je alleen door er echt naartoe te gaan.
+ * ------------------------------------------------------------------ */
+async function nieuweStickerInDeStal() {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(URL, { waitUntil: 'networkidle' })
+  await p.evaluate(() => {
+    const raw = JSON.parse(localStorage.getItem('schaakmaatje-v1') || '{"state":{},"version":0}')
+    raw.state = {
+      ...raw.state,
+      voortgang: { gast: { 'weide-1': { sterren: 3, fouten: 0, hints: 0, laatst: '' } } },
+      stickers: { gast: ['weide-1'] },
+    }
+    localStorage.setItem('schaakmaatje-v1', JSON.stringify(raw))
+  })
+  await p.goto(`${URL}/stal/?nieuw=weide-1`, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(800)
+  const zin = (await p.locator('[class*=ballon]').first().innerText().catch(() => '')).split('\n')[0]
+  const glimt = await p.locator('#stickers [class*=nieuw]').count()
+  const pipInBeeld = ((await p.locator('[class*=ballon]').first().boundingBox())?.y ?? -1) >= 0
+  await ctx.close()
+  meld(
+    'een nieuwe sticker staat in de stal, en Pip zegt geen nul',
+    !/\b0\b/.test(zin) && glimt === 1 && pipInBeeld,
+    `Pip zei "${zin}"${glimt === 1 ? '' : ', geen glimmende sticker'}${pipInBeeld ? '' : ', Pip niet in beeld'}`,
+  )
+}
+
+/* ------------------------------------------------------------------ *
  * 3. Het goede quizantwoord wordt goed gerekend.
  *
  * Het scherm tekende de antwoorden in de ene volgorde en de lesmotor keek de andere
@@ -1023,6 +1056,7 @@ for (const regel of [
   quizRekentGoedGoed,
   verderInBeeld,
   quizWordtVoorgelezen,
+  nieuweStickerInDeStal,
   onmogelijkeZetKrijgtRegelzin,
   opdrachtKomtTerugNaTipje,
   samenSpelenKentDeWinnaar,
