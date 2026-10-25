@@ -8,7 +8,7 @@ import { alGetikt, kies } from '@/audio/voice'
 import { EERSTE_KEER, WELKOM, pipZinnen } from '@/content/voice'
 import { lesMet, WERELDEN } from '@/content'
 import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
-import { aantalBezit, verzameling } from '@/progress/verzameling'
+import { aantalBezit, geldigeStickers, verzameling } from '@/progress/verzameling'
 import {
   AVATARS,
   eersteVrijeMaatje,
@@ -52,7 +52,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   const kiesProfiel = useProfielStore((s) => s.kiesProfiel)
   const maakProfiel = useProfielStore((s) => s.maakProfiel)
   const voortgang = useVoortgang()
-  const stickers = useStickers()
+  const stickers = geldigeStickers(useStickers())
   const verslagen = useVerslagen()
   const oefendagen = useOefendagen()
   // Praat Pip hier vanzelf? Alleen als er al getikt was toen dit scherm verscheen,

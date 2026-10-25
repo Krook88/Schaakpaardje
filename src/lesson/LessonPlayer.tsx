@@ -22,7 +22,7 @@ import {
 } from '@/audio/voice'
 import { HINT_GEGEVEN, OPNIEUW_PROBEREN, VERDER_UITLEG, pipZinnen } from '@/content/voice'
 import { volgendeLes, wereldMet, type Lesson, type World } from '@/content'
-import { vertelTekst, vertelWijzers } from '@/content/types'
+import { uitspraakVan, vertelTekst, vertelWijzers } from '@/content/types'
 import { type Square } from '@/engine/board'
 import {
   antwoordQuiz,
@@ -256,8 +256,9 @@ export function LessonPlayer({
       if (!getVoiceConfig().spraak || !alGetikt()) return
       verderUitgelegd.current = true
       void (async () => {
-        await speak(VERDER_UITLEG)
+        const zin = speak(VERDER_UITLEG)
         const mijn = spreekBeurt()
+        await zin
         await wachtTotUitgesproken()
         // Daarna staat de uitlegzin weer in de ballon, niet deze.
         if (mijn === spreekBeurt()) wisOndertitel()
@@ -299,7 +300,7 @@ export function LessonPlayer({
     const mijn = ++voorleesBeurt.current
     const nogAanDeBeurt = () => mijn === voorleesBeurt.current
     const pauze = (ms: number) => new Promise((klaar) => setTimeout(klaar, ms))
-    const opties = s.opgave.opties.map((o, i) => ({ i, zeg: o.uitspraak ?? o.label }))
+    const opties = s.opgave.opties.map((o, i) => ({ i, zeg: uitspraakVan(o) }))
     void (async () => {
       // Eerst de vraag zelf laten uitspreken; die zegt Pip vanuit zijn ballon.
       await pauze(700)
@@ -311,12 +312,17 @@ export function LessonPlayer({
       // Begint er intussen een andere zin (het kind tikt op de luidspreker of op Pip),
       // dan houdt het voorlezen op in plaats van daar overheen te praten.
       let verwacht = spreekBeurt()
-      for (const { i, zeg } of opties) {
-        if (fouteKeuzes.current.has(i)) continue
+      const over = opties.filter(({ i }) => !fouteKeuzes.current.has(i))
+      // Is er nog maar één antwoord over, dan zou voorlezen het aanwijzen zijn.
+      if (over.length < 2) return
+      for (const { i, zeg } of over) {
         if (!nogAanDeBeurt() || spreekBeurt() !== verwacht) break
         setVoorgelezen(i)
-        await speak(zeg)
+        // Het nummer meteen pakken, niet na het wachten: tikt het kind tijdens het
+        // laden van het geluid op de luidspreker, dan hoort dat nummer bij zijn zin.
+        const zin = speak(zeg)
         verwacht = spreekBeurt()
+        await zin
         await wachtTotUitgesproken()
         await pauze(350)
       }

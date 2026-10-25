@@ -146,9 +146,12 @@ export const wereld12: World = {
           kind: 'quiz',
           vraag: 'Welke letter hoort bij het paard?',
           opties: [
-            { label: 'P', uitspraak: 'de letter P', emoji: '🐴', goed: true },
-            { label: 'K', uitspraak: 'de letter K', emoji: '🤴' },
-            { label: 'T', uitspraak: 'de letter T', emoji: '🏰' },
+            // Geen stukken als plaatje: een 🐴 naast de P gaf het antwoord weg — het kind
+            // zocht het paardje en niet de letter (schaakmeester). Neutrale bolletjes,
+            // alleen zodat elke knop iets heeft om naar te wijzen.
+            { label: 'P', uitspraak: 'de letter P', emoji: '🔵', goed: true },
+            { label: 'K', uitspraak: 'de letter K', emoji: '🟢' },
+            { label: 'T', uitspraak: 'de letter T', emoji: '🟣' },
           ],
         },
       ],

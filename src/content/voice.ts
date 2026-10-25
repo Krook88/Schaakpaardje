@@ -24,7 +24,7 @@ export const PRIJS = [
  * opgave met één veld, en na een opgave waar eerst een fout in zat.
  */
 export const PRIJS_LAATSTE = [
-  'Top! Helemaal goed gedaan.',
+  'Top! Goed gedaan.',
   'Klaar! Goed gedaan.',
   'Netjes! Die is af.',
 ] as const
@@ -224,8 +224,18 @@ export const LIVE_OPNIEUW = [
 /** Als de hele stal vol is. De tellerzin ernaast kan niet: daar staan getallen in. */
 export const STAL_VOL = 'Je stal is helemaal vol. Alles verzameld!'
 
-/** Bij een sticker die je nog niet hebt. Vast, zodat Pip hem met zijn eigen stem zegt. */
-export const STICKER_HOE = 'Haal drie sterren bij deze les, dan krijg je deze sticker.'
+/**
+ * Bij een sticker die je nog niet hebt. Vast, zodat Pip hem met zijn eigen stem zegt.
+ *
+ * Een uitnodiging en geen opdracht: hier stond "Haal drie sterren bij deze les", de enige
+ * plek in de stal waar Pip om perfectie vroeg — en omdat hints in de toets meetellen,
+ * kon een kind daaruit leren dat je beter geen hulp vraagt (schaakmeester).
+ */
+export const STICKER_HOE = 'Deze sticker krijg je als de toets in één keer lukt. Dat mag ook later nog.'
+/** Bij een sticker van een les die nog dicht zit: die kun je nu nog niet halen. */
+export const STICKER_NOG_DICHT = 'Deze les komt nog. Daar hoort deze sticker bij.'
+/** Bij een sticker die je wél hebt. Zonder de lestitel: vijf daarvan zijn een vraag. */
+export const STICKER_HEB_JE = 'Deze sticker heb je verdiend!'
 
 export const KENNISMAKING = 'Leuk je te ontmoeten! We beginnen bij het bord.'
 export const TEGEN_WIE = 'Tegen wie wil je spelen? Begin gerust makkelijk hoor.'

@@ -253,6 +253,22 @@ async function quizWordtVoorgelezen() {
   await page.getByRole('button', { name: /Opnieuw/ }).click().catch(() => {})
   const spreekt = await page.waitForSelector('[class*=quizSpreekt]', { timeout: 10000 }).catch(() => null)
   if (!spreekt) return meld('een quiz wordt voorgelezen, en tikken halverwege telt', false, 'geen luidsprekertje bij een antwoord')
+  // Eerst expres fout. Daarna leest Pip opnieuw voor, maar nooit meer het foute
+  // antwoord: een kind dat tikt op wat oplicht, tikt anders gewoon weer hetzelfde.
+  // (Bij twee antwoorden is er dan nog maar één over, en dat leest hij juist niet voor:
+  // dat zou aanwijzen zijn.)
+  await page.getByRole('button', { name: /een donker veld/ }).first().click()
+  let foutVoorgelezen = false
+  for (let i = 0; i < 50; i++) {
+    const t = await page.locator('[class*=quizSpreekt]').count()
+      ? await page.locator('button:has([class*=quizSpreekt])').innerText()
+      : ''
+    if (/donker/.test(t)) foutVoorgelezen = true
+    await page.waitForTimeout(100)
+  }
+  if (foutVoorgelezen) return meld('een quiz wordt voorgelezen, en tikken halverwege telt', false, 'na een fout las Pip het foute antwoord weer voor')
+  await page.getByRole('button', { name: /Opnieuw/ }).click()
+  await page.waitForSelector('[class*=quizSpreekt]', { timeout: 10000 }).catch(() => null)
   // Middenin het voorlezen het goede antwoord kiezen.
   await page.getByRole('button', { name: /een licht veld/ }).first().click()
   await page.waitForTimeout(600)

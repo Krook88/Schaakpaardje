@@ -66,6 +66,8 @@ export function stickerPlanken(
   voortgang: Record<string, LesResultaat>,
 ): { wereld: World; vakken: StickerVak[] }[] {
   const heeft = new Set(stickers)
+  // (Een sticker van een les die niet meer bestaat valt hier vanzelf weg: er wordt per
+  // bestaande les gekeken. Zie `geldigeStickers` voor de telling.)
   return WERELDEN.filter((w) => w.lessen.some((l) => heeft.has(l.id) || voortgang[l.id])).map((wereld) => ({
     wereld,
     vakken: wereld.lessen.map((les) => ({
@@ -76,4 +78,13 @@ export function stickerPlanken(
       bezit: heeft.has(les.id),
     })),
   }))
+}
+
+/**
+ * Alleen stickers van lessen die bestaan. Een les die ooit hernoemd is, liet anders op
+ * het beginscherm een leeg plekje achter en een teller die niet klopte met de plank.
+ */
+export function geldigeStickers(stickers: string[]): string[] {
+  const lessen = new Set(WERELDEN.flatMap((w) => w.lessen.map((l) => l.id)))
+  return stickers.filter((id) => lessen.has(id))
 }
