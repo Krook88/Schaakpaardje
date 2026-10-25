@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
 import { GeluidKnop } from '@/ui/GeluidKnop'
 import { alGetikt, kies } from '@/audio/voice'
-import { EERSTE_KEER, WELKOM, pipZinnen } from '@/content/voice'
+import { EERSTE_KEER, EERSTE_KEER_OUDER, WELKOM, pipZinnen } from '@/content/voice'
 import { lesMet, WERELDEN } from '@/content'
 import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
 import { tel } from '@/progress/tellen'
@@ -66,7 +66,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   // dus als je terugkomt van een les. Wie de site net opent, schrikt anders bij de
   // eerste tik van een pratend paardje. Eén keer vastgelegd: anders gaat hij alsnog
   // praten zodra er later iets op dit scherm verandert.
-  const [vanzelf] = useState(alGetikt)
+  const [vanzelf, setVanzelf] = useState(alGetikt)
 
   // Het ouderscherm stuurt hierheen met #nieuw-kind. Het huidige kind blijft zolang
   // actief: zette je het eerst op "geen kind", dan kon een kind dat weer ging spelen een
@@ -131,11 +131,16 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
           <NieuwProfiel
             bestaand={profielen.map((p) => ({ id: p.id, naam: p.naam, avatar: p.avatar }))}
             bezet={profielen.map((p) => p.avatar)}
+            // Na "Beginnen" praat Pip vanzelf, zoals het formulier belooft. `vanzelf` werd
+            // vastgelegd toen dit scherm nog de welkomstpagina was, vóór de eerste tik,
+            // en bleef daarna uit (spelontwerper).
             onKies={(id) => {
+              setVanzelf(true)
               kiesProfiel(id)
               naarBoven()
             }}
             onMaak={(naam, leeftijd, avatar) => {
+              setVanzelf(true)
               const id = maakProfiel(naam, leeftijd, avatar)
               naarBoven()
               return id
@@ -191,9 +196,12 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
 
                   Twee eigen regels die niet afbreken: in één zin brak het op een
                   telefoon in vier losse stukjes, met het kalendertje los van "dagen". */}
-              <p className="muted" style={{ fontSize: '0.9rem', margin: 0, whiteSpace: 'nowrap' }}>
-                ⭐ {totaal} van de {maxSterren}
-              </p>
+              {/* Geen "0 van de 147" voor wie nog niets heeft: dat telt wat je mist. */}
+              {totaal > 0 && (
+                <p className="muted" style={{ fontSize: '0.9rem', margin: 0, whiteSpace: 'nowrap' }}>
+                  ⭐ {totaal} van de {maxSterren}
+                </p>
+              )}
               {/* Alleen omhoog, nooit terug naar nul: zie `oefendagen` in de store. */}
               {oefendagen > 0 && (
                 <p className="muted" style={{ fontSize: '0.9rem', margin: 0, whiteSpace: 'nowrap' }}>
@@ -219,7 +227,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
           // les het is staat op de knop eronder.
           zegt={
             eersteKeer
-              ? EERSTE_KEER
+              ? profiel.modus === 'schaker' ? EERSTE_KEER_OUDER : EERSTE_KEER
               : kies(pipZinnen(profiel.modus === 'schaker').WELKOM_TERUG, 'welkom')
           }
           stemming="blij"

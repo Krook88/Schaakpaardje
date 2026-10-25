@@ -38,7 +38,7 @@ export default function Spelen() {
       <div className="stack">
         <Pip zegt={modus === 'schaker' ? TEGEN_WIE_OUDER : TEGEN_WIE} stemming="blij" />
 
-        {gespeeld && (
+        {gespeeld && gespeeld.gewonnen + gespeeld.verloren + gespeeld.remise > 0 && (
           <p className="muted">
             {/* Geen "verloor er N" tegen het kind zelf: die telling staat op het ouderscherm. */}
             Je hebt al {gespeeld.gewonnen + gespeeld.verloren + gespeeld.remise} keer gespeeld, en{' '}

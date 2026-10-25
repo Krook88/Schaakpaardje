@@ -39,6 +39,9 @@ export const BIJNA = [
   'Nee joh, niet erg. Nog een keer.',
 ] as const
 
+/** Na een fout quizantwoord zonder eigen tip. De gewone BIJNA-zinnen noemen "een ander veld". */
+export const BIJNA_QUIZ = ['Bijna. Luister nog eens goed.', 'Nog niet. Probeer een ander antwoord.'] as const
+
 export const AANMOEDIGING = [
   'Je kunt dit.',
   'Rustig kijken, dan zie je het.',
@@ -197,6 +200,9 @@ export const WELKOM_TERUG = [
  * leest als bruin. Een kleurwoord kan hier dus per definitie niet kloppen. Groot is
  * hij in allebei, en er is er maar één.
  */
+/** Voor een schaker (8+): zonder "mijn stal", dat is op dit scherm ook de naam van zijn verzameling. */
+export const EERSTE_KEER_OUDER = 'Welkom! Druk op de grote knop, dan beginnen we.'
+
 export const EERSTE_KEER =
   'Welkom in mijn stal! Druk op de grote knop, dan gaan we samen beginnen.'
 

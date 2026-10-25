@@ -197,6 +197,18 @@ export function tik(stand: OpgaveStand, veld: Square): TikResultaat {
           uit: klaar ? 'klaar' : 'goed',
         }
       }
+      // Pas één veld gevonden, en deze tik past wel in een ándere lijn? Dan was die
+      // eerste tik toeval, en kiest het kind nu de lijn. Een driejarige tikte a1 aan,
+      // ging daarna netjes e1-e2-e3-e4 omhoog, en hoorde bij elke tik "een lijn gaat
+      // recht omhoog" — wat ze juist deed (spelontwerper). Het eerste vinkje gaat weg.
+      const alle = 'varianten' in o && o.varianten?.length ? o.varianten : []
+      const andere = alle.filter((v) => v.includes(veld))
+      if (stand.gevonden.length === 1 && andere.length) {
+        return {
+          stand: { ...stand, gevonden: [veld], varianten: andere, misser: null, klaar: andere[0].length === 1 },
+          uit: andere[0].length === 1 ? 'klaar' : 'goed',
+        }
+      }
       return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1 }, uit: 'fout' }
     }
 
@@ -562,7 +574,11 @@ export function hint(stand: OpgaveStand): { stand: OpgaveStand; velden: Square[]
     // precies wat een kind dat vastloopt nodig heeft.
     const open = stand.varianten ? stand.varianten[0] : doelVelden(o)
     const rest = open.filter((sq) => !stand.gevonden.includes(sq))
-    return { stand: nieuw, velden: rest.slice(0, 1) }
+    // Niet het veld dat er al oplicht (`wijs`): dan zag een kind dat om hulp vroeg
+    // precies hetzelfde bord als daarvoor (spelontwerper).
+    const al = o.kind === 'tapSquares' ? (o.wijs ?? []) : []
+    const nieuwVeld = rest.filter((sq) => !al.includes(sq))
+    return { stand: nieuw, velden: (nieuwVeld.length ? nieuwVeld : rest).slice(0, 1) }
   }
   if (o.kind === 'move') {
     const van = o.from ?? Object.keys(stand.board).find((sq) => stand.board[sq].color === 'w')

@@ -47,7 +47,15 @@ export function aantalBezit(vakken: StalVak[]): number {
   return vakken.filter((v) => v.bezit).length
 }
 
-export type StickerVak = { id: string; naam: string; teken: string; toon: number; bezit: boolean }
+export type StickerVak = {
+  id: string
+  naam: string
+  teken: string
+  toon: number
+  bezit: boolean
+  /** De les is gedaan, maar zonder drie sterren: geen leeg vak, wel nog geen sticker. */
+  gedaan: boolean
+}
 
 /**
  * De stickers, per wereld.
@@ -76,6 +84,7 @@ export function stickerPlanken(
       teken: les.icoon,
       toon: wereld.toon,
       bezit: heeft.has(les.id),
+      gedaan: Boolean(voortgang[les.id]),
     })),
   }))
 }

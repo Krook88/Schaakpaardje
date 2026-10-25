@@ -178,6 +178,29 @@ te tikken was; dat was op `d589491` al opgelost door de reparatie van S1/C1.
 | L4-7 (klein) | ↺ was kleiner op het minispel-eindscherm. | **Opgelost.** |
 | L4-8, L4-9 (klein) | Een sleep die buiten het bord eindigt laat het stuk geselecteerd; de opdracht verdwijnt even na een hulpaanbod. | **Zo gelaten**: het eerste is gelijk aan één tik. Voor het tweede komt de opdracht na 4 s terug, net als na elke tip. |
 
+### Spelontwerper, onafhankelijk, tweede keer (G2-)
+
+Gespeeld op `d589491` als gast, kind van 3, kind van 5 en kind van 9. Niets blokkerends:
+"de les zelf is een goed kleuterspel". Pas aan speltesters geven als 1 tot en met 5
+opgelost zijn.
+
+| | Bevinding | Status |
+|---|---|---|
+| G2-1 (belangrijk) | Wie bleef missen, verloor de hulp weer: het hintlicht ging bij elke tik uit, de hint wees het veld aan dat al oplichtte, en het voordoen kwam maar één keer. | **Opgelost**: het licht blijft tot het veld aangetikt is, de hint slaat de `wijs`-velden over, wat gevonden is licht niet meer op, en het voordoen komt bij elke vijfde misser. |
+| G2-2 (belangrijk) | In de toets kwam bij herhaald falen nooit hulp. | **Opgelost**: hulp vanaf de derde misser, ook in de toets. Na drie fouten is het hoe dan ook één ster, dus hulp kost dan niets meer. Dit draait S-K "geen hulpaanbod in de toets" uit de vierde ronde terug; G2-2 weegt zwaarder. |
+| G2-3 (belangrijk) | Bij een lijnopgave legde een toevallige eerste tik de lijn voorgoed vast, met een tip die niet klopte. | **Opgelost**: na één gevonden veld mag het kind wisselen; het eerste vinkje gaat dan weg. Tests: na één tik wisselen, na twee vast. |
+| G2-4 (belangrijk) | Na "Beginnen" bleef Pip stil. | **Opgelost**: `vanzelf` gaat aan bij Beginnen en bij profiel kiezen. Er is een doorloopregel `pipPraatNaBeginnen`. |
+| G2-5 (belangrijk) | Vanaf het kinderscherm kom je met twee tikken bij de koffielink (bunq) op /over/ en bij het contactformulier. | **Voorgelegd aan Kaj**: de link naar /contact/ onderaan de startpagina is zijn eigen keuze (CLAUDE.md). |
+| G2-6 (belangrijk) | Het rekenslot is te makkelijk voor kinderen van 8 tot 10. | **Voorgelegd aan Kaj**: een moeilijkere som is ook moeilijker voor de ouder. |
+| G2-7 (belangrijk) | Een minispel kon je winnen door alles aan te tikken, en het gaf nooit vanzelf hulp. | **Deels**: de hulp na 3 en 5 missers geldt nu ook in de minispellen. Alles aantikken blijft mogelijk; een minispel is oefenen zonder sterren. |
+| G2-8 (belangrijk) | Stal, kaart en beginscherm lieten vooral zien wat je mist. | **Opgelost**: geen "0 / 16" of "0 van de"; een gedane les zonder sticker is geen gestippeld gat; geen sterrenbalk bij een wereld die uit is; geen "⭐ 0 van de 147" en geen "0 keer gespeeld". |
+| G2-9 (belangrijk) | Een partijtje staat even groot als de kaart, terwijl een jong kind koning en pion nog niet kent. | **Voorgelegd aan Kaj**: dit gaat over wat het beginscherm aanbiedt. |
+| G2-K (klein) | Een quizfout kreeg "probeer een ander veld". | **Opgelost**: `BIJNA_QUIZ`. |
+| G2-K (klein) | Een negenjarige kreeg dezelfde kleuterzin op het eerste scherm. | **Opgelost**: `EERSTE_KEER_OUDER`. |
+| G2-K (klein) | Een afgekapte eerste zin bij terugkomen; bij lange aanwijsopgaven geeft de hint maar één veld; het formulier staat onder de vouw; het ouderscherm toont de speeltijd niet. | **Volgende fase**: geen fout in wat deze PR doet. Ze staan hier, zodat ze niet verdwijnen. |
+
+Daarna: `npm run check` groen (517 tests), `npm run doorloop` 24 van 24.
+
 ## Wat nog moet vóór de release
 
 `npm run audio:render`. Kaj heeft credits en draait het. Luister daarbij naar "d vier" (S10).

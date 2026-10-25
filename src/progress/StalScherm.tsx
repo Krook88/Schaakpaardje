@@ -114,9 +114,11 @@ export function StalScherm() {
             </strong>
             {/* De stickers apart erbij: "2 van de 16" naast acht gekleurde vakjes klopte
                 niet met wat een kind ziet (spelontwerper). */}
-            <span aria-label={`${heeft} van de ${alles.length} verzameld, en ${stickers.length} stickers`}>
-              {heeft} / {alles.length}
-              {stickers.length > 0 && <> · 🏅 {stickers.length}</>}
+            {/* Geen "0 / 16": bij nul telt dat alleen wat je mist (spelontwerper). */}
+            <span aria-label={`${heeft} verzameld, en ${stickers.length} stickers`}>
+              {heeft > 0 && <>{heeft} / {alles.length}</>}
+              {heeft > 0 && stickers.length > 0 && ' · '}
+              {stickers.length > 0 && <>🏅 {stickers.length}</>}
             </span>
           </div>
         </div>
@@ -143,7 +145,7 @@ export function StalScherm() {
                     <button
                       key={vak.id}
                       type="button"
-                      className={`${styles.vak} ${styles.sticker} ${vak.bezit ? styles.heeft : styles.mist} ${
+                      className={`${styles.vak} ${styles.sticker} ${vak.bezit ? styles.heeft : vak.gedaan ? styles.gedaanVak : styles.mist} ${
                         vak.id === nieuweSticker ? styles.nieuw : ''
                       }`}
                       style={{ '--toon': vak.toon } as React.CSSProperties}
@@ -173,9 +175,11 @@ export function StalScherm() {
           <section key={soort} className="card stack" style={{ gap: 12 }}>
             <div className="row" style={{ justifyContent: 'space-between' }}>
               <h2 style={{ fontSize: '1.05rem' }}>{SOORTNAAM[soort]}</h2>
-              <span className="muted" style={{ fontSize: '0.85rem' }}>
-                {aantalBezit(planken[soort])} van de {planken[soort].length}
-              </span>
+              {aantalBezit(planken[soort]) > 0 && (
+                <span className="muted" style={{ fontSize: '0.85rem' }}>
+                  {aantalBezit(planken[soort])} van de {planken[soort].length}
+                </span>
+              )}
             </div>
             <div className={styles.plank}>
               {planken[soort].map((vak) => (

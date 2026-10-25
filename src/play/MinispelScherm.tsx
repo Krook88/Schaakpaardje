@@ -9,7 +9,8 @@ import { Confetti } from '@/ui/Confetti'
 import { Teller } from '@/ui/Teller'
 import { sfx } from '@/audio/sfx'
 import { kies, wachtTotUitgesproken } from '@/audio/voice'
-import { HINT_GEGEVEN, OPNIEUW_PROBEREN, SPEL_UIT, pipZinnen } from '@/content/voice'
+import { HINT_AANGEBODEN, HINT_GEGEVEN, OPNIEUW_PROBEREN, SPEL_UIT, VOORDOEN, pipZinnen } from '@/content/voice'
+import lesStijl from '@/lesson/LessonPlayer.module.css'
 import { type Square } from '@/engine/board'
 import {
   doelVelden,
@@ -39,6 +40,8 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
   const [zin, setZin] = useState(() => minispelMet(spelId)!.uitleg)
   const [stemming, setStemming] = useState<PipStemming>('blij')
   const [hintVelden, setHintVelden] = useState<Square[]>([])
+  /** Het lampje wiebelt: Pip biedt na drie missers zelf hulp aan. */
+  const [hulpWiebel, setHulpWiebel] = useState(false)
   const [shake, setShake] = useState<Square | null>(null)
   const [gehaald, setGehaald] = useState(0)
   /**
@@ -62,6 +65,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
       if (doorTimer.current) clearTimeout(doorTimer.current)
       doorTimer.current = null
       setUit(false)
+      setHulpWiebel(false)
       setNiveau(volgendNiveau)
       afbreken()
       const opgave = spel.maakOpgave(volgendNiveau)
@@ -89,7 +93,8 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
       if (stand.klaar) return
       const r = tik(stand, veld)
       setStand(r.stand)
-      setHintVelden([])
+      // Het tipje blijft staan tot het kind erop tikt, net als in de les.
+      setHintVelden((h) => h.filter((v) => v !== veld))
       switch (r.uit) {
         case 'geselecteerd':
           if (instellingen.effecten) sfx.tik()
@@ -134,8 +139,21 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
           // twee keer dezelfde misser maar één keer.
           setShake(null)
           setTimeout(() => setShake(veld), 0)
-          zegTip(kies(zinnen.BIJNA, 'bijna'), opdracht)
           setStemming('moedigt')
+          // Dezelfde hulp als in de les: na drie missers een aanbod en een wiebelend
+          // lampje, bij elke vijfde wijst Pip het aan. Een minispel was te winnen door
+          // alles aan te tikken, en een kind dat echt vastzat kreeg nooit hulp
+          // (spelontwerper).
+          if (r.stand.fouten % 5 === 0) {
+            const h = geefHint(r.stand)
+            setStand(h.stand)
+            setHintVelden(h.velden)
+            setHulpWiebel(false)
+            zegTip(VOORDOEN, opdracht)
+            break
+          }
+          if (r.stand.fouten === 3) setHulpWiebel(true)
+          zegTip(r.stand.fouten === 3 ? kies(HINT_AANGEBODEN, 'hulp') : kies(zinnen.BIJNA, 'bijna'), opdracht)
           break
         case 'opnieuw':
           if (instellingen.effecten) sfx.fout()
@@ -222,8 +240,9 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
         <div className="row" style={{ justifyContent: 'space-between' }}>
           <button
             type="button"
-            className="btn"
+            className={`btn ${hulpWiebel ? lesStijl.verderKlaar : ''}`}
             onClick={() => {
+              setHulpWiebel(false)
               const r = geefHint(stand)
               setStand(r.stand)
               setHintVelden(r.velden)

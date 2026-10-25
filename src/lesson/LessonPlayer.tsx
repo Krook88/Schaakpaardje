@@ -23,6 +23,7 @@ import {
 import {
   HINT_AANGEBODEN,
   HINT_GEGEVEN,
+  BIJNA_QUIZ,
   MAT_POORT,
   VOORDOEN,
   OPNIEUW_PROBEREN,
@@ -502,7 +503,9 @@ export function LessonPlayer({
       eersteOpgave()
       const r = tik(stand, veld)
       setStand(r.stand)
-      setHintVelden([])
+      // Het hulplicht blijft tot het kind erop tikt: het ging uit bij elke misser,
+      // en dan zag juist het kind dat bleef missen de hulp maar heel even.
+      setHintVelden((h) => h.filter((v) => v !== veld))
       switch (r.uit) {
         case 'geselecteerd':
           if (instellingen.effecten) sfx.tik()
@@ -524,10 +527,14 @@ export function LessonPlayer({
            * Wie blijft missen, krijgt vanzelf hulp. Een driejarige tikte dertig keer
            * lukraak en hoorde dertig keer dezelfde fouttip; hulp kwam er nooit, want "Help
            * me even" is een knop met tekst (spelontwerper). Na drie missers biedt Pip
-           * hulp aan en wiebelt het lampje. Na vijf doet hij het voor — maar niet in de
-           * toets: daar zou dat een ster kosten waar het kind niet om vroeg.
+           * hulp aan en wiebelt het lampje. Na vijf doet hij het voor.
+           *
+           * In de toets ook: na drie missers staat er hoe dan ook nog maar één ster
+           * (zie sterrenVoor), dus hulp kost dan niets meer. Er bleef daar tien keer
+           * "bijna" klinken zonder dat er iets kwam (spelontwerper). En elke vijfde
+           * misser opnieuw, niet één keer.
            */
-          if (r.stand.fouten === 5 && fase !== 'toets') {
+          if (r.stand.fouten % 5 === 0) {
             // Het antwoord aanwijzen, niet alleen een eerste aanzet: bij een zetopgave
             // is de eerste hint het stuk dat het kind al kent, en dan klopte "ik laat
             // het even voor" niet met wat er op het bord gebeurde (schaakmeester).
@@ -541,8 +548,7 @@ export function LessonPlayer({
             zegTip(VOORDOEN, 'vraag' in r.stand.opgave ? r.stand.opgave.vraag : '')
             break
           }
-          // In de toets geen aanbod: daar kost hulp een ster.
-          const bied = r.stand.fouten === 3 && fase !== 'toets'
+          const bied = r.stand.fouten === 3
           if (bied) setHulpWiebel(true)
           reageer(false, false, bied ? kies(HINT_AANGEBODEN, 'hulp') : foutZin(r.stand, r.reden))
           break
@@ -583,7 +589,7 @@ export function LessonPlayer({
       } else {
         setQuizFout(null)
         setTimeout(() => setQuizFout(index), 0)
-        const tip = 'foutTip' in r.stand.opgave ? r.stand.opgave.foutTip : undefined
+        const tip = ('foutTip' in r.stand.opgave ? r.stand.opgave.foutTip : undefined) ?? kies(BIJNA_QUIZ, 'bijna')
         // Na de tip en de vraag leest Pip de antwoorden die nog over zijn opnieuw voor.
         // Een kind van vijf tikt vaak op wat oplicht; zonder dit had het de andere
         // antwoorden nooit gehoord en ging het daarna gokken.
@@ -617,7 +623,9 @@ export function LessonPlayer({
     if (!stand) return { glow: les.vertelWijs }
     // De hint gaat vóór het gegeven: wie om hulp vraagt moet zien wat de hint aanwijst,
     // niet het veld dat er toch al oplichtte.
-    const gegeven = stand.opgave.kind === 'tapSquares' ? (stand.opgave.wijs ?? []) : []
+    // Wat al gevonden is, hoeft niet meer op te lichten.
+    const gegeven =
+      stand.opgave.kind === 'tapSquares' ? (stand.opgave.wijs ?? []).filter((v) => !stand.gevonden.includes(v)) : []
     const m: BoardMarks = {
       good: stand.gevonden,
       glow: hintVelden.length ? hintVelden : gegeven,

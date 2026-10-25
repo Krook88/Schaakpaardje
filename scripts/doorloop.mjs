@@ -429,6 +429,42 @@ async function hulpNaMissers() {
 }
 
 /* ------------------------------------------------------------------ *
+ * Na "Beginnen" praat Pip vanzelf, zoals het formulier belooft.
+ *
+ * Het beginscherm legde vast of Pip vanzelf mocht praten toen het nog de welkomstpagina
+ * was, vóór de eerste tik, en dat bleef uit. Een kind dat niet leest kreeg na "Beginnen"
+ * een stil scherm (spelontwerper). Er is in de testbrowser geen stem, dus we kijken wat
+ * er aan de apparaatstem gevraagd wordt.
+ * ------------------------------------------------------------------ */
+async function pipPraatNaBeginnen() {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  await ctx.addInitScript(() => {
+    window.__gezegd = []
+    const echt = window.speechSynthesis?.speak?.bind(window.speechSynthesis)
+    if (window.speechSynthesis) {
+      window.speechSynthesis.speak = (zin) => {
+        window.__gezegd.push(zin.text)
+        echt?.(zin)
+      }
+    }
+  })
+  const p = await ctx.newPage()
+  await p.goto(URL, { waitUntil: 'networkidle' })
+  await p.getByRole('textbox').first().fill('Testkind')
+  const jaar = p.getByRole('button', { name: '5', exact: true })
+  if (await jaar.count()) await jaar.click()
+  await p.getByRole('button', { name: /Beginnen/ }).click()
+  await p.waitForTimeout(2500)
+  const gezegd = await p.evaluate(() => window.__gezegd)
+  await ctx.close()
+  meld(
+    'na "Beginnen" praat Pip vanzelf',
+    gezegd.some((z) => /Welkom in mijn stal/.test(z)),
+    gezegd.length ? `Pip zei: ${gezegd.join(' | ')}` : 'Pip zei niets',
+  )
+}
+
+/* ------------------------------------------------------------------ *
  * 3. Het goede quizantwoord wordt goed gerekend.
  *
  * Het scherm tekende de antwoorden in de ene volgorde en de lesmotor keek de andere
@@ -1172,6 +1208,7 @@ for (const regel of [
   nieuweStickerInDeStal,
   zoalsEenKleuterZet,
   hulpNaMissers,
+  pipPraatNaBeginnen,
   onmogelijkeZetKrijgtRegelzin,
   opdrachtKomtTerugNaTipje,
   samenSpelenKentDeWinnaar,

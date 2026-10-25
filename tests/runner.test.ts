@@ -308,11 +308,22 @@ describe('opgaven met meer dan één goed antwoord', () => {
     expect(stand.fouten).toBe(0)
   })
 
-  it('legt na de eerste tik vast welke lijn het is', () => {
+  it('mag na één toevallige tik nog van lijn wisselen', () => {
+    // Een driejarige tikt a1 aan, en gaat dan netjes de e-lijn omhoog. Dat is goed: de
+    // eerste tik was toeval. Het vinkje op a1 gaat weg (spelontwerper).
     let stand = startOpgave(eenLijn)
     stand = tik(stand, 'c1').stand
-    // b2 hoort bij geen enkele lijn die nog open staat.
     const r = tik(stand, 'b2')
+    expect(r.uit).toBe('goed')
+    expect(r.stand.gevonden).toEqual(['b2'])
+    expect(r.stand.fouten).toBe(0)
+  })
+
+  it('legt na twee tikken vast welke lijn het is', () => {
+    let stand = startOpgave(eenLijn)
+    stand = tik(stand, 'c1').stand
+    stand = tik(stand, 'c2').stand
+    const r = tik(stand, 'b3')
     expect(r.uit).toBe('fout')
     expect(r.stand.fouten).toBe(1)
   })

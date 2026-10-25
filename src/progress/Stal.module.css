@@ -117,3 +117,8 @@
 }
 :root[data-theme='dark'] .nieuwKaart { background: hsl(var(--toon) 22% 20%); }
 @media (prefers-reduced-motion: reduce) { .nieuwKaart .nieuwTeken { animation: none; } }
+
+/* Een les die gedaan is, maar zonder sticker: geen leeg gestippeld gat, want dan zag een
+   kind vooral wat het niet had. Het plaatje gewoon, alleen nog zonder kleur en rand. */
+.gedaanVak { border-style: solid; background: transparent; }
+.gedaanVak .stickerTeken { opacity: 0.7; border-color: var(--line); }

@@ -154,6 +154,9 @@ export default function Kaart() {
               {/* Hoeveel sterren er in deze wereld te halen zijn, en hoeveel er al
                   liggen. Een balk die voller wordt zegt dat zonder één cijfer; het
                   getal ernaast is voor wie leest, en voor de schermlezer. */}
+              {/* Niet bij een wereld die al uit is: een balk die niet vol is zei daar
+                  "je mist nog iets", terwijl de wereld af is (spelontwerper). */}
+              {!wereldIsAf(wereld.id, voortgang) && (
               <div className={styles.oogst}>
                 <div
                   className={styles.balk}
@@ -169,6 +172,7 @@ export default function Kaart() {
                   ⭐ {sterrenNu}/{sterrenMax}
                 </span>
               </div>
+              )}
 
               <div className={styles.binnen}>
               {/* Het pad: één spoor met de lessen als halteplaatsen erop, en Pip op de
