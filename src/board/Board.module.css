@@ -167,3 +167,8 @@
   25% { transform: translateX(-4px); }
   75% { transform: translateX(4px); }
 }
+
+/* Een stuk kun je slepen. Zonder dit schuift een veeg over een stuk de pagina mee in
+   plaats van het stuk. Lege velden houden het gewone gedrag, zodat je over het bord
+   heen nog kunt scrollen. */
+.metStuk { touch-action: none; }

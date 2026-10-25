@@ -130,6 +130,35 @@ export function Board({
     }
   }, [shake])
 
+  /*
+   * Slepen.
+   *
+   * Het bord kende alleen tik-tik: eerst het stuk, dan het veld. Kinderen van drie tot
+   * zes slepen bijna altijd, en dan gebeurde er niets — ook geen selectie
+   * (spelontwerper). Een sleep is nu precies dezelfde twee tikken, via `onSquare`, zodat
+   * de lesmotor en de partij er niets van hoeven te weten.
+   *
+   * De tweede tik komt een tel later, met de nieuwste `onSquare`: de eerste tik verandert
+   * de stand, en met de oude functie zou het tweede veld nog op de oude stand landen. En
+   * de klik die de browser na het loslaten nog stuurt, telt niet: die zou het stuk weer
+   * loslaten.
+   */
+  const [sleepVan, setSleepVan] = useState<Square | null>(null)
+  const opVeld = useRef(onSquare)
+  opVeld.current = onSquare
+  const negeerKlikTot = useRef(0)
+  const laatLos = (e: React.PointerEvent) => {
+    const van = sleepVan
+    setSleepVan(null)
+    if (!van) return
+    const onder = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>('[data-square]')
+    const naar = onder?.dataset.square as Square | undefined
+    if (!naar || naar === van) return
+    negeerKlikTot.current = Date.now() + 500
+    if (selected !== van) opVeld.current?.(van)
+    setTimeout(() => opVeld.current?.(naar), 0)
+  }
+
   const ranks = orientation === 'w' ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8]
   const files = orientation === 'w' ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0]
   const onderste = ranks[ranks.length - 1]
@@ -171,7 +200,13 @@ export function Board({
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.frame} role="group" aria-label={label}>
+      <div
+        className={styles.frame}
+        role="group"
+        aria-label={label}
+        onPointerUp={laatLos}
+        onPointerCancel={() => setSleepVan(null)}
+      >
         <div className={styles.grid}>
           {ranks.map((rank) =>
             files.map((file) => {
@@ -186,7 +221,8 @@ export function Board({
               if (!light) classes.push(styles.dark)
               if (goed) classes.push(styles.goedVeld)
               if (fout) classes.push(styles.foutVeld)
-              if (selected === sq) classes.push(styles.selected)
+              if (selected === sq || sleepVan === sq) classes.push(styles.selected)
+              if (piece) classes.push(styles.metStuk)
               if (has(marks.glow, sq)) classes.push(styles.glow)
               const stap = marks.spoor?.indexOf(sq) ?? -1
               if (stap >= 0) classes.push(styles.spoor)
@@ -204,8 +240,12 @@ export function Board({
                   type="button"
                   className={classes.join(' ')}
                   onClick={() => {
+                    if (Date.now() < negeerKlikTot.current) return
                     setFocusVeld(sq)
                     onSquare?.(sq)
+                  }}
+                  onPointerDown={() => {
+                    if (piece && !disabled && onSquare) setSleepVan(sq)
                   }}
                   onKeyDown={(e) => opToets(e, sq)}
                   onFocus={() => setFocusVeld(sq)}

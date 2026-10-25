@@ -222,8 +222,16 @@ export function tik(stand: OpgaveStand, veld: Square): TikResultaat {
     const teKiezen = stand.actiefStuk ?? null
     if (teKiezen && veld !== teKiezen) {
       // Bij reach en captureAll speel je met één vast stuk.
-      if (stuk) return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1 }, uit: 'fout' }
-      return { stand, uit: 'genegeerd' }
+      if (stuk && o.kind !== 'move') {
+        return { stand: { ...stand, misser: veld, fouten: stand.fouten + 1 }, uit: 'fout' }
+      }
+      // Meteen op de plek tikken waar het stuk heen moet. Dat deed een kind van drie bij
+      // "Zet de toren eens omhoog", en er gebeurde niets: geen geluid, geen schudden,
+      // geen zin (spelontwerper). Er is maar één stuk dat hier kan gaan, dus is dit
+      // gewoon de zet: eerst dat stuk pakken, dan dit veld.
+      if (!stuk || stuk.color !== stand.board[teKiezen]?.color) {
+        return tik({ ...stand, geselecteerd: teKiezen }, veld)
+      }
     }
     if (!stuk) return { stand, uit: 'genegeerd' }
     return { stand: { ...stand, geselecteerd: veld, misser: null }, uit: 'geselecteerd' }

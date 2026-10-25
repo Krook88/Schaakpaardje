@@ -8,6 +8,7 @@ import { getVoiceConfig, speak } from '@/audio/voice'
 import { SOORTNAAM, type StalSoort } from '@/content/stal'
 import {
   STAL_ALLEEN_STICKERS,
+  STAL_NIEUW_VAK,
   STAL_VOL,
   STICKER_HEB_JE,
   STICKER_HOE,
@@ -85,10 +86,14 @@ export function StalScherm() {
   const stickerRijen = stickerPlanken(stickers, voortgang)
 
   const nieuweSticker = nieuw && stickers.includes(nieuw) ? nieuw : null
+  // Of een stuk, maatje of hoefijzer dat je net verdiende (zie NieuwInStal).
+  const nieuwVak = nieuw ? alles.find((v) => v.id === nieuw && v.bezit) ?? null : null
   const zin = uitgelicht
     ? uitgelicht.zin
     : nieuweSticker
       ? STICKER_NIEUW
+      : nieuwVak
+      ? STAL_NIEUW_VAK
       : compleet
       ? STAL_VOL
       : heeft === 0 && stickers.length > 0
@@ -99,7 +104,7 @@ export function StalScherm() {
     <main className="page">
       <Kop titel="Mijn stal" terug="/" />
       <div className="stack">
-        <Pip zegt={zin} stemming={uitgelicht?.bezit || compleet || nieuweSticker ? 'trots' : 'blij'} klein />
+        <Pip zegt={zin} stemming={uitgelicht?.bezit || compleet || nieuweSticker || nieuwVak ? 'trots' : 'blij'} klein />
 
         <div className="card stack" style={{ position: 'relative', overflow: 'hidden' }}>
           {compleet && <Confetti />}
@@ -107,8 +112,11 @@ export function StalScherm() {
             <strong>
               {profiel ? `De stal van ${profiel.naam}` : 'Mijn stal'}
             </strong>
-            <span aria-label={`${heeft} van de ${alles.length} verzameld`}>
+            {/* De stickers apart erbij: "2 van de 16" naast acht gekleurde vakjes klopte
+                niet met wat een kind ziet (spelontwerper). */}
+            <span aria-label={`${heeft} van de ${alles.length} verzameld, en ${stickers.length} stickers`}>
               {heeft} / {alles.length}
+              {stickers.length > 0 && <> · 🏅 {stickers.length}</>}
             </span>
           </div>
         </div>
@@ -174,7 +182,9 @@ export function StalScherm() {
                 <button
                   key={vak.id}
                   type="button"
-                  className={`${styles.vak} ${vak.bezit ? styles.heeft : styles.mist}`}
+                  className={`${styles.vak} ${vak.bezit ? styles.heeft : styles.mist} ${
+                    vak.id === nieuwVak?.id ? styles.nieuw : ''
+                  }`}
                   style={{ '--toon': vak.toon } as React.CSSProperties}
                   onClick={() => {
                     const zegt = vak.bezit ? `${vak.naam}. Die heb je!` : `${vak.naam}. ${vak.hoe}`

@@ -316,6 +316,96 @@ async function nieuweStickerInDeStal() {
 }
 
 /* ------------------------------------------------------------------ *
+ * Zoals een kind van drie een stuk zet: slepen, of meteen op het doel tikken.
+ *
+ * Het bord kende alleen tik-tik. Een kind dat bij "Zet de toren eens omhoog" meteen
+ * bovenaan tikte, of de toren sleepte, kreeg niets: geen geluid, geen schudden, geen
+ * zin (spelontwerper). Dat zie je alleen door het echt zo te doen.
+ * ------------------------------------------------------------------ */
+async function zoalsEenKleuterZet() {
+  const naarDeOpgave = async (p) => {
+    await p.goto(URL, { waitUntil: 'networkidle' })
+    await p.evaluate(() => {
+      const raw = JSON.parse(localStorage.getItem('schaakmaatje-v1') || '{"state":{},"version":0}')
+      raw.state = { ...raw.state, hervatpunt: { gast: { 'toren-1': 'zelf' } } }
+      localStorage.setItem('schaakmaatje-v1', JSON.stringify(raw))
+    })
+    await p.goto(`${URL}/les/toren-1/`, { waitUntil: 'networkidle' })
+    await p.waitForTimeout(900)
+  }
+  // Goed gerekend als Pip een prijszin zegt (PRIJS_LAATSTE): een fouttip telt niet.
+  const goedGezet = async (p) => {
+    await p.waitForTimeout(400)
+    return /goed gedaan|die is af|gelukt/i.test(await p.locator('[class*=ballon]').first().innerText().catch(() => ''))
+  }
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await naarDeOpgave(p)
+  const vraagErIs = /omhoog/.test(await p.locator('[class*=ballon]').first().innerText().catch(() => ''))
+  await p.locator('[data-square="e8"]').click()
+  const tikGoed = vraagErIs && (await goedGezet(p))
+
+  await naarDeOpgave(p)
+  const van = await p.locator('[data-square="e4"]').boundingBox()
+  const naar = await p.locator('[data-square="e7"]').boundingBox()
+  await p.mouse.move(van.x + van.width / 2, van.y + van.height / 2)
+  await p.mouse.down()
+  await p.mouse.move(naar.x + naar.width / 2, naar.y + naar.height / 2, { steps: 6 })
+  await p.mouse.up()
+  const sleepGoed = await goedGezet(p)
+  await ctx.close()
+  meld(
+    'slepen en meteen op het doel tikken werken',
+    tikGoed && sleepGoed,
+    [!vraagErIs && 'de opgave nooit bereikt', vraagErIs && !tikGoed && 'tik op e8 deed niets', !sleepGoed && 'slepen e4→e7 deed niets']
+      .filter(Boolean)
+      .join('; '),
+  )
+}
+
+/* ------------------------------------------------------------------ *
+ * Wie blijft missen, krijgt vanzelf hulp.
+ *
+ * Een driejarige tikte dertig keer lukraak en hoorde dertig keer dezelfde fouttip;
+ * "Help me even" kon hij niet lezen. Na drie missers biedt Pip nu hulp aan en wiebelt
+ * het lampje; na vijf (niet in de toets) doet hij het voor.
+ * ------------------------------------------------------------------ */
+async function hulpNaMissers() {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(600)
+  for (let i = 0; i < 8; i++) {
+    const door = p.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ })
+    if (!(await door.count())) break
+    await door.first().click()
+    await p.waitForTimeout(250)
+  }
+  await p.waitForTimeout(500)
+  // h8 hoort bij geen enkele opgave in het begin van De Weide.
+  for (let i = 0; i < 3; i++) {
+    await p.locator('[data-square="h8"]').click()
+    await p.waitForTimeout(250)
+  }
+  const aangeboden = /tipje|hulp/i.test(await p.locator('[class*=ballon]').first().innerText().catch(() => ''))
+  const wiebelt = (await p.locator('button:has-text("Help me even")[class*=verderKlaar]').count()) > 0
+  for (let i = 0; i < 2; i++) {
+    await p.locator('[data-square="h8"]').click()
+    await p.waitForTimeout(250)
+  }
+  // OPLOSSING: "Ik laat het even voor." of "Deze doen we samen."
+  const voorgedaan = /laat het even voor|doen we samen/i.test(
+    await p.locator('[class*=ballon]').first().innerText().catch(() => ''),
+  )
+  await ctx.close()
+  meld(
+    'na drie missers biedt Pip hulp aan, na vijf doet hij het voor',
+    aangeboden && wiebelt && voorgedaan,
+    [!aangeboden && 'geen aanbod', !wiebelt && 'lampje wiebelt niet', !voorgedaan && 'niets voorgedaan'].filter(Boolean).join('; '),
+  )
+}
+
+/* ------------------------------------------------------------------ *
  * 3. Het goede quizantwoord wordt goed gerekend.
  *
  * Het scherm tekende de antwoorden in de ene volgorde en de lesmotor keek de andere
@@ -1057,6 +1147,8 @@ for (const regel of [
   verderInBeeld,
   quizWordtVoorgelezen,
   nieuweStickerInDeStal,
+  zoalsEenKleuterZet,
+  hulpNaMissers,
   onmogelijkeZetKrijgtRegelzin,
   opdrachtKomtTerugNaTipje,
   samenSpelenKentDeWinnaar,

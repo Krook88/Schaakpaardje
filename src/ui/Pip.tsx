@@ -59,6 +59,7 @@ export function Pip({
   onKlaar,
   onPratend,
   onHerhaal,
+  springen = 0,
 }: {
   zegt?: string
   stemming?: PipStemming
@@ -80,6 +81,8 @@ export function Pip({
   onPratend?: (pratend: boolean) => void
   /** Het kind vroeg zelf om de zin nog eens (Pip of de luidspreker aangetikt). */
   onHerhaal?: () => void
+  /** Telt op bij elke goede tussentik: Pip springt opnieuw, zonder iets te zeggen. */
+  springen?: number
 }) {
   const [ondertitel, setOndertitel] = useState<string | null>(null)
   const [pratend, setPratend] = useState(false)
@@ -111,7 +114,7 @@ export function Pip({
 
   useEffect(() => {
     setPuls((p) => p + 1)
-  }, [zegt, stemming])
+  }, [zegt, stemming, springen])
 
   useEffect(() => {
     if (!zegt || !vanzelf) return

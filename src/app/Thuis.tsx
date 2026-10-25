@@ -22,6 +22,8 @@ import {
   useOefendagen,
   useVoortgang,
   volgendeOpenLes,
+  lesGedaan,
+  isOntgrendeld,
   wereldIsAf,
   type LesResultaat,
 } from '@/progress/store'
@@ -142,6 +144,10 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
 
   const verder = volgendeOpenLes(voortgang, profiel.modus)
   const verderLes = lesMet(verder.id)
+  // De verste wereld die voor deze modus vanaf het begin openstaat (voor een schaker
+  // Waardevallei): daar begint wie de stukken al kent.
+  const naDeStukken =
+    [...WERELDEN].reverse().find((w) => w.nummer > 0 && isOntgrendeld(w.lessen[0].id, {}, profiel.modus)) ?? null
   const totaal = sterrenTotaal(voortgang)
   const maxSterren = WERELDEN.flatMap((w) => w.lessen).length * 3
   const wereldenAf = WERELDEN.filter((w) => wereldIsAf(w.id, voortgang))
@@ -150,9 +156,9 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   const opfrissen = kiesOpfrisopgaven(voortgang).length
   // Nog geen enkele les gedaan: dan is dit het allereerste scherm dat dit kind ziet.
   const eersteKeer = Object.keys(voortgang).length === 0
-  // Elke les met minstens twee sterren: dan is er geen "volgende les" meer, en
-  // `volgendeOpenLes` valt terug op de allereerste.
-  const allesAf = WERELDEN.flatMap((w) => w.lessen).every((l) => (voortgang[l.id]?.sterren ?? 0) >= 2)
+  // Elke les gedaan: dan is er geen "volgende les" meer, en `volgendeOpenLes` valt
+  // terug op de allereerste.
+  const allesAf = WERELDEN.flatMap((w) => w.lessen).every((l) => lesGedaan(voortgang, l.id))
   const stalVakken = verzameling(voortgang, verslagen)
   const inStal = aantalBezit(stalVakken)
 
@@ -260,6 +266,19 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
               {eersteKeer ? 'De eerste les' : 'Verder leren'}: {verder.titel}
             </span>
           </Link>
+          )}
+          {/* Een negenjarige begon bij "Dit is een schaakbord". Wie de stukken al kent, mag
+              meteen naar de eerste wereld na de stukken; die staat voor een schaker al
+              open. De grote knop blijft het pad vanaf het begin (spelontwerper). */}
+          {eersteKeer && profiel.modus === 'schaker' && naDeStukken && (
+            <Link href={`/les/${naDeStukken.lessen[0].id}/`} className="btn btn--big" style={{ minHeight: 76 }}>
+              <span aria-hidden="true" style={{ fontSize: 32 }}>
+                {naDeStukken.emoji}
+              </span>
+              <span style={{ flex: 1, textAlign: 'left' }}>
+                Ik ken de stukken al: begin bij {naDeStukken.naam}
+              </span>
+            </Link>
           )}
           {opfrissen > 0 && (
             <Link

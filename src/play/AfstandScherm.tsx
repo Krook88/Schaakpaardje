@@ -22,13 +22,21 @@ import {
   PROMOTIE_ANDERS,
   PROMOTIE_GEKOZEN,
   PROMOTIE_KIES,
-  SCHAAK_TEGEN_JOU,
-  SCHAAK_VAN_JOU,
+  schaakZinnen,
 } from '@/content/voice'
 import { kies } from '@/audio/voice'
 import { type PieceType, type Square } from '@/engine/board'
 import { Game, isPromotie } from '@/engine/game'
-import { AVATARS, useInstellingen, useModus, useProfiel, useProfielStore, useToestandGeladen } from '@/progress/store'
+import {
+  AVATARS,
+  lesGedaan,
+  useInstellingen,
+  useModus,
+  useProfiel,
+  useProfielStore,
+  useToestandGeladen,
+  useVoortgang,
+} from '@/progress/store'
 import { codeer, leesIn, zetCode, type AfstandPartij } from './afstand'
 import { PromotieKiezer } from './PromotieKiezer'
 import { tel } from '@/progress/tellen'
@@ -82,6 +90,11 @@ function markeerEigen(code: string) {
  * link opent, speelt de kant die aan zet is.
  */
 export function AfstandScherm() {
+  // Het woord "schaak" pas na de eerste schaakles (wereld 9). Als ref: de zin wordt in
+  // afgeleide callbacks gekozen, en die hoeven daarvoor niet opnieuw te ontstaan.
+  const kentSchaakNu = lesGedaan(useVoortgang(), 'schaak-1')
+  const kentSchaak = useRef(kentSchaakNu)
+  kentSchaak.current = kentSchaakNu
   const geladen = useToestandGeladen()
   const profiel = useProfiel()
   const instellingen = useInstellingen()
@@ -166,7 +179,7 @@ export function AfstandScherm() {
         // Wie schaak staat en het niet hoort, ziet alleen dat de stukken niet willen. Een
         // paard met schaak is juist de reden om geen dame te nemen: dan beide zeggen.
         const onder = laatste?.[4] ? 'rbn'.indexOf(laatste[4]) : -1
-        setZin(onder >= 0 ? ONDERPROMOTIE_SCHAAK[onder] : kies(SCHAAK_TEGEN_JOU, 'schaak'))
+        setZin(onder >= 0 ? ONDERPROMOTIE_SCHAAK[onder] : kies(schaakZinnen(true, kentSchaak.current), 'schaak'))
         setStemming('verrast')
       } else {
         // Een pion die geen dame werd: zonder uitleg staat er ineens een paard.
@@ -238,7 +251,7 @@ export function AfstandScherm() {
         setStemming('trots')
       } else {
         // Eén ingesproken zin per keer; de knop "Zet versturen" staat er toch al.
-        setZin(na.check ? kies(SCHAAK_VAN_JOU, 'schaak') : AFSTAND_VERSTUREN)
+        setZin(na.check ? kies(schaakZinnen(false, kentSchaak.current), 'schaak') : AFSTAND_VERSTUREN)
         setStemming('trots')
       }
     },

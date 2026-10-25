@@ -40,8 +40,9 @@ export default function Spelen() {
 
         {gespeeld && (
           <p className="muted">
-            Je won er {gespeeld.gewonnen}, verloor er {gespeeld.verloren} en speelde {gespeeld.remise}{' '}
-            keer gelijk.
+            {/* Geen "verloor er N" tegen het kind zelf: die telling staat op het ouderscherm. */}
+            Je hebt al {gespeeld.gewonnen + gespeeld.verloren + gespeeld.remise} keer gespeeld, en{' '}
+            {gespeeld.gewonnen} keer gewonnen.
           </p>
         )}
 
@@ -136,7 +137,7 @@ export default function Spelen() {
         </div>
 
         <p className="muted" style={{ fontSize: '0.88rem' }}>
-          Eén paardje is heel makkelijk, drie paardjes denkt echt na. Begin gerust onderaan.
+          Eén paardje is heel makkelijk, drie paardjes denkt echt na. Begin gerust bovenaan.
         </p>
       </div>
     </main>

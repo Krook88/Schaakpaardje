@@ -98,3 +98,17 @@
   50% { transform: scale(1.1) rotate(-3deg); }
 }
 @media (prefers-reduced-motion: reduce) { .nieuw { animation: none; } }
+
+/* De kaart "Nieuw in je stal!" op het beloningsscherm en na een gewonnen partij. */
+.nieuwKaart {
+  display: flex; align-items: center; gap: 14px; text-align: left;
+  color: inherit; text-decoration: none;
+  border: 3px solid hsl(var(--toon) 45% 55%);
+  background: hsl(var(--toon) 55% 94%);
+  animation: nieuwBinnen 0.7s ease-out 0.5s 2;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .nieuwKaart { background: hsl(var(--toon) 22% 20%); }
+}
+:root[data-theme='dark'] .nieuwKaart { background: hsl(var(--toon) 22% 20%); }
+@media (prefers-reduced-motion: reduce) { .nieuwKaart { animation: none; } }

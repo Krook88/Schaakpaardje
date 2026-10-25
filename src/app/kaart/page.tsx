@@ -10,6 +10,7 @@ import {
   useToestandGeladen,
   useVoortgang,
   volgendeOpenLes,
+  lesGedaan,
   wereldIsAf,
 } from '@/progress/store'
 import styles from './Kaart.module.css'
@@ -103,7 +104,7 @@ export default function Kaart() {
               href: `/les/${les.id}/`,
               open: isOntgrendeld(les.id, voortgang, modus),
               sterren: voortgang[les.id]?.sterren ?? 0,
-              af: (voortgang[les.id]?.sterren ?? 0) >= 2,
+              af: lesGedaan(voortgang, les.id),
               jij: les.id === hier,
             })),
             ...(wereld.minispel

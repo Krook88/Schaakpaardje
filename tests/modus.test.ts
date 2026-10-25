@@ -47,7 +47,7 @@ describe('waar een profiel mag beginnen', () => {
 
   it('houdt voor de jongste groep alles bij het oude: strikt één les per keer', () => {
     expect(openWerelden('pip')).toEqual([0])
-    // De tweede les van wereld 0 gaat pas open na twee sterren op de eerste.
+    // De tweede les van wereld 0 gaat pas open als de eerste gedaan is.
     expect(isOntgrendeld(ALLE_LESSEN[1].id, LEEG, 'pip')).toBe(false)
   })
 
@@ -93,9 +93,11 @@ describe('waar een profiel mag beginnen', () => {
     }
   })
 
-  it('slaat een les over zodra hij twee sterren heeft, in elke modus', () => {
+  it('gaat door naar de volgende les zodra de toets is uitgespeeld, ook met één ster', () => {
+    // Eén ster is twee keer om hulp vragen. Daarmee moet je verder kunnen; anders leert
+    // een kind dat hulp vragen je tegenhoudt.
     const eerste: Record<string, LesResultaat> = {
-      [ALLE_LESSEN[0].id]: { sterren: 2, fouten: 0, hints: 0, laatst: '' },
+      [ALLE_LESSEN[0].id]: { sterren: 1, fouten: 0, hints: 2, laatst: '' },
     }
     for (const modus of MODI) {
       expect(volgendeOpenLes(eerste, modus).id).toBe(ALLE_LESSEN[1].id)
@@ -230,5 +232,15 @@ describe('instellingen terugzetten naar de modus', () => {
     useProfielStore.getState().zetLeeftijd(9)
     useProfielStore.getState().herstelInstellingen()
     expect(instellingenVan(useProfielStore.getState())).toEqual(standaardInstellingen('schaker'))
+  })
+})
+
+describe('verder waar je was', () => {
+  it('gaat na een sprong vooruit daar verder, niet terug naar de eerste les', () => {
+    const waarde = WERELDEN.find((w) => w.nummer === 7)!
+    const gedaan: Record<string, LesResultaat> = {
+      [waarde.lessen[0].id]: { sterren: 2, fouten: 0, hints: 0, laatst: '' },
+    }
+    expect(volgendeOpenLes(gedaan, 'schaker').id).toBe(waarde.lessen[1].id)
   })
 })

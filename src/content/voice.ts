@@ -13,7 +13,8 @@ export const PRIJS = [
   'Ja! Precies die.',
   'Goed hoor. Je ziet het.',
   'Helemaal goed, dat deed je knap.',
-  'Yes! Volgende.',
+  // Hier stond ook "Yes! Volgende.": midden in een opgave klonk "volgende" als "deze is
+  // klaar" (spelontwerper).
 ] as const
 
 /**
@@ -33,7 +34,8 @@ export const PRIJS_LAATSTE = [
 export const BIJNA = [
   'Bijna. Kijk nog eens goed.',
   'Nog niet. Probeer eens een ander veld.',
-  'Hm, die kan niet. Kijk waar het stuk heen mag.',
+  // Niet "kijk waar het stuk heen mag": in De Weide staat er geen enkel stuk op het bord.
+  'Hm, die niet. Kijk nog eens rustig.',
   'Nee joh, niet erg. Nog een keer.',
 ] as const
 
@@ -58,13 +60,18 @@ export const OPLOSSING = [
   'Deze doen we samen. Zo dus.',
 ] as const
 
-export const STER1 = ['Je hebt een ster! Nog eentje proberen?'] as const
+/** Eén ster is ook door: zie LES_GEDAAN_BIJ. Nog een keer mag, moet niet. */
+export const STER1 = ['Je hebt een ster! Je mag door, of doe hem nog een keer.'] as const
 export const STER2 = ['Twee sterren! De volgende les staat open.'] as const
 export const STER3 = ['Drie sterren! Je krijgt er een sticker bij.'] as const
 
+/**
+ * Een wereld uit. Hier stond ook "Hoefijzer verdiend!", maar een hoefijzer komt pas bij
+ * een diploma; een kind ging in de stal zoeken en vond niets (spelontwerper).
+ */
 export const WERELD_AF = [
   'Deze hele wereld is uit! Wat ben jij goed bezig.',
-  'Klaar met deze wereld. Hoefijzer verdiend!',
+  'Deze wereld is helemaal uit. Kijk eens in je stal!',
 ] as const
 
 export const PARTIJ_START = [
@@ -82,11 +89,23 @@ export const PARTIJ_VERLOREN = [
   'Verloren, maar je hebt goede zetten gedaan.',
 ] as const
 
+/**
+ * Pip in een partij. Hij zei twaalf zetten lang niets, alleen bij schaak en aan het eind:
+ * een verteller, geen maatje (spelontwerper). Nu reageert hij kort als het kind slaat,
+ * en één keer als een pion bijna aan de overkant is.
+ */
+export const PARTIJ_GESLAGEN = ['Hap! Die is van jou.', 'Mooi, die heb je.', 'Goed gezien!'] as const
+export const PARTIJ_PION_BIJNA = 'Kijk, je pion is bijna aan de overkant!'
+
+/** Het pionnenspel, als de pion van de ander als eerste de overkant haalt. */
+export const PIONNENSPEL_VERLOREN = 'De pion van de ander is als eerste aan de overkant. Deze keer won de ander.'
+
 export const PARTIJ_REMISE = ['Gelijkspel! Niemand wint, allebei goed gespeeld.'] as const
 
 export const BLUNDER_WAARSCHUWING = [
   'Weet je het zeker? Dan staat je stuk te pakken.',
-  'Pas op, daar kan hij hem slaan.',
+  // Geen "hij": Mila, Kiki en Fien zijn zij, de anderen hij. "De ander" klopt altijd.
+  'Pas op, daar kan de ander hem slaan.',
 ] as const
 
 export const SCHAAK_TEGEN_JOU = [
@@ -95,9 +114,24 @@ export const SCHAAK_TEGEN_JOU = [
 ] as const
 
 export const SCHAAK_VAN_JOU = [
-  'Schaak! Jij valt zijn koning aan.',
-  'Mooi, schaak! Nu moet hij wat.',
+  'Schaak! Jij valt de koning van de ander aan.',
+  'Mooi, schaak! Nu moet de ander wat.',
 ] as const
+/**
+ * Hetzelfde, maar zonder het woord "schaak", voor wie wereld 9 nog niet gedaan heeft.
+ * Een kind uit De Weide hoorde in een partij "Pas op, schaak! Los het eerst op." — een
+ * woord dat pas drie werelden later wordt uitgelegd (spelontwerper, schaakmeester).
+ */
+export const KONING_AANGEVALLEN = ['Pas op, je koning wordt aangevallen! Zet hem gauw veilig.'] as const
+export const KONING_VAN_DE_ANDER = ['Mooi, jij valt de koning van de ander aan!'] as const
+/** De schaakzinnen voor dit kind: met het woord "schaak" pas na wereld 9. */
+export function schaakZinnen(tegenJou: boolean, kentSchaak: boolean): readonly string[] {
+  if (tegenJou) return kentSchaak ? SCHAAK_TEGEN_JOU : KONING_AANGEVALLEN
+  return kentSchaak ? SCHAAK_VAN_JOU : KONING_VAN_DE_ANDER
+}
+/** De belknop: Pip zegt eerst dat hij stil wordt, anders weet een kleuter niet wat er gebeurde. */
+export const EVEN_STIL = 'Ik ben even stil. Tik op de bel, dan praat ik weer.'
+export const WEER_GELUID = 'Daar ben ik weer!'
 export const MAT_VOOR_JOU = ['Mat! De koning kan nergens meer heen.'] as const
 
 /** Wordt gebruikt als er geen specifieke fout-tip in de opgave staat. */
@@ -239,6 +273,8 @@ export const STICKER_NOG_DICHT = 'Deze les komt nog. Daar hoort deze sticker bij
 export const STICKER_HEB_JE = 'Deze sticker heb je verdiend!'
 /** Wie vanaf de beloning op zijn nieuwe sticker tikt, komt hier binnen. */
 export const STICKER_NIEUW = 'Daar is hij! Je nieuwe sticker staat in je stal.'
+/** Wie via "Nieuw in je stal!" binnenkomt (een stuk, maatje of hoefijzer). */
+export const STAL_NIEUW_VAK = 'Kijk eens! Die is nieuw in je stal.'
 /**
  * Als er stickers zijn maar nog geen stukken. De gewone telzin zei dan "Je hebt er 0 van
  * de 16", en een kind dat niet leest hoorde alleen die nul — over de sticker die het
@@ -294,19 +330,19 @@ export const PRIJS_LAATSTE_OUDER = [
 
 export const BIJNA_OUDER = [
   'Nog niet. Kijk nog eens.',
-  'Die kan niet. Kijk waar het stuk heen mag.',
+  'Die niet. Kijk nog eens rustig.',
   'Net niet. Probeer een ander veld.',
 ] as const
 
 export const AANMOEDIGING_OUDER = ['Rustig kijken.', 'Neem de tijd.', 'Je komt er wel.'] as const
 
-export const STER1_OUDER = ['Eén ster. Nog een keer proberen?'] as const
+export const STER1_OUDER = ['Eén ster. Door naar de volgende, of nog een keer?'] as const
 export const STER2_OUDER = ['Twee sterren. De volgende les staat open.'] as const
 export const STER3_OUDER = ['Drie sterren, en een sticker erbij.'] as const
 
 export const WERELD_AF_OUDER = [
   'Deze wereld is uit. Goed bezig.',
-  'Wereld uitgespeeld. Hoefijzer verdiend.',
+  'Wereld uitgespeeld. Kijk eens in je stal.',
 ] as const
 
 export const WELKOM_TERUG_OUDER = [
@@ -344,4 +380,9 @@ export function pipZinnen(ouder: boolean) {
 }
 
 /** Als een minispel na zes rondjes uit is. Zonder deze zin had het spel geen einde. */
-export const SPEL_UIT = 'Alle rondjes gehaald! Wil je er nog een doen?'
+/**
+ * Zonder "wil je er nog een doen?": met die vraag en "Nog een keer" als grootste knop
+ * was het einde van het spel een zachte nog-één-lus (spelontwerper). Nog een keer kan
+ * nog steeds; de grote knop is nu terug naar de kaart.
+ */
+export const SPEL_UIT = 'Alle rondjes gehaald! Wat goed gedaan.'

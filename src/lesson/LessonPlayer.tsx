@@ -20,7 +20,14 @@ import {
   wachtTotUitgesproken,
   wisOndertitel,
 } from '@/audio/voice'
-import { HINT_GEGEVEN, OPNIEUW_PROBEREN, VERDER_UITLEG, pipZinnen } from '@/content/voice'
+import {
+  HINT_AANGEBODEN,
+  HINT_GEGEVEN,
+  OPLOSSING,
+  OPNIEUW_PROBEREN,
+  VERDER_UITLEG,
+  pipZinnen,
+} from '@/content/voice'
 import { volgendeLes, wereldMet, type Lesson, type World } from '@/content'
 import { uitspraakVan, vertelTekst, vertelWijzers } from '@/content/types'
 import { type Square } from '@/engine/board'
@@ -42,11 +49,15 @@ import {
   useProfiel,
   useProfielStore,
   useToestandGeladen,
+  useVerslagen,
   useVoortgang,
   wereldIsAf,
 } from '@/progress/store'
 import { eenKeer, maakLastigMelder, maakStopMelder } from './lesTellingen'
 import { tel } from '@/progress/tellen'
+import { verzameling } from '@/progress/verzameling'
+import { NieuwInStal } from '@/progress/NieuwInStal'
+import type { StalStuk } from '@/content/stal'
 import styles from './LessonPlayer.module.css'
 
 type Fase = 'kijken' | 'meedoen' | 'zelf' | 'toets' | 'beloning'
@@ -114,6 +125,10 @@ export function LessonPlayer({
   const voorleesBeurt = useRef(0)
   /** Telt op bij "Opnieuw", zodat Pip de antwoorden dan opnieuw voorleest. */
   const [quizPoging, setQuizPoging] = useState(0)
+  /** De hulpknop wiebelt: Pip biedt na een paar missers zelf hulp aan. */
+  const [hulpWiebel, setHulpWiebel] = useState(false)
+  /** Telt goede tussentikken, zodat Pip bij elke springt (zie reageer). */
+  const [sprong, setSprong] = useState(0)
 
   const bewaarLes = useProfielStore((s) => s.bewaarLes)
   const bewaarHervatpunt = useProfielStore((s) => s.bewaarHervatpunt)
@@ -128,6 +143,9 @@ export function LessonPlayer({
   // sterren zijn al bewaard; bij de beloning vragen we of het ze onder een naam wil houden.
   const profiel = useProfiel()
   const voortgang = useVoortgang()
+  const verslagen = useVerslagen()
+  /** Wat er met deze les nieuw in de stal kwam: een stuk, of een hoefijzer. */
+  const [nieuwInStal, setNieuwInStal] = useState<StalStuk[]>([])
   const geladen = useToestandGeladen()
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
@@ -352,6 +370,7 @@ export function LessonPlayer({
       bewaarHervatpunt(les.id, nieuw === 'kijken' ? null : nieuw)
       setOpgaveIndex(0)
       setHintVelden([])
+      setHulpWiebel(false)
       const lijst =
         nieuw === 'meedoen' ? les.meedoen : nieuw === 'zelf' ? les.zelf : nieuw === 'toets' ? les.toets : []
       if (lijst.length) {
@@ -390,10 +409,18 @@ export function LessonPlayer({
       setStemming('trots')
       // De zin één keer kiezen, hier. Stond dit in de render, dan koos Pip bij elke
       // hertekening opnieuw en begon hij spontaan een andere zin uit te spreken.
-      const wereldKlaar = wereldIsAf(wereld.id, {
+      const na = {
         ...voortgang,
-        [les.id]: { sterren: behaald, fouten: toetsFouten, hints: toetsHints, laatst: '' },
-      })
+        [les.id]: {
+          sterren: Math.max(behaald, voortgang[les.id]?.sterren ?? 0) as 0 | 1 | 2 | 3,
+          fouten: toetsFouten,
+          hints: toetsHints,
+          laatst: '',
+        },
+      }
+      const wereldKlaar = wereldIsAf(wereld.id, na)
+      const hadAl = new Set(verzameling(voortgang, verslagen).filter((v) => v.bezit).map((v) => v.id))
+      setNieuwInStal(verzameling(na, verslagen).filter((v) => v.bezit && !hadAl.has(v.id)))
       setZin(
         wereldKlaar
           ? kies(zinnen.WERELD_AF, 'wereld')
@@ -404,11 +431,12 @@ export function LessonPlayer({
     startFase(volgende)
   }, [
     fase, toetsFouten, toetsHints, bewaarLes, bewaarHervatpunt, geefSticker, les.id,
-    startFase, voortgang, wereld.id, zinnen,
+    startFase, voortgang, wereld.id, zinnen, verslagen,
   ])
 
   const volgendeOpgave = useCallback(() => {
     setHintVelden([])
+    setHulpWiebel(false)
     setQuizFout(null)
     setQuizGoed(null)
     if (opgaveIndex + 1 < opgaven.length) {
@@ -432,8 +460,17 @@ export function LessonPlayer({
         // er niets gebeurt, dus een goed antwoord veranderde visueel helemaal niets.
         setStemming('juicht')
         tipAfbreken()
-        setZin(kies(klaar ? zinnen.PRIJS_LAATSTE : zinnen.PRIJS, 'prijs'))
-        if (klaar) naHetPraten(volgendeOpgave)
+        if (klaar) {
+          setZin(kies(zinnen.PRIJS_LAATSTE, 'prijs'))
+          naHetPraten(volgendeOpgave)
+        } else {
+          // Een tussentik: alleen het belletje en een sprongetje van Pip. Bij acht velden
+          // zei Pip na elk veld een hele zin, en elke tik brak de vorige af — met een
+          // echte stem een geratel van snippers (spelontwerper). De lof komt als de
+          // opgave af is. De opdracht blijft zo ook in de ballon staan.
+          setSprong((n) => n + 1)
+          if (stand && 'vraag' in stand.opgave) setZin(stand.opgave.vraag)
+        }
       } else {
         if (instellingen.effecten) sfx.fout()
         setStemming('moedigt')
@@ -471,14 +508,34 @@ export function LessonPlayer({
           // opnieuw als het kind twee keer hetzelfde verkeerde veld aantikt.
           setShake(null)
           setTimeout(() => setShake(veld), 0)
-          reageer(false, false, foutZin(r.stand, r.reden))
           if (fase === 'toets') setToetsFouten((n) => n + 1)
           lastig.misser(les.id, opgaveNu, r.stand.opgave.kind)
+          /*
+           * Wie blijft missen, krijgt vanzelf hulp. Een driejarige tikte dertig keer
+           * lukraak en hoorde dertig keer dezelfde fouttip; hulp kwam er nooit, want "Help
+           * me even" is een knop met tekst (spelontwerper). Na drie missers biedt Pip
+           * hulp aan en wiebelt het lampje. Na vijf doet hij het voor — maar niet in de
+           * toets: daar zou dat een ster kosten waar het kind niet om vroeg.
+           */
+          if (r.stand.fouten === 5 && fase !== 'toets') {
+            const h = geefHint(r.stand)
+            setStand(h.stand)
+            setHintVelden(h.velden)
+            setStemming('denkt')
+            setHulpWiebel(false)
+            if (instellingen.effecten) sfx.fout()
+            zegTip(kies(OPLOSSING, 'oplossing'), 'vraag' in r.stand.opgave ? r.stand.opgave.vraag : '')
+            break
+          }
+          if (r.stand.fouten === 3) setHulpWiebel(true)
+          reageer(false, false, r.stand.fouten === 3 ? kies(HINT_AANGEBODEN, 'hulp') : foutZin(r.stand, r.reden))
           break
         }
         case 'sla':
+          // Net als een goede tussentik: geluid en een sprongetje, geen zin.
           if (instellingen.effecten) sfx.slaan()
-          setZin(kies(zinnen.PRIJS, 'prijs'))
+          setStemming('juicht')
+          setSprong((n) => n + 1)
           break
         case 'zet':
           if (instellingen.effecten) sfx.zet()
@@ -491,7 +548,7 @@ export function LessonPlayer({
           break
       }
     },
-    [stand, instellingen.effecten, reageer, fase, zinnen, lastig, les.id, opgaveNu, eersteOpgave],
+    [stand, instellingen.effecten, reageer, fase, zinnen, lastig, les.id, opgaveNu, eersteOpgave, zegTip],
   )
 
   const opQuiz = useCallback(
@@ -526,6 +583,7 @@ export function LessonPlayer({
 
   const vraagHint = useCallback(() => {
     if (!stand) return
+    setHulpWiebel(false)
     const r = geefHint(stand)
     setStand(r.stand)
     setHintVelden(r.velden)
@@ -692,6 +750,8 @@ export function LessonPlayer({
             )}
           </div>
 
+          <NieuwInStal stukken={nieuwInStal} />
+
           {nieuweWereld && (
             <div
               className={`card ${styles.poort}`}
@@ -710,12 +770,29 @@ export function LessonPlayer({
             </div>
           )}
           <div className="row" style={{ justifyContent: 'center' }}>
+            {/* Pip zei "nog eentje proberen?" en er was geen knop voor. Alleen de toets
+                opnieuw: daar gaan de sterren over, en de uitleg en het oefenen nog eens
+                doen voelt als straf. */}
+            {sterren < 3 && (
+              <button
+                type="button"
+                className="btn"
+                onClick={() => {
+                  setToetsFouten(0)
+                  setToetsHints(0)
+                  setStemming('denkt')
+                  startFase('toets')
+                }}
+              >
+                <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>↺</span> Nog een keer
+              </button>
+            )}
             <Link href="/kaart/" className="btn">
-              Naar de kaart
+              <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>🗺️</span> Naar de kaart
             </Link>
             {volgende && (
               <Link href={`/les/${volgende.id}/`} className="btn btn--primary btn--big">
-                Volgende les →
+                <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>▶︎</span> Volgende les
               </Link>
             )}
           </div>
@@ -765,6 +842,7 @@ export function LessonPlayer({
         <Pip
           zegt={zin}
           stemming={stemming}
+          springen={sprong}
           klein
           // Vraagt het kind de vraag nog eens, dan komen de antwoorden er ook weer
           // achteraan. Anders hoorde juist wie om herhaling vroeg maar de helft.
@@ -860,7 +938,7 @@ export function LessonPlayer({
             // niet te staan.
             <button
               type="button"
-              className="btn"
+              className={`btn ${hulpWiebel ? styles.verderKlaar : ''}`}
               onClick={vraagHint}
               disabled={stand.klaar}
               style={{ minHeight: 60 }}
@@ -887,6 +965,7 @@ export function LessonPlayer({
               setQuizFout(null)
               setQuizGoed(null)
               fouteKeuzes.current = new Set()
+              setHulpWiebel(false)
               setQuizPoging((n) => n + 1)
               const vraag = 'vraag' in opgave ? opgave.vraag : ''
               // Stond de vraag al in de ballon, dan verandert er niets en zegt Pip hem

@@ -165,8 +165,10 @@ function OuderPaneel() {
           <ul className="muted" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 2 }}>
             <li style={{ whiteSpace: 'nowrap' }}>{gedaan} van de {totaal} lessen gedaan</li>
             {gespeeld && (
-              <li style={{ whiteSpace: 'nowrap' }}>
+              <li>
                 {gespeeld.gewonnen + gespeeld.verloren + gespeeld.remise} partijen gespeeld
+                {/* De uitslag hoort hier, niet bij het kind: daar stond "verloor er N". */}
+                {' '}({gespeeld.gewonnen} gewonnen, {gespeeld.verloren} verloren, {gespeeld.remise} gelijk)
               </li>
             )}
             {oefendagen > 0 && (

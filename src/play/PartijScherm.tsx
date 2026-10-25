@@ -22,13 +22,20 @@ import {
   SAMEN_ZWART_WINT,
   SCHAAK_TEGEN_JOU,
   SCHAAK_VAN_JOU,
+  KONING_AANGEVALLEN,
+  KONING_VAN_DE_ANDER,
   ZET_TERUGGENOMEN,
   pipZinnen,
+  PARTIJ_GESLAGEN,
+  PARTIJ_PION_BIJNA,
+  PIONNENSPEL_VERLOREN,
 } from '@/content/voice'
 import { PIECE_NAME, type PieceType, type Square } from '@/engine/board'
 import { Game, blunderVerlies, isPromotie, materialBalance } from '@/engine/game'
 import { getBot, KidBot } from '@/engine/bots'
-import { useInstellingen, useModus, useProfielStore } from '@/progress/store'
+import { lesGedaan, useInstellingen, useModus, useProfielStore, useVerslagen, useVoortgang } from '@/progress/store'
+import { STALSTUKKEN, type StalStuk } from '@/content/stal'
+import { NieuwInStal } from '@/progress/NieuwInStal'
 import { OPSTELLING } from './opstellingen'
 import { SamenKiezer, type Speler } from './SamenKiezer'
 import { PromotieKiezer } from './PromotieKiezer'
@@ -49,8 +56,15 @@ export function PartijScherm({ botId }: { botId: string }) {
   const [promotieVraag, setPromotieVraag] = useState<{ van: Square; naar: Square } | null>(null)
   const bewaarPartij = useProfielStore((s) => s.bewaarPartij)
   const bewaarOverwinning = useProfielStore((s) => s.bewaarOverwinning)
+  const verslagen = useVerslagen()
+  // Het woord "schaak" pas na de eerste schaakles (wereld 9).
+  const kentSchaak = lesGedaan(useVoortgang(), 'schaak-1')
+  /** Het maatje dat met deze winst in de stal kwam, als het er nog niet stond. */
+  const [nieuwMaatje, setNieuwMaatje] = useState<StalStuk | null>(null)
 
   const gameRef = useRef(new Game(opzet?.fen))
+  /** "Je pion is bijna aan de overkant" één keer per partij, niet bij elke stap. */
+  const pionBijnaGezegd = useRef(false)
   const [fen, setFen] = useState(gameRef.current.fen)
   const [geselecteerd, setGeselecteerd] = useState<Square | null>(null)
   const [laatsteZet, setLaatsteZet] = useState<[Square, Square] | null>(null)
@@ -114,10 +128,15 @@ export function PartijScherm({ botId }: { botId: string }) {
       // Winnen van een tegenstander levert zijn maatje op voor de stal. Eén keer is
       // genoeg: het is een verzameling, geen scorebord, dus je kunt hem niet kwijtraken
       // door daarna te verliezen.
-      if (nieuw === 'gewonnen' && bot) bewaarOverwinning(bot.id)
+      if (nieuw === 'gewonnen' && bot) {
+        if (!verslagen.includes(bot.id)) {
+          setNieuwMaatje(STALSTUKKEN.find((s) => s.id === `maatje-${bot.id}`) ?? null)
+        }
+        bewaarOverwinning(bot.id)
+      }
       if (instellingen.effecten) sfx.diploma()
     },
-    [bewaarPartij, bewaarOverwinning, bot, instellingen.effecten, partijNr],
+    [bewaarPartij, bewaarOverwinning, bot, instellingen.effecten, partijNr, verslagen],
   )
 
   /**
@@ -156,7 +175,14 @@ export function PartijScherm({ botId }: { botId: string }) {
           // zin voor allebei zou de helft van de meldingen omdraaien — precies het
           // begrip dat wereld 9 net heeft aangeleerd.
           const tegenHetKind = samen || status.turn === 'w'
-          setZin(kies(tegenHetKind ? SCHAAK_TEGEN_JOU : SCHAAK_VAN_JOU, 'schaak'))
+          setZin(
+            kies(
+              tegenHetKind
+                ? kentSchaak ? SCHAAK_TEGEN_JOU : KONING_AANGEVALLEN
+                : kentSchaak ? SCHAAK_VAN_JOU : KONING_VAN_DE_ANDER,
+              'schaak',
+            ),
+          )
           setStemming('verrast')
         }
         return false
@@ -173,7 +199,7 @@ export function PartijScherm({ botId }: { botId: string }) {
       }
       return true
     },
-    [eindig, eindigSamen, instellingen.effecten, samen],
+    [eindig, eindigSamen, instellingen.effecten, samen, kentSchaak],
   )
 
 
@@ -199,7 +225,7 @@ export function PartijScherm({ botId }: { botId: string }) {
       // Het pionnenspel geldt beide kanten op: haalt de bot als eerste de overkant,
       // dan heeft hij gewonnen. Zonder dit werkte de winregel maar één kant op.
       if (opzet?.winBijPromotie && gedaanDoorBot?.promotion) {
-        eindig('verloren', 'Zijn pion is dame geworden. Deze keer wint hij.')
+        eindig('verloren', PIONNENSPEL_VERLOREN)
       }
     }, bot.denktijd)
   }, [kidBot, bot, controleerEinde, eindig, instellingen.effecten, opzet?.winBijPromotie])
@@ -215,6 +241,19 @@ export function PartijScherm({ botId }: { botId: string }) {
       setFen(game.fen)
       setGeselecteerd(null)
       setZetten((n) => n + 1)
+      // Kort meedoen, zoals een maatje naast je: bij slaan, en één keer per partij als
+      // een pion bijna aan de overkant is. Niet bij samen spelen: dan zit er aan
+      // beide kanten een kind, en juichen voor de een is jammer voor de ander.
+      if (!samen) {
+        if (gedaan.isCapture) {
+          setZin(kies(PARTIJ_GESLAGEN, 'geslagen'))
+          setStemming('juicht')
+        } else if (gedaan.stuk === 'p' && Number(naar[1]) >= 6 && !pionBijnaGezegd.current) {
+          pionBijnaGezegd.current = true
+          setZin(PARTIJ_PION_BIJNA)
+          setStemming('verrast')
+        }
+      }
 
       // Pionnenspel: wie het eerst promoveert, wint.
       if (opzet?.winBijPromotie && gedaan.promotion) {
@@ -243,9 +282,9 @@ export function PartijScherm({ botId }: { botId: string }) {
       const verlies = instellingen.blunderWaarschuwing ? blunderVerlies(gameRef.current, van, naar, promotie) : 0
       if (verlies >= 3) {
         setTwijfel({ van, naar, verlies, promotie })
-        // Bij samen spelen alleen de eerste zin: de tweede zegt "hij", en het andere
-        // kind kan net zo goed een meisje zijn.
-        setZin(samen ? BLUNDER_WAARSCHUWING[0] : kies(BLUNDER_WAARSCHUWING, 'blunder'))
+        // Beide zinnen zeggen "de ander", niet "hij": dat klopt voor elke tegenstander,
+        // ook bij samen spelen.
+        setZin(kies(BLUNDER_WAARSCHUWING, 'blunder'))
         setStemming('verrast')
         return
       }
@@ -319,6 +358,8 @@ export function PartijScherm({ botId }: { botId: string }) {
     // partij, en dan begint een kind zijn potje met een zet die de app deed.
     stopDenken()
     setPartijNr((n) => n + 1)
+    pionBijnaGezegd.current = false
+    setNieuwMaatje(null)
     gameRef.current = new Game(opzet?.fen)
     setPromotieVraag(null)
     if (wisselTimer.current) clearTimeout(wisselTimer.current)
@@ -460,21 +501,12 @@ export function PartijScherm({ botId }: { botId: string }) {
               Als je dat doet, kan {bot?.naam ?? 'de ander'} je{' '}
               {twijfel.verlies >= 9 ? 'dame' : twijfel.verlies >= 5 ? 'toren' : 'stuk'} pakken.
             </p>
+            {/* De opvallende knop is de veilige: een kind dat niet leest tikt op de
+                gekleurde knop, en dat was "Toch doen" (spelontwerper). En plaatjes erbij. */}
             <div className="row">
               <button
                 type="button"
-                className="btn btn--primary"
-                onClick={() => {
-                  const t = twijfel
-                  setTwijfel(null)
-                  voerUit(t.van, t.naar, t.promotie)
-                }}
-              >
-                Toch doen
-              </button>
-              <button
-                type="button"
-                className="btn"
+                className="btn btn--primary btn--big"
                 onClick={() => {
                   setTwijfel(null)
                   setGeselecteerd(null)
@@ -482,7 +514,18 @@ export function PartijScherm({ botId }: { botId: string }) {
                   setStemming('blij')
                 }}
               >
-                Andere zet zoeken
+                <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>↩︎</span> Andere zet
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => {
+                  const t = twijfel
+                  setTwijfel(null)
+                  voerUit(t.van, t.naar, t.promotie)
+                }}
+              >
+                <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1 }}>✔︎</span> Toch doen
               </button>
             </div>
           </div>
@@ -514,8 +557,10 @@ export function PartijScherm({ botId }: { botId: string }) {
           <div className="card stack center">
             <h2>{uitslag === 'gewonnen' ? 'Gewonnen! 🏆' : uitslag === 'verloren' ? 'Deze ging verloren' : 'Gelijkspel'}</h2>
             <p className="muted">
-              Je deed {zetten} zetten. {laatsteZet && `De laatste ging naar ${laatsteZet[1]}.`}
+              {/* Niet "de laatste ging naar e1": dat was meestal de zet van de ander. */}
+              Je deed {zetten} zetten.
             </p>
+            {nieuwMaatje && <NieuwInStal stukken={[nieuwMaatje]} />}
             <div className="row" style={{ justifyContent: 'center' }}>
               <button type="button" className="btn btn--primary btn--big" onClick={opnieuw}>
                 Nog een partijtje
@@ -531,7 +576,9 @@ export function PartijScherm({ botId }: { botId: string }) {
           </button>
           {/* Na een samen-partij staat "andersom" al in de uitslag; twee knoppen voor
               opnieuw beginnen met ander gedrag kan een kind niet uit elkaar houden. */}
-          {!(samen && uitslag) && (
+          {/* Na een uitslag staat "Nog een partijtje" al groot in de uitslag; twee knoppen
+              die hetzelfde doen kan een kind niet uit elkaar houden. */}
+          {!uitslag && (
             <button type="button" className="btn" onClick={opnieuw}>
               ↺ Nog een keer
             </button>

@@ -347,3 +347,24 @@ describe('opgaven met meer dan één goed antwoord', () => {
     expect(r.uit).toBe('fout')
   })
 })
+
+describe('meteen op het doel tikken', () => {
+  // Een kind van drie tikt bij "Zet de toren eens omhoog" direct op de plek waar de
+  // toren heen moet. Er is maar één stuk dat kan gaan, dus dat is gewoon de zet.
+  const torenOmhoog: Exercise = { kind: 'move', fen: '8/8/8/8/4R3/8/8/8', from: 'e4', goed: ['e8'], vraag: 'Zet de toren naar boven.' }
+
+  it('pakt het enige stuk en doet de zet', () => {
+    const r = tik(startOpgave(torenOmhoog), 'e8')
+    expect(r.uit).toBe('klaar')
+  })
+
+  it('rekent een verkeerd doel nog steeds fout', () => {
+    const r = tik(startOpgave(torenOmhoog), 'f5')
+    expect(r.uit).toBe('fout')
+  })
+
+  it('werkt ook bij een loopopgave met één stuk', () => {
+    const naarDeSter: Exercise = { kind: 'reach', fen: '8/8/8/8/4R3/8/8/8', from: 'e4', doel: 'e8', vraag: 'Breng de toren naar de ster.' }
+    expect(tik(startOpgave(naarDeSter), 'e8').uit).toBe('klaar')
+  })
+})

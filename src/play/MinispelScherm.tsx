@@ -172,19 +172,19 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
             <p>Alle {NIVEAUS} rondjes gehaald!</p>
           </div>
           <div className="row" style={{ justifyContent: 'center' }}>
-            <Link href="/kaart/" className="btn">
-              Naar de kaart
-            </Link>
             <button
               type="button"
-              className="btn btn--primary btn--big"
+              className="btn"
               onClick={() => {
                 setGehaald(0)
                 nieuwRondje(1)
               }}
             >
-              ↺ Nog een keer
+              <span aria-hidden="true">↺</span> Nog een keer
             </button>
+            <Link href="/kaart/" className="btn btn--primary btn--big">
+              <span aria-hidden="true">🗺️</span> Naar de kaart
+            </Link>
           </div>
         </div>
       </main>
