@@ -314,10 +314,23 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
             </span>
           </div>
           <Stalrij vakken={stalVakken} />
+          {/* De stickers zelf, en niet alleen hoeveel: een kind dat niet leest zag
+              hier "Plus 5 stickers" en kon nergens terugvinden welke het had. De
+              nieuwste vooraan; de hele verzameling staat in de stal. */}
           {stickers.length > 0 && (
-            <p className="muted" style={{ fontSize: '0.85rem', margin: 0 }}>
-              Plus {stickers.length} {stickers.length === 1 ? 'sticker' : 'stickers'} van perfecte lessen.
-            </p>
+            <div className="row" style={{ gap: 6 }} aria-label={`${stickers.length} stickers verdiend`}>
+              <span aria-hidden="true" style={{ fontSize: 22 }}>🏅</span>
+              {[...stickers].reverse().slice(0, 6).map((id) => (
+                <span key={id} aria-hidden="true" title={lesMet(id)?.titel} style={{ fontSize: 24 }}>
+                  {lesMet(id)?.icoon}
+                </span>
+              ))}
+              {stickers.length > 6 && (
+                <span className="muted" style={{ fontSize: '0.85rem' }}>
+                  +{stickers.length - 6}
+                </span>
+              )}
+            </div>
           )}
         </Link>
 

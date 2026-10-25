@@ -20,11 +20,12 @@ export const PRIJS = [
  * Als een opgave helemaal af is. Hier stond "Dat was de laatste. Netjes!", en dat klonk
  * als de laatste opgave van de les terwijl het alleen het laatste vinkje was — een kind
  * verwachtte daarna de beloning en kreeg nog een opgave. "Je hebt ze allemaal" ging om
- * dezelfde reden weg: deze zinnen komen ook na een quiz en na een opgave met één veld.
+ * dezelfde reden weg, en "alles goed" ook: deze zinnen komen ook na een quiz, na een
+ * opgave met één veld, en na een opgave waar eerst een fout in zat.
  */
 export const PRIJS_LAATSTE = [
   'Top! Helemaal goed gedaan.',
-  'Klaar! En alles goed.',
+  'Klaar! Goed gedaan.',
   'Netjes! Die is af.',
 ] as const
 
@@ -156,9 +157,10 @@ export const EERSTE_KEER =
  * De knop "Verder" was nooit uitgelegd: een kind van vijf wist niet wanneer het erop
  * mocht tikken. Hij wiebelt nu zodra Pip klaar is, en blijft het kind dan nog even
  * stil, dan zegt Pip één keer per les wat de bedoeling is. Geen kleur en geen woord
- * op de knop: die kan het niet lezen, en een kleur klopt niet in beide thema's.
+ * op de knop: die kan het niet lezen, en een kleur klopt niet in beide thema's. En
+ * niet "de knop die wiebelt": wie beweging uit heeft staan, ziet hem niet wiebelen.
  */
-export const VERDER_UITLEG = 'Klaar met luisteren? Tik dan op de knop die wiebelt.'
+export const VERDER_UITLEG = 'Klaar met luisteren? Tik dan op de grote knop onderaan.'
 
 /** Bij een partijtje samen op één tablet, als er geen tegenstander gekozen is. */
 export const SAMEN_SPELEN = 'Samen spelen! Wit begint.'
@@ -222,6 +224,9 @@ export const LIVE_OPNIEUW = [
 /** Als de hele stal vol is. De tellerzin ernaast kan niet: daar staan getallen in. */
 export const STAL_VOL = 'Je stal is helemaal vol. Alles verzameld!'
 
+/** Bij een sticker die je nog niet hebt. Vast, zodat Pip hem met zijn eigen stem zegt. */
+export const STICKER_HOE = 'Haal drie sterren bij deze les, dan krijg je deze sticker.'
+
 export const KENNISMAKING = 'Leuk je te ontmoeten! We beginnen bij het bord.'
 export const TEGEN_WIE = 'Tegen wie wil je spelen? Begin gerust makkelijk hoor.'
 export const HINT_GEGEVEN = 'Kijk eens naar het veld dat oplicht.'
@@ -263,9 +268,9 @@ export const PRIJS_OUDER = [
 ] as const
 
 export const PRIJS_LAATSTE_OUDER = [
-  'Alles gevonden. Netjes.',
-  'Compleet, en alles goed.',
-  'Netjes, die is af.',
+  'Goed, die is af.',
+  'Klopt, netjes opgelost.',
+  'Netjes gedaan.',
 ] as const
 
 export const BIJNA_OUDER = [

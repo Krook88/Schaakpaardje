@@ -556,7 +556,7 @@ export function alleZinnen(): string[] {
         if ('vraag' in o) zinnen.add(o.vraag)
         if ('foutTip' in o && o.foutTip) zinnen.add(o.foutTip)
         // Pip leest de antwoorden van een quiz voor aan wie nog niet leest.
-        if (o.kind === 'quiz') o.opties.forEach((optie) => zinnen.add(optie.label))
+        if (o.kind === 'quiz') o.opties.forEach((optie) => zinnen.add(optie.uitspraak ?? optie.label))
       }
     }
   }

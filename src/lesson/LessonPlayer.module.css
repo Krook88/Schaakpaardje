@@ -239,14 +239,23 @@
   50% { transform: translate(8px, -50%); }
 }
 
-/* Het quizantwoord dat Pip nu voorleest. */
-.quizVoorgelezen {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent), var(--shadow);
-  transform: scale(1.02);
-}
+/* Het quizantwoord dat Pip nu voorleest: een donkerdere rand en een luidsprekertje.
+   Bewust niet de accentkleur en geen vergroting; dat is in de app het teken voor
+   "hier moet je zijn", en voorlezen is geen hint. */
+.quizVoorgelezen { border-color: var(--ink); }
+.quizSpreekt { font-size: 26px; line-height: 1; flex: 0 0 auto; }
 
 @media (prefers-reduced-motion: reduce) {
   .verderKlaar { animation: none; box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow); }
   .wijsHand { animation: none; }
+}
+
+/* De verdiende sticker op het beloningsscherm, net zo rond als in de stal. */
+.sticker { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0; font-weight: 700; }
+.stickerRond {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 32px; line-height: 1;
+  background: var(--surface);
+  border: 3px solid hsl(var(--toon) 45% 58%);
+  box-shadow: var(--shadow);
 }

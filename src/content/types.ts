@@ -99,6 +99,11 @@ export type Exercise =
          * en groen is. Dit vakje krijgt letterlijk dezelfde kleur als het bord.
          */
         veld?: 'licht' | 'donker'
+        /**
+         * Hoe Pip het antwoord uitspreekt als hij het voorleest, als dat anders moet dan
+         * het label. "Pd4" of een losse "P" wordt met een stem een brij.
+         */
+        uitspraak?: string
         goed?: boolean
       }[]
       foutTip?: string

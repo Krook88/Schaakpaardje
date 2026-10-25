@@ -7,6 +7,7 @@
  */
 import { STALSTUKKEN, type StalSoort, type StalStuk } from '@/content/stal'
 import { DIPLOMAS } from '@/content/diplomas'
+import { WERELDEN, type World } from '@/content'
 import { diplomaBehaald, wereldIsAf, type LesResultaat } from './store'
 
 export type StalVak = StalStuk & { bezit: boolean }
@@ -44,4 +45,35 @@ export function perSoort(vakken: StalVak[]): Record<StalSoort, StalVak[]> {
 
 export function aantalBezit(vakken: StalVak[]): number {
   return vakken.filter((v) => v.bezit).length
+}
+
+export type StickerVak = { id: string; naam: string; teken: string; toon: number; bezit: boolean }
+
+/**
+ * De stickers, per wereld.
+ *
+ * Een sticker (drie sterren op een les) bestond alleen als getal: "Plus 5 stickers van
+ * perfecte lessen". Een kind van vijf kon dus nergens terugvinden wélke het had. Nu is
+ * elke sticker het plaatje van zijn les in de kleur van zijn wereld — hetzelfde plaatje
+ * als op de kaart — en staan ze per wereld bij elkaar.
+ *
+ * Alleen werelden waar het kind al in begonnen is: achtenveertig grijze vakjes voor wie
+ * net begint is geen verzameling maar een muur. De lege vakken in een begonnen wereld
+ * blijven staan, want die laten zien wat er nog te halen valt.
+ */
+export function stickerPlanken(
+  stickers: string[],
+  voortgang: Record<string, LesResultaat>,
+): { wereld: World; vakken: StickerVak[] }[] {
+  const heeft = new Set(stickers)
+  return WERELDEN.filter((w) => w.lessen.some((l) => heeft.has(l.id) || voortgang[l.id])).map((wereld) => ({
+    wereld,
+    vakken: wereld.lessen.map((les) => ({
+      id: les.id,
+      naam: les.titel,
+      teken: les.icoon,
+      toon: wereld.toon,
+      bezit: heeft.has(les.id),
+    })),
+  }))
 }

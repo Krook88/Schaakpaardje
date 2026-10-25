@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { onSubtitle, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
+import { getVoiceConfig, onSubtitle, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import styles from './Pip.module.css'
 
 export type PipStemming = 'blij' | 'juicht' | 'verrast' | 'denkt' | 'moedigt' | 'trots' | 'slaapt'
@@ -93,8 +93,12 @@ export function Pip({
   // opnieuw laat beginnen met praten.
   const meldPratend = useRef(onPratend)
   meldPratend.current = onPratend
+  // Pas melden nadat Pip een keer is gaan praten: bij het in beeld komen staat `pratend`
+  // één tekening lang op false, en dan wiebelde "Verder" heel even mee.
+  const alGepraat = useRef(false)
   useEffect(() => {
-    meldPratend.current?.(pratend)
+    if (pratend) alGepraat.current = true
+    if (alGepraat.current) meldPratend.current?.(pratend)
   }, [pratend])
 
   useEffect(() => {
@@ -112,10 +116,11 @@ export function Pip({
     setPratend(true)
     // Pas wachten als speak() het geluid echt gestart heeft. Hier stond het wachten
     // direct achter speak(), maar die haalt eerst het manifest op: het wachten pakte dan
-    // nog de vorige, al afgelopen zin, en Pip was "klaar" voor hij begon. Bovengrens
-    // ruim boven de langste uitlegzin, zodat de knop "Verder" niet te vroeg oplicht.
+    // nog de vorige, al afgelopen zin, en Pip was "klaar" voor hij begon. De bovengrens
+    // hangt af van de lengte van de zin: een stem die nooit "klaar" meldt, laat een
+    // korte zin dan niet vijftien seconden wachten, en een lange niet afkappen.
     void speak(zegt)
-      .then(() => wachtTotUitgesproken(15000))
+      .then(() => wachtTotUitgesproken(2000 + (zegt.length * 90) / getVoiceConfig().tempo))
       .then(() => {
         if (actueel) setPratend(false)
       })

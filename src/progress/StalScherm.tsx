@@ -6,9 +6,9 @@ import { Pip } from '@/ui/Pip'
 import { Confetti } from '@/ui/Confetti'
 import { speak } from '@/audio/voice'
 import { SOORTNAAM, type StalSoort } from '@/content/stal'
-import { STAL_VOL } from '@/content/voice'
-import { aantalBezit, perSoort, verzameling, type StalVak } from './verzameling'
-import { useProfiel, useToestandGeladen, useVerslagen, useVoortgang } from './store'
+import { STAL_VOL, STICKER_HOE } from '@/content/voice'
+import { aantalBezit, perSoort, stickerPlanken, verzameling } from './verzameling'
+import { useProfiel, useStickers, useToestandGeladen, useVerslagen, useVoortgang } from './store'
 import styles from './Stal.module.css'
 
 const VOLGORDE: StalSoort[] = ['stuk', 'maatje', 'hoefijzer']
@@ -25,7 +25,9 @@ export function StalScherm() {
   const voortgang = useVoortgang()
   const verslagen = useVerslagen()
   const profiel = useProfiel()
-  const [uitgelicht, setUitgelicht] = useState<StalVak | null>(null)
+  const stickers = useStickers()
+  /** Waar het kind net op tikte: een stuk in de stal of een sticker. */
+  const [uitgelicht, setUitgelicht] = useState<{ zin: string; bezit: boolean } | null>(null)
 
   if (!geladen) return <main className="page" />
 
@@ -33,11 +35,10 @@ export function StalScherm() {
   const planken = perSoort(alles)
   const heeft = aantalBezit(alles)
   const compleet = heeft === alles.length
+  const stickerRijen = stickerPlanken(stickers, voortgang)
 
   const zin = uitgelicht
-    ? uitgelicht.bezit
-      ? `${uitgelicht.naam}. Die heb je!`
-      : `${uitgelicht.naam}. ${uitgelicht.hoe}`
+    ? uitgelicht.zin
     : compleet
       ? STAL_VOL
       : `Je hebt er ${heeft} van de ${alles.length}. Tik op een leeg plekje, dan vertel ik hoe je hem krijgt.`
@@ -60,6 +61,49 @@ export function StalScherm() {
           </div>
         </div>
 
+        {/* De stickers: per wereld, met het plaatje van de les. Tik je erop, dan zegt
+            Pip welke les het is, of wat je moet doen om hem te krijgen. Bovenaan: voor
+            een jong kind zijn dit de eerste dingen die het verdient, en onder zestien
+            nog lege vakken waren ze niet terug te vinden. */}
+        {stickerRijen.length > 0 && (
+          <section id="stickers" className="card stack" style={{ gap: 12 }}>
+            <div className="row" style={{ justifyContent: 'space-between' }}>
+              <h2 style={{ fontSize: '1.05rem' }}>🏅 Stickers</h2>
+              <span className="muted" style={{ fontSize: '0.85rem' }}>
+                {stickers.length} verdiend
+              </span>
+            </div>
+            {stickerRijen.map(({ wereld, vakken }) => (
+              <div key={wereld.id} className="stack" style={{ gap: 6 }}>
+                <span className="muted" style={{ fontSize: '0.85rem', fontWeight: 700 }}>
+                  <span aria-hidden="true">{wereld.emoji}</span> {wereld.naam}
+                </span>
+                <div className={styles.plank}>
+                  {vakken.map((vak) => (
+                    <button
+                      key={vak.id}
+                      type="button"
+                      className={`${styles.vak} ${styles.sticker} ${vak.bezit ? styles.heeft : styles.mist}`}
+                      style={{ '--toon': vak.toon } as React.CSSProperties}
+                      onClick={() => {
+                        const zegt = vak.bezit ? `${vak.naam}. Die heb je!` : STICKER_HOE
+                        setUitgelicht({ zin: zegt, bezit: vak.bezit })
+                        void speak(zegt, true)
+                      }}
+                      aria-label={vak.bezit ? `Sticker ${vak.naam}, verdiend` : `Sticker ${vak.naam}, nog niet. ${STICKER_HOE}`}
+                    >
+                      <span className={styles.stickerTeken} aria-hidden="true">
+                        {vak.teken}
+                      </span>
+                      <span className={styles.naam}>{vak.naam}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </section>
+        )}
+
         {VOLGORDE.map((soort) => (
           <section key={soort} className="card stack" style={{ gap: 12 }}>
             <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -76,8 +120,9 @@ export function StalScherm() {
                   className={`${styles.vak} ${vak.bezit ? styles.heeft : styles.mist}`}
                   style={{ '--toon': vak.toon } as React.CSSProperties}
                   onClick={() => {
-                    setUitgelicht(vak)
-                    void speak(vak.bezit ? `${vak.naam}. Die heb je!` : `${vak.naam}. ${vak.hoe}`, true)
+                    const zegt = vak.bezit ? `${vak.naam}. Die heb je!` : `${vak.naam}. ${vak.hoe}`
+                    setUitgelicht({ zin: zegt, bezit: vak.bezit })
+                    void speak(zegt, true)
                   }}
                   aria-label={vak.bezit ? `${vak.naam}, verzameld` : `${vak.naam}, nog niet. ${vak.hoe}`}
                 >

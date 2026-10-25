@@ -349,6 +349,23 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
   }
 }
 
+/**
+ * Het nummer van de laatst begonnen zin.
+ *
+ * Voor wie meerdere zinnen achter elkaar laat zeggen (het voorlezen van een quiz): is
+ * dit nummer na het wachten veranderd, dan heeft iemand anders intussen iets laten
+ * zeggen — een kind dat op de luidspreker tikte — en moet de rij ophouden in plaats van
+ * daar overheen te praten.
+ */
+export function spreekBeurt(): number {
+  return beurt
+}
+
+/** Haal de ondertitel weg zonder iets af te breken; de ballon toont dan weer zijn eigen zin. */
+export function wisOndertitel() {
+  ondertitelListener?.(null)
+}
+
 /** Spreekt één willekeurige variant uit een lijstje uit. */
 export function speakOne(varianten: readonly string[], groep?: string): Promise<void> {
   return speak(kies(varianten, groep))

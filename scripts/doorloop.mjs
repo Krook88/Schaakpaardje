@@ -176,23 +176,90 @@ async function minispelEindigt() {
 async function verderInBeeld() {
   const maten = [[375, 667], [390, 844], [768, 1024], [1024, 768]]
   const mis = []
-  let wijst = false
+  const wijstNiet = []
   for (const [breed, hoog] of maten) {
     const ctx = await browser.newContext({ viewport: { width: breed, height: hoog } })
     const p = await ctx.newPage()
     await p.goto(`${URL}/les/toren-1/`, { waitUntil: 'networkidle' })
-    await p.waitForTimeout(3500)
-    const bord = await p.locator('[role=group]').first().boundingBox()
-    const knop = await p.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ }).first().boundingBox()
-    if (!bord || bord.y + bord.height > hoog + 1 || bord.width < 260)
-      mis.push(`${breed}×${hoog}: bord ${bord ? `${Math.round(bord.width)} breed, onderkant ${Math.round(bord.y + bord.height)}` : 'weg'}`)
-    if (!knop || knop.y + knop.height > hoog + 1) mis.push(`${breed}×${hoog}: Verder buiten beeld`)
     // Pip is uitgepraat (of zwijgt in de testbrowser): de knop wiebelt en het handje wijst.
-    if (await p.locator('[class*=verderKlaar]').count() && await p.locator('[class*=wijsHand]').count()) wijst = true
+    const hand = await p.waitForSelector('[class*=wijsHand]', { timeout: 8000 }).catch(() => null)
+    if (!hand || !(await p.locator('[class*=verderKlaar]').count())) wijstNiet.push(`${breed}×${hoog}`)
+    const binnen = async (scherm) => {
+      const bord = await p.locator('[role=group]').first().boundingBox()
+      if (!bord || bord.y + bord.height > hoog + 1 || bord.width < 260)
+        mis.push(`${breed}×${hoog} ${scherm}: bord ${bord ? `${Math.round(bord.width)} breed, onderkant ${Math.round(bord.y + bord.height)}` : 'weg'}`)
+    }
+    await binnen('uitleg')
+    const knop = await p.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ }).first().boundingBox()
+    if (!knop || knop.y + knop.height > hoog + 1) mis.push(`${breed}×${hoog}: Verder buiten beeld`)
+    // En het opgavescherm, dat hetzelfde bordvlak gebruikt.
+    for (let i = 0; i < 8; i++) {
+      const door = p.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ })
+      if (!(await door.count())) break
+      await door.first().click()
+      await p.waitForTimeout(200)
+    }
+    await p.waitForTimeout(500)
+    await p.evaluate(() => window.scrollTo(0, 0))
+    // Op de kleinste telefoon mag de pagina in de opgave een stukje scrollen; het bord
+    // zelf moet er wel helemaal staan.
+    if (hoog > 667) await binnen('opgave')
     await ctx.close()
   }
   meld('bord en "Verder" passen in beeld', mis.length === 0, mis.join('; '))
-  meld('"Verder" wijst zichzelf aan als Pip klaar is', wijst)
+  meld('"Verder" wijst zichzelf aan als Pip klaar is', wijstNiet.length === 0, wijstNiet.length ? `niet op ${wijstNiet.join(', ')}` : '')
+}
+
+/* ------------------------------------------------------------------ *
+ * Pip leest een quiz voor, en het kind mag er middenin op tikken.
+ *
+ * Een kind van vijf kon de toetsvragen niet lezen. Pip leest nu elk antwoord voor en
+ * zet er een luidsprekertje bij. Twee dingen mogen daarbij nooit gebeuren: dat een tik
+ * halverwege niet telt of fout gerekend wordt, en dat het luidsprekertje blijft staan
+ * nadat het kind gekozen heeft.
+ * ------------------------------------------------------------------ */
+async function quizWordtVoorgelezen() {
+  await page.goto(`${URL}/les/weide-3/`, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(700)
+  for (let i = 0; i < 8; i++) {
+    const door = page.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ })
+    if (!(await door.count())) break
+    await door.first().click()
+    await page.waitForTimeout(450)
+  }
+  const antwoorden = {
+    'veld rechtsonder aan': ['h1'],
+    'vier de hoeken': ['a1', 'h1', 'a8', 'h8'],
+    'hoeken zijn licht': ['h1', 'a8'],
+    'veld linksonder': ['a1'],
+  }
+  for (let ronde = 0; ronde < 10; ronde++) {
+    if (await page.getByRole('button', { name: /een licht veld/ }).count()) break
+    const vraag = await ballon()
+    const t = Object.entries(antwoorden).find(([stuk]) => vraag.includes(stuk))
+    if (!t) break
+    for (const veld of t[1]) {
+      await page.locator(`[data-square="${veld}"]`).click()
+      await page.waitForTimeout(250)
+    }
+    await page.waitForTimeout(2000)
+  }
+  // In de testbrowser praat Pip razendsnel (er is geen stem), dus het eerste voorlezen
+  // is al voorbij voor we kijken. "Opnieuw" laat hem het nog eens doen.
+  await page.getByRole('button', { name: /Opnieuw/ }).click().catch(() => {})
+  const spreekt = await page.waitForSelector('[class*=quizSpreekt]', { timeout: 10000 }).catch(() => null)
+  if (!spreekt) return meld('een quiz wordt voorgelezen, en tikken halverwege telt', false, 'geen luidsprekertje bij een antwoord')
+  // Middenin het voorlezen het goede antwoord kiezen.
+  await page.getByRole('button', { name: /een licht veld/ }).first().click()
+  await page.waitForTimeout(600)
+  const na = await ballon()
+  const nogSpreekt = await page.locator('[class*=quizSpreekt]').count()
+  const afgekeurd = /niet|bijna|nee|hm|kijk goed/i.test(na)
+  meld(
+    'een quiz wordt voorgelezen, en tikken halverwege telt',
+    !afgekeurd && !nogSpreekt,
+    afgekeurd ? `Pip zei "${na}"` : nogSpreekt ? 'het luidsprekertje bleef staan' : '',
+  )
 }
 
 /* ------------------------------------------------------------------ *
@@ -935,6 +1002,7 @@ for (const regel of [
   dagTeltNaMinispel,
   quizRekentGoedGoed,
   verderInBeeld,
+  quizWordtVoorgelezen,
   onmogelijkeZetKrijgtRegelzin,
   opdrachtKomtTerugNaTipje,
   samenSpelenKentDeWinnaar,

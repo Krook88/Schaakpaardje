@@ -10,7 +10,16 @@ import { Sterren } from '@/ui/Sterren'
 import { Teller } from '@/ui/Teller'
 import { gebruikTip } from '@/ui/gebruikTip'
 import { sfx } from '@/audio/sfx'
-import { getVoiceConfig, kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
+import {
+  alGetikt,
+  getVoiceConfig,
+  kies,
+  speak,
+  spreekBeurt,
+  stopSpeaking,
+  wachtTotUitgesproken,
+  wisOndertitel,
+} from '@/audio/voice'
 import { HINT_GEGEVEN, OPNIEUW_PROBEREN, VERDER_UITLEG, pipZinnen } from '@/content/voice'
 import { volgendeLes, wereldMet, type Lesson, type World } from '@/content'
 import { vertelTekst, vertelWijzers } from '@/content/types'
@@ -241,8 +250,18 @@ export function LessonPlayer({
     const hand = setTimeout(() => setWijsVerder(true), 2500)
     const zeg = setTimeout(() => {
       if (verderUitgelegd.current || modus === 'schaker') return
+      // Alleen als Pip ook echt kan praten. Met de stem uit verving deze zin anders de
+      // uitleg in de ballon, en vóór de eerste tik houdt de browser hem tegen en
+      // schoof hij bij die tik vóór de uitlegzin die nog moest klinken.
+      if (!getVoiceConfig().spraak || !alGetikt()) return
       verderUitgelegd.current = true
-      void speak(VERDER_UITLEG)
+      void (async () => {
+        await speak(VERDER_UITLEG)
+        const mijn = spreekBeurt()
+        await wachtTotUitgesproken()
+        // Daarna staat de uitlegzin weer in de ballon, niet deze.
+        if (mijn === spreekBeurt()) wisOndertitel()
+      })()
     }, 7000)
     return () => {
       clearTimeout(hand)
@@ -265,30 +284,47 @@ export function LessonPlayer({
   const leesQuizVoor = modus !== 'schaker'
   const standNu = useRef(stand)
   standNu.current = stand
+  /**
+   * Antwoorden die het kind bij deze quiz al fout had. Die leest Pip bij de tweede keer
+   * niet meer voor: anders tikt een kind dat op wat oplicht reageert gewoon weer hetzelfde.
+   */
+  const fouteKeuzes = useRef(new Set<number>())
+  useEffect(() => {
+    fouteKeuzes.current = new Set()
+  }, [ruweOpgave])
   useEffect(() => {
     const s = standNu.current
     if (!leesQuizVoor || !s || s.opgave.kind !== 'quiz' || s.klaar) return
     if (fase === 'kijken' || fase === 'beloning') return
-    if (!getVoiceConfig().spraak) return
     const mijn = ++voorleesBeurt.current
     const nogAanDeBeurt = () => mijn === voorleesBeurt.current
     const pauze = (ms: number) => new Promise((klaar) => setTimeout(klaar, ms))
-    const opties = s.opgave.opties.map((o) => o.label)
+    const opties = s.opgave.opties.map((o, i) => ({ i, zeg: o.uitspraak ?? o.label }))
     void (async () => {
       // Eerst de vraag zelf laten uitspreken; die zegt Pip vanuit zijn ballon.
       await pauze(700)
+      // Pas hier de instellingen lezen: bij het openen van de pagina zijn ze er nog
+      // niet. En vóór de eerste tik houdt de browser het geluid tegen; dan flitsten
+      // de knoppen voorbij zonder dat er iets klonk.
+      if (!getVoiceConfig().spraak || !alGetikt()) return
       await wachtTotUitgesproken(15000)
-      for (let i = 0; i < opties.length; i++) {
-        if (!nogAanDeBeurt()) return
+      // Begint er intussen een andere zin (het kind tikt op de luidspreker of op Pip),
+      // dan houdt het voorlezen op in plaats van daar overheen te praten.
+      let verwacht = spreekBeurt()
+      for (const { i, zeg } of opties) {
+        if (fouteKeuzes.current.has(i)) continue
+        if (!nogAanDeBeurt() || spreekBeurt() !== verwacht) break
         setVoorgelezen(i)
-        await speak(opties[i])
+        await speak(zeg)
+        verwacht = spreekBeurt()
         await wachtTotUitgesproken()
         await pauze(350)
       }
       if (!nogAanDeBeurt()) return
       setVoorgelezen(null)
-      // De ballon toont tijdens het voorlezen het antwoord; zo komt de vraag terug.
-      stopSpeaking()
+      // De ballon toonde het antwoord; zo komt de vraag terug. Alleen als de laatste
+      // zin nog van ons was, anders wissen we wat het kind net zelf liet herhalen.
+      if (spreekBeurt() === verwacht) wisOndertitel()
     })()
     return () => {
       voorleesBeurt.current++
@@ -380,7 +416,7 @@ export function LessonPlayer({
   /* ---------- reageren op een tik ---------- */
 
   const reageer = useCallback(
-    (goed: boolean, klaar: boolean, tip?: string) => {
+    (goed: boolean, klaar: boolean, tip?: string, naDeOpdracht?: () => void) => {
       if (goed) {
         if (instellingen.effecten) sfx.goed()
         // 'juicht' in plaats van 'blij': dat is ook de stemming waarin Pip staat als
@@ -397,6 +433,7 @@ export function LessonPlayer({
         zegTip(
           tip ?? kies(zinnen.BIJNA, 'bijna'),
           stand && 'vraag' in stand.opgave ? stand.opgave.vraag : '',
+          naDeOpdracht,
         )
       }
     },
@@ -465,7 +502,11 @@ export function LessonPlayer({
         setQuizFout(null)
         setTimeout(() => setQuizFout(index), 0)
         const tip = 'foutTip' in r.stand.opgave ? r.stand.opgave.foutTip : undefined
-        reageer(false, false, tip)
+        // Na de tip en de vraag leest Pip de antwoorden die nog over zijn opnieuw voor.
+        // Een kind van vijf tikt vaak op wat oplicht; zonder dit had het de andere
+        // antwoorden nooit gehoord en ging het daarna gokken.
+        fouteKeuzes.current.add(index)
+        reageer(false, false, tip, () => setQuizPoging((n) => n + 1))
         if (fase === 'toets') setToetsFouten((n) => n + 1)
         // Dezelfde foute knop nog eens (een dubbeltik) is geen tweede misser.
         if (index !== quizFout) lastig.misser(les.id, opgaveNu, r.stand.opgave.kind)
@@ -622,7 +663,17 @@ export function LessonPlayer({
             {/* Niet les.doel: dat is de zin voor de ouder ("Je kind ziet dat...") en
                 die stond hier letterlijk, over het kind gepraat tegen het kind. */}
             <p>{les.geleerd}</p>
-            {sterren >= 3 && <p>🏅 Sticker verdiend!</p>}
+            {/* De sticker zelf, met het plaatje van de les: precies zoals hij straks in
+                de stal staat. Alleen "Sticker verdiend!" zei een kind niet wát het
+                had, en dus ook niet wat het in de stal moest zoeken. */}
+            {sterren >= 3 && (
+              <p className={styles.sticker}>
+                <span className={styles.stickerRond} aria-hidden="true">
+                  {les.icoon}
+                </span>
+                Sticker verdiend!
+              </p>
+            )}
             {wereldKlaar && (
               <p>
                 🐴 <strong>{wereld.naam}</strong> is helemaal uit!
@@ -693,6 +744,7 @@ export function LessonPlayer({
           stopTimers()
           stopSpeaking()
           setKijkTerug(fase)
+          setPipPraat(true)
           setVertelIndex(0)
           setFase('kijken')
         }}
@@ -744,6 +796,14 @@ export function LessonPlayer({
                   )
                 )}
                 <span className={styles.quizTekst}>{optie.label}</span>
+                {/* Een luidsprekertje, geen accentrand: oplichten in de accentkleur
+                    betekent elders "hier moet je zijn", en dan leest een kind het
+                    antwoord dat Pip toevallig voorleest als een hint. */}
+                {voorgelezen === i && (
+                  <span className={styles.quizSpreekt} aria-hidden="true">
+                    🔊
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -806,8 +866,13 @@ export function LessonPlayer({
               setShake(null)
               setQuizFout(null)
               setQuizGoed(null)
+              fouteKeuzes.current = new Set()
               setQuizPoging((n) => n + 1)
-              setZin('vraag' in opgave ? opgave.vraag : '')
+              const vraag = 'vraag' in opgave ? opgave.vraag : ''
+              // Stond de vraag al in de ballon, dan verandert er niets en zegt Pip hem
+              // niet vanzelf opnieuw. "Opnieuw" hoort hem wel te laten horen.
+              if (vraag && vraag === zin) void speak(vraag)
+              setZin(vraag)
             }}
           >
             <span aria-hidden="true" style={{ fontSize: 28, lineHeight: 1 }}>
