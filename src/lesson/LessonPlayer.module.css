@@ -196,14 +196,16 @@
 .bordvlak {
   position: relative;
   flex: 1 1 0;
-  min-height: min(300px, calc(100vw - 36px));
+  /* Nooit kleiner dan de schermbreedte toelaat: met een ondergrens van 300 px werden
+     de velden op een kleine telefoon kleiner dan vóór deze opzet (layoutreview). */
+  min-height: min(340px, calc(100vw - 36px));
 }
 /* De meetlat voor het bord. Absoluut, want als gewoon flexvak rekende Chrome de hoogte
    van de container als nul (100cqh werd 0px) en verdween het bord. */
 .bordpast {
   position: absolute; inset: 0;
   container-type: size;
-  display: flex; justify-content: center; align-items: flex-start;
+  display: flex; justify-content: center; align-items: center;
 }
 .bordpast .bord { width: min(100cqw, 100cqh, 620px); max-width: none; margin: 0; }
 /* Op een lage telefoon telt elke regel: dan wat minder lucht tussen de blokken. */
@@ -212,6 +214,11 @@
   .lesinhoud { gap: 10px; }
   .wereldband { padding: 4px 12px; }
 }
+/* Op een kleine telefoon (iPhone SE en kleiner) past het bord er anders niet onder.
+   De wereld blijft herkenbaar aan de achtergrondkleur van het hele scherm. */
+@media (max-height: 700px) {
+  .lesscherm .wereldband { display: none; }
+}
 
 /* De knop "Verder" blijft in beeld, ook als het scherm toch te klein is. */
 .knoppenOnder { position: sticky; bottom: 8px; z-index: 2; }
@@ -219,7 +226,8 @@
 
 /* Pip is uitgepraat: nu ben jij. De knop gaat zachtjes wiebelen, zodat een kind dat
    niet leest ziet wanneer het mag tikken. Tijdens Pips zin staat hij stil. */
-.verderKlaar { animation: verderWiebel 1.6s ease-in-out infinite; }
+/* Vier keer, niet eindeloos: daarna neemt het handje het over. */
+.verderKlaar { animation: verderWiebel 1.6s ease-in-out 4; }
 @keyframes verderWiebel {
   0%, 60%, 100% { transform: scale(1) rotate(0); }
   70% { transform: scale(1.07) rotate(-2deg); }
@@ -229,7 +237,7 @@
 /* En wie dan nog wacht, krijgt een handje dat naar de knop wijst. */
 .wijsHand {
   position: absolute; right: 100%; top: 50%;
-  margin-right: 6px; font-size: 38px; line-height: 1;
+  margin-right: 14px; font-size: 38px; line-height: 1;
   transform: translateY(-50%);
   animation: wijzen 0.9s ease-in-out infinite;
   pointer-events: none;
@@ -246,7 +254,8 @@
 .quizSpreekt { font-size: 26px; line-height: 1; flex: 0 0 auto; }
 
 @media (prefers-reduced-motion: reduce) {
-  .verderKlaar { animation: none; box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow); }
+  /* Zonder beweging een ring die je wél ziet: --accent-soft haalde 1,05:1. */
+  .verderKlaar { animation: none; box-shadow: 0 0 0 4px var(--ink), var(--shadow); }
   .wijsHand { animation: none; }
 }
 

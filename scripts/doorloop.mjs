@@ -174,7 +174,7 @@ async function minispelEindigt() {
  * door het scherm echt op die maten te openen.
  * ------------------------------------------------------------------ */
 async function verderInBeeld() {
-  const maten = [[375, 667], [390, 844], [768, 1024], [1024, 768]]
+  const maten = [[360, 640], [375, 667], [390, 844], [768, 1024], [1024, 768]]
   const mis = []
   const wijstNiet = []
   for (const [breed, hoog] of maten) {
@@ -192,6 +192,10 @@ async function verderInBeeld() {
     await binnen('uitleg')
     const knop = await p.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ }).first().boundingBox()
     if (!knop || knop.y + knop.height > hoog + 1) mis.push(`${breed}×${hoog}: Verder buiten beeld`)
+    // En de knop mag niet over het bord heen vallen (de rij is sticky).
+    const bordUitleg = await p.locator('[role=group]').first().boundingBox()
+    if (knop && bordUitleg && knop.y < bordUitleg.y + bordUitleg.height - 1)
+      mis.push(`${breed}×${hoog}: Verder ligt over het bord`)
     // En het opgavescherm, dat hetzelfde bordvlak gebruikt.
     for (let i = 0; i < 8; i++) {
       const door = p.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ })
