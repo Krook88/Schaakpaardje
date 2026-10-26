@@ -5,10 +5,12 @@ import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
 import { GeluidKnop } from '@/ui/GeluidKnop'
 import { alGetikt, kies } from '@/audio/voice'
-import { EERSTE_KEER, WELKOM, pipZinnen } from '@/content/voice'
+import { EERSTE_KEER, EERSTE_KEER_OUDER, WELKOM, pipZinnen } from '@/content/voice'
 import { lesMet, WERELDEN } from '@/content'
 import { kiesOpfrisopgaven } from '@/lesson/opfrisser'
-import { aantalBezit, verzameling } from '@/progress/verzameling'
+import { tel } from '@/progress/tellen'
+import { aantalBezit, geldigeStickers, verzameling } from '@/progress/verzameling'
+import stalStyles from '@/progress/Stal.module.css'
 import {
   AVATARS,
   eersteVrijeMaatje,
@@ -21,6 +23,9 @@ import {
   useOefendagen,
   useVoortgang,
   volgendeOpenLes,
+  lesGedaan,
+  useInstellingen,
+  isOntgrendeld,
   wereldIsAf,
   type LesResultaat,
 } from '@/progress/store'
@@ -52,14 +57,16 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   const kiesProfiel = useProfielStore((s) => s.kiesProfiel)
   const maakProfiel = useProfielStore((s) => s.maakProfiel)
   const voortgang = useVoortgang()
-  const stickers = useStickers()
+  const instellingen = useInstellingen()
+  const zetInstelling = useProfielStore((s) => s.zetInstelling)
+  const stickers = geldigeStickers(useStickers())
   const verslagen = useVerslagen()
   const oefendagen = useOefendagen()
   // Praat Pip hier vanzelf? Alleen als er al getikt was toen dit scherm verscheen,
   // dus als je terugkomt van een les. Wie de site net opent, schrikt anders bij de
   // eerste tik van een pratend paardje. Eén keer vastgelegd: anders gaat hij alsnog
   // praten zodra er later iets op dit scherm verandert.
-  const [vanzelf] = useState(alGetikt)
+  const [vanzelf, setVanzelf] = useState(alGetikt)
 
   // Het ouderscherm stuurt hierheen met #nieuw-kind. Het huidige kind blijft zolang
   // actief: zette je het eerst op "geen kind", dan kon een kind dat weer ging spelen een
@@ -124,11 +131,16 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
           <NieuwProfiel
             bestaand={profielen.map((p) => ({ id: p.id, naam: p.naam, avatar: p.avatar }))}
             bezet={profielen.map((p) => p.avatar)}
+            // Na "Beginnen" praat Pip vanzelf, zoals het formulier belooft. `vanzelf` werd
+            // vastgelegd toen dit scherm nog de welkomstpagina was, vóór de eerste tik,
+            // en bleef daarna uit (spelontwerper).
             onKies={(id) => {
+              setVanzelf(true)
               kiesProfiel(id)
               naarBoven()
             }}
             onMaak={(naam, leeftijd, avatar) => {
+              setVanzelf(true)
               const id = maakProfiel(naam, leeftijd, avatar)
               naarBoven()
               return id
@@ -139,8 +151,17 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
     )
   }
 
-  const verder = volgendeOpenLes(voortgang, profiel.modus)
+  const verder = volgendeOpenLes(voortgang, profiel.modus, instellingen.beginWereld)
   const verderLes = lesMet(verder.id)
+  // De verste wereld die voor deze modus vanaf het begin openstaat (voor een schaker
+  // Waardevallei): daar begint wie de stukken al kent.
+  // Ook als het kind als gast al in De Weide begon: dan gaat die voortgang mee naar het
+  // profiel, en zag een negenjarige de knop anders nooit (conversie-review).
+  const nogInDeWeide = WERELDEN.filter((w) => w.nummer > 0).every((w) =>
+    w.lessen.every((l) => !voortgang[l.id]),
+  )
+  const naDeStukken =
+    [...WERELDEN].reverse().find((w) => w.nummer > 0 && isOntgrendeld(w.lessen[0].id, {}, profiel.modus)) ?? null
   const totaal = sterrenTotaal(voortgang)
   const maxSterren = WERELDEN.flatMap((w) => w.lessen).length * 3
   const wereldenAf = WERELDEN.filter((w) => wereldIsAf(w.id, voortgang))
@@ -149,9 +170,9 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
   const opfrissen = kiesOpfrisopgaven(voortgang).length
   // Nog geen enkele les gedaan: dan is dit het allereerste scherm dat dit kind ziet.
   const eersteKeer = Object.keys(voortgang).length === 0
-  // Elke les met minstens twee sterren: dan is er geen "volgende les" meer, en
-  // `volgendeOpenLes` valt terug op de allereerste.
-  const allesAf = WERELDEN.flatMap((w) => w.lessen).every((l) => (voortgang[l.id]?.sterren ?? 0) >= 2)
+  // Elke les gedaan: dan is er geen "volgende les" meer, en `volgendeOpenLes` valt
+  // terug op de allereerste.
+  const allesAf = WERELDEN.flatMap((w) => w.lessen).every((l) => lesGedaan(voortgang, l.id))
   const stalVakken = verzameling(voortgang, verslagen)
   const inStal = aantalBezit(stalVakken)
 
@@ -175,9 +196,12 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
 
                   Twee eigen regels die niet afbreken: in één zin brak het op een
                   telefoon in vier losse stukjes, met het kalendertje los van "dagen". */}
-              <p className="muted" style={{ fontSize: '0.9rem', margin: 0, whiteSpace: 'nowrap' }}>
-                ⭐ {totaal} van de {maxSterren}
-              </p>
+              {/* Geen "0 van de 147" voor wie nog niets heeft: dat telt wat je mist. */}
+              {totaal > 0 && (
+                <p className="muted" style={{ fontSize: '0.9rem', margin: 0, whiteSpace: 'nowrap' }}>
+                  ⭐ {totaal} van de {maxSterren}
+                </p>
+              )}
               {/* Alleen omhoog, nooit terug naar nul: zie `oefendagen` in de store. */}
               {oefendagen > 0 && (
                 <p className="muted" style={{ fontSize: '0.9rem', margin: 0, whiteSpace: 'nowrap' }}>
@@ -203,7 +227,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
           // les het is staat op de knop eronder.
           zegt={
             eersteKeer
-              ? EERSTE_KEER
+              ? profiel.modus === 'schaker' ? EERSTE_KEER_OUDER : EERSTE_KEER
               : kies(pipZinnen(profiel.modus === 'schaker').WELKOM_TERUG, 'welkom')
           }
           stemming="blij"
@@ -260,6 +284,27 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
             </span>
           </Link>
           )}
+          {/* Een negenjarige begon bij "Dit is een schaakbord". Wie de stukken al kent, mag
+              meteen naar de eerste wereld na de stukken; die staat voor een schaker al
+              open. De grote knop blijft het pad vanaf het begin (spelontwerper). */}
+          {nogInDeWeide && profiel.modus === 'schaker' && naDeStukken && (
+            <Link
+              href={`/les/${naDeStukken.lessen[0].id}/`}
+              className="btn btn--big"
+              style={{ minHeight: 76 }}
+              onClick={() => {
+                tel('Stukken overgeslagen')
+                zetInstelling('beginWereld', naDeStukken.nummer)
+              }}
+            >
+              <span aria-hidden="true" style={{ fontSize: 32 }}>
+                {naDeStukken.emoji}
+              </span>
+              <span style={{ flex: 1, textAlign: 'left' }}>
+                Ik ken de stukken al: begin bij {naDeStukken.naam}
+              </span>
+            </Link>
+          )}
           {opfrissen > 0 && (
             <Link
               href="/opfrissen/"
@@ -310,14 +355,40 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <h2 style={{ fontSize: '1.1rem' }}>Mijn stal</h2>
             <span className="muted">
-              {inStal > 0 ? `${inStal} van de ${stalVakken.length}` : 'Nog leeg'}
+              {/* Geen "Nog leeg" met een sticker er pal onder. */}
+              {inStal > 0 ? `${inStal} van de ${stalVakken.length}` : stickers.length ? '' : 'Nog leeg'}
             </span>
           </div>
           <Stalrij vakken={stalVakken} />
+          {/* De stickers zelf, en niet alleen hoeveel: een kind dat niet leest zag
+              hier "Plus 5 stickers" en kon nergens terugvinden welke het had. De
+              nieuwste vooraan; de hele verzameling staat in de stal. */}
           {stickers.length > 0 && (
-            <p className="muted" style={{ fontSize: '0.85rem', margin: 0 }}>
-              Plus {stickers.length} {stickers.length === 1 ? 'sticker' : 'stickers'} van perfecte lessen.
-            </p>
+            <div className="row" style={{ gap: 6 }} role="img" aria-label={`${stickers.length} stickers verdiend`}>
+              <span aria-hidden="true" style={{ fontSize: 22 }}>🏅</span>
+              {/* Hetzelfde rondje in de kleur van de wereld als in de stal: als losse
+                  plaatjes herkende een kind ze hier niet als zijn stickers. */}
+              {[...stickers].reverse().slice(0, 6).map((id) => {
+                const les = lesMet(id)
+                const toon = WERELDEN.find((w) => w.id === les?.wereldId)?.toon ?? 0
+                return (
+                  <span
+                    key={id}
+                    aria-hidden="true"
+                    title={les?.titel}
+                    className={stalStyles.mini}
+                    style={{ '--toon': toon } as React.CSSProperties}
+                  >
+                    {les?.icoon}
+                  </span>
+                )
+              })}
+              {stickers.length > 6 && (
+                <span className="muted" style={{ fontSize: '0.85rem' }}>
+                  +{stickers.length - 6}
+                </span>
+              )}
+            </div>
           )}
         </Link>
 

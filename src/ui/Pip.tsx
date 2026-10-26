@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { onSubtitle, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
+import { useEffect, useRef, useState } from 'react'
+import { getVoiceConfig, onSubtitle, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import styles from './Pip.module.css'
 
 export type PipStemming = 'blij' | 'juicht' | 'verrast' | 'denkt' | 'moedigt' | 'trots' | 'slaapt'
@@ -57,6 +57,9 @@ export function Pip({
   klein = false,
   vanzelf = true,
   onKlaar,
+  onPratend,
+  onHerhaal,
+  springen = 0,
 }: {
   zegt?: string
   stemming?: PipStemming
@@ -70,6 +73,16 @@ export function Pip({
    */
   vanzelf?: boolean
   onKlaar?: () => void
+  /**
+   * Of Pip nu aan het woord is. Het lesscherm laat daaraan de knop "Verder" pas
+   * oplichten als Pip klaar is: een kind dat niet leest wist anders niet wanneer het
+   * erop mocht tikken.
+   */
+  onPratend?: (pratend: boolean) => void
+  /** Het kind vroeg zelf om de zin nog eens (Pip of de luidspreker aangetikt). */
+  onHerhaal?: () => void
+  /** Telt op bij elke goede tussentik: Pip springt opnieuw, zonder iets te zeggen. */
+  springen?: number
 }) {
   const [ondertitel, setOndertitel] = useState<string | null>(null)
   const [pratend, setPratend] = useState(false)
@@ -82,6 +95,18 @@ export function Pip({
    */
   const [puls, setPuls] = useState(0)
 
+  // Via een ref, zodat een nieuwe functie bij elke hertekening van de ouder Pip niet
+  // opnieuw laat beginnen met praten.
+  const meldPratend = useRef(onPratend)
+  meldPratend.current = onPratend
+  // Pas melden nadat Pip een keer is gaan praten: bij het in beeld komen staat `pratend`
+  // één tekening lang op false, en dan wiebelde "Verder" heel even mee.
+  const alGepraat = useRef(false)
+  useEffect(() => {
+    if (pratend) alGepraat.current = true
+    if (alGepraat.current) meldPratend.current?.(pratend)
+  }, [pratend])
+
   useEffect(() => {
     onSubtitle(setOndertitel)
     return () => onSubtitle(null)
@@ -89,16 +114,22 @@ export function Pip({
 
   useEffect(() => {
     setPuls((p) => p + 1)
-  }, [zegt, stemming])
+  }, [zegt, stemming, springen])
 
   useEffect(() => {
     if (!zegt || !vanzelf) return
     let actueel = true
     setPratend(true)
+    // Pas wachten als speak() het geluid echt gestart heeft. Hier stond het wachten
+    // direct achter speak(), maar die haalt eerst het manifest op: het wachten pakte dan
+    // nog de vorige, al afgelopen zin, en Pip was "klaar" voor hij begon. De bovengrens
+    // hangt af van de lengte van de zin: een stem die nooit "klaar" meldt, laat een
+    // korte zin dan niet vijftien seconden wachten, en een lange niet afkappen.
     void speak(zegt)
-    void wachtTotUitgesproken().then(() => {
-      if (actueel) setPratend(false)
-    })
+      .then(() => wachtTotUitgesproken(2000 + (zegt.length * 90) / getVoiceConfig().tempo))
+      .then(() => {
+        if (actueel) setPratend(false)
+      })
     return () => {
       actueel = false
       setPratend(false)
@@ -115,6 +146,7 @@ export function Pip({
         className={`${styles.pip} ${pratend ? styles.pratend : ''}`}
         onClick={() => {
           if (zegt) void speak(zegt, true)
+          onHerhaal?.()
           onKlaar?.()
         }}
         aria-label={zegt ? `Pip zegt: ${zegt}. Tik om het nog eens te horen.` : 'Pip'}
@@ -139,7 +171,10 @@ export function Pip({
             <button
               type="button"
               className={styles.luister}
-              onClick={() => void speak(zegt, true)}
+              onClick={() => {
+                void speak(zegt, true)
+                onHerhaal?.()
+              }}
               aria-label="Zeg het nog eens"
               title="Zeg het nog eens"
             >

@@ -209,7 +209,8 @@ export default function Over() {
           </li>
         </ol>
         <p className={s.tekst} style={{ marginTop: 22 }}>
-          Bij twee sterren gaat de volgende les open. Met één ster doe je hem nog een keer.
+          Wie de toets uitspeelt, mag door naar de volgende les. Meer sterren halen kan
+          altijd nog, met "Nog een keer".
           Levens zijn er niet, en er loopt geen klok.
         </p>
       </section>

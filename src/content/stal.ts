@@ -54,7 +54,7 @@ const MAATJES: { botId: string; naam: string; teken: string; toon: number }[] = 
 
 const HOEFIJZERS: { soort: string; naam: string; teken: string; toon: number; hoe: string }[] = [
   { soort: 'brons', naam: 'Hoefijzer brons', teken: '🥉', toon: 25, hoe: 'Speel alle werelden uit tot en met Pionnenveld.' },
-  { soort: 'zilver', naam: 'Hoefijzer zilver', teken: '🥈', toon: 210, hoe: 'Speel door tot en met Notatiedorp.' },
+  { soort: 'zilver', naam: 'Hoefijzer zilver', teken: '🥈', toon: 210, hoe: 'Speel door tot en met Notatie-eiland.' },
   { soort: 'goud', naam: 'Hoefijzer goud', teken: '🥇', toon: 45, hoe: 'Speel de hele reis uit, tot en met de Eindspelduinen.' },
 ]
 

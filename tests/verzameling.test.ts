@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { verzameling, perSoort, aantalBezit } from '@/progress/verzameling'
+import { verzameling, perSoort, aantalBezit, geldigeStickers, stickerPlanken } from '@/progress/verzameling'
 import { STALSTUKKEN } from '@/content/stal'
 import { WERELDEN } from '@/content'
 import type { LesResultaat } from '@/progress/store'
@@ -73,5 +73,34 @@ describe('de verzameling in de stal', () => {
     for (const v of weinig.filter((x) => x.bezit)) {
       expect(meer.find((x) => x.id === v.id)!.bezit).toBe(true)
     }
+  })
+})
+
+describe('de stickers in de stal', () => {
+  it('toont niets voor wie nog nergens begonnen is', () => {
+    expect(stickerPlanken([], {})).toEqual([])
+  })
+
+  it('toont per begonnen wereld alle lessen, met het plaatje van de les', () => {
+    const planken = stickerPlanken(['toren-1'], {
+      'toren-1': { sterren: 3, fouten: 0, hints: 0, laatst: '' },
+      'toren-2': { sterren: 2, fouten: 1, hints: 0, laatst: '' },
+    })
+    expect(planken.map((p) => p.wereld.id)).toEqual(['toren'])
+    const toren = WERELDEN.find((w) => w.id === 'toren')!
+    expect(planken[0].vakken.map((v) => v.id)).toEqual(toren.lessen.map((l) => l.id))
+    expect(planken[0].vakken.filter((v) => v.bezit).map((v) => v.id)).toEqual(['toren-1'])
+    expect(planken[0].vakken[0].teken).toBe(toren.lessen[0].icoon)
+  })
+
+  it('toont een wereld met alleen een sticker en geen voortgang, en houdt de volgorde van de reis', () => {
+    const planken = stickerPlanken(['loper-1'], { 'weide-1': { sterren: 1, fouten: 4, hints: 0, laatst: '' } })
+    expect(planken.map((p) => p.wereld.id)).toEqual(['weide', 'loper'])
+    expect(planken[0].vakken.some((v) => v.bezit)).toBe(false)
+    expect(planken[1].vakken.find((v) => v.id === 'loper-1')!.bezit).toBe(true)
+  })
+
+  it('telt geen stickers van lessen die niet bestaan', () => {
+    expect(geldigeStickers(['toren-1', 'bestaat-niet'])).toEqual(['toren-1'])
   })
 })

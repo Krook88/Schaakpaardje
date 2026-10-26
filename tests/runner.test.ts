@@ -308,11 +308,22 @@ describe('opgaven met meer dan één goed antwoord', () => {
     expect(stand.fouten).toBe(0)
   })
 
-  it('legt na de eerste tik vast welke lijn het is', () => {
+  it('mag na één toevallige tik nog van lijn wisselen', () => {
+    // Een driejarige tikt a1 aan, en gaat dan netjes de e-lijn omhoog. Dat is goed: de
+    // eerste tik was toeval. Het vinkje op a1 gaat weg (spelontwerper).
     let stand = startOpgave(eenLijn)
     stand = tik(stand, 'c1').stand
-    // b2 hoort bij geen enkele lijn die nog open staat.
     const r = tik(stand, 'b2')
+    expect(r.uit).toBe('goed')
+    expect(r.stand.gevonden).toEqual(['b2'])
+    expect(r.stand.fouten).toBe(0)
+  })
+
+  it('legt na twee tikken vast welke lijn het is', () => {
+    let stand = startOpgave(eenLijn)
+    stand = tik(stand, 'c1').stand
+    stand = tik(stand, 'c2').stand
+    const r = tik(stand, 'b3')
     expect(r.uit).toBe('fout')
     expect(r.stand.fouten).toBe(1)
   })
@@ -345,5 +356,64 @@ describe('opgaven met meer dan één goed antwoord', () => {
     expect(stand.varianten).toBeNull()
     const r = tik(stand, 'a1')
     expect(r.uit).toBe('fout')
+  })
+})
+
+describe('meteen op het doel tikken', () => {
+  // Een kind van drie tikt bij "Zet de toren eens omhoog" direct op de plek waar de
+  // toren heen moet. Er is maar één stuk dat kan gaan, dus dat is gewoon de zet.
+  const torenOmhoog: Exercise = { kind: 'move', fen: '8/8/8/8/4R3/8/8/8', from: 'e4', goed: ['e8'], vraag: 'Zet de toren naar boven.' }
+
+  it('pakt het enige stuk en doet de zet', () => {
+    const r = tik(startOpgave(torenOmhoog), 'e8')
+    expect(r.uit).toBe('klaar')
+  })
+
+  it('rekent een verkeerd doel nog steeds fout', () => {
+    const r = tik(startOpgave(torenOmhoog), 'f5')
+    expect(r.uit).toBe('fout')
+  })
+
+  it('werkt ook bij een loopopgave met één stuk', () => {
+    const naarDeSter: Exercise = { kind: 'reach', fen: '8/8/8/8/4R3/8/8/8', from: 'e4', doel: 'e8', vraag: 'Breng de toren naar de ster.' }
+    expect(tik(startOpgave(naarDeSter), 'e8').uit).toBe('klaar')
+  })
+})
+
+describe('een dwars kind dat het verkeerde stuk pakt', () => {
+  // "Speel Pf3" rekende een tijdje de pion f2-f3 goed, ook in de toets: het andere stuk
+  // werd gewoon geselecteerd en alleen het doelveld werd nagekeken. Dit speelt elke
+  // zetopgave met een vast stuk na met elk ander eigen stuk, zoals een kind dat sleept
+  // of verkeerd kiest.
+  it('rekent geen enkele zet met een ander stuk goed', async () => {
+    const { ALLE_LESSEN } = await import('@/content')
+    const fout: string[] = []
+    for (const les of ALLE_LESSEN) {
+      for (const o of [...les.meedoen, ...les.zelf, ...les.toets]) {
+        if (o.kind !== 'move' || !o.from) continue
+        const start = startOpgave(o)
+        const kleur = start.board[o.from]?.color
+        for (const [veld, stuk] of Object.entries(start.board)) {
+          if (veld === o.from || stuk.color !== kleur) continue
+          for (const doel of o.goed) {
+            // Via selecteren, en via eerst het goede stuk en dan van gedachten veranderen.
+            for (const route of [[veld, doel], [o.from, veld, doel]]) {
+              let stand = start
+              let uit = ''
+              for (const tikveld of route) {
+                const r = tik(stand, tikveld as never)
+                stand = r.stand
+                uit = r.uit
+              }
+              // Goed gerekend terwijl het vaste stuk nog op zijn plek staat: dan liep er een ander.
+              if ((uit === 'goed' || uit === 'klaar') && stand.board[o.from]) {
+                fout.push(`${les.id}: ${route.join('→')} ("${o.vraag}")`)
+              }
+            }
+          }
+        }
+      }
+    }
+    expect(fout).toEqual([])
   })
 })

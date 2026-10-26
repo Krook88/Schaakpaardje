@@ -255,7 +255,12 @@ export function kies(varianten: readonly string[], groep = 'algemeen'): string {
  * om. Zonder dit onderscheid was die knop dood voor precies het kind dat hem nodig
  * heeft — een van vier, dat de tekst eronder niet kan lezen.
  */
-export async function speak(tekst: string, opVerzoek = false): Promise<void> {
+export async function speak(
+  tekst: string,
+  opVerzoek = false,
+  /** Zonder ondertitel: bij het voorlezen van quizantwoorden blijft de vraag in de ballon staan. */
+  { ondertitel = true }: { ondertitel?: boolean } = {},
+): Promise<void> {
   if (!tekst) return
   const mijnBeurt = ++beurt
   stopSpeaking()
@@ -267,7 +272,7 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
     wachtendeZin = tekst
     return
   }
-  if (config.ondertiteling) ondertitelListener?.(tekst)
+  if (config.ondertiteling && ondertitel) ondertitelListener?.(tekst)
   if (!opVerzoek && !config.spraak) return
 
   await laadManifest()
@@ -347,6 +352,23 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
       wachtOpEersteTik()
     }, GEEN_GELUID_MS)
   }
+}
+
+/**
+ * Het nummer van de laatst begonnen zin.
+ *
+ * Voor wie meerdere zinnen achter elkaar laat zeggen (het voorlezen van een quiz): is
+ * dit nummer na het wachten veranderd, dan heeft iemand anders intussen iets laten
+ * zeggen — een kind dat op de luidspreker tikte — en moet de rij ophouden in plaats van
+ * daar overheen te praten.
+ */
+export function spreekBeurt(): number {
+  return beurt
+}
+
+/** Haal de ondertitel weg zonder iets af te breken; de ballon toont dan weer zijn eigen zin. */
+export function wisOndertitel() {
+  ondertitelListener?.(null)
 }
 
 /** Spreekt één willekeurige variant uit een lijstje uit. */

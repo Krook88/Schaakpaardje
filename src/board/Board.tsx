@@ -50,6 +50,13 @@ type Props = {
   /** Veld dat net fout was; schudt één keer. */
   shake?: Square | null
   label?: string
+  /**
+   * Wat een sleep betekent. 'zet' (standaard): twee tikken, eerst het stuk en dan het
+   * veld. 'veld': alleen het veld waar je loslaat — voor opgaven waarin je velden
+   * aanwijst. Daar kostte een sleep eerst een fout, omdat de tik op het stuk zelf geen
+   * goed antwoord is (schaakmeester, codebase-review).
+   */
+  sleep?: 'zet' | 'veld'
 }
 
 /** Vinkje en kruisje zijn getekend, niet als emoji: die zien er op elk toestel anders uit. */
@@ -100,6 +107,7 @@ export function Board({
   marks = {},
   onSquare,
   disabled = false,
+  sleep = 'zet',
   showCoordinates = false,
   shake = null,
   label = 'Schaakbord',
@@ -129,6 +137,42 @@ export function Board({
       if (timer.current) clearTimeout(timer.current)
     }
   }, [shake])
+
+  /*
+   * Slepen.
+   *
+   * Het bord kende alleen tik-tik: eerst het stuk, dan het veld. Kinderen van drie tot
+   * zes slepen bijna altijd, en dan gebeurde er niets — ook geen selectie
+   * (spelontwerper). Een sleep is nu precies dezelfde twee tikken, via `onSquare`, zodat
+   * de lesmotor en de partij er niets van hoeven te weten.
+   *
+   * De tweede tik komt een tel later, met de nieuwste `onSquare`: de eerste tik verandert
+   * de stand, en met de oude functie zou het tweede veld nog op de oude stand landen. En
+   * de klik die de browser na het loslaten nog stuurt, telt niet: die zou het stuk weer
+   * loslaten.
+   */
+  const [sleepVan, setSleepVan] = useState<Square | null>(null)
+  const opVeld = useRef(onSquare)
+  opVeld.current = onSquare
+  const negeerKlikTot = useRef(0)
+  const tweedeTik = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => {
+    if (tweedeTik.current) clearTimeout(tweedeTik.current)
+  }, [])
+  const laatLos = (e: React.PointerEvent) => {
+    const van = sleepVan
+    setSleepVan(null)
+    if (!van) return
+    const onder = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>('[data-square]')
+    const naar = onder?.dataset.square as Square | undefined
+    if (!naar || naar === van) return
+    // Alleen de klik die de browser direct na het loslaten stuurt; een echte tik daarna
+    // moet gewoon werken.
+    negeerKlikTot.current = Date.now() + 250
+    if (sleep === 'veld') return void opVeld.current?.(naar)
+    if (selected !== van) opVeld.current?.(van)
+    tweedeTik.current = setTimeout(() => opVeld.current?.(naar), 0)
+  }
 
   const ranks = orientation === 'w' ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8]
   const files = orientation === 'w' ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0]
@@ -171,7 +215,13 @@ export function Board({
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.frame} role="group" aria-label={label}>
+      <div
+        className={styles.frame}
+        role="group"
+        aria-label={label}
+        onPointerUp={laatLos}
+        onPointerCancel={() => setSleepVan(null)}
+      >
         <div className={styles.grid}>
           {ranks.map((rank) =>
             files.map((file) => {
@@ -186,7 +236,8 @@ export function Board({
               if (!light) classes.push(styles.dark)
               if (goed) classes.push(styles.goedVeld)
               if (fout) classes.push(styles.foutVeld)
-              if (selected === sq) classes.push(styles.selected)
+              if (selected === sq || sleepVan === sq) classes.push(styles.selected)
+              if (piece) classes.push(styles.metStuk)
               if (has(marks.glow, sq)) classes.push(styles.glow)
               const stap = marks.spoor?.indexOf(sq) ?? -1
               if (stap >= 0) classes.push(styles.spoor)
@@ -204,8 +255,20 @@ export function Board({
                   type="button"
                   className={classes.join(' ')}
                   onClick={() => {
+                    if (Date.now() < negeerKlikTot.current) return
                     setFocusVeld(sq)
                     onSquare?.(sq)
+                  }}
+                  onPointerDown={(e) => {
+                    if (!piece || disabled || !onSquare) return
+                    setSleepVan(sq)
+                    // Vasthouden, zodat het loslaten hier altijd aankomt — ook buiten het
+                    // bord. Anders bleef een veld oplichten na loslaten naast het bord.
+                    try {
+                      e.currentTarget.setPointerCapture(e.pointerId)
+                    } catch {
+                      // Oudere browsers: dan gewoon zonder.
+                    }
                   }}
                   onKeyDown={(e) => opToets(e, sq)}
                   onFocus={() => setFocusVeld(sq)}

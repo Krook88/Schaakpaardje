@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Kop } from '@/ui/Kop'
+import { vergeetBel } from '@/ui/GeluidKnop'
 import { Rekenslot } from '@/ui/Rekenslot'
 import { Sterren } from '@/ui/Sterren'
 import { KOFFIE } from '@/seo'
@@ -96,7 +97,10 @@ function OuderPaneel() {
         aria-label={label}
         aria-describedby={uitleg ? `uitleg-${sleutel}` : undefined}
         checked={Boolean(instellingen[sleutel])}
-        onChange={(e) => zetInstelling(sleutel, e.target.checked as never)}
+        onChange={(e) => {
+          if (sleutel === 'spraak' || sleutel === 'effecten') vergeetBel()
+          zetInstelling(sleutel, e.target.checked as never)
+        }}
         style={{ width: 44, height: 44, flexShrink: 0 }}
       />
     </label>
@@ -165,8 +169,10 @@ function OuderPaneel() {
           <ul className="muted" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 2 }}>
             <li style={{ whiteSpace: 'nowrap' }}>{gedaan} van de {totaal} lessen gedaan</li>
             {gespeeld && (
-              <li style={{ whiteSpace: 'nowrap' }}>
+              <li>
                 {gespeeld.gewonnen + gespeeld.verloren + gespeeld.remise} partijen gespeeld
+                {/* De uitslag hoort hier, niet bij het kind: daar stond "verloor er N". */}
+                {' '}({gespeeld.gewonnen} gewonnen, {gespeeld.verloren} verloren, {gespeeld.remise} gelijk)
               </li>
             )}
             {oefendagen > 0 && (

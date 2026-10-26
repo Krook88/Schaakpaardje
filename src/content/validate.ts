@@ -21,7 +21,7 @@ import { goedeZetten } from '@/lesson/runner'
 import { geldigVeld, korstePad, slaAllesOp } from '@/engine/puzzels'
 import { WERELDEN } from './index'
 import { MINISPEL_ZINNEN } from '@/play/minispellen'
-import { alleOpgaven, vertelTekst, vertelWijzers } from './types'
+import { alleOpgaven, uitspraakVan, vertelTekst, vertelWijzers } from './types'
 import type { Exercise, Lesson, World } from './types'
 
 export type Bevinding = { waar: string; probleem: string }
@@ -555,6 +555,8 @@ export function alleZinnen(): string[] {
       for (const o of [...les.meedoen, ...les.zelf, ...les.toets]) {
         if ('vraag' in o) zinnen.add(o.vraag)
         if ('foutTip' in o && o.foutTip) zinnen.add(o.foutTip)
+        // Pip leest de antwoorden van een quiz voor aan wie nog niet leest.
+        if (o.kind === 'quiz') o.opties.forEach((optie) => zinnen.add(uitspraakVan(optie)))
       }
     }
   }

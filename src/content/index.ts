@@ -40,4 +40,10 @@ export function volgendeLes(id: string): Lesson | undefined {
   return i >= 0 ? ALLE_LESSEN[i + 1] : undefined
 }
 
+/**
+ * De les waarna een kind het woord "schaak" kent; daarvoor zegt Pip "je koning wordt
+ * aangevallen". Niet in voice.ts: alles daar wordt ingesproken. Een test bewaakt hem.
+ */
+export const SCHAAK_LES = 'schaak-1'
+
 export * from './types'

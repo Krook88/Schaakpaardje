@@ -34,13 +34,22 @@ import {
   PROMOTIE_KIES,
   SAMEN_WIT_WINT,
   SAMEN_ZWART_WINT,
-  SCHAAK_TEGEN_JOU,
-  SCHAAK_VAN_JOU,
+  schaakZinnen,
 } from '@/content/voice'
 import { kies } from '@/audio/voice'
 import { type PieceType, type Square } from '@/engine/board'
 import { isPromotie } from '@/engine/game'
-import { AVATARS, useInstellingen, useModus, useProfiel, useProfielStore, useToestandGeladen } from '@/progress/store'
+import {
+  AVATARS,
+  lesGedaan,
+  useInstellingen,
+  useModus,
+  useProfiel,
+  useProfielStore,
+  useToestandGeladen,
+  useVoortgang,
+} from '@/progress/store'
+import { SCHAAK_LES } from '@/content'
 import { tel } from '@/progress/tellen'
 import { zetCode } from './afstand'
 import {
@@ -78,13 +87,16 @@ function eenKeer(sleutel: string): boolean {
 }
 
 /** Wat Pip zegt als het vriendje net gezet heeft (of als je terugkomt en aan zet bent). */
-function zinVoorJouwBeurt(p: LivePartij): string {
+function zinVoorJouwBeurt(p: LivePartij, kentSchaak: boolean): string {
   const laatste = p.zetten.at(-1)
   const onder = laatste?.[4] ? 'rbn'.indexOf(laatste[4]) : -1
   // Wie schaak staat en het niet hoort, ziet alleen dat de stukken niet willen. En een
   // paard met schaak is juist de reden om geen dame te nemen: dan beide zeggen.
   const st = p.game.status()
-  if (!st.over && st.check) return onder >= 0 ? ONDERPROMOTIE_SCHAAK[onder] : kies(SCHAAK_TEGEN_JOU, 'schaak')
+  // De uitleg over de onderpromotie zegt "schaak": die pas na wereld 9.
+  if (!st.over && st.check) {
+    return onder >= 0 && kentSchaak ? ONDERPROMOTIE_SCHAAK[onder] : kies(schaakZinnen(true, kentSchaak), 'schaak')
+  }
   return onder >= 0 ? AFSTAND_ONDERPROMOTIE[onder] : AFSTAND_JOUW_BEURT
 }
 
@@ -111,6 +123,11 @@ function uitslagZin(p: LivePartij): string {
 }
 
 export function LiveScherm() {
+  // Het woord "schaak" pas na de eerste schaakles (wereld 9). Als ref: de zin wordt in
+  // afgeleide callbacks gekozen, en die hoeven daarvoor niet opnieuw te ontstaan.
+  const kentSchaakNu = lesGedaan(useVoortgang(), SCHAAK_LES)
+  const kentSchaak = useRef(kentSchaakNu)
+  kentSchaak.current = kentSchaakNu
   const geladen = useToestandGeladen()
   const profiel = useProfiel()
   const instellingen = useInstellingen()
@@ -201,7 +218,7 @@ export function LiveScherm() {
         setStemming('trots')
         if (nieuweZet && !ikDeedLaatste && instellingen.effecten) (status.reason === 'mat' ? sfx.schaak : sfx.zet)()
       } else if (nieuweZet && !ikDeedLaatste) {
-        zeg(zinVoorJouwBeurt(nieuw))
+        zeg(zinVoorJouwBeurt(nieuw, kentSchaak.current))
         setStemming(status.check ? 'verrast' : 'blij')
         if (instellingen.effecten) (status.check ? sfx.schaak : sfx.zet)()
       } else if (oud?.ander === 'nog-niet' && nieuw.ander !== 'nog-niet') {
@@ -221,7 +238,7 @@ export function LiveScherm() {
                 ? LIVE_VRIENDJE_ER
                 : LIVE_JIJ_ZWART
               : nieuw.game.turn === jij
-                ? zinVoorJouwBeurt(nieuw)
+                ? zinVoorJouwBeurt(nieuw, kentSchaak.current)
                 : LIVE_DENKT_NA,
         )
         setStemming(nieuw.game.turn === jij && status.check ? 'verrast' : 'blij')
@@ -298,7 +315,7 @@ export function LiveScherm() {
           zeg(uitslagZin(p))
           setStemming('trots')
         } else if (p && p.jij) {
-          zeg(p.ander === 'nog-niet' ? LIVE_WACHT_OP_VRIENDJE : p.game.turn === p.jij ? zinVoorJouwBeurt(p) : LIVE_DENKT_NA)
+          zeg(p.ander === 'nog-niet' ? LIVE_WACHT_OP_VRIENDJE : p.game.turn === p.jij ? zinVoorJouwBeurt(p, kentSchaak.current) : LIVE_DENKT_NA)
           setStemming('blij')
         } else if (p && !p.jij) zeg(LIVE_VOL)
       }
@@ -498,7 +515,7 @@ export function LiveScherm() {
         const na2 = a.stand.game.status()
         verwerk(a)
         if (!na2.over) {
-          zeg(na2.check ? kies(SCHAAK_VAN_JOU, 'schaak') : LIVE_DENKT_NA)
+          zeg(na2.check ? kies(schaakZinnen(false, kentSchaak.current), 'schaak') : LIVE_DENKT_NA)
           setStemming('trots')
         }
         return
@@ -615,7 +632,7 @@ export function LiveScherm() {
     // Zette het vriendje al terwijl dit kind nog naar het einde keek: dan is dit kind nu
     // aan zet, en dat hoort Pip te zeggen. Codebase-review 26, punt 3.
     if (n.zetten.length > 0 && n.jij !== null && n.game.turn === n.jij) {
-      zeg(zinVoorJouwBeurt(n))
+      zeg(zinVoorJouwBeurt(n, kentSchaak.current))
       const st = n.game.status()
       setStemming(!st.over && st.check ? 'verrast' : 'blij')
     }

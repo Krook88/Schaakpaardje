@@ -10,6 +10,8 @@ import {
   useToestandGeladen,
   useVoortgang,
   volgendeOpenLes,
+  lesGedaan,
+  useInstellingen,
   wereldIsAf,
 } from '@/progress/store'
 import styles from './Kaart.module.css'
@@ -38,7 +40,7 @@ export default function Kaart() {
   const modus = useModus()
   const geladen = useToestandGeladen()
   // Waar het kind gebleven is: de enige plek op de hele kaart waar Pip staat.
-  const hier = volgendeOpenLes(voortgang, modus).id
+  const hier = volgendeOpenLes(voortgang, modus, useInstellingen().beginWereld).id
 
   // Zonder deze pauze toont de voorgerenderde HTML alle lessen op slot, en flitst dat
   // even in beeld voordat de echte voortgang er is.
@@ -103,7 +105,7 @@ export default function Kaart() {
               href: `/les/${les.id}/`,
               open: isOntgrendeld(les.id, voortgang, modus),
               sterren: voortgang[les.id]?.sterren ?? 0,
-              af: (voortgang[les.id]?.sterren ?? 0) >= 2,
+              af: lesGedaan(voortgang, les.id),
               jij: les.id === hier,
             })),
             ...(wereld.minispel
@@ -152,6 +154,9 @@ export default function Kaart() {
               {/* Hoeveel sterren er in deze wereld te halen zijn, en hoeveel er al
                   liggen. Een balk die voller wordt zegt dat zonder één cijfer; het
                   getal ernaast is voor wie leest, en voor de schermlezer. */}
+              {/* Niet bij een wereld die al uit is: een balk die niet vol is zei daar
+                  "je mist nog iets", terwijl de wereld af is (spelontwerper). */}
+              {!wereldIsAf(wereld.id, voortgang) && (
               <div className={styles.oogst}>
                 <div
                   className={styles.balk}
@@ -167,6 +172,7 @@ export default function Kaart() {
                   ⭐ {sterrenNu}/{sterrenMax}
                 </span>
               </div>
+              )}
 
               <div className={styles.binnen}>
               {/* Het pad: één spoor met de lessen als halteplaatsen erop, en Pip op de

@@ -126,6 +126,9 @@ describe('wat er geteld wordt, ligt vast', () => {
     'Profiel gemaakt': ['na'],
     'Eerste opgave': ['les'],
     'Opgave lastig': ['les', 'opgave', 'hulp'],
+    // Een schaker die met "Ik ken de stukken al" de eerste werelden overslaat. Een
+    // losse telling, zonder iets erbij.
+    'Stukken overgeslagen': [],
   }
   const bestanden = (map: string): string[] =>
     readdirSync(map).flatMap((n) => {

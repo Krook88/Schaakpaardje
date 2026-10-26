@@ -39,6 +39,11 @@ export type Instellingen = {
   ondertiteling: boolean
   coordinaten: boolean
   blunderWaarschuwing: boolean
+  /**
+   * Vanaf welke wereld "Verder leren" begint. 0 is vanaf het begin. Alleen anders als
+   * een schaker zelf "Ik ken de stukken al" kiest; dan begint hij bij Waardevallei.
+   */
+  beginWereld: number
 }
 
 export const STANDAARD_INSTELLINGEN: Instellingen = {
@@ -48,6 +53,7 @@ export const STANDAARD_INSTELLINGEN: Instellingen = {
   ondertiteling: true,
   coordinaten: false,
   blunderWaarschuwing: true,
+  beginWereld: 0,
 }
 
 /** Leeftijd bepaalt de modus; de ouder kan hem daarna zelf bijstellen. */
@@ -92,13 +98,13 @@ export function standaardInstellingen(modus: Modus): Instellingen {
 /**
  * Tot welke `minLeeftijd` een wereld meteen openstaat.
  *
- * Zonder dit is de kaart strikt lineair: elke les eist twee sterren op de les ervóór,
+ * Zonder dit is de kaart strikt lineair: elke les eist dat de les ervóór gedaan is,
  * alle achtenveertig. Een negenjarige moest dus eerst twaalf lessen over licht/donker
  * en rijen/lijnen doorploegen voordat de dame in beeld kwam — terwijl `minLeeftijd` op
  * elke wereld staat en nergens gelezen werd.
  *
  * Openzetten is niet overslaan: "Verder leren" blijft wijzen naar de eerste les die nog
- * geen twee sterren heeft, dus wie gewoon op de grote knop drukt loopt precies het pad
+ * niet gedaan is, dus wie gewoon op de grote knop drukt loopt precies het pad
  * van hiervoor. Een oudere beginner mág alleen vooruitspringen, en kan altijd terug.
  *
  * Let op de bovengrens: Matklif heeft `minLeeftijd: 8` en staat dus voor niemand
@@ -546,9 +552,27 @@ export function useGespeeld() {
 }
 
 /**
- * Een les gaat open zodra de vorige twee sterren heeft. Twee, niet drie: het pad moet
- * doorlopen, niet perfectioneren. Drie sterren levert een sticker op, geen toegang.
+ * Vanaf hoeveel sterren een les "gedaan" is: de volgende gaat open, hij telt mee voor
+ * een wereld en een diploma, en "Verder leren" gaat door naar de volgende.
+ *
+ * Dit was twee. Maar twee keer "Help me even" in de toets geeft één ster, en dan stond
+ * een kind van drie vast: Pip zei "nog eentje proberen?" zonder knop daarvoor, "Volgende
+ * les" ging tóch door, de kaart toonde een slotje en de grote knop stuurde het steeds
+ * terug naar dezelfde les. Hulp vragen werd zo iets wat je beter niet doet
+ * (spelontwerper). Eén ster betekent: je hebt de toets uitgespeeld. Meer sterren en de
+ * sticker blijven te halen met "Nog een keer". Het pad moet doorlopen, niet perfectioneren.
+ *
+ * Omdat `sterrenVoor` nooit nul geeft, betekent "gedaan" hiermee: er is een resultaat.
+ * Eén uitzondering, de poort naar Matklif: zie `isOntgrendeld`.
  */
+export const LES_GEDAAN_BIJ = 1
+
+/** Is deze les gedaan? Zie `LES_GEDAAN_BIJ`. Eén plek, zodat alle schermen hetzelfde zeggen. */
+export function lesGedaan(voortgang: Record<string, LesResultaat>, lesId: string): boolean {
+  return (voortgang[lesId]?.sterren ?? 0) >= LES_GEDAAN_BIJ
+}
+
+/** Een les gaat open zodra de vorige gedaan is. */
 export function isOntgrendeld(
   lesId: string,
   voortgang: Record<string, LesResultaat>,
@@ -560,13 +584,23 @@ export function isOntgrendeld(
   // niemand gaat dus per ongeluk open door een vergeten argument.
   if (vanafHetBegin(lesId, modus)) return true
   const vorige = ALLE_LESSEN[index - 1]
-  return (voortgang[vorige.id]?.sterren ?? 0) >= 2
+  // De poort naar Matklif is strenger. Eén ster is daar te weinig: wie schaak nog niet
+  // begrijpt (de toets is met genoeg proberen uit te tikken), kan mat niet leren. Daar
+  // gelden de oude twee sterren op de laatste schaakles (schaakmeester).
+  const les = ALLE_LESSEN[index]
+  if (les.wereldId === POORT_NAAR_MAT && vorige.wereldId !== POORT_NAAR_MAT) {
+    return (voortgang[vorige.id]?.sterren ?? 0) >= 2
+  }
+  return lesGedaan(voortgang, vorige.id)
 }
+
+/** De wereld waar mat begint. Zie `isOntgrendeld`. */
+export const POORT_NAAR_MAT = 'mat'
 
 export function wereldIsAf(wereldId: string, voortgang: Record<string, LesResultaat>): boolean {
   const wereld = WERELDEN.find((w) => w.id === wereldId)
   if (!wereld) return false
-  return wereld.lessen.every((l) => (voortgang[l.id]?.sterren ?? 0) >= 2)
+  return wereld.lessen.every((l) => lesGedaan(voortgang, l.id))
 }
 
 /** Is dit diploma verdiend? Dat is zo zodra alle werelden tot en met `tot` af zijn. */
@@ -584,18 +618,26 @@ export function sterrenTotaal(voortgang: Record<string, LesResultaat>): number {
 }
 
 /**
- * De eerste les die nog niet af is — de knop "verder waar je was".
+ * De knop "verder waar je was": de eerste les in de vaste volgorde die open is en nog
+ * niet gedaan.
  *
- * Dit blijft de eerste les in de vaste volgorde, ook als er voor een oudere beginner
- * werelden vooruit openstaan. Dat is de bedoeling: de grote knop volgt het pad, de
- * kaart geeft de vrijheid.
+ * De grote knop volgt het pad, ook als er voor een oudere beginner werelden vooruit
+ * openstaan: een ontdekker die even in Loperbos kijkt, moet niet daarna Torenburcht
+ * overslaan, want het Damepaleis bouwt op allebei (schaakmeester).
+ *
+ * Eén uitzondering: wie zelf "Ik ken de stukken al" koos (`beginWereld`), begint vanaf
+ * die wereld. Een negenjarige werd anders na elke les teruggestuurd naar "Licht en
+ * donker" (spelontwerper). Is daar alles gedaan, dan komen de overgeslagen lessen.
  */
-export function volgendeOpenLes(voortgang: Record<string, LesResultaat>, modus: Modus = 'pip') {
-  return (
-    ALLE_LESSEN.find(
-      (l) => (voortgang[l.id]?.sterren ?? 0) < 2 && isOntgrendeld(l.id, voortgang, modus),
-    ) ?? ALLE_LESSEN[0]
-  )
+export function volgendeOpenLes(
+  voortgang: Record<string, LesResultaat>,
+  modus: Modus = 'pip',
+  beginWereld = 0,
+) {
+  const open = (l: (typeof ALLE_LESSEN)[number]) =>
+    !lesGedaan(voortgang, l.id) && isOntgrendeld(l.id, voortgang, modus)
+  const vanaf = ALLE_LESSEN.filter((l) => (WERELDEN.find((w) => w.id === l.wereldId)?.nummer ?? 0) >= beginWereld)
+  return vanaf.find(open) ?? ALLE_LESSEN.find(open) ?? ALLE_LESSEN[0]
 }
 
 /** Op hoeveel dagen het actieve kind geoefend heeft. Nul als het nog niets deed. */

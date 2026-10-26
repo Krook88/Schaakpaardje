@@ -34,7 +34,7 @@ export function gebruikTip(setZin: (zin: string) => void) {
   }, [])
 
   const zegTip = useCallback(
-    (tip: string, opdracht: string) => {
+    (tip: string, opdracht: string, daarna?: () => void) => {
       const mijn = ++beurt.current
       setZin(tip)
       if (!opdracht) return
@@ -45,7 +45,9 @@ export function gebruikTip(setZin: (zin: string) => void) {
         setTimeout(() => {
           // Alleen als er intussen niets anders gebeurd is: het kind kan het al goed
           // hebben gedaan, of naar de volgende opgave zijn gegaan.
-          if (mijn === beurt.current) setZin(opdracht)
+          if (mijn !== beurt.current) return
+          setZin(opdracht)
+          daarna?.()
         }, ADEM_MS)
       })
     },

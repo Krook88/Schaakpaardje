@@ -311,3 +311,10 @@ describe('een stelling moet in een echte partij kunnen staan', () => {
     },
   )
 })
+
+describe('de les waarna "schaak" mag', () => {
+  it('bestaat, en hoort bij de schaakwereld', async () => {
+    const { SCHAAK_LES, lesMet } = await import('@/content')
+    expect(lesMet(SCHAAK_LES)?.wereldId).toBe('schaak')
+  })
+})

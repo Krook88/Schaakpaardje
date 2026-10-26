@@ -99,6 +99,11 @@ export type Exercise =
          * en groen is. Dit vakje krijgt letterlijk dezelfde kleur als het bord.
          */
         veld?: 'licht' | 'donker'
+        /**
+         * Hoe Pip het antwoord uitspreekt als hij het voorleest, als dat anders moet dan
+         * het label. "Pd4" of een losse "P" wordt met een stem een brij.
+         */
+        uitspraak?: string
         goed?: boolean
       }[]
       foutTip?: string
@@ -157,6 +162,12 @@ export function vertelTekst(zin: string | VertelZin): string {
 }
 
 /** De velden die bij deze zin horen; leeg als er niets aangewezen wordt. */
+/** Wat Pip zegt als hij dit quizantwoord voorleest. Eén plek, zodat de app precies de zin
+ *  uitspreekt die `alleZinnen()` laat inspreken. */
+export function uitspraakVan(optie: { label: string; uitspraak?: string }): string {
+  return optie.uitspraak ?? optie.label
+}
+
 export function vertelWijzers(zin: string | VertelZin): Square[] {
   return typeof zin === 'string' ? [] : (zin.wijs ?? [])
 }

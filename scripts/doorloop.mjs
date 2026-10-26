@@ -165,6 +165,306 @@ async function minispelEindigt() {
 }
 
 /* ------------------------------------------------------------------ *
+ * Bord en "Verder" passen in beeld, en "Verder" laat zien wanneer hij aan de beurt is.
+ *
+ * Gemeld door een ouder van een vijfjarige: het bord stond te laag, "Verder" viel soms
+ * buiten beeld, en ze wist niet wanneer ze erop mocht tikken. Het bord had een vaste
+ * bovengrens (70vh) waar de kop, de fasebalk en Pips ballon niet in meetelden; op een
+ * liggende tablet stond de knop daardoor helemaal onder de rand. Dat zie je alleen
+ * door het scherm echt op die maten te openen.
+ * ------------------------------------------------------------------ */
+async function verderInBeeld() {
+  const maten = [[360, 640], [375, 667], [390, 844], [768, 1024], [1024, 768]]
+  const mis = []
+  const wijstNiet = []
+  for (const [breed, hoog] of maten) {
+    const ctx = await browser.newContext({ viewport: { width: breed, height: hoog } })
+    const p = await ctx.newPage()
+    await p.goto(`${URL}/les/toren-1/`, { waitUntil: 'networkidle' })
+    // Pip is uitgepraat (of zwijgt in de testbrowser): de knop wiebelt en het handje wijst.
+    const hand = await p.waitForSelector('[class*=wijsHand]', { timeout: 8000 }).catch(() => null)
+    if (!hand || !(await p.locator('[class*=verderKlaar]').count())) wijstNiet.push(`${breed}×${hoog}`)
+    const binnen = async (scherm) => {
+      const bord = await p.locator('[role=group]').first().boundingBox()
+      if (!bord || bord.y + bord.height > hoog + 1 || bord.width < 260)
+        mis.push(`${breed}×${hoog} ${scherm}: bord ${bord ? `${Math.round(bord.width)} breed, onderkant ${Math.round(bord.y + bord.height)}` : 'weg'}`)
+    }
+    await binnen('uitleg')
+    const knop = await p.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ }).first().boundingBox()
+    if (!knop || knop.y + knop.height > hoog + 1) mis.push(`${breed}×${hoog}: Verder buiten beeld`)
+    // En de knop mag niet over het bord heen vallen (de rij is sticky).
+    const bordUitleg = await p.locator('[role=group]').first().boundingBox()
+    if (knop && bordUitleg && knop.y < bordUitleg.y + bordUitleg.height - 1)
+      mis.push(`${breed}×${hoog}: Verder ligt over het bord`)
+    // En het opgavescherm, dat hetzelfde bordvlak gebruikt.
+    for (let i = 0; i < 8; i++) {
+      const door = p.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ })
+      if (!(await door.count())) break
+      await door.first().click()
+      await p.waitForTimeout(200)
+    }
+    await p.waitForTimeout(500)
+    await p.evaluate(() => window.scrollTo(0, 0))
+    // Op de kleinste telefoon mag de pagina in de opgave een stukje scrollen; het bord
+    // zelf moet er wel helemaal staan.
+    if (hoog > 667) await binnen('opgave')
+    await ctx.close()
+  }
+  meld('bord en "Verder" passen in beeld', mis.length === 0, mis.join('; '))
+  meld('"Verder" wijst zichzelf aan als Pip klaar is', wijstNiet.length === 0, wijstNiet.length ? `niet op ${wijstNiet.join(', ')}` : '')
+}
+
+/* ------------------------------------------------------------------ *
+ * Pip leest een quiz voor, en het kind mag er middenin op tikken.
+ *
+ * Een kind van vijf kon de toetsvragen niet lezen. Pip leest nu elk antwoord voor en
+ * zet er een luidsprekertje bij. Twee dingen mogen daarbij nooit gebeuren: dat een tik
+ * halverwege niet telt of fout gerekend wordt, en dat het luidsprekertje blijft staan
+ * nadat het kind gekozen heeft.
+ * ------------------------------------------------------------------ */
+async function quizWordtVoorgelezen() {
+  await page.goto(`${URL}/les/weide-3/`, { waitUntil: 'networkidle' })
+  await page.waitForTimeout(700)
+  for (let i = 0; i < 8; i++) {
+    const door = page.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ })
+    if (!(await door.count())) break
+    await door.first().click()
+    await page.waitForTimeout(450)
+  }
+  const antwoorden = {
+    'veld rechtsonder aan': ['h1'],
+    'vier de hoeken': ['a1', 'h1', 'a8', 'h8'],
+    'hoeken zijn licht': ['h1', 'a8'],
+    'veld linksonder': ['a1'],
+  }
+  for (let ronde = 0; ronde < 10; ronde++) {
+    if (await page.getByRole('button', { name: /een licht veld/ }).count()) break
+    const vraag = await ballon()
+    const t = Object.entries(antwoorden).find(([stuk]) => vraag.includes(stuk))
+    if (!t) break
+    for (const veld of t[1]) {
+      await page.locator(`[data-square="${veld}"]`).click()
+      await page.waitForTimeout(250)
+    }
+    await page.waitForTimeout(2000)
+  }
+  // In de testbrowser praat Pip razendsnel (er is geen stem), dus het eerste voorlezen
+  // is al voorbij voor we kijken. "Opnieuw" laat hem het nog eens doen.
+  await page.getByRole('button', { name: /Opnieuw/ }).click().catch(() => {})
+  const spreekt = await page.waitForSelector('[class*=quizSpreekt]', { timeout: 10000 }).catch(() => null)
+  if (!spreekt) return meld('een quiz wordt voorgelezen, en tikken halverwege telt', false, 'geen luidsprekertje bij een antwoord')
+  // Eerst expres fout. Daarna leest Pip opnieuw voor, maar nooit meer het foute
+  // antwoord: een kind dat tikt op wat oplicht, tikt anders gewoon weer hetzelfde.
+  // (Bij twee antwoorden is er dan nog maar één over, en dat leest hij juist niet voor:
+  // dat zou aanwijzen zijn.)
+  await page.getByRole('button', { name: /een donker veld/ }).first().click()
+  let foutVoorgelezen = false
+  for (let i = 0; i < 50; i++) {
+    const t = await page.locator('[class*=quizSpreekt]').count()
+      ? await page.locator('button:has([class*=quizSpreekt])').innerText()
+      : ''
+    if (/donker/.test(t)) foutVoorgelezen = true
+    await page.waitForTimeout(100)
+  }
+  if (foutVoorgelezen) return meld('een quiz wordt voorgelezen, en tikken halverwege telt', false, 'na een fout las Pip het foute antwoord weer voor')
+  await page.getByRole('button', { name: /Opnieuw/ }).click()
+  await page.waitForSelector('[class*=quizSpreekt]', { timeout: 10000 }).catch(() => null)
+  // Middenin het voorlezen het goede antwoord kiezen.
+  await page.getByRole('button', { name: /een licht veld/ }).first().click()
+  await page.waitForTimeout(600)
+  const na = await ballon()
+  const nogSpreekt = await page.locator('[class*=quizSpreekt]').count()
+  const afgekeurd = /niet|bijna|nee|hm|kijk goed/i.test(na)
+  meld(
+    'een quiz wordt voorgelezen, en tikken halverwege telt',
+    !afgekeurd && !nogSpreekt,
+    afgekeurd ? `Pip zei "${na}"` : nogSpreekt ? 'het luidsprekertje bleef staan' : '',
+  )
+}
+
+/* ------------------------------------------------------------------ *
+ * Een nieuwe sticker is in de stal terug te vinden, en Pip zegt geen "nul".
+ *
+ * Een kind van vijf vond zijn stickers niet terug: ze bestonden alleen als getal. En toen
+ * ze er wel stonden, zei Pip bij binnenkomst "Je hebt er 0 van de 16" — over de sticker
+ * die het net gekregen had. Dat hoor je alleen door er echt naartoe te gaan.
+ * ------------------------------------------------------------------ */
+async function nieuweStickerInDeStal() {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(URL, { waitUntil: 'networkidle' })
+  await p.evaluate(() => {
+    const raw = JSON.parse(localStorage.getItem('schaakmaatje-v1') || '{"state":{},"version":0}')
+    raw.state = {
+      ...raw.state,
+      voortgang: { gast: { 'weide-1': { sterren: 3, fouten: 0, hints: 0, laatst: '' } } },
+      stickers: { gast: ['weide-1'] },
+    }
+    localStorage.setItem('schaakmaatje-v1', JSON.stringify(raw))
+  })
+  await p.goto(`${URL}/stal/?nieuw=weide-1`, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(800)
+  const zin = (await p.locator('[class*=ballon]').first().innerText().catch(() => '')).split('\n')[0]
+  const glimt = await p.locator('#stickers [class*=nieuw]').count()
+  const pipInBeeld = ((await p.locator('[class*=ballon]').first().boundingBox())?.y ?? -1) >= 0
+  await ctx.close()
+  meld(
+    'een nieuwe sticker staat in de stal, en Pip zegt geen nul',
+    !/\b0\b/.test(zin) && glimt === 1 && pipInBeeld,
+    `Pip zei "${zin}"${glimt === 1 ? '' : ', geen glimmende sticker'}${pipInBeeld ? '' : ', Pip niet in beeld'}`,
+  )
+}
+
+/* ------------------------------------------------------------------ *
+ * Zoals een kind van drie een stuk zet: slepen, of meteen op het doel tikken.
+ *
+ * Het bord kende alleen tik-tik. Een kind dat bij "Zet de toren eens omhoog" meteen
+ * bovenaan tikte, of de toren sleepte, kreeg niets: geen geluid, geen schudden, geen
+ * zin (spelontwerper). Dat zie je alleen door het echt zo te doen.
+ * ------------------------------------------------------------------ */
+async function zoalsEenKleuterZet() {
+  const naarDeOpgave = async (p) => {
+    await p.goto(URL, { waitUntil: 'networkidle' })
+    await p.evaluate(() => {
+      const raw = JSON.parse(localStorage.getItem('schaakmaatje-v1') || '{"state":{},"version":0}')
+      raw.state = { ...raw.state, hervatpunt: { gast: { 'toren-1': 'zelf' } } }
+      localStorage.setItem('schaakmaatje-v1', JSON.stringify(raw))
+    })
+    await p.goto(`${URL}/les/toren-1/`, { waitUntil: 'networkidle' })
+    await p.waitForTimeout(900)
+  }
+  // Goed gerekend als Pip een prijszin zegt (PRIJS_LAATSTE): een fouttip telt niet.
+  const goedGezet = async (p) => {
+    await p.waitForTimeout(400)
+    return /goed gedaan|die is af|gelukt/i.test(await p.locator('[class*=ballon]').first().innerText().catch(() => ''))
+  }
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await naarDeOpgave(p)
+  const vraagErIs = /omhoog/.test(await p.locator('[class*=ballon]').first().innerText().catch(() => ''))
+  await p.locator('[data-square="e8"]').click()
+  const tikGoed = vraagErIs && (await goedGezet(p))
+
+  await naarDeOpgave(p)
+  const van = await p.locator('[data-square="e4"]').boundingBox()
+  const naar = await p.locator('[data-square="e7"]').boundingBox()
+  await p.mouse.move(van.x + van.width / 2, van.y + van.height / 2)
+  await p.mouse.down()
+  await p.mouse.move(naar.x + naar.width / 2, naar.y + naar.height / 2, { steps: 6 })
+  await p.mouse.up()
+  const sleepGoed = await goedGezet(p)
+  await ctx.close()
+
+  // En met een vinger, zoals op een tablet: daar gaat het om, en daar zijn de
+  // pointer-events anders (impliciet vasthouden, touch-action).
+  const tablet = await browser.newContext({ viewport: { width: 820, height: 1180 }, hasTouch: true })
+  const t = await tablet.newPage()
+  await naarDeOpgave(t)
+  const cdp = await tablet.newCDPSession(t)
+  const a = await t.locator('[data-square="e4"]').boundingBox()
+  const b = await t.locator('[data-square="e6"]').boundingBox()
+  const punt = (box) => [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }]
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: punt(a) })
+  for (let i = 1; i <= 5; i++) {
+    const tussen = { x: a.x + ((b.x - a.x) * i) / 5, y: a.y + ((b.y - a.y) * i) / 5, width: a.width, height: a.height }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: punt(tussen) })
+  }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  const vingerGoed = await goedGezet(t)
+  await tablet.close()
+  meld(
+    'slepen en meteen op het doel tikken werken',
+    tikGoed && sleepGoed && vingerGoed,
+    [
+      !vraagErIs && 'de opgave nooit bereikt',
+      vraagErIs && !tikGoed && 'tik op e8 deed niets',
+      !sleepGoed && 'slepen e4→e7 deed niets',
+      !vingerGoed && 'slepen met een vinger deed niets',
+    ]
+      .filter(Boolean)
+      .join('; '),
+  )
+}
+
+/* ------------------------------------------------------------------ *
+ * Wie blijft missen, krijgt vanzelf hulp.
+ *
+ * Een driejarige tikte dertig keer lukraak en hoorde dertig keer dezelfde fouttip;
+ * "Help me even" kon hij niet lezen. Na drie missers biedt Pip nu hulp aan en wiebelt
+ * het lampje; na vijf (niet in de toets) doet hij het voor.
+ * ------------------------------------------------------------------ */
+async function hulpNaMissers() {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(600)
+  for (let i = 0; i < 8; i++) {
+    const door = p.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ })
+    if (!(await door.count())) break
+    await door.first().click()
+    await p.waitForTimeout(250)
+  }
+  await p.waitForTimeout(500)
+  // h8 hoort bij geen enkele opgave in het begin van De Weide.
+  for (let i = 0; i < 3; i++) {
+    await p.locator('[data-square="h8"]').click()
+    await p.waitForTimeout(250)
+  }
+  const aangeboden = /tipje|hulp/i.test(await p.locator('[class*=ballon]').first().innerText().catch(() => ''))
+  const wiebelt = (await p.locator('button:has-text("Help me even")[class*=verderKlaar]').count()) > 0
+  for (let i = 0; i < 2; i++) {
+    await p.locator('[data-square="h8"]').click()
+    await p.waitForTimeout(250)
+  }
+  // VOORDOEN: "Kijk, ik wijs het aan. Tik maar waar het oplicht."
+  const voorgedaan = /ik wijs het aan/i.test(
+    await p.locator('[class*=ballon]').first().innerText().catch(() => ''),
+  )
+  await ctx.close()
+  meld(
+    'na drie missers biedt Pip hulp aan, na vijf doet hij het voor',
+    aangeboden && wiebelt && voorgedaan,
+    [!aangeboden && 'geen aanbod', !wiebelt && 'lampje wiebelt niet', !voorgedaan && 'niets voorgedaan'].filter(Boolean).join('; '),
+  )
+}
+
+/* ------------------------------------------------------------------ *
+ * Na "Beginnen" praat Pip vanzelf, zoals het formulier belooft.
+ *
+ * Het beginscherm legde vast of Pip vanzelf mocht praten toen het nog de welkomstpagina
+ * was, vóór de eerste tik, en dat bleef uit. Een kind dat niet leest kreeg na "Beginnen"
+ * een stil scherm (spelontwerper). Er is in de testbrowser geen stem, dus we kijken wat
+ * er aan de apparaatstem gevraagd wordt.
+ * ------------------------------------------------------------------ */
+async function pipPraatNaBeginnen() {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  await ctx.addInitScript(() => {
+    window.__gezegd = []
+    const echt = window.speechSynthesis?.speak?.bind(window.speechSynthesis)
+    if (window.speechSynthesis) {
+      window.speechSynthesis.speak = (zin) => {
+        window.__gezegd.push(zin.text)
+        echt?.(zin)
+      }
+    }
+  })
+  const p = await ctx.newPage()
+  await p.goto(URL, { waitUntil: 'networkidle' })
+  await p.getByRole('textbox').first().fill('Testkind')
+  const jaar = p.getByRole('button', { name: '5', exact: true })
+  if (await jaar.count()) await jaar.click()
+  await p.getByRole('button', { name: /Beginnen/ }).click()
+  await p.waitForTimeout(2500)
+  const gezegd = await p.evaluate(() => window.__gezegd)
+  await ctx.close()
+  meld(
+    'na "Beginnen" praat Pip vanzelf',
+    gezegd.some((z) => /Welkom in mijn stal/.test(z)),
+    gezegd.length ? `Pip zei: ${gezegd.join(' | ')}` : 'Pip zei niets',
+  )
+}
+
+/* ------------------------------------------------------------------ *
  * 3. Het goede quizantwoord wordt goed gerekend.
  *
  * Het scherm tekende de antwoorden in de ene volgorde en de lesmotor keek de andere
@@ -903,6 +1203,12 @@ for (const regel of [
   minispelEindigt,
   dagTeltNaMinispel,
   quizRekentGoedGoed,
+  verderInBeeld,
+  quizWordtVoorgelezen,
+  nieuweStickerInDeStal,
+  zoalsEenKleuterZet,
+  hulpNaMissers,
+  pipPraatNaBeginnen,
   onmogelijkeZetKrijgtRegelzin,
   opdrachtKomtTerugNaTipje,
   samenSpelenKentDeWinnaar,
