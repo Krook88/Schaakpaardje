@@ -92,6 +92,8 @@ async function rendeer(g: Geluid, apiKey: string): Promise<number> {
     headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json', accept: 'audio/mpeg' },
     body: JSON.stringify({
       text: g.prompt,
+      // v2 stopt op 1 februari 2027; v3 is de opvolger.
+      model_id: process.env.ELEVENLABS_SFX_MODEL ?? 'eleven_text_to_sound_v3',
       duration_seconds: g.seconden,
       // Hoog: we willen de prompt volgen, niet de fantasie van het model.
       prompt_influence: 0.6,
