@@ -3,7 +3,10 @@
 Geheugen van de `/loop`. Elke ronde: lees dit, pak het hoogste rode punt, bouw, bewijs, review, werk bij.
 
 ## Open vragen voor Kaj
-- `maximum-scale=1` in de viewport blokkeert inzoomen (Lighthouse toegankelijkheid 95 i.p.v. 100). Was dat bewust, tegen per ongeluk zoomen door kleine kinderen? Tot je antwoord laat ik het staan.
+- (geen open vragen)
+
+## Besluiten van Kaj
+- 3 nov 2026: `maximum-scale=1` blijft, bewust tegen per ongeluk zoomen door kleine kinderen. Lat voor Lighthouse Toegankelijkheid daarom: 100 op alles behalve de audit `meta-viewport`.
 
 ## Nulmeting — ronde 1 (3 nov 2026)
 
@@ -16,7 +19,7 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | Bord past zonder scrollen | staand: ja. **1024×768 en 1440×900: bord loopt 70–150 px onder de rand** | 🔴 |
 | Raakvlakken ≥ 48 px | 18 links op de startpagina kleiner (stukkenlinks, voettekst, "Of maak eerst een profiel", 🔊). Les-knoppen ok | 🔴 |
 | Lighthouse Performance ≥ 90 | 98 | 🟢 |
-| Lighthouse Toegankelijkheid 100 | 95 (viewport-zoom, zie vraag) | 🔴 |
+| Lighthouse Toegankelijkheid 100 | 95; enige afwijking is `meta-viewport`, bewust (zie besluiten) | 🟢 |
 | Lighthouse Best Practices ≥ 95 | 96 (wel console-404 op `/sfx/manifest.json`) | 🟢 |
 | Lighthouse SEO 100 | 100 | 🟢 |
 | LCP < 2,5 s / CLS < 0,05 | 2,1 s / 0 | 🟢 |
