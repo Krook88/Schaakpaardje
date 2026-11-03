@@ -3,7 +3,7 @@
 Geheugen van de `/loop`. Elke ronde: lees dit, pak het hoogste rode punt, bouw, bewijs, review, werk bij.
 
 ## Open vragen voor Kaj
-- (geen open vragen)
+- Delen stuurt nu alleen link + vaste zin. Mag er ook een **vast plaatje zonder naam** mee (bijv. het wereldwapen met Pip), zodat de ontvanger ziet wát er gevierd wordt? Tot je antwoord: alleen link + zin. (28e review, L3)
 
 ## Besluiten van Kaj
 - 3 nov 2026: `maximum-scale=1` blijft, bewust tegen per ongeluk zoomen door kleine kinderen. Lat voor Lighthouse Toegankelijkheid daarom: 100 op alles behalve de audit `meta-viewport`.
@@ -25,11 +25,11 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | LCP < 2,5 s / CLS < 0,05 | 2,1 s / 0 | 🟢 |
 | Eerste les ≤ 2 tikken, ≤ 15 s | 1 tik, 1,4 s | 🟢 |
 | Tik-reactie < 100 ms | nog niet gemeten | ⚪ |
-| Beloningsmoment per wereld | diploma-scherm bestaat; nog niet beoordeeld | ⚪ |
+| Beloningsmoment per wereld | ronde 3: eigen held-kaart (wapen 128 px, confetti, wapenrij), diploma-voorproef | 🟢 (wow nog te meten) |
 | `prefers-reduced-motion` | in 10 stijlbestanden; niet overal nagelopen | ⚪ |
-| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
+| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
 | OG-afbeelding per pagina | één algemene `og.png` voor alle pagina's | 🔴 |
-| Deelknop op trotse momenten | alleen in live spelen; niet bij wereld af / diploma | 🔴 |
+| Deelknop op trotse momenten | ronde 3: op wereld af en diploma, alleen link + vaste zin, anonieme telling `Gedeeld`; doorloop bewaakt share én kopieer zonder naam | 🟢 |
 | Installeerbaar | manifest + service worker aanwezig | 🟢 |
 | Wereld 0–2 offline | alleen `/`, manifest, icoon voorgeladen; rest pas na bezoek | 🔴 |
 | `npm run check` + doorloop groen | ronde 2: groen (doorloop 23 regels) | 🟢 |
@@ -37,7 +37,8 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 
 ## Rangschikking (wow per uur werk), bijgewerkt na ronde 2
 
-1. **Diploma / wereld af als screenshot-magneet**: deelbaar diploma (naam blijft lokaal), confetti met reduced-motion, deelknop (Web Share + kopieer link, alleen de link), eigen OG-plaatje. Laagste wow-cijfer (3), en precies het moment dat ouders doorsturen.
+1. ~~Diploma / wereld af~~ (ronde 3 gedaan). Volgende: **Eerste les levendiger** — zie 2.
+0. *(oud)* **Diploma / wereld af als screenshot-magneet**: deelbaar diploma (naam blijft lokaal), confetti met reduced-motion, deelknop (Web Share + kopieer link, alleen de link), eigen OG-plaatje. Laagste wow-cijfer (3), en precies het moment dat ouders doorsturen.
 2. **Eerste les levendiger**: Pip groot in de rechterkolom met stemmingen, het bord reageert bij zin 1, een kleine beloning per goed veld.
 3. **Wereldkaart als landschap** in plaats van stroken; dichte werelden in kleur.
 4. **Startpagina-held**: bewegende Pip + bord, belofte groot.
@@ -48,3 +49,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 ## Logboek
 - Ronde 1: nulmeting. Niets aan de app veranderd.
 - Ronde 2: lesscherm liggend (bord naast Pip, volle hoogte op telefoon dwars). 27e review verwerkt. Wow-cijfers gemeten.
+- Ronde 3: trots moment — deelknop (link + vaste zin, telling), diploma-voorproef met wereldwapens, wereld af als held. 28e review verwerkt. Pip-zin 'Hoefijzer verdiend' weg (klopte niet na wereld 1).

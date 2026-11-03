@@ -13,7 +13,7 @@ import { gebruikTip } from '@/ui/gebruikTip'
 import { sfx } from '@/audio/sfx'
 import { kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import { HINT_GEGEVEN, OPNIEUW_PROBEREN, pipZinnen } from '@/content/voice'
-import { volgendeLes, wereldMet, type Lesson, type World } from '@/content'
+import { WERELDEN, volgendeLes, wereldMet, type Lesson, type World } from '@/content'
 import { vertelTekst, vertelWijzers } from '@/content/types'
 import { type Square } from '@/engine/board'
 import {
@@ -518,31 +518,59 @@ export function LessonPlayer({
         <Kop titel="Klaar!" terug="/kaart/" />
         <div className="stack center">
           <Pip zegt={zin} stemming="trots" />
+          {/* Een hele wereld uit is groter dan een les: vier lessen werk. Eerst stond
+              het als regel tekst in de lesuitslag, daarna als tweede kaart eronder
+              (28e review: "het feest staat op de tweede plek"). Nu is de wereld de held:
+              groot wapen bovenaan, de naam, en alle wapens op een rij zodat je ziet
+              waar je staat. De lesuitslag schuift klein eronder. */}
+          {wereldKlaar && (
+            <div className={`card stack center ${styles.wereldAf}`} style={{ position: 'relative', overflow: 'hidden' }}>
+              <Confetti />
+              <span className={styles.wereldAfWapen} aria-hidden="true">
+                {wereld.emoji}
+              </span>
+              <h2 className={styles.wereldAfKop}>{wereld.naam} is af!</h2>
+              <p style={{ margin: 0 }}>
+                {profiel ? <><strong>{profiel.naam}</strong> heeft</> : 'Jij hebt'} alle lessen van {wereld.naam}{' '}
+                uitgespeeld.
+              </p>
+              <div className={styles.wapenRij} aria-label="Jouw wereldwapens">
+                {WERELDEN.map((w) => {
+                  const af = w.id === wereld.id || wereldIsAf(w.id, voortgang)
+                  return (
+                    <span
+                      key={w.id}
+                      className={`${styles.wapenKlein} ${af ? styles.wapenAf : ''} ${w.id === wereld.id ? styles.wapenNu : ''}`}
+                      title={af ? w.naam : 'nog niet'}
+                      aria-label={af ? `${w.naam}, af` : 'nog niet af'}
+                    >
+                      {w.emoji}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          )}
           {/* Het moment waar een kind een hele les voor heeft gewerkt. Dat mag je niet
               stilzwijgend voorbij laten gaan: de sterren vliegen één voor één binnen,
               er valt confetti en Pip springt. Wie beweging heeft uitgezet krijgt
               gewoon het eindbeeld. */}
-          <div className="card stack center" style={{ position: 'relative', overflow: 'hidden' }}>
-            <Confetti />
-            <Sterren aantal={sterren} groot vier />
-            <h2>{les.titel}</h2>
-            {/* Niet les.doel: dat is de zin voor de ouder ("Je kind ziet dat...") en
-                die stond hier letterlijk, over het kind gepraat tegen het kind. */}
-            <p>{les.geleerd}</p>
-            {sterren >= 3 && <p>🏅 Sticker verdiend!</p>}
-          </div>
-
-          {/* Een hele wereld uit is groter dan een les: vier lessen werk. Dat kreeg één
-              regel tekst in dezelfde kaart. Nu een eigen wapen dat binnenvalt, en voor
-              de ouder een rustige knop om het door te sturen, onder de knoppen van
-              het kind zodat "Volgende les" niet onder de vouw zakt. */}
-          {wereldKlaar && (
-            <div className={`card stack center ${styles.wereldAf}`}>
-              <span className={styles.wereldAfWapen} aria-hidden="true">
-                {wereld.emoji}
-              </span>
-              <p className={styles.poortKop}>Wereld uitgespeeld!</p>
-              <strong className={styles.poortNaam}>{wereld.naam}</strong>
+          {wereldKlaar ? (
+            // Klein, één regel: anders zakte "Volgende les" op een telefoon onder de vouw.
+            <div className={`card ${styles.lesKort}`}>
+              <Sterren aantal={sterren} vier />
+              <strong>{les.titel}</strong>
+              {sterren >= 3 && <span aria-label="Sticker verdiend">🏅</span>}
+            </div>
+          ) : (
+            <div className="card stack center" style={{ position: 'relative', overflow: 'hidden' }}>
+              <Confetti />
+              <Sterren aantal={sterren} groot vier />
+              <h2>{les.titel}</h2>
+              {/* Niet les.doel: dat is de zin voor de ouder ("Je kind ziet dat...") en
+                  die stond hier letterlijk, over het kind gepraat tegen het kind. */}
+              <p>{les.geleerd}</p>
+              {sterren >= 3 && <p>🏅 Sticker verdiend!</p>}
             </div>
           )}
 
@@ -563,17 +591,18 @@ export function LessonPlayer({
               </div>
             </div>
           )}
+          {/* De hoofdknop eerst: op een telefoon stond "Naar de kaart" erboven (28e review). */}
           <div className="row" style={{ justifyContent: 'center' }}>
-            <Link href="/kaart/" className="btn">
-              Naar de kaart
-            </Link>
             {volgende && (
               <Link href={`/les/${volgende.id}/`} className="btn btn--primary btn--big">
                 Volgende les →
               </Link>
             )}
+            <Link href="/kaart/" className="btn">
+              Naar de kaart
+            </Link>
           </div>
-          {wereldKlaar && <DeelKnop />}
+          {wereldKlaar && <DeelKnop waar="wereld" />}
           {/* Voor de ouder, en ónder de knoppen: als grote kaart erboven duwde hij
               "Volgende les" op een telefoon onder de vouw, en een kind dat niet leest
               tikte op het grootste vlak en stond in een formulier (negentiende review, L1).

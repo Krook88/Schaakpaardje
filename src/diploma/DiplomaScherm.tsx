@@ -79,15 +79,15 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
               🔒
             </p>
             <h2>Nog even doorzetten</h2>
-            <div
-              className={styles.balk}
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={werelden.length}
-              aria-valuenow={af}
-              aria-label={`${af} van ${werelden.length} werelden uitgespeeld`}
-            >
-              <span style={{ width: `${(af / werelden.length) * 100}%` }} />
+            {/* Geen gladde balk: bij 0 van 7 was dat een lege grijze streep (28e review).
+                De werelden zelf, gehaalde in kleur, de rest vaag: dat leest ook een
+                kind dat nog niet leest. */}
+            <div className={styles.stappen} aria-label={`${af} van ${werelden.length} werelden uitgespeeld`}>
+              {werelden.map((w) => (
+                <span key={w.id} className={`${styles.stap} ${wereldIsAf(w.id, voortgang) ? styles.stapAf : ''}`} aria-hidden="true">
+                  {w.emoji}
+                </span>
+              ))}
             </div>
             <p className="muted" style={{ margin: 0 }}>
               {/* Een wereldnummer zegt een kind niets; de naam en het aantal dat nog
@@ -135,7 +135,7 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
         <p className={styles.handtekening}>🐴 Pip het schaakpaardje</p>
       </article>
 
-      <div className={`row ${styles.verbergBijPrinten}`} style={{ justifyContent: 'center', marginTop: 18 }}>
+      <div className={`${styles.knoppen} ${styles.verbergBijPrinten}`}>
         <button type="button" className="btn btn--primary btn--big" onClick={() => window.print()}>
           🖨️ Printen
         </button>
@@ -144,7 +144,7 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
         </Link>
       </div>
       <div className={styles.verbergBijPrinten} style={{ marginTop: 18 }}>
-        <DeelKnop />
+        <DeelKnop waar="diploma" />
       </div>
     </main>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { tel } from '@/progress/tellen'
 import { SITE } from '@/seo'
 
 /**
@@ -19,7 +20,14 @@ export const DEELTEKST = 'Mijn kind leert schaken met Pip het schaakpaardje. Gra
 
 type Uitkomst = 'niets' | 'gedeeld' | 'gekopieerd' | 'zelf'
 
-export function DeelKnop({ label = 'Stuur naar een ouder' }: { label?: string }) {
+export function DeelKnop({
+  waar,
+  label = 'Vertel een andere ouder',
+}: {
+  /** Alleen voor de anonieme telling: wélk trots moment, nooit wélk kind. */
+  waar: 'wereld' | 'diploma'
+  label?: string
+}) {
   const [uitkomst, setUitkomst] = useState<Uitkomst>('niets')
   const url = `${SITE}/`
 
@@ -28,6 +36,7 @@ export function DeelKnop({ label = 'Stuur naar een ouder' }: { label?: string })
       try {
         await navigator.share({ title: 'Schaakmaatje', text: DEELTEKST, url })
         setUitkomst('gedeeld')
+        tel('Gedeeld', { hoe: 'gedeeld', waar })
         return
       } catch (fout) {
         // Weggetikt door de ouder: dat is geen fout, en dan ook geen terugval.
@@ -37,7 +46,10 @@ export function DeelKnop({ label = 'Stuur naar een ouder' }: { label?: string })
     try {
       await navigator.clipboard.writeText(`${DEELTEKST} ${url}`)
       setUitkomst('gekopieerd')
+      tel('Gedeeld', { hoe: 'gekopieerd', waar })
     } catch {
+      // Ook als Safari na een mislukte share de activatie kwijt is, of er geen
+      // klembord is (http, oude webview): dan staat de link er gewoon zichtbaar.
       setUitkomst('zelf')
     }
   }

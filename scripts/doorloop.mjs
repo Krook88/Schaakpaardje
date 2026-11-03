@@ -1002,6 +1002,43 @@ for (const [w, h] of [[1024, 768], [1440, 900], [844, 390]]) {
   await ctx.close()
 }
 
+// En de terugval zonder deelfunctie (laptop, oudere browser): ook wat er gekopieerd
+// wordt, bevat nooit de naam (28e review).
+{
+  const lessen = readdirSync(join(import.meta.dirname, '..', 'out', 'les'))
+  const ctx = await browser.newContext({ viewport: { width: 1024, height: 768 } })
+  await ctx.addInitScript((lessen) => {
+    if (!sessionStorage.getItem('gezaaid')) {
+      sessionStorage.setItem('gezaaid', '1')
+      const id = 'kind-doorloop'
+      const voortgang = Object.fromEntries(lessen.map((l) => [l, { sterren: 3, fouten: 0, hints: 0, laatst: '2026-11-01' }]))
+      localStorage.setItem('schaakmaatje-v1', JSON.stringify({
+        version: 0,
+        state: {
+          profielen: [{ id, naam: 'Femkeziet', leeftijd: 7, modus: 'pip', avatar: '🦊', gemaakt: '2026-11-01' }],
+          actiefId: id,
+          voortgang: { [id]: voortgang },
+        },
+      }))
+    }
+    window.__gekopieerd = []
+    Object.defineProperty(navigator, 'share', { value: undefined })
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (t) => { window.__gekopieerd.push(t) } } })
+  }, lessen)
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/diploma/brons/`, { waitUntil: 'networkidle' })
+  await p.locator('[data-deelknop]').click().catch(() => {})
+  await p.waitForTimeout(200)
+  const gekopieerd = await p.evaluate(() => window.__gekopieerd)
+  const status = await p.locator('[role=status]').innerText().catch(() => '')
+  meld(
+    'zonder deelfunctie: gekopieerde tekst heeft de link en geen naam',
+    gekopieerd.length === 1 && gekopieerd[0].includes('https://') && !gekopieerd[0].includes('Femkeziet') && /gekopieerd/.test(status),
+    JSON.stringify(gekopieerd).slice(0, 160),
+  )
+  await ctx.close()
+}
+
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 
 await browser.close()
