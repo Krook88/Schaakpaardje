@@ -1069,6 +1069,35 @@ for (const beweging of ['reduce', 'no-preference']) {
   await ctx.close()
 }
 
+// De kaart: met drie werelden af staat de les van vandaag (waar Pip staat) na het
+// laden in beeld, zonder langs drie volle paden te scrollen (30e review).
+{
+  const lessen = readdirSync(join(import.meta.dirname, '..', 'out', 'les')).filter((l) => /^(weide|toren|loper)-/.test(l))
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
+  await ctx.addInitScript((lessen) => {
+    const id = 'kind-kaart'
+    localStorage.setItem('schaakmaatje-v1', JSON.stringify({
+      version: 0,
+      state: {
+        profielen: [{ id, naam: 'Kaartkind', leeftijd: 6, modus: 'pip', avatar: '🦊', gemaakt: '2026-11-01' }],
+        actiefId: id,
+        voortgang: { [id]: Object.fromEntries(lessen.map((l) => [l, { sterren: 3, fouten: 0, hints: 0, laatst: '2026-11-01' }])) },
+      },
+    }))
+  }, lessen)
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/kaart/`, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(600)
+  const r = await p.evaluate(() => {
+    const el = document.querySelector('[data-hier]')
+    if (!el) return null
+    const b = el.getBoundingClientRect()
+    return { top: Math.round(b.top), bottom: Math.round(b.bottom) }
+  })
+  meld('kaart: de les van vandaag staat in beeld', Boolean(r) && r.top >= 0 && r.bottom <= 844, JSON.stringify(r))
+  await ctx.close()
+}
+
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 
 await browser.close()
