@@ -51,7 +51,9 @@ type Props = {
   shake?: Square | null
   label?: string
   /** Het bord rolt één keer in een golf binnen. Voor de kennismaking in de eerste les:
-   *  een leeg bord dat er gewoon stond, was het eerste wat een kind zag (27e review). */
+   *  een leeg bord dat er gewoon stond, was het eerste wat een kind zag (27e review).
+   *  Alleen voor borden waar niet op getikt wordt: `.golf .square` wint van de schud-
+   *  en pop-animatie van `.wrong` en `.goedVeld`. */
   golf?: boolean
 }
 

@@ -173,9 +173,10 @@
 .goedVeld { animation: veldPop 380ms cubic-bezier(0.3, 1.6, 0.5, 1) 1; z-index: 2; }
 .goedVeld .merkGoed { animation: merkIn 320ms ease-out 1; }
 .vonk {
-  position: absolute; left: 50%; top: 40%; font-size: 1.1em; line-height: 1;
+  /* Vanuit linksonder en pas ná het vinkje, anders schoof hij er dwars doorheen. */
+  position: absolute; left: 30%; top: 55%; font-size: 1.1em; line-height: 1;
   pointer-events: none; z-index: 4; opacity: 0;
-  animation: vonkOp 900ms ease-out 1;
+  animation: vonkOp 800ms ease-out 250ms 1 both;
 }
 @keyframes veldPop { 0% { transform: scale(1); } 45% { transform: scale(1.12); } 100% { transform: scale(1); } }
 @keyframes merkIn { from { transform: scale(0.2); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -186,8 +187,11 @@
 }
 
 /* De kennismaking: de velden rollen in een golf van linksboven naar rechtsonder in. */
-.golf .square { animation: golfIn 420ms ease-out both; animation-delay: calc(var(--golf, 0) * 45ms); }
-@keyframes golfIn { from { transform: scale(0.3); opacity: 0; } to { transform: none; opacity: 1; } }
+/* Alleen schalen, nooit doorzichtig: met opacity 0 leek een half bord even een bord dat
+   nog laadde, en was een aangewezen veld onzichtbaar (29e review). Elk golffront is één
+   diagonaal en dus één kleur. Speelt opnieuw bij terug naar zin 1; dat is bewust. */
+.golf .square { animation: golfIn 360ms ease-out both; animation-delay: calc(var(--golf, 0) * 30ms); }
+@keyframes golfIn { from { transform: scale(0.6); } to { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .goedVeld, .goedVeld .merkGoed, .golf .square { animation: none; }

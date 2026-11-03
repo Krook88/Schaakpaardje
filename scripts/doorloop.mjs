@@ -1040,9 +1040,11 @@ for (const [w, h] of [[1024, 768], [1440, 900], [844, 390]]) {
 }
 
 // Wie beweging heeft uitgezet (prefers-reduced-motion), krijgt geen golf bij het
-// eerste bord en geen opstijgend vonkje bij een goed veld: alleen het eindbeeld.
-{
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
+// eerste bord en geen opstijgend vonkje bij een goed veld: alleen het eindbeeld. En
+// andersom: mét beweging zijn ze er wel, anders bewijst "uit" niets (29e review).
+// a1 is in weide-1 het eerste goede veld (zie gastHoudtZijnSterren).
+for (const beweging of ['reduce', 'no-preference']) {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: beweging })
   const p = await ctx.newPage()
   await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
   await p.waitForSelector('[data-square]')
@@ -1055,11 +1057,15 @@ for (const [w, h] of [[1024, 768], [1440, 900], [844, 390]]) {
   await p.waitForTimeout(500)
   await p.locator('[data-square="a1"]').click()
   await p.waitForTimeout(100)
-  const vonk = await p.evaluate(() => {
-    const alle = [...document.querySelectorAll('[data-square="a1"] *')].filter((e) => e.textContent === '✨')
-    return alle.some((e) => getComputedStyle(e).display !== 'none')
+  const { bestaat, zichtbaar } = await p.evaluate(() => {
+    const v = [...document.querySelectorAll('[data-square="a1"] *')].find((e) => e.textContent === '✨')
+    return { bestaat: Boolean(v), zichtbaar: Boolean(v) && getComputedStyle(v).display !== 'none' }
   })
-  meld('beweging uit: geen golf en geen vonkje', golfAnim === 'none' && !vonk, `golf=${golfAnim} vonk=${vonk}`)
+  if (beweging === 'reduce') {
+    meld('beweging uit: geen golf en geen vonkje', bestaat && golfAnim === 'none' && !zichtbaar, `golf=${golfAnim} vonk in DOM=${bestaat} zichtbaar=${zichtbaar}`)
+  } else {
+    meld('beweging aan: golf bij het eerste bord en een vonkje bij een goed veld', golfAnim !== 'none' && zichtbaar, `golf=${golfAnim} vonk=${zichtbaar}`)
+  }
   await ctx.close()
 }
 

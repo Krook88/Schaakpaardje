@@ -26,8 +26,8 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | Eerste les ≤ 2 tikken, ≤ 15 s | 1 tik, 1,4 s | 🟢 |
 | Tik-reactie < 100 ms | nog niet gemeten | ⚪ |
 | Beloningsmoment per wereld | ronde 3: eigen held-kaart (wapen 128 px, confetti, wapenrij), diploma-voorproef | 🟢 (wow nog te meten) |
-| `prefers-reduced-motion` | in 10 stijlbestanden; niet overal nagelopen | ⚪ |
-| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
+| `prefers-reduced-motion` | nieuwe animaties (golf, vonk, wapen) bewaakt in doorloop, aan én uit; oudere nog niet allemaal nagelopen | 🟡 |
+| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 4: eerste les 7/7. ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
 | OG-afbeelding per pagina | één algemene `og.png` voor alle pagina's | 🔴 |
 | Deelknop op trotse momenten | ronde 3: op wereld af en diploma, alleen link + vaste zin, anonieme telling `Gedeeld`; doorloop bewaakt share én kopieer zonder naam | 🟢 |
 | Installeerbaar | manifest + service worker aanwezig | 🟢 |
@@ -45,6 +45,7 @@ Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4)
 4. **Wereld 0–2 offline voorladen.**
 5. **OG per pagina.**
 6. Tik-reactie < 100 ms meten in de doorloop.
+7. Pip leeft mee in de les (springt bij goed veld, groter in zijkolom, huppelt het bord op) — 29e review.
 
 ## Logboek
 - Ronde 1: nulmeting. Niets aan de app veranderd.
