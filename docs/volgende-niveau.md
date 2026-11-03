@@ -16,8 +16,8 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | Punt | Meting | Status |
 |---|---|---|
 | Geen horizontaal scrollen (10 formaten, licht+donker) | start en eerste les: nergens | 🟢 |
-| Bord past zonder scrollen | staand: ja. **1024×768 en 1440×900: bord loopt 70–150 px onder de rand** | 🔴 |
-| Raakvlakken ≥ 48 px | 18 links op de startpagina kleiner (stukkenlinks, voettekst, "Of maak eerst een profiel", 🔊). Les-knoppen ok | 🔴 |
+| Bord past zonder scrollen | ronde 2: staand ja; liggend 1024×768, 1180×820, 1440×900, 844×390 bord én pagina passen (velden 64/70/70/47 px). Open: 667×375 velden 36 px; staande telefoon scrolt onder het bord (knoppen) | 🟢 (bewaakt in doorloop) |
+| Raakvlakken ≥ 48 px | ook: kopknoppen 44 px, fasebalk/voortgangsrondjes klein (27e review L4). 18 links op de startpagina kleiner (stukkenlinks, voettekst, "Of maak eerst een profiel", 🔊). Les-knoppen ok | 🔴 |
 | Lighthouse Performance ≥ 90 | 98 | 🟢 |
 | Lighthouse Toegankelijkheid 100 | 95; enige afwijking is `meta-viewport`, bewust (zie besluiten) | 🟢 |
 | Lighthouse Best Practices ≥ 95 | 96 (wel console-404 op `/sfx/manifest.json`) | 🟢 |
@@ -27,22 +27,24 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | Tik-reactie < 100 ms | nog niet gemeten | ⚪ |
 | Beloningsmoment per wereld | diploma-scherm bestaat; nog niet beoordeeld | ⚪ |
 | `prefers-reduced-motion` | in 10 stijlbestanden; niet overal nagelopen | ⚪ |
-| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | nog niet gescoord | ⚪ |
+| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
 | OG-afbeelding per pagina | één algemene `og.png` voor alle pagina's | 🔴 |
 | Deelknop op trotse momenten | alleen in live spelen; niet bij wereld af / diploma | 🔴 |
 | Installeerbaar | manifest + service worker aanwezig | 🟢 |
 | Wereld 0–2 offline | alleen `/`, manifest, icoon voorgeladen; rest pas na bezoek | 🔴 |
-| `npm run check` + doorloop groen | nog te draaien in ronde 2 | ⚪ |
-| `/release-review` go | — | ⚪ |
+| `npm run check` + doorloop groen | ronde 2: groen (doorloop 23 regels) | 🟢 |
+| `/release-review` go | 27e review: go voor deze fase, na verwerking | 🟢 |
 
-## Rangschikking (wow per uur werk)
+## Rangschikking (wow per uur werk), bijgewerkt na ronde 2
 
-1. **Bord past op liggende schermen** (laptop, tablet liggend). Eerste les ziet er op een computer nu half uit. Klein werk, groot effect.
-2. **Deelknop bij wereld af + diploma**, met eigen OG-plaatje van het diploma. Dit is het trotse moment dat ouders doorsturen.
-3. **Wow-toets** door layout- en conversie-reviewer: geeft de echte lijst wat "wow" mist.
-4. **Wereld 0–2 offline voorladen** (auto, telefoon zonder bereik).
-5. **Raakvlakken startpagina** + sfx-404.
-6. OG per pagina (lessen, schaakregels).
+1. **Diploma / wereld af als screenshot-magneet**: deelbaar diploma (naam blijft lokaal), confetti met reduced-motion, deelknop (Web Share + kopieer link, alleen de link), eigen OG-plaatje. Laagste wow-cijfer (3), en precies het moment dat ouders doorsturen.
+2. **Eerste les levendiger**: Pip groot in de rechterkolom met stemmingen, het bord reageert bij zin 1, een kleine beloning per goed veld.
+3. **Wereldkaart als landschap** in plaats van stroken; dichte werelden in kleur.
+4. **Startpagina-held**: bewegende Pip + bord, belofte groot.
+5. **Raakvlakken**: kop, fasebalk, startpagina-links + sfx-404.
+6. **Wereld 0–2 offline voorladen.**
+7. OG per pagina.
 
 ## Logboek
 - Ronde 1: nulmeting. Niets aan de app veranderd.
+- Ronde 2: lesscherm liggend (bord naast Pip, volle hoogte op telefoon dwars). 27e review verwerkt. Wow-cijfers gemeten.

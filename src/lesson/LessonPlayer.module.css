@@ -180,34 +180,69 @@
   to { opacity: 1; }
 }
 
+/* Uitlijning van de rijen onder het bord; liggend overschreven hieronder. */
+.rijMidden { justify-content: center; }
+.rijUiteen { justify-content: space-between; }
+
 /* Liggend scherm (laptop, tablet dwars): daar is de hoogte krap en de breedte over.
    Boven elkaar liep het bord 70 tot 150 px onder de rand van een 1024×768-scherm, en
    moest een kind scrollen om de onderste rij te zien. Nu staat Pip met de knoppen
    naast het bord, en is het bord zo hoog als er onder de kop past. */
 @media (orientation: landscape) and (min-width: 640px) {
+  /* Wat er boven het bord staat: kop (± 84) + wereldband (± 56) + fasebalk (± 54) +
+     marges. Met de hand gemeten; wordt de kop hoger, dan vangt de doorloop het. */
+  .wereldpagina {
+    --boven-bord: 260px;
+    --naast-bord: 384px; /* 36 rand + 24 tussenruimte + 324 zijkolom */
+    --bordmaat: min(620px, calc(100dvh - var(--boven-bord)), calc(min(100vw, 940px) - var(--naast-bord)));
+  }
   .speelvlak {
     display: grid;
-    grid-template-columns: minmax(0, auto) minmax(260px, 1fr);
+    grid-template-columns: var(--bordmaat) minmax(0, 400px);
+    justify-content: center;
     grid-template-areas: 'bord pip' 'bord voortgang' 'bord teller' 'bord knoppen' 'bord .';
     grid-template-rows: auto auto auto auto 1fr;
     column-gap: 24px; row-gap: 14px;
     align-items: start;
   }
+  /* Alles zonder eigen vak (een melding, een tekstversie) over de volle breedte,
+     in plaats van in een automatisch aangemaakte kolom. */
+  .speelvlak > * { grid-column: 1 / -1; }
   .vakPip { grid-area: pip; }
   .vakVoortgang { grid-area: voortgang; justify-content: flex-start; }
-  .vakTeller { grid-area: teller; justify-content: flex-start !important; }
+  .vakTeller { grid-area: teller; justify-content: flex-start; }
   .vakKnoppen { grid-area: knoppen; flex-direction: column; align-items: stretch; }
   .vakBord {
     grid-area: bord;
-    width: min(620px, calc(100dvh - 230px), 60vw);
+    width: var(--bordmaat);
     max-width: none;
   }
   .speelvlak .kolom { max-width: none; margin: 0; }
+  /* De 96 px onderrand van .page gaf hier een scrollbalk: het bord past, de pagina niet. */
+  .wereldpagina:has(.speelvlak) { padding-bottom: 16px; }
 }
 
-/* Telefoon dwars (± 390 hoog): de wereldband is daar versiering die het bord van
-   de onderste rij afhoudt. Hij valt weg; de kleur van de wereld blijft op de achtergrond. */
+/* Telefoon dwars (± 390 hoog): onder elkaar bleef er voor het bord 28 px per veld
+   over, te klein voor een kind van vier (27e review). Hier doet de hele pagina mee
+   aan het raster: kop, fasen, Pip en knoppen in de rechterkolom, het bord links over
+   de volle hoogte. De wereldband valt weg; de kleur blijft op de achtergrond. */
 @media (orientation: landscape) and (max-height: 520px) and (min-width: 640px) {
+  .wereldpagina:has(.speelvlak) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: 'bord kop' 'bord fase' 'bord pip' 'bord voortgang' 'bord teller' 'bord knoppen' 'bord .';
+    grid-template-rows: auto auto auto auto auto auto 1fr;
+    column-gap: 16px; row-gap: 6px;
+    align-content: start;
+    padding-top: 8px; padding-bottom: 8px;
+  }
+  .wereldpagina:has(.speelvlak) > :first-child { grid-area: kop; margin: 0; }
+  .wereldpagina:has(.speelvlak) > :nth-child(3) { grid-area: fase; margin: 0; }
+  .speelvlak { display: contents; }
   .wereldband { display: none; }
-  .vakBord { width: min(620px, calc(100dvh - 166px), 60vw); }
+  .wereldpagina { --naast-bord: 380px; --bordmaat: min(calc(100dvh - 16px), calc(100vw - var(--naast-bord))); }
+  .wereldpagina:has(.speelvlak) { grid-template-columns: var(--bordmaat) minmax(0, 1fr); }
+  .vakBord { width: var(--bordmaat); align-self: start; }
+  .vakKnoppen { flex-direction: row; }
 }
+

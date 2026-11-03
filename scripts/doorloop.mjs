@@ -928,16 +928,36 @@ if (ALLEEN && !gedraaid) {
 
 // Liggend scherm: het bord liep op 1024×768 en 1440×900 onder de rand, en een kind
 // moest scrollen voor de onderste rij. Op elk liggend formaat moet het hele bord in
-// beeld staan, zowel bij het kijken als bij de eerste opgave.
+// beeld staan, bij het kijken én bij de eerste opgave (die heeft een ander raster).
 for (const [w, h] of [[1024, 768], [1440, 900], [844, 390]]) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h } })
   const p = await ctx.newPage()
   await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
   await p.waitForSelector('[data-square]')
-  const onder = await p.evaluate(() =>
-    document.querySelector('[data-square]').closest('[role=group]').getBoundingClientRect().bottom,
+  for (const fase of ['kijken', 'opgave']) {
+  if (fase === 'opgave') {
+    const knop = p.getByRole('button', { name: /Verder|proberen/ })
+    for (let i = 0; i < 8 && (await knop.count()); i++) {
+      await knop.first().click()
+      await p.waitForTimeout(300)
+    }
+  }
+  const { onder, hoog, veld, over } = await p.evaluate(() => {
+    const r = document.querySelector('[data-square]').closest('[role=group]').getBoundingClientRect()
+    // Pip mag niet onder het bord schuiven: op 1440 breed paste bord + zijkolom niet
+    // in de kolom van 940 en lag het bord over de ballon heen.
+    const ballon = [...document.querySelectorAll('p, div')].find((e) => e.textContent?.trim() && e.getBoundingClientRect().left > r.left && e.getBoundingClientRect().top < r.bottom && e.closest('[class*=vakPip]'))
+    const over = ballon ? ballon.getBoundingClientRect().left < r.right - 1 : false
+    return { onder: r.bottom, hoog: document.documentElement.scrollHeight, veld: r.width / 8, over }
+  })
+  // Ook de pagina zelf: met de 96 px onderrand van .page paste het bord wel, maar
+  // verscheen er een scrollbalk en schoof het bord mee (27e review).
+  meld(
+    `bord past zonder scrollen op ${w}×${h} (${fase})`,
+    onder <= h && hoog <= h + 1 && veld >= 44 && !over,
+    `onderkant ${Math.round(onder)} px, pagina ${hoog} px, veld ${Math.round(veld)} px${over ? ', bord ligt over Pip' : ''}`,
   )
-  meld(`bord past zonder scrollen op ${w}×${h}`, onder <= h, `onderkant ${Math.round(onder)} px`)
+  }
   await ctx.close()
 }
 

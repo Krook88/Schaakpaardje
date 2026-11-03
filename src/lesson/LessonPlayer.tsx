@@ -472,7 +472,7 @@ export function LessonPlayer({
               />
             </div>
           )}
-          <div className={`row ${styles.kolom} ${styles.vakKnoppen}`} style={{ justifyContent: 'space-between' }}>
+          <div className={`row ${styles.kolom} ${styles.vakKnoppen} ${styles.rijUiteen}`}>
             <span className="muted">
               {vertelIndex + 1} van {les.vertel.length}
             </span>
@@ -671,12 +671,12 @@ export function LessonPlayer({
             de knoppen, want daar viel het buiten beeld zodra "Opnieuw" een regel
             omlaag ging. */}
         {totaalTeVinden > 0 && (
-          <div className={`row ${styles.kolom} ${styles.vakTeller}`} style={{ justifyContent: 'center' }}>
+          <div className={`row ${styles.kolom} ${styles.vakTeller} ${styles.rijMidden}`}>
             <Teller gevonden={stand.gevonden.length} totaal={totaalTeVinden} />
           </div>
         )}
 
-        <div className={`row ${styles.kolom} ${styles.vakKnoppen}`} style={{ justifyContent: 'space-between' }}>
+        <div className={`row ${styles.kolom} ${styles.vakKnoppen} ${styles.rijUiteen}`}>
           {opgave.kind !== 'quiz' && (
             // Bij een quiz gaf hint() geen enkel veld terug: het kind zag niets
             // gebeuren en raakte stilzwijgend een ster kwijt. Dan hoort de knop er

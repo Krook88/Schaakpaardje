@@ -1,30 +1,45 @@
-// Meting voor docs/volgende-niveau.md: overflow, raakvlakken, tikken tot het bord, bordgrootte.
-// Gebruik: npx serve out -l 3000 & node scripts/meet-niveau.mjs
+/**
+ * Meting voor docs/volgende-niveau.md: past het bord, scrolt de pagina, hoe groot is
+ * een veld — op telefoon, tablet en computer, staand en liggend.
+ *
+ *   npx serve out -l 4173 &
+ *   node scripts/meet-niveau.mjs            # MEET_URL en CHROMIUM_PAD mogen anders
+ *
+ * Schermafbeeldingen gaan naar MEET_MAP (standaard een tijdelijke map), niet naar
+ * docs/: kies daar zelf welke je bewaart.
+ */
 import { chromium } from 'playwright'
-const B='http://localhost:3000'
-const maten=[[360,740],[390,844],[768,1024],[1024,768],[1440,900],[844,390],[1180,820]]
-const br=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'})
-const out=[]
-for(const scheme of ['light','dark'])for(const [w,h] of maten){
-  const p=await br.newPage({viewport:{width:w,height:h},colorScheme:scheme})
-  await p.goto(B+'/',{waitUntil:'networkidle'})
-  const naam=`${w}x${h}-${scheme}`
-  await p.screenshot({path:`/home/user/Schaakpaardje/docs/volgende-niveau/na-start-${naam}.png`})
-  const start=await p.evaluate(()=>({hscroll:document.documentElement.scrollWidth>innerWidth,
-    klein:[...document.querySelectorAll('a,button')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&(r.width<48||r.height<48)}).map(e=>(e.textContent||e.getAttribute('aria-label')||'').trim().slice(0,25))}))
-  // tikken tot bord
-  let tikken=0;const t0=Date.now()
-  for(;tikken<6;tikken++){
-    if(await p.locator('[data-square]').count())break
-    const knop=p.locator('main a, main button').filter({visible:true}).first()
-    if(!await knop.count())break
-    await knop.click();await p.waitForTimeout(800)
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
+const URL = process.env.MEET_URL ?? 'http://localhost:4173'
+const MAP = process.env.MEET_MAP ?? mkdtempSync(join(tmpdir(), 'meet-niveau-'))
+const MATEN = [[360, 740], [390, 844], [768, 1024], [1024, 768], [1180, 820], [1440, 900], [844, 390]]
+
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PAD ?? '/opt/pw-browsers/chromium' })
+for (const kleur of ['light', 'dark']) {
+  for (const [w, h] of MATEN) {
+    const page = await browser.newPage({ viewport: { width: w, height: h }, colorScheme: kleur })
+    await page.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+    for (const fase of ['kijken', 'opgave']) {
+      if (fase === 'opgave') {
+        const knop = page.getByRole('button', { name: /Verder|proberen/ })
+        for (let i = 0; i < 8 && (await knop.count()); i++) {
+          await knop.first().click()
+          await page.waitForTimeout(300)
+        }
+      }
+      const m = await page.evaluate(() => {
+        const r = document.querySelector('[data-square]').closest('[role=group]').getBoundingClientRect()
+        const el = document.documentElement
+        return { veld: Math.round(r.width / 8), onder: Math.round(r.bottom), pagina: el.scrollHeight, breedteScroll: el.scrollWidth > innerWidth }
+      })
+      console.log(`${w}×${h} ${kleur} ${fase}`, JSON.stringify(m))
+      await page.screenshot({ path: join(MAP, `${fase}-${w}x${h}-${kleur}.png`) })
+    }
+    await page.close()
   }
-  const opBord=await p.locator('[data-square]').count()>0
-  let bord=null
-  if(opBord){await p.waitForTimeout(500);await p.screenshot({path:`/home/user/Schaakpaardje/docs/volgende-niveau/na-les-${naam}.png`})
-    bord=await p.evaluate(()=>{const g=document.querySelector('[data-square]').closest('[role=group]');const r=g.getBoundingClientRect();return{w:Math.round(r.width),onder:Math.round(r.bottom),past:r.bottom<=innerHeight,hscroll:document.documentElement.scrollWidth>innerWidth}})}
-  out.push({naam,klein:start.klein.length,hscroll:start.hscroll,tikken,opBord,sec:((Date.now()-t0)/1000).toFixed(1),bord,url:p.url()})
-  await p.close()
 }
-console.log(JSON.stringify(out,null,1));await br.close()
+await browser.close()
+console.log(`Schermafbeeldingen: ${MAP}`)
