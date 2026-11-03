@@ -120,10 +120,12 @@
 
 /* ---------- Jouw reis ---------- */
 .reis { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
-.reisWapens { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.reisWapens { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; max-width: 290px; margin: 0 auto; }
+@media (min-width: 700px) { .reisWapens { max-width: none; } }
 .reisWapen {
-  display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%;
-  font-size: 21px; background: color-mix(in srgb, var(--ink) 6%, transparent);
+  /* Passief en klein: dit is een overzicht, geen rij knoppen. */
+  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  font-size: 17px; background: transparent;
   filter: grayscale(0.85); opacity: 0.45;
 }
 .reisAf { filter: none; opacity: 1; background: hsl(var(--toon) 55% 86%); }
@@ -150,14 +152,15 @@
   display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 }
 .tegel {
-  position: relative; display: flex; flex-direction: column; gap: 4px;
+  position: relative; display: flex; flex-direction: column; gap: 4px; width: 100%; height: 100%;
+  text-align: left; font: inherit; color: inherit; cursor: pointer; min-height: 64px;
   padding: 12px; border-radius: var(--radius-sm, 12px);
   background: hsl(var(--toon) 58% 92%);
   border: 1px solid hsl(var(--toon) 35% 80%);
 }
-.tegelWapen { font-size: 34px; line-height: 1; }
+.tegelWapen { font-size: 34px; line-height: 1; filter: grayscale(0.4); }
 .tegelNaam { font-size: 0.95rem; }
-.tegelBelofte { font-size: 0.8rem; color: var(--muted); }
+.tegelBelofte { font-size: 0.8rem; color: var(--ink); opacity: 0.85; }
 .tegelSlot { position: absolute; top: 8px; right: 8px; font-size: 16px; }
 
 @media (prefers-color-scheme: dark) {
@@ -176,7 +179,33 @@
 /* Uitklappen: alleen zichtbaar bij een afgeronde wereld; een open wereld toont meteen het pad. */
 .uitklap > summary::-webkit-details-marker { display: none; }
 .uitklapKnop {
-  list-style: none; cursor: pointer; min-height: 48px; display: flex; align-items: center;
-  justify-content: center; font-weight: 700; color: var(--muted);
+  list-style: none; cursor: pointer; min-height: 64px; display: flex; align-items: center;
+  justify-content: center; gap: 8px; font-weight: 700; color: var(--ink);
+  margin: 8px 16px; border-radius: 14px; border: 2px solid hsl(var(--toon) 35% 75%);
+  background: var(--surface);
 }
-.uitklap[open] > .uitklapKnop { display: none; }
+.chevron { font-size: 1.4rem; line-height: 1; transition: transform 200ms; }
+.uitklap[open] .chevron { transform: rotate(180deg); }
+.uitklap .open_ { display: none; }
+.uitklap[open] .open_ { display: inline; }
+.uitklap[open] .dicht_ { display: none; }
+/* Een open wereld waar je nu bent, toont het pad zonder knop erboven. */
+.uitklap[open]:not(.af) > .uitklapKnop { order: 2; }
+.beginHier {
+  display: inline-block; margin-top: 4px; padding: 3px 10px; border-radius: 999px;
+  background: var(--accent); color: #fff; font-weight: 800; font-size: 0.85rem; white-space: nowrap;
+}
+.tegelEerst {
+  position: absolute; inset: auto 8px 8px 8px; padding: 6px 8px; border-radius: 10px;
+  background: var(--surface); font-weight: 800; font-size: 0.85rem; text-align: center;
+  box-shadow: var(--shadow);
+}
+.wiebelt { animation: wiebel 400ms ease-in-out 1; }
+@keyframes wiebel { 0%, 100% { transform: none; } 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
+@media (prefers-reduced-motion: reduce) { .wiebelt { animation: none; } .chevron { transition: none; } }
+:root[data-theme='dark'] .heuvels {
+  background:
+    radial-gradient(60% 120% at 20% 100%, hsl(var(--toon) 25% 28%) 60%, transparent 61%),
+    radial-gradient(50% 100% at 70% 100%, hsl(var(--toon) 28% 34%) 60%, transparent 61%),
+    radial-gradient(40% 90% at 100% 100%, hsl(var(--toon) 22% 24%) 60%, transparent 61%);
+}

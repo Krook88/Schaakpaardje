@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Kop } from '@/ui/Kop'
 import { Sterren } from '@/ui/Sterren'
@@ -43,6 +43,14 @@ export default function Kaart() {
   const geladen = useToestandGeladen()
   // Waar het kind gebleven is: de enige plek op de hele kaart waar Pip staat.
   const hier = volgendeOpenLes(voortgang, modus).id
+  const [wiebel, setWiebel] = useState<string | null>(null)
+  const wiebelTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const tikDicht = (id: string) => {
+    setWiebel(id)
+    clearTimeout(wiebelTimer.current)
+    wiebelTimer.current = setTimeout(() => setWiebel(null), 1800)
+  }
+  useEffect(() => () => clearTimeout(wiebelTimer.current), [])
 
   // Meteen naar de plek waar Pip staat: met drie afgeronde werelden erboven moest een
   // kind eerst ver scrollen om de volgende les te vinden.
@@ -69,6 +77,7 @@ export default function Kaart() {
   const hierWereld = WERELDEN.find((w) => w.lessen.some((l) => l.id === hier))?.id
   const hoefijzers = DIPLOMAS.filter((d) => diplomaBehaald(d.soort, voortgang))
   const KLEUR = { brons: '🥉', zilver: '🥈', goud: '🥇' } as const
+  const hierNaam = WERELDEN.find((w) => w.id === hierWereld)?.naam
 
   return (
     <main className="page">
@@ -94,25 +103,20 @@ export default function Kaart() {
             )
           })}
         </div>
-        <p className={styles.reisTotaal}>
-          <span>⭐ {sterrenTotaal(voortgang)} sterren</span>
-          <span aria-label={`${hoefijzers.length} hoefijzers`}>
-            {hoefijzers.length ? hoefijzers.map((d) => KLEUR[d.soort]).join(' ') : '🐴 nog geen hoefijzer'}
-          </span>
-        </p>
+        {/* Geen tellers op nul: "0 sterren, nog geen hoefijzer" zei een nieuwe ouder
+            alleen "je hebt nog niks" (30e review). */}
+        {sterrenTotaal(voortgang) > 0 && (
+          <p className={styles.reisTotaal}>
+            <span>⭐ {sterrenTotaal(voortgang)} sterren</span>
+            {hoefijzers.length > 0 && (
+              <span role="img" aria-label={`${hoefijzers.length} hoefijzers`}>{hoefijzers.map((d) => KLEUR[d.soort]).join(' ')}</span>
+            )}
+          </p>
+        )}
       </section>
       <div className="stack">
         {WERELDEN.filter(isOpen).map((wereld) => {
           const af = wereldIsAf(wereld.id, voortgang)
-          // Een wereld waarvan nog geen enkele les open is, krijgt één regel in plaats
-          // van een uitgeklapte kaart met vier lessen erin.
-          //
-          // De kaart was 6.300 pixels lang: zeven en een half telefoonscherm scrollen
-          // langs zesenvijftig hangslotjes om bij les twee te komen. Voor een kind is
-          // dat geen kaart maar een muur van alles wat het nog niet mag. Wat komen gaat
-          // blijft zichtbaar — het wapen, de naam, de belofte — maar het neemt geen
-          // halve pagina meer in beslag. Zodra er één les opengaat, klapt de wereld
-          // vanzelf helemaal open.
           // De halteplaatsen van deze wereld: eerst de lessen, dan het minispel als
           // laatste stop. Het minispel stond eronder als losse knop en werd daardoor
           // met geen mogelijkheid gevonden; op het pad is het gewoon de volgende halte.
@@ -192,8 +196,12 @@ export default function Kaart() {
               {/* Een wereld die af is en waar Pip niet meer staat, klapt dicht: anders
                   stonden er drie volle paden vol sterren boven de les van vandaag. Tik
                   op de regel en hij gaat weer open, om een les over te doen. */}
-              <details className={styles.uitklap} open={!af || wereld.id === hierWereld}>
-              <summary className={styles.uitklapKnop}>{af ? 'Lessen bekijken' : 'Lessen'}</summary>
+              <Uitklap ingeklapt={af && wereld.id !== hierWereld} toon={af}>
+              <summary className={styles.uitklapKnop}>
+                <span className={styles.dicht_}>Lessen bekijken</span>
+                <span className={styles.open_}>Dichtklappen</span>
+                <span className={styles.chevron} aria-hidden="true">⌄</span>
+              </summary>
               <div className={styles.binnen}>
               {/* Het pad: één spoor met de lessen als halteplaatsen erop, en Pip op de
                   plek waar het kind gebleven is. Zie Pad.module.css voor waarom het
@@ -237,6 +245,9 @@ export default function Kaart() {
                           {halte.titel}
                         </span>
                         {halte.open && halte.sterren !== null && <Sterren aantal={halte.sterren} />}
+                        {/* Het enige open rondje zag er niet uit als iets om op te tikken
+                            (30e review). Een woord erbij, voor de ouder die meekijkt. */}
+                        {halte.jij && <span className={styles.beginHier}>▶ Begin hier</span>}
                       </div>
                       {halte.open ? (
                         <Link
@@ -270,7 +281,7 @@ export default function Kaart() {
                 </Link>
               )}
               </div>
-              </details>
+              </Uitklap>
               <div className={styles.heuvels} aria-hidden="true" />
             </section>
           )
@@ -287,7 +298,15 @@ export default function Kaart() {
           </h2>
           <ul className={styles.tegels}>
             {dichte.map((w) => (
-              <li key={w.id} className={styles.tegel} style={{ '--toon': w.toon } as React.CSSProperties}>
+              <li key={w.id} style={{ '--toon': w.toon } as React.CSSProperties}>
+                {/* Een knop die niets opent maar wel antwoord geeft: een kind van vier
+                    tikte op een vrolijke tegel en er gebeurde niets (30e review). */}
+                <button
+                  type="button"
+                  className={`${styles.tegel} ${wiebel === w.id ? styles.wiebelt : ''}`}
+                  onClick={() => tikDicht(w.id)}
+                  aria-label={`${w.nummer}. ${w.naam}, nog op slot. ${w.belofte}`}
+                >
                 <span className={styles.tegelWapen} aria-hidden="true">
                   {w.emoji}
                 </span>
@@ -295,14 +314,43 @@ export default function Kaart() {
                   {w.nummer}. {w.naam}
                 </strong>
                 <span className={styles.tegelBelofte}>{w.belofte}</span>
-                <span className={styles.tegelSlot} aria-label="Nog op slot">
+                <span className={styles.tegelSlot} aria-hidden="true">
                   🔒
                 </span>
+                {wiebel === w.id && hierNaam && (
+                  <span className={styles.tegelEerst} role="status">
+                    Eerst {hierNaam}!
+                  </span>
+                )}
+                </button>
               </li>
             ))}
           </ul>
         </section>
       )}
+
+      {/* Wie tot onderaan scrolde, liep dood op een tegel op slot. */}
+      <Link href={`/les/${hier}/`} className="btn btn--primary btn--big" style={{ marginTop: 22, width: '100%', justifyContent: 'center' }}>
+        ▶ Verder met de les
+      </Link>
     </main>
+  )
+}
+
+/**
+ * Een afgeronde wereld kan dichtklappen (met de knop als eerste kind, de summary); een
+ * wereld die nog bezig is, toont gewoon zijn pad zonder knop ervoor.
+ * Ongecontroleerd (`defaultOpen` via de eerste render): React zet `open` niet terug als
+ * het kind zelf heeft uit- of ingeklapt.
+ */
+function Uitklap({ ingeklapt, toon, children }: { ingeklapt: boolean; toon: boolean; children: React.ReactNode }) {
+  if (!toon) {
+    const [, ...rest] = Array.isArray(children) ? children : [children]
+    return <>{rest}</>
+  }
+  return (
+    <details className={styles.uitklap} open={!ingeklapt ? true : undefined}>
+      {children}
+    </details>
   )
 }

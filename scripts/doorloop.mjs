@@ -1072,8 +1072,10 @@ for (const beweging of ['reduce', 'no-preference']) {
 // De kaart: met drie werelden af staat de les van vandaag (waar Pip staat) na het
 // laden in beeld, zonder langs drie volle paden te scrollen (30e review).
 {
+  // Laag scherm, zodat de les zonder scrollen onder de rand zou staan: anders test
+  // dit niet of er gescrold wordt (30e review).
   const lessen = readdirSync(join(import.meta.dirname, '..', 'out', 'les')).filter((l) => /^(weide|toren|loper)-/.test(l))
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 500 }, reducedMotion: 'reduce' })
   await ctx.addInitScript((lessen) => {
     const id = 'kind-kaart'
     localStorage.setItem('schaakmaatje-v1', JSON.stringify({
@@ -1092,9 +1094,9 @@ for (const beweging of ['reduce', 'no-preference']) {
     const el = document.querySelector('[data-hier]')
     if (!el) return null
     const b = el.getBoundingClientRect()
-    return { top: Math.round(b.top), bottom: Math.round(b.bottom) }
+    return { top: Math.round(b.top), bottom: Math.round(b.bottom), scrollY: Math.round(window.scrollY) }
   })
-  meld('kaart: de les van vandaag staat in beeld', Boolean(r) && r.top >= 0 && r.bottom <= 844, JSON.stringify(r))
+  meld('kaart: de kaart scrolt naar de les van vandaag', Boolean(r) && r.scrollY > 0 && r.top >= 0 && r.bottom <= 500, JSON.stringify(r))
   await ctx.close()
 }
 

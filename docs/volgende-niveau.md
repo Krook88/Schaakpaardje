@@ -27,7 +27,7 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | Tik-reactie < 100 ms | nog niet gemeten | ⚪ |
 | Beloningsmoment per wereld | ronde 3: eigen held-kaart (wapen 128 px, confetti, wapenrij), diploma-voorproef | 🟢 (wow nog te meten) |
 | `prefers-reduced-motion` | nieuwe animaties (golf, vonk, wapen) bewaakt in doorloop, aan én uit; oudere nog niet allemaal nagelopen | 🟡 |
-| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 4: eerste les 7/7. ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
+| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 5: kaart 6,5/7,5. ronde 4: eerste les 7/7. ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
 | OG-afbeelding per pagina | één algemene `og.png` voor alle pagina's | 🔴 |
 | Deelknop op trotse momenten | ronde 3: op wereld af en diploma, alleen link + vaste zin, anonieme telling `Gedeeld`; doorloop bewaakt share én kopieer zonder naam | 🟢 |
 | Installeerbaar | manifest + service worker aanwezig | 🟢 |
@@ -37,9 +37,9 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 
 ## Rangschikking (wow per uur werk), bijgewerkt na ronde 4
 
-Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4).
+Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4), wereldkaart (r5).
 
-1. **Wereldkaart als landschap** (laagste cijfer: 5/6,5): werelden als plekken met een doorlopend pad, dichte werelden in kleur "komt nog".
+1. ~~Wereldkaart~~ (r5). Rest: één doorlopend landschap met slingerpad, Pip stuitert op de halte, alles-af-toestand.
 2. **Startpagina-held**: bewegende Pip + bord, de belofte groot ("Gratis. Geen reclame. Geen account.").
 3. **Raakvlakken**: kopknoppen 44 → 48/64 px, fasebalk/voortgangsrondjes, startpagina-links, en de sfx-404.
 4. **Wereld 0–2 offline voorladen.**
@@ -52,3 +52,4 @@ Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4)
 - Ronde 2: lesscherm liggend (bord naast Pip, volle hoogte op telefoon dwars). 27e review verwerkt. Wow-cijfers gemeten.
 - Ronde 3: trots moment — deelknop (link + vaste zin, telling), diploma-voorproef met wereldwapens, wereld af als held. 28e review verwerkt. Pip-zin 'Hoefijzer verdiend' weg (klopte niet na wereld 1).
 - Ronde 4: eerste les levendiger — bord rolt in een golf binnen bij de eerste zin, goed veld veert op met een vonkje, Pip groot op liggende schermen. Reduced-motion bewaakt in doorloop.
+- Ronde 5: wereldkaart — reis-strook, heuvels, tegels 'Nog te ontdekken' (tik geeft antwoord), afgeronde werelden inklapbaar (64 px), 'Begin hier', scroll naar Pip (bewezen in doorloop).
