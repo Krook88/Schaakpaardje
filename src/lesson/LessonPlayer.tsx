@@ -452,13 +452,15 @@ export function LessonPlayer({
         <Kop titel={les.titel} terug="/kaart/" />
         <WereldBand wereld={wereld} />
         <FaseBalk nu="kijken" />
-        <div className="stack">
-          <Pip
-            zegt={dezeZin ? vertelTekst(dezeZin) : ''}
-            stemming={vertelIndex === 0 ? 'blij' : 'denkt'}
-          />
+        <div className={`stack ${les.vertelFen ? styles.speelvlak : ''}`}>
+          <div className={styles.vakPip}>
+            <Pip
+              zegt={dezeZin ? vertelTekst(dezeZin) : ''}
+              stemming={vertelIndex === 0 ? 'blij' : 'denkt'}
+            />
+          </div>
           {les.vertelFen && (
-            <div className={styles.bord}>
+            <div className={`${styles.bord} ${styles.vakBord}`}>
               {/* De sleutel is de zin, niet het bord: bij elke nieuwe zin begint het
                   spoor opnieuw te lopen in plaats van te blijven staan waar het stond. */}
               <Board
@@ -470,7 +472,7 @@ export function LessonPlayer({
               />
             </div>
           )}
-          <div className={`row ${styles.kolom}`} style={{ justifyContent: 'space-between' }}>
+          <div className={`row ${styles.kolom} ${styles.vakKnoppen}`} style={{ justifyContent: 'space-between' }}>
             <span className="muted">
               {vertelIndex + 1} van {les.vertel.length}
             </span>
@@ -599,12 +601,14 @@ export function LessonPlayer({
         }}
       />
 
-      <div className="stack">
-        <Pip zegt={zin} stemming={stemming} klein />
+      <div className={`stack ${styles.speelvlak}`}>
+        <div className={styles.vakPip}>
+          <Pip zegt={zin} stemming={stemming} klein />
+        </div>
 
         {/* Bij één opgave zei die ene losse stip niets; dan laten we hem weg. */}
         {opgaven.length > 1 && (
-        <div className={styles.voortgang} aria-label={`Opgave ${opgaveIndex + 1} van ${opgaven.length}`}>
+        <div className={`${styles.voortgang} ${styles.vakVoortgang}`} aria-label={`Opgave ${opgaveIndex + 1} van ${opgaven.length}`}>
           {opgaven.map((_, i) => (
             <span
               key={i}
@@ -618,7 +622,7 @@ export function LessonPlayer({
         )}
 
         {opgave.kind === 'quiz' ? (
-          <div className={styles.quiz}>
+          <div className={`${styles.quiz} ${styles.vakBord}`}>
             {opgave.opties.map((optie, i) => (
               <button
                 key={optie.label}
@@ -649,7 +653,7 @@ export function LessonPlayer({
             ))}
           </div>
         ) : (
-          <div className={styles.bord}>
+          <div className={`${styles.bord} ${styles.vakBord}`}>
             <Board
               position={stand.board}
               selected={stand.geselecteerd}
@@ -667,12 +671,12 @@ export function LessonPlayer({
             de knoppen, want daar viel het buiten beeld zodra "Opnieuw" een regel
             omlaag ging. */}
         {totaalTeVinden > 0 && (
-          <div className={`row ${styles.kolom}`} style={{ justifyContent: 'center' }}>
+          <div className={`row ${styles.kolom} ${styles.vakTeller}`} style={{ justifyContent: 'center' }}>
             <Teller gevonden={stand.gevonden.length} totaal={totaalTeVinden} />
           </div>
         )}
 
-        <div className={`row ${styles.kolom}`} style={{ justifyContent: 'space-between' }}>
+        <div className={`row ${styles.kolom} ${styles.vakKnoppen}`} style={{ justifyContent: 'space-between' }}>
           {opgave.kind !== 'quiz' && (
             // Bij een quiz gaf hint() geen enkel veld terug: het kind zag niets
             // gebeuren en raakte stilzwijgend een ster kwijt. Dan hoort de knop er

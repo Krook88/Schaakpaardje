@@ -926,6 +926,21 @@ if (ALLEEN && !gedraaid) {
   process.exit(1)
 }
 
+// Liggend scherm: het bord liep op 1024×768 en 1440×900 onder de rand, en een kind
+// moest scrollen voor de onderste rij. Op elk liggend formaat moet het hele bord in
+// beeld staan, zowel bij het kijken als bij de eerste opgave.
+for (const [w, h] of [[1024, 768], [1440, 900], [844, 390]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  await p.waitForSelector('[data-square]')
+  const onder = await p.evaluate(() =>
+    document.querySelector('[data-square]').closest('[role=group]').getBoundingClientRect().bottom,
+  )
+  meld(`bord past zonder scrollen op ${w}×${h}`, onder <= h, `onderkant ${Math.round(onder)} px`)
+  await ctx.close()
+}
+
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 
 await browser.close()

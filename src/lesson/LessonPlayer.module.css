@@ -179,3 +179,35 @@
 @keyframes tekstversieAan {
   to { opacity: 1; }
 }
+
+/* Liggend scherm (laptop, tablet dwars): daar is de hoogte krap en de breedte over.
+   Boven elkaar liep het bord 70 tot 150 px onder de rand van een 1024×768-scherm, en
+   moest een kind scrollen om de onderste rij te zien. Nu staat Pip met de knoppen
+   naast het bord, en is het bord zo hoog als er onder de kop past. */
+@media (orientation: landscape) and (min-width: 640px) {
+  .speelvlak {
+    display: grid;
+    grid-template-columns: minmax(0, auto) minmax(260px, 1fr);
+    grid-template-areas: 'bord pip' 'bord voortgang' 'bord teller' 'bord knoppen' 'bord .';
+    grid-template-rows: auto auto auto auto 1fr;
+    column-gap: 24px; row-gap: 14px;
+    align-items: start;
+  }
+  .vakPip { grid-area: pip; }
+  .vakVoortgang { grid-area: voortgang; justify-content: flex-start; }
+  .vakTeller { grid-area: teller; justify-content: flex-start !important; }
+  .vakKnoppen { grid-area: knoppen; flex-direction: column; align-items: stretch; }
+  .vakBord {
+    grid-area: bord;
+    width: min(620px, calc(100dvh - 230px), 60vw);
+    max-width: none;
+  }
+  .speelvlak .kolom { max-width: none; margin: 0; }
+}
+
+/* Telefoon dwars (± 390 hoog): de wereldband is daar versiering die het bord van
+   de onderste rij afhoudt. Hij valt weg; de kleur van de wereld blijft op de achtergrond. */
+@media (orientation: landscape) and (max-height: 520px) and (min-width: 640px) {
+  .wereldband { display: none; }
+  .vakBord { width: min(620px, calc(100dvh - 166px), 60vw); }
+}
