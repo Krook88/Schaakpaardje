@@ -35,18 +35,19 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | `npm run check` + doorloop groen | ronde 2: groen (doorloop 23 regels) | 🟢 |
 | `/release-review` go | 27e review: go voor deze fase, na verwerking | 🟢 |
 
-## Rangschikking (wow per uur werk), bijgewerkt na ronde 2
+## Rangschikking (wow per uur werk), bijgewerkt na ronde 4
 
-1. ~~Diploma / wereld af~~ (ronde 3 gedaan). Volgende: **Eerste les levendiger** — zie 2.
-0. *(oud)* **Diploma / wereld af als screenshot-magneet**: deelbaar diploma (naam blijft lokaal), confetti met reduced-motion, deelknop (Web Share + kopieer link, alleen de link), eigen OG-plaatje. Laagste wow-cijfer (3), en precies het moment dat ouders doorsturen.
-2. **Eerste les levendiger**: Pip groot in de rechterkolom met stemmingen, het bord reageert bij zin 1, een kleine beloning per goed veld.
-3. **Wereldkaart als landschap** in plaats van stroken; dichte werelden in kleur.
-4. **Startpagina-held**: bewegende Pip + bord, belofte groot.
-5. **Raakvlakken**: kop, fasebalk, startpagina-links + sfx-404.
-6. **Wereld 0–2 offline voorladen.**
-7. OG per pagina.
+Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4).
+
+1. **Wereldkaart als landschap** (laagste cijfer: 5/6,5): werelden als plekken met een doorlopend pad, dichte werelden in kleur "komt nog".
+2. **Startpagina-held**: bewegende Pip + bord, de belofte groot ("Gratis. Geen reclame. Geen account.").
+3. **Raakvlakken**: kopknoppen 44 → 48/64 px, fasebalk/voortgangsrondjes, startpagina-links, en de sfx-404.
+4. **Wereld 0–2 offline voorladen.**
+5. **OG per pagina.**
+6. Tik-reactie < 100 ms meten in de doorloop.
 
 ## Logboek
 - Ronde 1: nulmeting. Niets aan de app veranderd.
 - Ronde 2: lesscherm liggend (bord naast Pip, volle hoogte op telefoon dwars). 27e review verwerkt. Wow-cijfers gemeten.
 - Ronde 3: trots moment — deelknop (link + vaste zin, telling), diploma-voorproef met wereldwapens, wereld af als held. 28e review verwerkt. Pip-zin 'Hoefijzer verdiend' weg (klopte niet na wereld 1).
+- Ronde 4: eerste les levendiger — bord rolt in een golf binnen bij de eerste zin, goed veld veert op met een vonkje, Pip groot op liggende schermen. Reduced-motion bewaakt in doorloop.

@@ -1039,6 +1039,30 @@ for (const [w, h] of [[1024, 768], [1440, 900], [844, 390]]) {
   await ctx.close()
 }
 
+// Wie beweging heeft uitgezet (prefers-reduced-motion), krijgt geen golf bij het
+// eerste bord en geen opstijgend vonkje bij een goed veld: alleen het eindbeeld.
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  await p.waitForSelector('[data-square]')
+  const golfAnim = await p.evaluate(() => getComputedStyle(document.querySelector('[data-square]')).animationName)
+  for (let i = 0; i < 10 && !(await p.getByRole('button', { name: /Ik ga het proberen/ }).count()); i++) {
+    await p.getByRole('button', { name: /Verder/ }).first().click()
+    await p.waitForTimeout(300)
+  }
+  await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
+  await p.waitForTimeout(500)
+  await p.locator('[data-square="a1"]').click()
+  await p.waitForTimeout(100)
+  const vonk = await p.evaluate(() => {
+    const alle = [...document.querySelectorAll('[data-square="a1"] *')].filter((e) => e.textContent === '✨')
+    return alle.some((e) => getComputedStyle(e).display !== 'none')
+  })
+  meld('beweging uit: geen golf en geen vonkje', golfAnim === 'none' && !vonk, `golf=${golfAnim} vonk=${vonk}`)
+  await ctx.close()
+}
+
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 
 await browser.close()

@@ -39,6 +39,7 @@ import {
 } from '@/progress/store'
 import { eenKeer, maakLastigMelder, maakStopMelder } from './lesTellingen'
 import { tel } from '@/progress/tellen'
+import { useMediaQuery } from '@/ui/useMediaQuery'
 import styles from './LessonPlayer.module.css'
 
 type Fase = 'kijken' | 'meedoen' | 'zelf' | 'toets' | 'beloning'
@@ -110,6 +111,7 @@ export function LessonPlayer({
   // sterren zijn al bewaard; bij de beloning vragen we of het ze onder een naam wil houden.
   const profiel = useProfiel()
   const voortgang = useVoortgang()
+  const ruimNaast = useMediaQuery('(orientation: landscape) and (min-width: 640px) and (min-height: 521px)')
   const geladen = useToestandGeladen()
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
@@ -466,6 +468,7 @@ export function LessonPlayer({
                   spoor opnieuw te lopen in plaats van te blijven staan waar het stond. */}
               <Board
                 key={vertelIndex}
+                golf={vertelIndex === 0}
                 position={les.vertelFen}
                 marks={{ glow: les.vertelWijs, spoor }}
                 showCoordinates={instellingen.coordinaten || Boolean(les.toonCoordinaten)}
@@ -643,7 +646,10 @@ export function LessonPlayer({
 
       <div className={`stack ${styles.speelvlak}`}>
         <div className={styles.vakPip}>
-          <Pip zegt={zin} stemming={stemming} klein />
+          {/* Klein waar de hoogte krap is (staand: boven het bord). Liggend staat Pip in
+              een eigen kolom met ruimte over; daar was hij een rondje van 52 px naast
+              een leeg vlak (27e review). */}
+          <Pip zegt={zin} stemming={stemming} klein={!ruimNaast} />
         </div>
 
         {/* Bij één opgave zei die ene losse stip niets; dan laten we hem weg. */}

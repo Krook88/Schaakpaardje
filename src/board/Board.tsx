@@ -50,6 +50,9 @@ type Props = {
   /** Veld dat net fout was; schudt één keer. */
   shake?: Square | null
   label?: string
+  /** Het bord rolt één keer in een golf binnen. Voor de kennismaking in de eerste les:
+   *  een leeg bord dat er gewoon stond, was het eerste wat een kind zag (27e review). */
+  golf?: boolean
 }
 
 /** Vinkje en kruisje zijn getekend, niet als emoji: die zien er op elk toestel anders uit. */
@@ -103,6 +106,7 @@ export function Board({
   showCoordinates = false,
   shake = null,
   label = 'Schaakbord',
+  golf = false,
 }: Props) {
   const board: BoardMap = useMemo(
     () => (typeof position === 'string' ? parseBoard(position) : position),
@@ -171,10 +175,10 @@ export function Board({
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.frame} role="group" aria-label={label}>
+      <div className={`${styles.frame} ${golf ? styles.golf : ''}`} role="group" aria-label={label}>
         <div className={styles.grid}>
-          {ranks.map((rank) =>
-            files.map((file) => {
+          {ranks.map((rank, ri) =>
+            files.map((file, fi) => {
               const sq = toSquare(file, rank)
               const piece = board[sq]
               const light = isLightSquare(sq)
@@ -214,7 +218,11 @@ export function Board({
                   aria-label={`${sq}, ${naam}${isTarget ? ', hier kun je heen' : ''}`}
                   aria-pressed={selected === sq}
                   data-square={sq}
-                  style={stap >= 0 ? ({ '--stap': stap } as React.CSSProperties) : undefined}
+                  style={
+                    stap >= 0 || golf
+                      ? ({ ...(stap >= 0 ? { '--stap': stap } : {}), ...(golf ? { '--golf': ri + fi } : {}) } as React.CSSProperties)
+                      : undefined
+                  }
                 >
                   {has(marks.goals, sq) && <Ster />}
                   {piece && (
@@ -228,6 +236,13 @@ export function Board({
                   {isTarget && !piece && <span className={styles.dot} aria-hidden="true" />}
                   {isTarget && piece && <span className={styles.ring} aria-hidden="true" />}
                   {goed && <Vinkje />}
+                  {/* Een vonkje dat opstijgt: per goed veld een kleine beloning, niet
+                      alleen een vinkje dat er ineens staat. */}
+                  {goed && (
+                    <span className={styles.vonk} aria-hidden="true">
+                      ✨
+                    </span>
+                  )}
                   {fout && <Kruisje />}
                   {showCoordinates && rank === onderste && (
                     <span className={`${styles.coordLijn} ${kleurKlasse}`} aria-hidden="true">
