@@ -33,11 +33,14 @@ export function Animatiebord({
   beschrijving,
   beelden,
   kort,
+  kopNiveau = 3,
 }: {
   id: string
   titel: string
   beschrijving: string
   beelden: Beeld[]
+  /** Op de startpagina staat het bord direct onder de h1; dan is het een h2. */
+  kopNiveau?: 2 | 3
   /**
    * Alleen de zin van nu onder het bord, geen hele stappenlijst. Voor de startpagina,
    * waar het bord een voorproefje is en het aanmeldformulier niet ver weg mag raken.
@@ -158,9 +161,15 @@ export function Animatiebord({
 
   return (
     <figure className={s.figuur} id={id} aria-labelledby={`${id}-kop`}>
-      <h3 id={`${id}-kop`} className={s.kop}>
-        {titel}
-      </h3>
+      {kopNiveau === 2 ? (
+        <h2 id={`${id}-kop`} className={s.kop}>
+          {titel}
+        </h2>
+      ) : (
+        <h3 id={`${id}-kop`} className={s.kop}>
+          {titel}
+        </h3>
+      )}
       <div className={s.opstelling}>
         <div className={s.bordkant}>
           {/* De coördinaten staan naast het bord in plaats van in de hoek van een veld:

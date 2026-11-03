@@ -107,3 +107,34 @@
   font-weight: 700;
   font-size: 0.95rem;
 }
+
+/* ---------- De held ---------- */
+.held { display: grid; gap: 20px; align-items: center; }
+.heldTekst { gap: 10px; text-align: center; align-items: center; }
+.kop { font-size: clamp(1.7rem, 7.5vw, 2.6rem); margin: 0; line-height: 1.1; }
+.heldBord { width: 100%; max-width: 440px; margin: 0 auto; }
+.pip {
+  font-size: 64px; line-height: 1; display: inline-block; transform-origin: 50% 90%;
+  animation: zwaai 2.6s ease-in-out 0.4s 2;
+}
+@keyframes zwaai {
+  0%, 60%, 100% { transform: none; }
+  15% { transform: rotate(-12deg) translateY(-4px); }
+  30% { transform: rotate(10deg); }
+  45% { transform: rotate(-6deg) translateY(-2px); }
+}
+.beloftes {
+  list-style: none; margin: 4px 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+}
+.beloftes li {
+  padding: 6px 12px; border-radius: 999px; font-weight: 700; font-size: 0.95rem;
+  background: var(--surface); border: 1px solid var(--line);
+}
+@media (min-width: 860px) {
+  .held { grid-template-columns: 1.05fr 1fr; gap: 36px; }
+  .heldTekst { text-align: left; align-items: flex-start; }
+  .beloftes { justify-content: flex-start; }
+  .heldBord { max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) { .pip { animation: none; } }
