@@ -25,22 +25,24 @@
 }
 .ballon {
   position: relative; background: var(--surface); border: 2px solid var(--line);
-  border-radius: 14px; padding: 12px 62px 12px 16px; box-shadow: var(--shadow);
+  border-radius: 14px; padding: 12px 68px 12px 16px; box-shadow: var(--shadow);
   font-size: 1.02rem; flex: 1;
-  /* Minstens zo hoog als de luisterknop (46 px) plus wat lucht: anders steekt die bij
-     een zin van één regel boven en onder de ballon uit. */
-  min-height: 58px; display: flex; align-items: center;
+  /* Minstens zo hoog als de luisterknop (64 px): anders steekt die bij een zin van
+     één regel boven en onder de ballon uit. */
+  min-height: 64px; display: flex; align-items: center;
 }
 /* De luisterknop hoort bij de ballon, niet bij de knoppenrij eronder: hij zegt
    "dit stukje nog eens", niet "doe iets anders". Vol formaat, ook in de kleine
    variant — dit is de knop die een niet-lezend kind het vaakst nodig heeft. */
 .luister {
-  position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
-  width: 46px; height: 46px; border-radius: 50%; padding: 0;
+  /* Raakvlak 64 px (de lat voor de schermen van het kind), zichtbare cirkel 52 px: een
+     dikke bol van 64 maakte de ballon zwaarder dan de zin erin (32e review). */
+  position: absolute; top: 50%; right: 2px; transform: translateY(-50%);
+  width: 64px; height: 64px; border-radius: 50%; padding: 0;
   /* Gevuld met de accentkleur, niet met accent-soft: dat laatste haalde 1,16:1
      tegen de ballon en was dus geen zichtbare knop — op precies de knop waar een
      niet-lezend kind het meest op aangewezen is. */
-  border: 2px solid var(--accent); background: var(--accent);
+  border: 0; background: radial-gradient(circle, var(--accent) 25.5px, transparent 26.5px);
   font-size: 24px; line-height: 1; cursor: pointer;
   display: grid; place-items: center;
 }
@@ -57,7 +59,7 @@
 /* Op de kleine Pip nog een maatje kleiner, anders is het speldje half zo groot als
    het gezicht waar het bij hoort. */
 .klein .badge { width: 20px; height: 20px; font-size: 12px; top: -5px; right: -5px; }
-.klein .ballon { font-size: 0.92rem; padding: 9px 60px 9px 12px; }
+.klein .ballon { font-size: 0.92rem; padding: 9px 68px 9px 12px; }
 /* Pip beweegt, want zijn gezicht kan het nog niet.
  *
  * Alle zes de stemmingen waren hetzelfde emoji met een ander speldje ernaast. Voor een

@@ -7,7 +7,8 @@
   padding: 10px 0 16px; justify-content: space-between;
 }
 .titel { font-size: 1.15rem; text-align: center; flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.knop { min-height: 56px; min-width: 56px; padding: 0 14px; }
+/* 64 px: de lat voor de schermen van het kind, en de kop staat op al die schermen. */
+.knop { min-height: 64px; min-width: 64px; padding: 0 14px; }
 .woord { margin-left: 6px; }
 @media (max-width: 399px) {
   .knop { padding: 0 10px; }

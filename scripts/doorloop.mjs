@@ -1100,6 +1100,25 @@ for (const beweging of ['reduce', 'no-preference']) {
   await ctx.close()
 }
 
+// Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
+// waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
+// niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.
+for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(URL + pad, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const klein = await p.evaluate((lat) =>
+    [...document.querySelectorAll('a, button, summary, [role=button]')]
+      .filter((e) => !e.closest('[data-square]'))
+      .map((e) => ({ e, r: e.getBoundingClientRect() }))
+      .filter(({ r }) => r.width > 0 && r.height > 0 && (r.width < lat || r.height < lat))
+      .filter(({ e }) => !(e.tagName === 'A' && getComputedStyle(e).display === 'inline'))
+      .map(({ e, r }) => `${Math.round(r.width)}×${Math.round(r.height)} ${(e.getAttribute('aria-label') || e.textContent || '').trim().slice(0, 24)}`), lat)
+  meld(`raakvlakken op ${pad} minstens ${lat} px`, klein.length === 0, klein.slice(0, 3).join(' | '))
+  await ctx.close()
+}
+
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 
 await browser.close()

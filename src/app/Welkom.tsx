@@ -95,7 +95,7 @@ export function Welkom() {
         </Link>
         {/* Een gewone ankerlink naar het formulier, dus hij werkt ook zonder
             JavaScript en ook in de gebouwde HTML. */}
-        <a href="#beginnen" style={{ fontSize: '1rem', display: 'inline-block', padding: '10px 6px' }}>
+        <a href="#beginnen" style={{ fontSize: '1rem', display: 'inline-block', padding: '12px 6px', minHeight: 48 }}>
           Of maak eerst een profiel voor je kind
         </a>
       </header>
