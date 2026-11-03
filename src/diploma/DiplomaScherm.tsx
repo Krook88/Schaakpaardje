@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Confetti } from '@/ui/Confetti'
+import { DeelKnop } from '@/ui/DeelKnop'
 import { Kop } from '@/ui/Kop'
 import { WERELDEN } from '@/content'
 import { DIPLOMAS, type DiplomaSoort } from '@/content/diplomas'
@@ -52,23 +53,52 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
   }
 
   if (!behaald) {
+    const af = werelden.length - nogOpen
     return (
       <main className="page">
         <Kop titel={diploma.naam} terug="/kaart/" />
-        <div className="card stack center">
-          <p style={{ fontSize: 46 }} aria-hidden="true">
-            🔒
-          </p>
-          <h2>Nog even doorzetten</h2>
-          <p className="muted">
-            {/* Een wereldnummer zegt een kind niets; de naam en het aantal dat nog
-                open staat wel. */}
-            Dit hoefijzer krijg je als je klaar bent tot en met <strong>{laatste?.naam}</strong>
-            {nogOpen > 0 ? `. Nog ${nogOpen} ${nogOpen === 1 ? 'wereld' : 'werelden'} te gaan!` : '.'}
-          </p>
-          <Link href="/kaart/" className="btn btn--primary btn--big">
-            Naar de kaart
-          </Link>
+        {/* Een slotje op een leeg scherm zei niets (27e review: 3 van 10). Nu zie je het
+            diploma waar je naartoe werkt, vaag achter glas, en hoe ver je al bent. */}
+        <div className={styles.voorproef}>
+          <article className={`${styles.oorkonde} ${styles[soort]} ${styles.wazig}`} aria-hidden="true">
+            <p className={styles.klein}>Schaakmaatje</p>
+            <p className={styles.medaille}>{KLEUR[soort]}</p>
+            <p className={styles.titel}>{diploma.naam}</p>
+            <p className={styles.uitgereikt}>is uitgereikt aan</p>
+            <p className={styles.naam}>{profiel?.naam ?? 'een dappere schaker'}</p>
+            <div className={styles.werelden}>
+              {werelden.map((w) => (
+                <span key={w.id} className={styles.wereld}>
+                  {w.emoji} {w.naam}
+                </span>
+              ))}
+            </div>
+          </article>
+          <div className={`card stack center ${styles.slot}`}>
+            <p style={{ fontSize: 46, margin: 0 }} aria-hidden="true">
+              🔒
+            </p>
+            <h2>Nog even doorzetten</h2>
+            <div
+              className={styles.balk}
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={werelden.length}
+              aria-valuenow={af}
+              aria-label={`${af} van ${werelden.length} werelden uitgespeeld`}
+            >
+              <span style={{ width: `${(af / werelden.length) * 100}%` }} />
+            </div>
+            <p className="muted" style={{ margin: 0 }}>
+              {/* Een wereldnummer zegt een kind niets; de naam en het aantal dat nog
+                  open staat wel. */}
+              Dit hoefijzer krijg je als je klaar bent tot en met <strong>{laatste?.naam}</strong>
+              {nogOpen > 0 ? `. Nog ${nogOpen} ${nogOpen === 1 ? 'wereld' : 'werelden'} te gaan!` : '.'}
+            </p>
+            <Link href="/kaart/" className="btn btn--primary btn--big">
+              Naar de kaart
+            </Link>
+          </div>
         </div>
       </main>
     )
@@ -112,6 +142,9 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
         <Link href="/kaart/" className="btn">
           Terug naar de kaart
         </Link>
+      </div>
+      <div className={styles.verbergBijPrinten} style={{ marginTop: 18 }}>
+        <DeelKnop />
       </div>
     </main>
   )

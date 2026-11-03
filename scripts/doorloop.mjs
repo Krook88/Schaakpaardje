@@ -24,7 +24,7 @@
  */
 import { chromium } from 'playwright'
 import { spawn, spawnSync } from 'node:child_process'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -957,6 +957,47 @@ for (const [w, h] of [[1024, 768], [1440, 900], [844, 390]]) {
     onder <= h && hoog <= h + 1 && veld >= 44 && !over,
     `onderkant ${Math.round(onder)} px, pagina ${hoog} px, veld ${Math.round(veld)} px${over ? ', bord ligt over Pip' : ''}`,
   )
+  }
+  await ctx.close()
+}
+
+// Delen op het trotse moment: de deelknop op het diploma stuurt alleen de link naar
+// de startpagina en een vaste zin. Nooit de naam van het kind, ook al staat die op
+// het diploma zelf (CLAUDE.md: niets over een kind naar internet).
+{
+  const lessen = readdirSync(join(import.meta.dirname, '..', 'out', 'les'))
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  await ctx.addInitScript((lessen) => {
+    if (sessionStorage.getItem('gezaaid')) return
+    sessionStorage.setItem('gezaaid', '1')
+    const id = 'kind-doorloop'
+    const voortgang = Object.fromEntries(lessen.map((l) => [l, { sterren: 3, fouten: 0, hints: 0, laatst: '2026-11-01' }]))
+    localStorage.setItem('schaakmaatje-v1', JSON.stringify({
+      version: 0,
+      state: {
+        profielen: [{ id, naam: 'Femkeziet', leeftijd: 7, modus: 'pip', avatar: '🦊', gemaakt: '2026-11-01' }],
+        actiefId: id,
+        voortgang: { [id]: voortgang },
+      },
+    }))
+    window.__gedeeld = []
+    Object.defineProperty(navigator, 'share', { value: async (d) => { window.__gedeeld.push(d) } })
+  }, lessen)
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/diploma/brons/`, { waitUntil: 'networkidle' })
+  const knop = p.locator('[data-deelknop]')
+  const zichtbaar = (await knop.count()) > 0 && (await p.getByText('Femkeziet').count()) > 0
+  meld('diploma behaald: naam op het diploma en een deelknop', zichtbaar)
+  if (zichtbaar) {
+    await knop.click()
+    await p.waitForTimeout(200)
+    const gedeeld = await p.evaluate(() => window.__gedeeld)
+    const tekst = JSON.stringify(gedeeld)
+    meld(
+      'deelknop stuurt alleen de link en een vaste zin, geen naam',
+      gedeeld.length === 1 && !tekst.includes('Femkeziet') && /^https:\/\/[^/]+\/$/.test(gedeeld[0].url),
+      tekst.slice(0, 160),
+    )
   }
   await ctx.close()
 }

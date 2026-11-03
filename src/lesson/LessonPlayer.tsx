@@ -6,6 +6,7 @@ import { Board, type BoardMarks } from '@/board/Board'
 import { Kop } from '@/ui/Kop'
 import { Pip, type PipStemming } from '@/ui/Pip'
 import { Confetti } from '@/ui/Confetti'
+import { DeelKnop } from '@/ui/DeelKnop'
 import { Sterren } from '@/ui/Sterren'
 import { Teller } from '@/ui/Teller'
 import { gebruikTip } from '@/ui/gebruikTip'
@@ -529,12 +530,21 @@ export function LessonPlayer({
                 die stond hier letterlijk, over het kind gepraat tegen het kind. */}
             <p>{les.geleerd}</p>
             {sterren >= 3 && <p>🏅 Sticker verdiend!</p>}
-            {wereldKlaar && (
-              <p>
-                🐴 <strong>{wereld.naam}</strong> is helemaal uit!
-              </p>
-            )}
           </div>
+
+          {/* Een hele wereld uit is groter dan een les: vier lessen werk. Dat kreeg één
+              regel tekst in dezelfde kaart. Nu een eigen wapen dat binnenvalt, en voor
+              de ouder een rustige knop om het door te sturen, onder de knoppen van
+              het kind zodat "Volgende les" niet onder de vouw zakt. */}
+          {wereldKlaar && (
+            <div className={`card stack center ${styles.wereldAf}`}>
+              <span className={styles.wereldAfWapen} aria-hidden="true">
+                {wereld.emoji}
+              </span>
+              <p className={styles.poortKop}>Wereld uitgespeeld!</p>
+              <strong className={styles.poortNaam}>{wereld.naam}</strong>
+            </div>
+          )}
 
           {nieuweWereld && (
             <div
@@ -563,6 +573,7 @@ export function LessonPlayer({
               </Link>
             )}
           </div>
+          {wereldKlaar && <DeelKnop />}
           {/* Voor de ouder, en ónder de knoppen: als grote kaart erboven duwde hij
               "Volgende les" op een telefoon onder de vouw, en een kind dat niet leest
               tikte op het grootste vlak en stond in een formulier (negentiende review, L1).
