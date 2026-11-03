@@ -138,3 +138,10 @@
   .heldBord { max-width: none; }
 }
 @media (prefers-reduced-motion: reduce) { .pip { animation: none; } }
+.vink { color: var(--grass); font-weight: 900; }
+.heldPip { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; }
+.heldPip .heldPipGezicht { font-size: 52px; }
+.heldBallon {
+  position: relative; padding: 8px 14px; border-radius: 14px; font-weight: 700;
+  background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow);
+}

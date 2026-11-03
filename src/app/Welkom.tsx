@@ -66,23 +66,25 @@ export function Welkom() {
           de belofte als vier labels in plaats van in een zin onderaan de pagina. */}
       <div className={styles.held}>
       <header className={`stack ${styles.heldTekst}`}>
-        <span aria-hidden="true" className={styles.pip}>
-          🐴
-        </span>
         {/* De kop draagt de zoekterm ("schaken leren voor kinderen"); op "Pip" zoekt
             niemand. clamp, want op een smalle telefoon raakte de kop de rand. */}
         <p className="muted" style={{ margin: 0, fontWeight: 600 }}>Met Pip het schaakpaardje</p>
         <h1 className={styles.kop}>Schaken leren voor kinderen</h1>
         <p style={{ fontSize: '1.15rem', margin: 0, maxWidth: 460 }}>
-          Een gratis Nederlandse schaakapp voor kinderen van 3 tot 10 jaar. Van het bord
+          Een Nederlandse schaakapp voor kinderen van 3 tot 10 jaar. Van het bord
           leren kennen tot je eerste echte partij, in {werelden} werelden en {lessen}{' '}
           lessen.
         </p>
         <ul className={styles.beloftes} aria-label="Wat je krijgt">
-          <li>🎁 Gratis</li>
-          <li>🚫 Geen reclame</li>
-          <li>🔐 Geen account</li>
-          <li>🔊 Pip leest voor</li>
+          {/* Een vinkje in plaats van 🚫 en 🔐: die lazen als "verboden" en "slot". */}
+          {['Gratis', 'Geen reclame', 'Geen account', 'Pip leest voor'].map((b) => (
+            <li key={b}>
+              <span aria-hidden="true" className={styles.vink}>
+                ✓
+              </span>{' '}
+              {b}
+            </li>
+          ))}
         </ul>
         {/* Meteen spelen, zonder formulier. Op 45 bezoeken van de startpagina begonnen
             er 24 aan een les: de weg liep via een sprong van 2500 px naar een formulier
@@ -98,6 +100,14 @@ export function Welkom() {
         </a>
       </header>
       <div className={styles.heldBord}>
+        {/* Pip bij het bord, sprekend: een figuur die je iets leert, niet een los kopje
+            boven de tekst (31e review). */}
+        <p className={styles.heldPip}>
+          <span aria-hidden="true" className={`${styles.heldPipGezicht} ${styles.pip}`}>
+            🐴
+          </span>
+          <span className={styles.heldBallon}>Kijk, zo spring ik!</span>
+        </p>
         <Animatiebord
           id="welkom-paard"
           titel="Het paard springt in een L"
@@ -105,6 +115,7 @@ export function Welkom() {
           beelden={bouwBeelden(paard)}
           kort
           kopNiveau={2}
+          beginStap={1}
         />
       </div>
       </div>
@@ -156,8 +167,8 @@ export function Welkom() {
           Kinderen leren schaken het best met één stuk tegelijk. Daarom begint Schaakmaatje
           bij het bord, en krijgt daarna elk stuk een eigen wereld: eerst de toren en de
           loper, dan de dame, het paard, de koning en de pion. Pas als alle stukken zitten,
-          komen schaak, mat en rokade. Het paard dat bovenaan springt, krijgt zijn
-          eigen wereld.
+          komen schaak, mat en rokade. Ook het paard dat bovenaan springt, krijgt zijn
+          eigen wereld, na de dame.
         </p>
         <p style={{ margin: 0 }}>
           Alle schaakregels staan zo op een bewegend bord, om zelf even op te frissen of

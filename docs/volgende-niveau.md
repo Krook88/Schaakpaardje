@@ -17,17 +17,17 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 |---|---|---|
 | Geen horizontaal scrollen (10 formaten, licht+donker) | start en eerste les: nergens | 🟢 |
 | Bord past zonder scrollen | ronde 2: staand ja; liggend 1024×768, 1180×820, 1440×900, 844×390 bord én pagina passen (velden 64/70/70/47 px). Open: 667×375 velden 36 px; staande telefoon scrolt onder het bord (knoppen) | 🟢 (bewaakt in doorloop) |
-| Raakvlakken ≥ 48 px | ook: kopknoppen 44 px, fasebalk/voortgangsrondjes klein (27e review L4). 18 links op de startpagina kleiner (stukkenlinks, voettekst, "Of maak eerst een profiel", 🔊). Les-knoppen ok | 🔴 |
+| Raakvlakken ≥ 48 px | (volgende ronde) ook: kopknoppen 44 px, fasebalk/voortgangsrondjes klein (27e review L4). 18 links op de startpagina kleiner (stukkenlinks, voettekst, "Of maak eerst een profiel", 🔊). Les-knoppen ok | 🔴 |
 | Lighthouse Performance ≥ 90 | 98 | 🟢 |
 | Lighthouse Toegankelijkheid 100 | 95; enige afwijking is `meta-viewport`, bewust (zie besluiten) | 🟢 |
-| Lighthouse Best Practices ≥ 95 | 96 (wel console-404 op `/sfx/manifest.json`) | 🟢 |
+| Lighthouse Best Practices ≥ 95 | 96. De console-404 op `/sfx/manifest.json` is lokaal en bewust (hosting-klaar); live bestaat het manifest | 🟢 |
 | Lighthouse SEO 100 | 100 | 🟢 |
 | LCP < 2,5 s / CLS < 0,05 | 2,1 s / 0 | 🟢 |
 | Eerste les ≤ 2 tikken, ≤ 15 s | 1 tik, 1,4 s | 🟢 |
 | Tik-reactie < 100 ms | nog niet gemeten | ⚪ |
 | Beloningsmoment per wereld | ronde 3: eigen held-kaart (wapen 128 px, confetti, wapenrij), diploma-voorproef | 🟢 (wow nog te meten) |
 | `prefers-reduced-motion` | nieuwe animaties (golf, vonk, wapen) bewaakt in doorloop, aan én uit; oudere nog niet allemaal nagelopen | 🟡 |
-| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 5: kaart 6,5/7,5. ronde 4: eerste les 7/7. ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
+| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 6: start 7/8. ronde 5: kaart 6,5/7,5. ronde 4: eerste les 7/7. ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
 | OG-afbeelding per pagina | één algemene `og.png` voor alle pagina's | 🔴 |
 | Deelknop op trotse momenten | ronde 3: op wereld af en diploma, alleen link + vaste zin, anonieme telling `Gedeeld`; doorloop bewaakt share én kopieer zonder naam | 🟢 |
 | Installeerbaar | manifest + service worker aanwezig | 🟢 |
@@ -40,7 +40,7 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4), wereldkaart (r5).
 
 1. ~~Wereldkaart~~ (r5). Rest: één doorlopend landschap met slingerpad, Pip stuitert op de halte, alles-af-toestand.
-2. **Startpagina-held**: bewegende Pip + bord, de belofte groot ("Gratis. Geen reclame. Geen account.").
+2. ~~Startpagina-held~~ (r6). Rest: tikbaar paard in de held.
 3. **Raakvlakken**: kopknoppen 44 → 48/64 px, fasebalk/voortgangsrondjes, startpagina-links, en de sfx-404.
 4. **Wereld 0–2 offline voorladen.**
 5. **OG per pagina.**
@@ -53,3 +53,4 @@ Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4)
 - Ronde 3: trots moment — deelknop (link + vaste zin, telling), diploma-voorproef met wereldwapens, wereld af als held. 28e review verwerkt. Pip-zin 'Hoefijzer verdiend' weg (klopte niet na wereld 1).
 - Ronde 4: eerste les levendiger — bord rolt in een golf binnen bij de eerste zin, goed veld veert op met een vonkje, Pip groot op liggende schermen. Reduced-motion bewaakt in doorloop.
 - Ronde 5: wereldkaart — reis-strook, heuvels, tegels 'Nog te ontdekken' (tik geeft antwoord), afgeronde werelden inklapbaar (64 px), 'Begin hier', scroll naar Pip (bewezen in doorloop).
+- Ronde 6: startpagina — held met paardbord (begint bij de L), Pip met ballon bij het bord, beloftes als labels, verse schermafbeeldingen en deelkaart (scripts/schermen.mjs).
