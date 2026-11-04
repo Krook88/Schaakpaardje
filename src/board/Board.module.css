@@ -196,9 +196,13 @@
    diagonaal en dus één kleur. Speelt opnieuw bij terug naar zin 1; dat is bewust. */
 .golf .square { animation: golfIn 360ms ease-out both; animation-delay: calc(var(--golf, 0) * 30ms); }
 @keyframes golfIn { from { transform: scale(0.6); } to { transform: none; } }
+/* Na de golf maakt het stuk een huppeltje: "daar sta ik!" (wow-meting na ronde 26).
+   Twee keer, daarna stil; geen eindeloze beweging. */
+.golf .piece { animation: huppel 520ms ease-in-out 2; animation-delay: 700ms; }
+@keyframes huppel { 0%, 100% { transform: none; } 40% { transform: translateY(-22%) rotate(-6deg); } 70% { transform: translateY(0) rotate(3deg); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .goedVeld, .goedVeld .merkGoed, .golf .square { animation: none; }
+  .goedVeld, .goedVeld .merkGoed, .golf .square, .golf .piece { animation: none; }
   .vonk { display: none; }
 }
 

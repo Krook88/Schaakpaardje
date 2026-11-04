@@ -86,3 +86,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 27: zeven getekende bots (scripts/bots-tekenen.py, illustrator), tegenstander boven het bord als tekening.
 - Ronde 27: 51e review verwerkt (keuzescherm met tekeningen, kop zonder emoji). Open: bots bij uitslag/stal, Oscars borstveertjes.
 - Ronde 28: tekening van de bot op de uitslagkaart.
+- Ronde 29: eerste les — het paard huppelt twee keer na de golf (niet bij minder beweging).
