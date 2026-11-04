@@ -3,7 +3,7 @@
 Geheugen van de `/loop`. Elke ronde: lees dit, pak het hoogste rode punt, bouw, bewijs, review, werk bij.
 
 ## Open vragen voor Kaj
-- Geen.
+- **Doorgaan of afronden?** Na 35 rondes schommelen de wow-cijfers per meting (eerste les: layout 8, conversie 5 op hetzelfde scherm). Laatste meting staand/dwars: start 7/8, les 5–8, wereld af 8/7, kaart 7/5, spel 6–7. De ideeën die nog openstaan zijn groter (bots met reacties per zet, de kaart dwars naast het pad). Loop gepauzeerd tot je besluit.
 
 ## Besluiten van Kaj
 - Beide opnamezinnen aangepast (w9 "schaak zeggen mag", weide-1 "daar sta ik op het bord"). De opname gebeurt bij de merge via ElevenLabs (4 nov).
@@ -96,3 +96,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 34: eerste les — Pip als getekend paardje op e5 in plaats van het schaakteken (vertelPip, alleen begroeting).
 - Ronde 34: 55e review (GO, eerste les 8, spel 7).
 - Ronde 35: kaart dwars — plank op één rij (kop en telling links, wapens 52 px rechts).
+- Wow-meting na ronde 35 (375/844): start 7/8, les 5/6, wereld af 8/7, kaart 7/5, spel 6/6. Loop gepauzeerd: cijfers schommelen tussen reviewers, vraag aan Kaj.
