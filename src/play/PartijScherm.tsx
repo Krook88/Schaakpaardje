@@ -384,7 +384,10 @@ export function PartijScherm({ botId }: { botId: string }) {
       <div className="stack">
         <Pip zegt={zin} stemming={stemming} klein />
 
-        <div style={{ maxWidth: 'min(100%, 70vh, 620px)', margin: '0 auto', width: '100%' }}>
+        {/* Bord plus kop, Pip, status en knoppen in één scherm: op 1440×900 vielen de
+            knoppen eronder weg bij 70vh (45e review). Op lage liggende schermen blijft
+            70vh de ondergrens; daar is een eigen indeling nodig (scorebord). */}
+        <div style={{ maxWidth: 'min(100%, 620px, max(calc(100svh - 330px), min(70vh, 300px)))', margin: '0 auto', width: '100%' }}>
           <Board
             position={fen}
             // Bij samen spelen draait het bord naar wie er aan zet is, zodat elk kind
