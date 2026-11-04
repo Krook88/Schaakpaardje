@@ -4,6 +4,7 @@ Geheugen van de `/loop`. Elke ronde: lees dit, pak het hoogste rode punt, bouw, 
 
 ## Open vragen voor Kaj
 - **Opname.** De schaakmeester raadt aan om "Dan roep je: schaak!" (w9-schaak, les 2) te vervangen door "Je mag dan 'schaak' zeggen": het is geen regel, en bij de club leren kinderen dat het niet hoeft. Het is een ingesproken zin, dus er is een nieuwe opname nodig (`npm run audio:render`, met een ElevenLabs-sleutel). Zal ik de tekst aanpassen zodat jij hem opnieuw laat inspreken? De loop gaat intussen gewoon door.
+- **Opname weide-1.** Pip staat nu op e4 in de eerste les. De schaakmeester stelt de zin "Ik sta op een licht veld." voor. Daarvoor is een nieuwe opname nodig. Zal ik die zin toevoegen?
 
 ## Besluiten van Kaj
 - 4 nov 2026: **proef beeldtaal goedgekeurd** (Pip in profiel met voetstuk, platte warme stijl; zie docs/volgende-niveau/proef-beeldtaal.png). Nu: de hele set en inbouwen.
