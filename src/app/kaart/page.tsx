@@ -65,7 +65,7 @@ export default function Kaart() {
       // Past de plank samen met de les van vandaag in beeld, dan begint het beeld bij de
       // plank; anders gaat de les voor (40e review).
       const plank = document.getElementById('plank-kop')?.closest('section')
-      const past = plank && el.getBoundingClientRect().bottom - plank.getBoundingClientRect().top <= window.innerHeight - 24
+      const past = plank && el.getBoundingClientRect().bottom - plank.getBoundingClientRect().top <= window.innerHeight - 8
       if (plank && past) plank.scrollIntoView({ block: 'start', behavior })
       else el.scrollIntoView({ block: 'center', behavior })
     }

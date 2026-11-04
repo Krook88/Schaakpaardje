@@ -1078,7 +1078,9 @@ for (const beweging of ['reduce', 'no-preference']) {
   // Laag scherm, zodat de les zonder scrollen onder de rand zou staan: anders test
   // dit niet of er gescrold wordt (30e review).
   const lessen = readdirSync(join(import.meta.dirname, '..', 'out', 'les')).filter((l) => /^(weide|toren|loper)-/.test(l))
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 500 }, reducedMotion: 'reduce' })
+  // Dwars erbij: daar opende de kaart zonder plank (wow 5 na ronde 22).
+  for (const [w, h] of [[390, 500], [844, 390]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h }, reducedMotion: 'reduce' })
   await ctx.addInitScript((lessen) => {
     const id = 'kind-kaart'
     localStorage.setItem('schaakmaatje-v1', JSON.stringify({
@@ -1099,7 +1101,7 @@ for (const beweging of ['reduce', 'no-preference']) {
     const b = el.getBoundingClientRect()
     return { top: Math.round(b.top), bottom: Math.round(b.bottom), scrollY: Math.round(window.scrollY) }
   })
-  meld('kaart: de kaart scrolt naar de les van vandaag', Boolean(r) && r.scrollY > 0 && r.top >= 0 && r.bottom <= 500, JSON.stringify(r))
+  meld(`kaart ${w}×${h}: de kaart scrolt naar de les van vandaag`, Boolean(r) && r.scrollY > 0 && r.top >= 0 && r.bottom <= h, JSON.stringify(r))
 
   // En de trofeeënplank scrolt mee: hij staat vlak boven de wereld van vandaag. Bovenaan
   // de kaart zag niemand hem, omdat de kaart naar Pip scrolt (40e review).
@@ -1109,8 +1111,9 @@ for (const beweging of ['reduce', 'no-preference']) {
     const b = el.getBoundingClientRect()
     return { top: Math.round(b.top), bottom: Math.round(b.bottom) }
   })
-  meld('kaart: de trofeeënplank staat in beeld bij binnenkomst', Boolean(plank) && plank.top >= 0 && plank.bottom <= 500, JSON.stringify(plank))
+  meld(`kaart ${w}×${h}: de trofeeënplank staat in beeld bij binnenkomst`, Boolean(plank) && plank.top >= 0 && plank.bottom <= h, JSON.stringify(plank))
   await ctx.close()
+  }
 }
 
 // Het veld is leidend, niet het stuk: met 15cqi rekte het stuk de velden op en viel de

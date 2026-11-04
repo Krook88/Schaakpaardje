@@ -79,3 +79,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 23: 48e review verwerkt (Pip naast de kaart dwars, 667×375 in doorloop).
 - Ronde 24: startpagina dwars — tekst en knop links, Pip met proefbord rechts (doorloop 844/667). Open: proefbord-velden dwars 33–35 px.
 - Ronde 24: 49e review verwerkt. Open: proefbord dwars < 44 px.
+- Ronde 25: kaart dwars — plank als smalle strook (wapens 44 px, geen namen), plank en les samen in beeld (doorloop 844×390).
