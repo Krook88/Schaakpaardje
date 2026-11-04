@@ -309,4 +309,4 @@
 /* De getinte achtergrond loopt door tot onder de knoppen (39e review: naad door "Volgende les"). */
 .wereldpagina { min-height: 100dvh; }
 .wereldAfTel { margin: 0; font-weight: 700; }
-@media (max-height: 720px) { .wereldAfTel { display: none; } }
+@media (max-height: 720px) and (max-width: 600px) { .wereldAfTel { display: none; } }
