@@ -42,8 +42,8 @@
   font-variant-emoji: text;
   font-family: 'Schaakstukken', sans-serif;
   /* Naar de bordbreedte, niet het venster: het stuk vulde maar ~40% van het veld
-     (43e review). 15cqi is ruim een veld (12,5cqi); de tekening zelf is kleiner. */
-  font-size: min(9.5vw, 44px); font-size: 15cqi; line-height: 1; user-select: none;
+     (43e review). 11cqi blijft onder een veld (12,5cqi): 15cqi zakte onder het veld uit en werd afgesneden (45e review). */
+  font-size: min(9.5vw, 44px); font-size: 11cqi; line-height: 1; user-select: none;
   transition: transform 0.14s ease;
   filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.28));
   position: relative; z-index: 2;

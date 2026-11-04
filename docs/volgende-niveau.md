@@ -70,3 +70,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 19: Pip (paard) op e4 tijdens de kijkfase van weide-1, op advies van de schaakmeester. Zin "Ik sta op een licht veld" vraagt een nieuwe opname: open vraag voor Kaj.
 - Ronde 19: 43e review (GO, eerste les 6,5); paard naar e5. Open: stukmaat bord (~40% van veld), wereldnaam weg op 844×390.
 - Ronde 20: stukken schalen met de bordbreedte (15cqi) in plaats van het venster; groter in alle lessen.
+- Ronde 20: 44e en 45e review; stukken 11cqi (was venster-gebonden), rooster minmax, doorloopregel bordmaat. Open: speelscherm liggend (velden 34 px) en knoppen onder bord op 1440×900.
