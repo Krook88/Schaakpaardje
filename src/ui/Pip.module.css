@@ -14,15 +14,6 @@
    groeide hij mee met het teken en dekte hij op de kleine Pip zijn halve gezicht af.
    Je zag dan een ster met een stukje paard eronder. Hij hangt nu grotendeels buiten
    de cirkel, als een meldingsbolletje. */
-.badge {
-  position: absolute; top: -7px; right: -7px;
-  width: 26px; height: 26px;
-  display: grid; place-items: center;
-  font-size: 15px; line-height: 1;
-  background: var(--surface); border-radius: 50%;
-  border: 2px solid var(--line);
-  box-shadow: var(--shadow);
-}
 .ballon {
   position: relative; background: var(--surface); border: 2px solid var(--line);
   border-radius: 14px; padding: 12px 68px 12px 16px; box-shadow: var(--shadow);
@@ -61,7 +52,6 @@
 .klein .gezicht { font-size: 32px; }
 /* Op de kleine Pip nog een maatje kleiner, anders is het speldje half zo groot als
    het gezicht waar het bij hoort. */
-.klein .badge { width: 20px; height: 20px; font-size: 12px; top: -5px; right: -5px; }
 .klein .ballon { font-size: 0.92rem; padding: 9px 68px 9px 12px; }
 /* Pip beweegt, want zijn gezicht kan het nog niet.
  *

@@ -286,6 +286,8 @@ export default function Kaart() {
               </Uitklap>
               {/* De kaartstrook van deze wereld (getekend), in plaats van drie CSS-heuvels:
                   de kaart als landschap, niet als stapel kaarten (36e review). */}
+              {/* Volgt het thema van het besturingssysteem; een handmatige keuze
+                  (data-theme) wordt nergens gezet, dus dat is hier gelijk. */}
               <picture className={styles.strook} aria-hidden="true">
                 <source media="(prefers-color-scheme: dark)" srcSet={kaartBeeld(wereld.id, true)} />
                 {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}

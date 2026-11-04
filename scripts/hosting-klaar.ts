@@ -334,6 +334,14 @@ function vooraadOffline() {
       bestanden.add(`./${relatief(u.startsWith('/') ? u : '_next/static/css/' + u).replace(/^\.\.\//, '_next/static/')}`)
     }
   }
+  // De illustraties: alle Pips en wapens (klein, overal te zien) en de kaartstroken van
+  // wereld 0–2. Ze staan in geen HTML of CSS, dus het zoeken hierboven vond ze niet, en
+  // offline was Pip een lege cirkel (37e review).
+  for (const map of ['pip', 'werelden']) {
+    const pad = join(UIT, 'illustraties', map)
+    if (existsSync(pad)) for (const f of readdirSync(pad)) bestanden.add(`./illustraties/${map}/${f}`)
+  }
+  for (const w of werelden) for (const d of ['', '-donker']) bestanden.add(`./illustraties/kaart/kaart-${w.id}${d}.svg`)
   // Alleen wat echt bestaat; een verkeerd pad zou de installatie stil een gat laten.
   const lijst = [...bestanden].filter((b) => b === './' || existsSync(join(UIT, b.replace(/^\.\//, '').replace(/\/$/, '/index.html'))))
   const weg = [...bestanden].filter((b) => !lijst.includes(b))

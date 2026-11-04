@@ -79,7 +79,10 @@ self.addEventListener('fetch', (event) => {
     !isAudioManifest &&
     (url.pathname.includes('/_next/static/') ||
       url.pathname.includes('/audio/') ||
-      url.pathname.includes('/sfx/'))
+      url.pathname.includes('/sfx/') ||
+      // Geen hash in de naam, maar de cache heet per uitrol anders: na een nieuwe uitrol
+      // komen ze toch vers binnen.
+      url.pathname.includes('/illustraties/'))
 
   if (isBlijvend) {
     event.respondWith(

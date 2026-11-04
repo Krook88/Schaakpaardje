@@ -137,14 +137,6 @@
 
 /* ---------- Heuvels onder een open wereld: de kaart als landschap ---------- */
 .wereld { position: relative; }
-.heuvels {
-  height: 34px; margin-top: -6px;
-  background:
-    radial-gradient(60% 120% at 20% 100%, hsl(var(--toon) 40% 70%) 60%, transparent 61%),
-    radial-gradient(50% 100% at 70% 100%, hsl(var(--toon) 45% 62%) 60%, transparent 61%),
-    radial-gradient(40% 90% at 100% 100%, hsl(var(--toon) 40% 74%) 60%, transparent 61%);
-}
-
 /* ---------- Nog te ontdekken ---------- */
 .komtNogKop { font-size: 1.1rem; margin: 0 0 10px; }
 .tegels {
@@ -166,12 +158,6 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .tegel { background: hsl(var(--toon) 26% 20%); border-color: hsl(var(--toon) 22% 30%); }
   :root:not([data-theme='light']) .reisAf, :root:not([data-theme='light']) .reisHier { background: hsl(var(--toon) 25% 26%); }
-  :root:not([data-theme='light']) .heuvels {
-    background:
-      radial-gradient(60% 120% at 20% 100%, hsl(var(--toon) 25% 28%) 60%, transparent 61%),
-      radial-gradient(50% 100% at 70% 100%, hsl(var(--toon) 28% 34%) 60%, transparent 61%),
-      radial-gradient(40% 90% at 100% 100%, hsl(var(--toon) 22% 24%) 60%, transparent 61%);
-  }
 }
 :root[data-theme='dark'] .tegel { background: hsl(var(--toon) 26% 20%); border-color: hsl(var(--toon) 22% 30%); }
 :root[data-theme='dark'] .reisAf, :root[data-theme='dark'] .reisHier { background: hsl(var(--toon) 25% 26%); }
@@ -203,13 +189,6 @@
 .wiebelt { animation: wiebel 400ms ease-in-out 1; }
 @keyframes wiebel { 0%, 100% { transform: none; } 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
 @media (prefers-reduced-motion: reduce) { .wiebelt { animation: none; } .chevron { transition: none; } }
-:root[data-theme='dark'] .heuvels {
-  background:
-    radial-gradient(60% 120% at 20% 100%, hsl(var(--toon) 25% 28%) 60%, transparent 61%),
-    radial-gradient(50% 100% at 70% 100%, hsl(var(--toon) 28% 34%) 60%, transparent 61%),
-    radial-gradient(40% 90% at 100% 100%, hsl(var(--toon) 22% 24%) 60%, transparent 61%);
-}
-
 /* Het wapen is nu een eigen tekening met een eigen rand: geen cirkel eromheen. */
 .wapen:has(img) { background: none; border: 0; }
 

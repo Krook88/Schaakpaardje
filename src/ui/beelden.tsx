@@ -3,8 +3,8 @@
  * stemmingen, een wapen en een kaartstrook per wereld. Gemaakt door de illustrator-
  * agent na goedkeuring van Kaj (4 nov 2026); Pip komt uit scripts/pip-tekenen.py.
  *
- * Eén plek voor de paden, zodat een ontbrekend bestand op één plek te vinden is; de
- * build controleert dat elk wapen en elke kaartstrook bestaat (hosting-klaar).
+ * Eén plek voor de paden. tests/illustraties.test.ts controleert dat er voor elke wereld
+ * een wapen en twee kaartstroken zijn, en voor elke stemming twee Pips.
  */
 import type { PipStemming } from './Pip'
 

@@ -1149,7 +1149,12 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
     const ok = await p.goto(`${URL}${pad}`, { waitUntil: 'load' }).then(() => true).catch(() => false)
     await p.waitForTimeout(800)
     const iets = pad === '/kaart/' ? await p.locator('[data-hier]').count() : await p.locator('[data-square]').count()
-    resultaten.push(`${pad}:${ok && iets > 0 ? 'ja' : 'nee'}`)
+    // Ook de tekeningen: offline was Pip een lege cirkel (37e review). Alleen wat in
+    // beeld is en dus geladen hoort te zijn (lazy plaatjes eronder tellen niet).
+    const kapot = await p.evaluate(() =>
+      [...document.images].filter((i) => i.loading !== 'lazy' && i.complete && i.naturalWidth === 0).map((i) => i.src.split('/').pop()),
+    )
+    resultaten.push(`${pad}:${ok && iets > 0 && kapot.length === 0 ? 'ja' : `nee${kapot.length ? ` (kapot: ${kapot.join(',')})` : ''}`}`)
   }
   // Doortikken vanaf de kaart: dat gaat via het RSC-bestand, niet via de HTML.
   await p.locator('[data-hier] a').first().click({ force: true }).catch(() => {})

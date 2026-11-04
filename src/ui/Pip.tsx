@@ -30,6 +30,17 @@ const BEWEGING: Record<PipStemming, string> = {
  * aan het woord is. Dat laatste is het belangrijkste: een kind ziet daaraan dat het
  * even moet luisteren, en ziet even goed wanneer het weer aan de beurt is.
  */
+// Alle stemmingen één keer vooraf ophalen: anders was de cirkel bij de eerste keer
+// "juicht" heel even leeg terwijl het plaatje binnenkwam (37e review).
+let vooraf = false
+function haalPipsOp() {
+  if (vooraf || typeof window === 'undefined') return
+  vooraf = true
+  for (const s of ['blij', 'juicht', 'verrast', 'denkt', 'moedigt', 'trots', 'slaapt'] as PipStemming[]) {
+    new Image().src = pipBeeld(s, true)
+  }
+}
+
 export function Pip({
   zegt,
   stemming = 'blij',
@@ -61,6 +72,7 @@ export function Pip({
    */
   const [puls, setPuls] = useState(0)
 
+  useEffect(haalPipsOp, [])
   useEffect(() => {
     onSubtitle(setOndertitel)
     return () => onSubtitle(null)
