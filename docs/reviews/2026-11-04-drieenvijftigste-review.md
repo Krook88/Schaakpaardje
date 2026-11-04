@@ -18,6 +18,6 @@ Niets blokkerends. De wijziging in w9 haalt een fout weg ("Dan roep je: schaak!"
 - **Middel 8: de huppel overschreef de selectievergroting.** *Opgelost:* `.golf .square:not(.selected) .piece`.
 - **Klein 9: `!important` op de icoonmaat in de plank.** *Niet opgelost:* `Icoon` zet zijn maat inline. Een `maat`-prop per breakpoint vraagt JS voor iets wat CSS hier goed doet.
 - **Klein 10: `.wereldAfTel` op twee plekken verborgen.** *Opgelost* in de samenvoeging. Er staat één regel per bedoeling: smal en laag, of dwars.
-- **Klein 11: uitgeschakelde primaire en secundaire knoppen zien er gelijk uit.** *Zo gelaten:* uitgeschakeld is uitgeschakeld. `--muted` haalt 4,8:1 in licht en 7:1 in donker.
+- **Klein 11: uitgeschakelde primaire en secundaire knoppen zien er gelijk uit.** *Zo gelaten:* uitgeschakeld is uitgeschakeld. `--muted` nagerekend: licht 5,3:1 (op ground) en 5,8:1 (op surface), donker 7,6:1 en 7,0:1.
 - **Klein 12: commentaar noemde nog een emoji.** *Opgelost.*
 - **Klein 13: twee definities van "werelden af".** *Niet opgelost:* ze tellen verschillend. Op het wereld-af-scherm telt de wereld die net af is mee, ook als het opslaan nog loopt. Op de kaart telt alleen wat opgeslagen is. Eén helper zou dat verschil verbergen.
