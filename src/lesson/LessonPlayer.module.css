@@ -289,7 +289,7 @@
 
 /* Laag staand scherm (375×667): "Verder" stond onder het bord en dus onder de vouw. Daar
    komt de knoppenrij van de kijkfase boven het bord (39e review). */
-@media (orientation: portrait) and (max-height: 700px) {
+@media (orientation: portrait) and (max-height: 760px) {
   .vertelStack { display: flex; flex-direction: column; }
   .vertelStack > .vakKnoppen { order: -1; }
   .vertelStack > .vakPip { order: -2; }
@@ -355,10 +355,22 @@
 /* Korte staande telefoons in de kijkfase: de wereldband wijkt, zodat Pip op het bord
    hoger in beeld komt (wow-meting na ronde 43: bord pas vanaf 390 px). De wereld staat
    ook in het wapen op de kaart en in de kop van de les. */
-@media (max-width: 499px) and (orientation: portrait) and (max-height: 700px) {
-  .wereldpagina:has(.vertelStack) .wereldband { display: none; }
+@media (max-width: 499px) and (orientation: portrait) and (max-height: 760px) {
+  .wereldpagina .wereldband { display: none; }
   /* En de fasebalk zonder ondermarge: zo staat de onderste rij er ook nog op, en juist
      die licht op in de tweede zin van weide-1. */
-  .wereldpagina:has(.vertelStack) .faseBalk { margin-bottom: 0 !important; }
+  .wereldpagina .faseBalk { margin-bottom: 0 !important; }
   .vertelStack { gap: 6px !important; }
+}
+/* Korte staande telefoon, kijkfase: de ballon krijgt de volle breedte (het gezicht wijkt,
+   de luisterknop blijft) en iets kleinere letters. Een ballon van vier regels duwde de
+   onderste bordrij onder de vouw, precies de rij die in zin 2 oplicht (60e review). */
+@media (max-width: 499px) and (orientation: portrait) and (max-height: 760px) {
+  .vertelStack [data-pip-gezicht] { display: none; }
+  .vertelStack .vakPip p { font-size: 0.95rem; padding-top: 8px; padding-bottom: 8px; }
+  /* Het vertelbord wordt niet aangetikt; het mag iets kleiner zodat het heel in beeld
+     staat (325 px: kop, fasen, ballon en knoppen erboven). */
+  .vertelStack > .vakBord { max-width: min(100%, calc(100svh - 325px)) !important; margin-inline: auto; width: 100%; }
+  /* Niet rand-tot-rand: dan ontsnapte het bord aan die maat. */
+  .vertelStack > .vakBord > * { margin-inline: 0 !important; width: 100% !important; }
 }

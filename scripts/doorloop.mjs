@@ -1227,15 +1227,25 @@ for (const [w, h] of [[375, 667], [390, 844]]) {
   await ctx.close()
 }
 
-// Eerste les op een korte telefoon: het hele bord in beeld, want de tweede zin laat de
-// onderste rij oplichten (b1, c1, d1) en die viel eerst onder de vouw.
-{
-  const ctx = await browser.newContext({ viewport: { width: 375, height: 667 } })
+// Eerste les op korte telefoons: het hele bord in beeld, bij elke zin en bij de eerste
+// opgave. De tweede zin laat de onderste rij oplichten, en de opgave vraagt om de
+// donkere velden helemaal onderaan; die vielen eerst onder de vouw (60e review).
+for (const [w, h] of [[375, 667], [320, 640], [360, 740]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
   const p = await ctx.newPage()
   await p.goto(URL + '/les/weide-1/', { waitUntil: 'networkidle' })
   await p.waitForTimeout(800)
-  const onder = await p.evaluate(() => Math.round(document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect().bottom ?? 1e4))
-  meld('eerste les 375×667: het hele bord in beeld', onder <= 667, `onderkant ${onder}`)
+  const onder = () => p.evaluate(() => Math.round(document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect().bottom ?? 1e4))
+  const stappen = [await onder()]
+  for (let i = 0; i < 2; i++) {
+    await p.getByRole('button', { name: /Verder/ }).first().click()
+    await p.waitForTimeout(400)
+    stappen.push(await onder())
+  }
+  await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
+  await p.waitForTimeout(500)
+  stappen.push(await onder())
+  meld(`eerste les ${w}×${h}: het hele bord in beeld bij elke zin en de eerste opgave`, stappen.every((o) => o <= h), stappen.join(', '))
   await ctx.close()
 }
 
