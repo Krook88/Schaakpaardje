@@ -6,7 +6,7 @@ import { Board } from '@/board/Board'
 import { applyMove, parseBoard, pieceMoves, type Square } from '@/engine/board'
 import { sfx } from '@/audio/sfx'
 import { tel } from '@/progress/tellen'
-import { pipLos } from '@/ui/beelden'
+import { Icoon, pipLos } from '@/ui/beelden'
 import styles from './Welkom.module.css'
 
 /**
@@ -87,7 +87,7 @@ export function HeldSpel({ eersteLes }: { eersteLes: string }) {
           gelijke knoppen naar dezelfde les deden een ouder twijfelen (36e review). */}
       {sprongen >= 3 && (
         <div ref={uitnodiging} className={styles.uitnodiging}>
-          <span aria-hidden="true" className={styles.sterren}>⭐⭐⭐</span>
+          <span aria-hidden="true" className={styles.sterren}>{[0, 1, 2].map((i) => <Icoon key={i} naam="ster-vol" maat={36} />)}</span>
           <Link href={`/les/${eersteLes}/`} className="btn" onClick={() => tel('Held naar les')}>
             <span aria-hidden="true">▶︎</span> Leer het met Pip, stap voor stap
           </Link>

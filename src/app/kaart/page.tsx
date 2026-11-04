@@ -77,7 +77,6 @@ export default function Kaart() {
   const dichte = WERELDEN.filter((w) => !isOpen(w))
   const hierWereld = WERELDEN.find((w) => w.lessen.some((l) => l.id === hier))?.id
   const hoefijzers = DIPLOMAS.filter((d) => diplomaBehaald(d.soort, voortgang))
-  const KLEUR = { brons: '🥉', zilver: '🥈', goud: '🥇' } as const
   const hierNaam = WERELDEN.find((w) => w.id === hierWereld)?.naam
 
   return (
@@ -108,9 +107,9 @@ export default function Kaart() {
             alleen "je hebt nog niks" (30e review). */}
         {sterrenTotaal(voortgang) > 0 && (
           <p className={styles.reisTotaal}>
-            <span>⭐ {sterrenTotaal(voortgang)} sterren</span>
+            <span><Icoon naam="ster-vol" maat={22} /> {sterrenTotaal(voortgang)} sterren</span>
             {hoefijzers.length > 0 && (
-              <span role="img" aria-label={`${hoefijzers.length} hoefijzers`}>{hoefijzers.map((d) => KLEUR[d.soort]).join(' ')}</span>
+              <span role="img" aria-label={`${hoefijzers.length} hoefijzers`}>{hoefijzers.map((d) => <Icoon key={d.soort} naam={`medaille-${d.soort}`} maat={28} />)}</span>
             )}
           </p>
         )}
@@ -190,7 +189,7 @@ export default function Kaart() {
                   />
                 </div>
                 <span className={styles.oogstGetal} aria-hidden="true">
-                  ⭐ {sterrenNu}/{sterrenMax}
+                  <Icoon naam="ster-vol" maat={18} /> {sterrenNu}/{sterrenMax}
                 </span>
               </div>
 

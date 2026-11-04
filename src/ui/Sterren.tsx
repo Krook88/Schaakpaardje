@@ -1,4 +1,5 @@
 import styles from './Sterren.module.css'
+import { icoonBeeld } from './beelden'
 
 export function Sterren({
   aantal,
@@ -16,19 +17,17 @@ export function Sterren({
     <span
       aria-label={`${aantal} van de ${van} sterren`}
       className={`${styles.rij} ${vier ? styles.vier : ''}`}
-      style={{ fontSize: groot ? '2.6rem' : '1rem' }}
+      style={{ display: 'inline-flex', gap: groot ? 6 : 2 }}
     >
       {Array.from({ length: van }, (_, i) => (
         <span
           key={i}
           aria-hidden="true"
           className={styles.ster}
-          style={{
-            opacity: i < aantal ? 1 : 0.4,
-            filter: i < aantal ? 'none' : 'grayscale(1)',
-          }}
         >
-          ⭐
+          {/* Getekend in plaats van ⭐: een lege ster is een omtrek, geen grijze ster. */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
+          <img src={icoonBeeld(i < aantal ? 'ster-vol' : 'ster-leeg')} alt="" width={groot ? 44 : 18} height={groot ? 44 : 18} style={{ display: 'block' }} />
         </span>
       ))}
     </span>

@@ -16,7 +16,8 @@ export const pipBeeld = (stemming: PipStemming, knop = false) =>
 export const pipLos = (stemming: PipStemming) => `${BASIS}/illustraties/pip/pip-los-${stemming}.svg`
 export const lesIcoon = (lesId: string) => `${BASIS}/illustraties/iconen/les-${lesId}.svg`
 export type IcoonNaam =
-  | 'minispel' | 'slot' | 'beker' | 'sticker' | 'deel' | 'hint' | 'geluid' | 'instellingen' | 'bel'
+  | 'minispel' | 'slot' | 'beker' | 'sticker' | 'deel' | 'hint' | 'geluid' | 'instellingen' | 'bel' | 'bel-uit'
+  | 'ster-vol' | 'ster-leeg' | 'medaille-brons' | 'medaille-zilver' | 'medaille-goud'
   | 'fase-kijken' | 'fase-meedoen' | 'fase-zelf' | 'fase-toets'
   | 'punt-voorlezen' | 'punt-begint-bij-nul' | 'punt-niet-verliezen'
 export const icoonBeeld = (naam: IcoonNaam) => `${BASIS}/illustraties/iconen/${naam}.svg`

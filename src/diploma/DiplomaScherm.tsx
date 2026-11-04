@@ -18,7 +18,7 @@ import {
 } from '@/progress/store'
 import styles from './Diploma.module.css'
 
-const KLEUR: Record<DiplomaSoort, string> = { brons: '🥉', zilver: '🥈', goud: '🥇' }
+const medaille = (soort: DiplomaSoort, maat: number) => <Icoon naam={`medaille-${soort}`} maat={maat} />
 
 /**
  * Het certificaat. Bewust iets om uit te printen en op te hangen: een diploma dat alleen
@@ -63,7 +63,7 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
         <div className={styles.voorproef}>
           <article className={`${styles.oorkonde} ${styles[soort]} ${styles.wazig}`} aria-hidden="true">
             <p className={styles.klein}>Schaakmaatje</p>
-            <p className={styles.medaille}>{KLEUR[soort]}</p>
+            <p className={styles.medaille}>{medaille(soort, 88)}</p>
             <p className={styles.titel}>{diploma.naam}</p>
             <p className={styles.uitgereikt}>is uitgereikt aan</p>
             <p className={styles.naam}>{profiel?.naam ?? 'een dappere schaker'}</p>
@@ -117,7 +117,7 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
         <Confetti />
         <p className={styles.klein}>Schaakmaatje</p>
         <p className={styles.medaille} aria-hidden="true">
-          {KLEUR[soort]}
+          {medaille(soort, 96)}
         </p>
         <h1 className={styles.titel}>{diploma.naam}</h1>
         <p className={styles.uitgereikt}>is uitgereikt aan</p>

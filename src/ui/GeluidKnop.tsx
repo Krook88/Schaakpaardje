@@ -38,7 +38,7 @@ export function GeluidKnop({ className = '' }: { className?: string }) {
       }}
       style={{ minWidth: 56 }}
     >
-      <span aria-hidden="true" style={{ opacity: aan ? 1 : 0.45, display: 'inline-flex' }}><Icoon naam="bel" maat={30} /></span>
+      <span aria-hidden="true" style={{ display: 'inline-flex' }}><Icoon naam={aan ? 'bel' : 'bel-uit'} maat={30} /></span>
     </button>
   )
 }

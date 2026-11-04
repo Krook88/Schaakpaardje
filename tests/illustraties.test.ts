@@ -27,7 +27,7 @@ describe('illustraties', () => {
   it.each(WERELDEN.flatMap((w) => w.lessen.map((l) => l.id)))('les %s heeft een icoon', (id) => {
     expect(bestaat(lesIcoon(id)), lesIcoon(id)).toBe(true)
   })
-  const VAST: IcoonNaam[] = ['minispel', 'slot', 'beker', 'sticker', 'deel', 'hint', 'geluid', 'instellingen', 'bel',
+  const VAST: IcoonNaam[] = ['minispel', 'slot', 'beker', 'sticker', 'deel', 'hint', 'geluid', 'instellingen', 'bel', 'bel-uit', 'ster-vol', 'ster-leeg', 'medaille-brons', 'medaille-zilver', 'medaille-goud',
     'fase-kijken', 'fase-meedoen', 'fase-zelf', 'fase-toets', 'punt-voorlezen', 'punt-begint-bij-nul', 'punt-niet-verliezen']
   it.each(VAST)('icoon %s bestaat', (n) => {
     expect(bestaat(icoonBeeld(n))).toBe(true)

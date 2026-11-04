@@ -177,7 +177,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
                   Twee eigen regels die niet afbreken: in één zin brak het op een
                   telefoon in vier losse stukjes, met het kalendertje los van "dagen". */}
               <p className="muted" style={{ fontSize: '0.9rem', margin: 0, whiteSpace: 'nowrap' }}>
-                ⭐ {totaal} van de {maxSterren}
+                <Icoon naam="ster-vol" maat={20} /> {totaal} van de {maxSterren}
               </p>
               {/* Alleen omhoog, nooit terug naar nul: zie `oefendagen` in de store. */}
               {oefendagen > 0 && (
