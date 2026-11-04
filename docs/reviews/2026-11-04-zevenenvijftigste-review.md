@@ -8,3 +8,9 @@ Traject 2, rondes 38–40, layout-reviewer. **Oordeel na verwerking: GO.** Wow s
 - **Klein: het denkwolkje van Fien en Mila ligt deels op het oor.** *Op het scorebord* voor de illustrator.
 - De stemmingen zelf en commit 40 dwars: in orde.
 - Schaak en mat zijn niet live uitgespeeld. Volgens de code schrijft `controleerEinde` er na de botzin overheen.
+
+## Schaakmeester over de nieuwe zinnen
+Niets blokkerends, geen matbegrip.
+- **Middel: "Pas op, daar staat je stuk niet veilig." wijst naar het verkeerde stuk.** `blunderVerlies` kijkt naar elk stuk dat geslagen kan worden, ook bij een weggehaalde dekker. *Opgelost:* "Kijk nog eens: kan de ander nu iets van je slaan?" Zo zoekt het kind zelf.
+- **Klein: "Nu moet de koning gered worden" klinkt als een opdracht aan het kind, en ligt dicht bij mat.** *Opgelost:* "Mooi, schaak! De ander moet nu iets doen."
+- **Klein: "Er is een stuk van je weg" bij een eerlijke ruil.** *Zo gelaten:* de zin is waar en bemoedigend. Een balanscheck per zet staat op het scorebord.

@@ -80,7 +80,7 @@ export const PARTIJ_REMISE = ['Gelijkspel! Niemand wint, allebei goed gespeeld.'
 
 export const BLUNDER_WAARSCHUWING = [
   'Weet je het zeker? Dan staat je stuk te pakken.',
-  'Pas op, daar staat je stuk niet veilig.',
+  'Kijk nog eens: kan de ander nu iets van je slaan?',
 ] as const
 
 export const SCHAAK_TEGEN_JOU = [
@@ -90,7 +90,7 @@ export const SCHAAK_TEGEN_JOU = [
 
 export const SCHAAK_VAN_JOU = [
   'Schaak! Jij valt de koning aan.',
-  'Mooi, schaak! Nu moet de koning gered worden.',
+  'Mooi, schaak! De ander moet nu iets doen.',
 ] as const
 /** Na de zet van de bot, als er niets bijzonders is: anders bleef een oude zin staan
  *  ("Mooi, schaak!" terwijl de bot net de dame sloeg, wow-meting traject 2). */
