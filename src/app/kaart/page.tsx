@@ -186,7 +186,8 @@ export default function Kaart() {
             </ul>
             {/* Wat al gehaald is, als telling: geen reeks, geen opdracht (conversie, ronde 18). */}
             <p className={styles.plankTel}>
-              <Icoon naam="ster-vol" maat={20} /> {sterrenTotaal(voortgang)} sterren · {gewonnen.length} van de {WERELDEN.length} werelden
+              <span className={styles.plankDeel}><Icoon naam="ster-vol" maat={20} /> {sterrenTotaal(voortgang)} sterren</span>
+              <span className={styles.plankDeel}>{gewonnen.length} van de {WERELDEN.length} werelden af</span>
             </p>
           </section>
             )}
