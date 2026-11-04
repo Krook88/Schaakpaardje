@@ -1119,6 +1119,41 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
   await ctx.close()
 }
 
+// Offline: wie alleen de startpagina heeft geopend, kan daarna zonder internet alle
+// lessen van wereld 0–2 en hun minispellen spelen (nulmeting volgende niveau: alleen
+// wat al bezocht was werkte offline). Direct openen én vanaf de kaart doortikken.
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/`, { waitUntil: 'networkidle' })
+  await p.evaluate(async () => {
+    const reg = await navigator.serviceWorker.ready
+    // Wachten tot de installatie (met de voorraad) klaar is.
+    for (let i = 0; i < 100 && !reg.active; i++) await new Promise((r) => setTimeout(r, 100))
+    for (let i = 0; i < 100; i++) {
+      const namen = await caches.keys()
+      const n = namen.length ? (await (await caches.open(namen[0])).keys()).length : 0
+      if (n > 40) break
+      await new Promise((r) => setTimeout(r, 100))
+    }
+  })
+  await ctx.setOffline(true)
+  const resultaten = []
+  for (const pad of ['/les/loper-2/', '/spel/torenjacht/', '/kaart/']) {
+    const ok = await p.goto(`${URL}${pad}`, { waitUntil: 'load' }).then(() => true).catch(() => false)
+    await p.waitForTimeout(800)
+    const iets = pad === '/kaart/' ? await p.locator('[data-hier]').count() : await p.locator('[data-square]').count()
+    resultaten.push(`${pad}:${ok && iets > 0 ? 'ja' : 'nee'}`)
+  }
+  // Doortikken vanaf de kaart: dat gaat via het RSC-bestand, niet via de HTML.
+  await p.locator('[data-hier] a').first().click({ force: true }).catch(() => {})
+  await p.waitForTimeout(1200)
+  const doorgetikt = /\/les\//.test(p.url()) && (await p.locator('[data-square]').count()) > 0
+  resultaten.push(`kaart→les:${doorgetikt ? 'ja' : 'nee'}`)
+  meld('offline na alleen de startpagina: wereld 0–2 speelt', !resultaten.some((r) => r.endsWith('nee')), resultaten.join(' '))
+  await ctx.close()
+}
+
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 
 await browser.close()

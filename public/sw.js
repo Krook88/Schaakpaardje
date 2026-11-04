@@ -22,11 +22,24 @@ const CACHE = 'schaakmaatje-dev'
 // Wat er sowieso in moet, ook als het kind alleen de voorpagina heeft gezien.
 const KERN = ['./', './manifest.webmanifest', './icon.svg']
 
+// Wereld 0 tot en met 2 (pagina's, hun RSC-bestanden en precies de JS/CSS die ze
+// gebruiken), de kaart en hun minispellen. Bij het bouwen ingevuld door
+// vooraadOffline() in scripts/hosting-klaar.ts; in `npm run dev` leeg.
+// Waarom: "na het eerste bezoek werkt de app zonder internet" gold alleen voor wat het
+// kind al gezien had. Wie de app thuis opende en in de auto les twee wilde doen, kreeg
+// "Geen verbinding" (nulmeting volgende niveau).
+const VOORAF = []
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll(KERN))
+      .then(async (cache) => {
+        await cache.addAll(KERN)
+        // Eén voor één en zonder te falen: één ontbrekend bestand mag de installatie
+        // (en dus de kern) niet tegenhouden.
+        await Promise.all(VOORAF.map((pad) => cache.add(pad).catch(() => {})))
+      })
       .then(() => self.skipWaiting()),
   )
 })
@@ -88,7 +101,10 @@ self.addEventListener('fetch', (event) => {
         return antwoord
       })
       .catch(async () => {
-        const gevonden = await caches.match(verzoek)
+        // ignoreSearch: Next haalt de RSC-bestanden op met ?_rsc=..., en vooraf staan ze
+        // er zonder. ignoreVary: dat verzoek heeft ook eigen headers.
+        const gevonden =
+          (await caches.match(verzoek)) || (await caches.match(verzoek, { ignoreSearch: true, ignoreVary: true }))
         if (gevonden) return gevonden
         // Onbekende pagina zonder verbinding: geef de stal, daar kan het kind verder.
         if (verzoek.mode === 'navigate') {

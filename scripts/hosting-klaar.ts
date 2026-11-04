@@ -118,6 +118,7 @@ function main() {
   laatOpnamesMetRust()
   lessenVoorDeTeller()
   stempelDeCacheversie()
+  vooraadOffline()
   controleerSitemap()
 }
 
@@ -276,3 +277,77 @@ function lessenVoorDeTeller() {
 
 // Alleen draaien als het script zelf gestart wordt, niet als de test hem importeert.
 if (process.argv[1]?.includes('hosting-klaar')) main()
+
+/**
+ * Wereld 0 tot en met 2 offline, al bij het eerste bezoek.
+ *
+ * De service worker bewaarde alleen wat het kind al gezien had. Hier zoeken we per
+ * pagina (startpagina, kaart, elke les van wereld 0–2 en hun minispellen) de HTML, het
+ * RSC-bestand voor navigeren binnen de app, en alle _next/static-bestanden en lettertypen
+ * die erin genoemd worden, en zetten die lijst in out/sw.js. Afgeleid uit de uitvoer
+ * zelf, dus een nieuwe les of een ander brokje komt vanzelf mee.
+ */
+function vooraadOffline() {
+  const sw = join(UIT, 'sw.js')
+  if (!existsSync(sw)) return
+  const werelden = WERELDEN.filter((w) => w.nummer <= 2)
+  const paginas = [
+    '',
+    'kaart/',
+    ...werelden.flatMap((w) => w.lessen.map((l) => `les/${l.id}/`)),
+    ...werelden.flatMap((w) => (w.minispel ? [`spel/${w.minispel}/`] : [])),
+  ]
+  const basis = (process.env.NEXT_PUBLIC_BASE_PATH ?? '').replace(/^\/|\/$/g, '')
+  const relatief = (url: string) => {
+    let u = url.replace(/^\//, '')
+    if (basis && u.startsWith(basis + '/')) u = u.slice(basis.length + 1)
+    return u
+  }
+  const bestanden = new Set<string>()
+  const css = new Set<string>()
+  for (const pagina of paginas) {
+    const html = join(UIT, pagina, 'index.html')
+    const txt = join(UIT, pagina, 'index.txt')
+    if (!existsSync(html)) {
+      console.error(`Hosting-klaar: ${pagina || '/'} ontbreekt voor offline.`)
+      process.exit(1)
+    }
+    bestanden.add(pagina === '' ? './' : `./${pagina}`)
+    const inhoud = readFileSync(html, 'utf8') + (existsSync(txt) ? readFileSync(txt, 'utf8') : '')
+    if (existsSync(txt)) bestanden.add(`./${pagina}index.txt`)
+    for (const m of inhoud.matchAll(/(?:\/[\w.-]+)*\/?_next\/static\/[^"'\s,\\)\]]+/g)) {
+      const pad = relatief(m[0].startsWith('_next') ? m[0] : m[0])
+      bestanden.add(`./${pad.replace(/^.*?_next\//, '_next/')}`)
+      if (pad.endsWith('.css')) css.add(pad.replace(/^.*?_next\//, '_next/'))
+    }
+    // In het RSC-bestand staan brokjes zonder _next ervoor: "static/chunks/…".
+    for (const m of inhoud.matchAll(/"(static\/(?:chunks|css|media)\/[^"\\]+)\\?"/g)) bestanden.add(`./_next/${m[1]}`)
+  }
+  // Lettertypen en plaatjes die alleen vanuit de CSS genoemd worden.
+  for (const c of css) {
+    const pad = join(UIT, c)
+    if (!existsSync(pad)) continue
+    for (const m of readFileSync(pad, 'utf8').matchAll(/url\(([^)]+)\)/g)) {
+      const u = m[1].replace(/["']/g, '')
+      if (u.startsWith('data:')) continue
+      bestanden.add(`./${relatief(u.startsWith('/') ? u : '_next/static/css/' + u).replace(/^\.\.\//, '_next/static/')}`)
+    }
+  }
+  // Alleen wat echt bestaat; een verkeerd pad zou de installatie stil een gat laten.
+  const lijst = [...bestanden].filter((b) => b === './' || existsSync(join(UIT, b.replace(/^\.\//, '').replace(/\/$/, '/index.html'))))
+  const weg = [...bestanden].filter((b) => !lijst.includes(b))
+  const inhoud = readFileSync(sw, 'utf8')
+  const uit = inhoud.replace('const VOORAF = []', `const VOORAF = ${JSON.stringify(lijst)}`)
+  if (uit === inhoud) {
+    console.error('Hosting-klaar: geen VOORAF-regel gevonden in sw.js.')
+    process.exit(1)
+  }
+  writeFileSync(sw, uit)
+  const kb = Math.round(
+    lijst.reduce((n, b) => {
+      const p = join(UIT, b.replace(/^\.\//, '').replace(/\/$/, '/index.html'))
+      return n + (b === './' ? statSync(join(UIT, 'index.html')).size : existsSync(p) ? statSync(p).size : 0)
+    }, 0) / 1024,
+  )
+  console.log(`Hosting-klaar: ${paginas.length} pagina's van wereld 0–2 offline, ${lijst.length} bestanden, ${kb} kB${weg.length ? ` (${weg.length} genoemd maar niet gevonden: ${weg.slice(0, 4).join(', ')})` : ''}.`)
+}
