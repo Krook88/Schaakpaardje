@@ -475,12 +475,6 @@ export function PartijScherm({ botId }: { botId: string }) {
                   ? `${wie.avatar} ${wie.naam} is aan zet (${aanZet === 'w' ? 'wit' : 'zwart'})`
                   : `Jij bent aan zet · zet ${zetten + 1}`}
           </span>
-          {!samen && !uitslag && (geslagen.vanZwart.length > 0 || geslagen.vanWit.length > 0) && (
-            <span className={styles.geslagen} aria-hidden="true">
-              <span className={styles.geslagenZwart}>{geslagen.vanZwart.map((t) => GLYPH[t]).join('')}</span>
-              <span className={styles.geslagenWit}>{geslagen.vanWit.map((t) => GLYPH[t]).join('')}</span>
-            </span>
-          )}
           <span className="muted" hidden={Boolean(uitslag)}>
             {samen
               ? balans > 0
@@ -495,6 +489,18 @@ export function PartijScherm({ botId }: { botId: string }) {
                   : 'Gelijk'}
           </span>
         </div>
+        {/* Geslagen stukken op een eigen regel, met wie ze heeft: los in de statusregel
+            was niet te zien van wie ze waren (58e review). */}
+        {!samen && !uitslag && (geslagen.vanZwart.length > 0 || geslagen.vanWit.length > 0) && (
+          <div className={`row ${styles.geslagen}`}>
+            <span>
+              {geslagen.vanZwart.length > 0 && <>Jij pakte <span className={styles.geslagenZwart} aria-hidden="true">{geslagen.vanZwart.map((t) => GLYPH[t]).join('')}</span></>}
+            </span>
+            <span>
+              {geslagen.vanWit.length > 0 && <>Kwijt <span className={styles.geslagenWit} aria-hidden="true">{geslagen.vanWit.map((t) => GLYPH[t]).join('')}</span></>}
+            </span>
+          </div>
+        )}
 
         {promotieVraag && (
           <PromotieKiezer
