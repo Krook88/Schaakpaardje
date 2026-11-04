@@ -18,3 +18,10 @@
   }
   .titel { font-size: 1.02rem; }
 }
+/* Dwars staat de kop in een smalle kolom naast het bord: met "Terug" voluit ging de titel
+   letter voor letter onder elkaar op 667×375 (54e review). Dan ook alleen de pijl. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .knop { padding: 0 10px; }
+  .woord { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+  .titel { font-size: 1.02rem; overflow-wrap: normal; }
+}

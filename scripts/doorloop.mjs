@@ -1180,6 +1180,21 @@ for (const [w, h] of [[1440, 900], [1366, 650], [1280, 800]]) {
   await ctx.close()
 }
 
+// Speelscherm 667×375: de kop werd een verticale strook letters, knoppen onder de rand
+// (54e review). Titel minstens 60 px breed en "Nog een keer" in beeld.
+{
+  const ctx = await browser.newContext({ viewport: { width: 667, height: 375 } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const m = await p.evaluate(() => ({
+    titel: Math.round(document.querySelector('header h2')?.getBoundingClientRect().width ?? 0),
+    knop: Math.round([...document.querySelectorAll('button')].find((x) => /Nog een keer/.test(x.textContent))?.getBoundingClientRect().bottom ?? 1e4),
+  }))
+  meld('speelscherm 667×375: kop leesbaar en knoppen in beeld', m.titel >= 60 && m.knop <= 375, JSON.stringify(m))
+  await ctx.close()
+}
+
 // Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
 // waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
 // niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.

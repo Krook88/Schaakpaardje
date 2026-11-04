@@ -29,10 +29,11 @@
     align-self: start; position: sticky; top: 8px;
   }
 }
-/* Kleinste telefoon dwars (667×375): Pips ballon wordt in de smalle kolom zo hoog dat de
+/* Kleinste telefoon dwars (667×375, alleen smal: op 844 staat Pip gewoon onder de kop,
+   54e review): Pips ballon wordt in de smalle kolom zo hoog dat de
    knoppen eronder wegvielen (47e review). Dan komt het onderblok (status en knoppen) vóór
    Pip. Alleen de twee blokken wisselen, binnen een blok blijft de DOM-volgorde. */
-@media (orientation: landscape) and (max-height: 400px) {
+@media (orientation: landscape) and (max-height: 400px) and (max-width: 720px) {
   /* Hier mag de pagina wel scrollen: in één vaste schermhoogte viel Pip er helemaal af. */
   .pagina { height: auto; min-height: 100svh; grid-template-rows: auto auto auto; }
   .onder { grid-row: 2; overflow-y: visible; }
