@@ -62,3 +62,7 @@
 /* In het midden van de uitslagkaart: links leek het een vergeten plaatje (52e review). */
 .uitslagBot { display: block; margin-inline: auto; }
 @media (orientation: landscape) and (max-height: 500px) { .uitslagBot { width: 44px; height: 44px; } }
+/* Geslagen stukken: links wat jij pakte (zwarte stukjes), rechts wat je kwijt bent. */
+.geslagen { display: inline-flex; gap: 8px; font-family: 'Schaakstukken', sans-serif; font-variant-emoji: text; font-size: 1.5rem; line-height: 1; letter-spacing: -2px; }
+.geslagenZwart { color: #2b2823; -webkit-text-stroke: 0.8px #efe7d6; paint-order: stroke fill; }
+.geslagenWit { color: #fcf8ef; -webkit-text-stroke: 1px #33302a; paint-order: stroke fill; }

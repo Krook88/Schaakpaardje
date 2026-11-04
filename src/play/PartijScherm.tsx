@@ -1,6 +1,7 @@
 'use client'
 
 import { botBeeld, type BotStemming } from '@/ui/beelden'
+import { GLYPH } from '@/board/pieces'
 import styles from './PartijScherm.module.css'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
@@ -370,6 +371,23 @@ export function PartijScherm({ botId }: { botId: string }) {
   }, [geselecteerd, laatsteZet, fen])
 
   const balans = materialBalance(fen)
+  // Wat er van elke kant van het bord af is, als stukjes naast de stand: een slag zag je
+  // eerst nergens, alleen "Je staat 1 achter" (wow-meting na ronde 41).
+  const geslagen = useMemo(() => {
+    const tel = (f: string) => {
+      const n: Record<string, number> = {}
+      for (const c of f.split(' ')[0]) if (/[pnbrqPNBRQ]/.test(c)) n[c] = (n[c] ?? 0) + 1
+      return n
+    }
+    const begin = tel(opzet?.fen ?? 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
+    const nu = tel(fen)
+    const lijst = (kleur: 'w' | 'b') =>
+      (['q', 'r', 'b', 'n', 'p'] as const).flatMap((t) => {
+        const c = kleur === 'w' ? t.toUpperCase() : t
+        return Array(Math.max(0, (begin[c] ?? 0) - (nu[c] ?? 0))).fill(t) as PieceType[]
+      })
+    return { vanZwart: lijst('b'), vanWit: lijst('w') }
+  }, [fen, opzet?.fen])
   const aanZet = gameRef.current.turn
   const wie = spelers?.[aanZet]
 
@@ -457,6 +475,12 @@ export function PartijScherm({ botId }: { botId: string }) {
                   ? `${wie.avatar} ${wie.naam} is aan zet (${aanZet === 'w' ? 'wit' : 'zwart'})`
                   : `Jij bent aan zet · zet ${zetten + 1}`}
           </span>
+          {!samen && !uitslag && (geslagen.vanZwart.length > 0 || geslagen.vanWit.length > 0) && (
+            <span className={styles.geslagen} aria-hidden="true">
+              <span className={styles.geslagenZwart}>{geslagen.vanZwart.map((t) => GLYPH[t]).join('')}</span>
+              <span className={styles.geslagenWit}>{geslagen.vanWit.map((t) => GLYPH[t]).join('')}</span>
+            </span>
+          )}
           <span className="muted" hidden={Boolean(uitslag)}>
             {samen
               ? balans > 0
