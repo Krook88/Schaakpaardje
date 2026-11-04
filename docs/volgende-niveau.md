@@ -61,3 +61,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 13: één tekenstijl (71 iconen), schaakfouten in iconen hersteld, luidspreker met contrast in donker, LCP 2,1–2,3 s.
 - Ronde 14: Pip groot in de juichmomenten; Verder en Volgende les altijd in beeld (doorloop); wapenrij altijd 8+7.
 - Ronde 15: trofeeënplank boven de huidige wereld en in beeld bij binnenkomst (doorloop). 40e review: GO; wow layout 6–7,5, conversie 6–7,5.
+- Ronde 16: wereld af toont "3 van de 15 werelden af" (verborgen onder 720 px hoogte, zodat Volgende les in beeld blijft).

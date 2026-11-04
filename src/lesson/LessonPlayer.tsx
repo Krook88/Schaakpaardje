@@ -572,6 +572,11 @@ export function LessonPlayer({
                   )
                 })}
               </div>
+              {/* Waar je staat, zonder druk: een telling, geen opdracht. Verborgen op lage
+                  schermen, anders zakt "Volgende les" onder de vouw (doorloop, 320×640). */}
+              <p className={styles.wereldAfTel}>
+                {WERELDEN.filter((w) => w.id === wereld.id || wereldIsAf(w.id, voortgang)).length} van de {WERELDEN.length} werelden af
+              </p>
             </div>
           )}
           {/* Het moment waar een kind een hele les voor heeft gewerkt. Dat mag je niet
