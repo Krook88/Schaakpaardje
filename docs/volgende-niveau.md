@@ -38,9 +38,9 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | `npm run check` + doorloop groen | ronde 2: groen (doorloop 23 regels) | 🟢 |
 | `/release-review` go | 27e review: go voor deze fase, na verwerking | 🟢 |
 
-## Rangschikking, na ronde 14
+## Rangschikking, na ronde 15
 
-1. **Kaart: een trofeeënplank.** Bovenaan staan de gehaalde wapens groot en de hoefijzers, zodat je in één beeld ziet "kijk wat Noor al kan". Bij drie werelden af scoort de kaart nu een 6.
+1. **Wereld af: de plank of "wat je nu kunt" tonen**, en gewonnen wapens in de kleine kaartrij dimmen. (Trofeeënplank op de kaart staat sinds ronde 15.)
 2. **De kijkfase laat het bord vertellen:** velden lichten op terwijl Pip vertelt, en het stuk staat op het bord.
 3. **Startpagina:** Pip groot boven de vouw.
 4. Emoji in de uitslagen van partijen en live spelen. Dat zijn niet de wow-schermen, dus later.
@@ -60,3 +60,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 12: eigen illustraties (Pip, wapens, kaartstroken) ingebouwd; bordje in wapens rechtsonder licht; offline en test op bestaan.
 - Ronde 13: één tekenstijl (71 iconen), schaakfouten in iconen hersteld, luidspreker met contrast in donker, LCP 2,1–2,3 s.
 - Ronde 14: Pip groot in de juichmomenten; Verder en Volgende les altijd in beeld (doorloop); wapenrij altijd 8+7.
+- Ronde 15: trofeeënplank boven de huidige wereld en in beeld bij binnenkomst (doorloop). 40e review: GO; wow layout 6–7,5, conversie 6–7,5.
