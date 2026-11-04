@@ -80,7 +80,7 @@ const VRAGEN: [string, string][] = [
   ],
   [
     'Werkt het op een telefoon?',
-    'Ja, op telefoon, tablet en computer. Een tablet is het prettigst, want dan is het bord groot genoeg voor kindervingers. Wat je kind één keer geopend heeft, werkt daarna ook zonder internet.',
+    'Ja, op telefoon, tablet en computer. Een tablet is het prettigst, want dan is het bord groot genoeg voor kindervingers. De eerste drie werelden werken na het eerste bezoek ook zonder internet; latere lessen zodra je kind ze één keer geopend heeft.',
   ],
 ]
 

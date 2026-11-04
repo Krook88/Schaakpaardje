@@ -190,7 +190,8 @@ export function Welkom() {
 
       <p className="muted" style={{ margin: 0, fontSize: '0.95rem' }}>
         Geen reclame, geen account, geen aankopen in de app. Alles blijft op dit
-        apparaat staan en na de eerste keer werkt het ook zonder internet.{' '}
+        apparaat staan. Na het eerste bezoek kun je de eerste lessen ook zonder
+        internet spelen, bijvoorbeeld in de auto.{' '}
         <Link href="/over/">Lees meer voor ouders</Link> of bekijk{' '}
         <Link href="/lessen/">alle {lessen} lessen</Link>. Klaar voor het echte bord?{' '}
         <Link href="/schaakclub/">Zo vind je een schaakclub</Link>, of bekijk{' '}
