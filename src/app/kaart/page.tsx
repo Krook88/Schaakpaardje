@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { Icoon, WereldWapen, icoonBeeld, kaartBeeld, lesIcoon, pipBeeld, pipLos } from '@/ui/beelden'
 import Link from 'next/link'
 import { Kop } from '@/ui/Kop'
@@ -61,7 +61,13 @@ export default function Kaart() {
     if (!geladen) return
     const el = document.querySelector('[data-hier]')
     if (el && el.getBoundingClientRect().top > window.innerHeight * 0.6) {
-      el.scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+      const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+      // Past de plank samen met de les van vandaag in beeld, dan begint het beeld bij de
+      // plank; anders gaat de les voor (40e review).
+      const plank = document.getElementById('plank-kop')?.closest('section')
+      const past = plank && el.getBoundingClientRect().bottom - plank.getBoundingClientRect().top <= window.innerHeight - 24
+      if (plank && past) plank.scrollIntoView({ block: 'start', behavior })
+      else el.scrollIntoView({ block: 'center', behavior })
     }
   }, [geladen, hier])
 
@@ -93,25 +99,6 @@ export default function Kaart() {
         {/* De trofeeënplank: wat dit kind al gehaald heeft, groot en in één beeld. Bij
             drie werelden af stond dat ingeklapt onder elkaar en zag je het nergens in één
             keer (39e review: kaart met 3 af een 6). */}
-        {gewonnen.length > 0 && (
-          <div className={styles.plank}>
-            <p className={styles.plankKop}>{profiel ? `Wat ${profiel.naam} al kan` : 'Wat je al kunt'}</p>
-            <ul className={styles.plankRij}>
-              {gewonnen.map((w) => (
-                <li key={w.id} className={styles.plankWapen} style={{ '--toon': w.toon } as React.CSSProperties}>
-                  <WereldWapen id={w.id} maat={64} />
-                  <span>{w.naam}</span>
-                </li>
-              ))}
-              {hoefijzers.map((d) => (
-                <li key={d.soort} className={styles.plankWapen}>
-                  <Icoon naam={`medaille-${d.soort}`} maat={64} />
-                  <span>{d.naam}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
         <div className={styles.reisWapens}>
           {WERELDEN.map((w) => {
             const af = wereldIsAf(w.id, voortgang)
@@ -134,12 +121,14 @@ export default function Kaart() {
           <p className={styles.reisTotaal}>
             <span><Icoon naam="ster-vol" maat={22} /> {sterrenTotaal(voortgang)} sterren</span>
             {hoefijzers.length > 0 && (
-              <span role="img" aria-label={`${hoefijzers.length} hoefijzers`}>{hoefijzers.map((d) => <Icoon key={d.soort} naam={`medaille-${d.soort}`} maat={28} />)}</span>
+              <span role="img" aria-label={`${hoefijzers.length} hoefijzers`} aria-hidden={gewonnen.length > 0 || undefined}>{hoefijzers.map((d) => <Icoon key={d.soort} naam={`medaille-${d.soort}`} maat={28} />)}</span>
             )}
           </p>
         )}
       </section>
       <div className="stack">
+        {/* De trofeeënplank staat vlak boven de wereld van vandaag: de kaart scrolt naar
+            Pip, en bovenaan zag niemand hem (40e review). */}
         {WERELDEN.filter(isOpen).map((wereld) => {
           const af = wereldIsAf(wereld.id, voortgang)
           // De halteplaatsen van deze wereld: eerst de lessen, dan het minispel als
@@ -174,9 +163,30 @@ export default function Kaart() {
           const sterrenNu = wereld.lessen.reduce((n, l) => n + (voortgang[l.id]?.sterren ?? 0), 0)
           const sterrenMax = wereld.lessen.length * 3
 
+          const plankHier = wereld.id === hierWereld
           return (
+            <Fragment key={wereld.id}>
+            {plankHier && gewonnen.length > 0 && (
+
+          <section className={`card ${styles.plank}`}>
+            <h2 id="plank-kop" className={styles.plankKop}>{profiel ? `Wat ${profiel.naam} al kan` : 'Wat je al kunt'}</h2>
+            <ul className={styles.plankRij} aria-labelledby="plank-kop">
+              {gewonnen.map((w) => (
+                <li key={w.id} className={styles.plankWapen}>
+                  <WereldWapen id={w.id} maat={64} />
+                  <span>{w.naam}</span>
+                </li>
+              ))}
+              {hoefijzers.map((d) => (
+                <li key={d.soort} className={styles.plankWapen}>
+                  <Icoon naam={`medaille-${d.soort}`} maat={64} />
+                  <span>{d.wat}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+            )}
             <section
-              key={wereld.id}
               className={`card ${styles.wereld}`}
               style={{ '--toon': wereld.toon } as React.CSSProperties}
             >
@@ -318,6 +328,7 @@ export default function Kaart() {
                 <img src={kaartBeeld(wereld.id)} alt="" loading="lazy" decoding="async" />
               </picture>
             </section>
+            </Fragment>
           )
         })}
       </div>

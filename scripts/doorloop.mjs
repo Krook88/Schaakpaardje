@@ -1100,6 +1100,16 @@ for (const beweging of ['reduce', 'no-preference']) {
     return { top: Math.round(b.top), bottom: Math.round(b.bottom), scrollY: Math.round(window.scrollY) }
   })
   meld('kaart: de kaart scrolt naar de les van vandaag', Boolean(r) && r.scrollY > 0 && r.top >= 0 && r.bottom <= 500, JSON.stringify(r))
+
+  // En de trofeeënplank scrolt mee: hij staat vlak boven de wereld van vandaag. Bovenaan
+  // de kaart zag niemand hem, omdat de kaart naar Pip scrolt (40e review).
+  const plank = await p.evaluate(() => {
+    const el = document.getElementById('plank-kop')
+    if (!el) return null
+    const b = el.getBoundingClientRect()
+    return { top: Math.round(b.top), bottom: Math.round(b.bottom) }
+  })
+  meld('kaart: de trofeeënplank staat in beeld bij binnenkomst', Boolean(plank) && plank.top >= 0 && plank.bottom <= 500, JSON.stringify(plank))
   await ctx.close()
 }
 
