@@ -66,3 +66,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 17: lange wapennamen (Koningskasteel) breken netjes af op de plank.
 - Ronde 18: wow-meting (start 7, les 6, wereld af 8, kaart 6); plank toont sterren en "3 van de 15 werelden". Volgende: Pip op het bord in de eerste kijkzin; oorkonde met naam en deelknop direct eronder.
 - Ronde 18: 42e review (GO, kaart 7); telling breekt per deel, met "af".
+- Ronde 19: Pip (paard) op e4 tijdens de kijkfase van weide-1, op advies van de schaakmeester. Zin "Ik sta op een licht veld" vraagt een nieuwe opname: open vraag voor Kaj.

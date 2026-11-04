@@ -34,7 +34,10 @@ export const wereld0: World = {
         },
         'Zullen we samen wat velden aantikken?',
       ],
-      vertelFen: LEEG,
+      // Pip staat tijdens het vertellen op het bord: een leeg raster is geen begroeting
+      // (wow-meting ronde 18). e4 is licht, midden op het bord en geen beginveld van het
+      // paard (schaakmeester). Hij zet niet en is weg zodra de eerste opgave begint.
+      vertelFen: '8/8/8/8/4N3/8/8/8 w - - 0 1',
       meedoen: [
         {
           kind: 'tapSquares',
