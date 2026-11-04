@@ -110,3 +110,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 42: 58e review verwerkt (geslagen stukken op eigen regel met "Jij pakte"/"Kwijt" en schijfjes).
 - Ronde 43: startpagina staand compacter, paard met stippen boven de vouw (doorloop 375/390).
 - Ronde 43: 59e review verwerkt (paard heel boven de vouw op 375×667, doorloop meet hele veld).
+- Ronde 44: eerste les op korte telefoons — wereldband weg, kop en fasebalk compacter, hele bord in beeld (doorloop 375×667).

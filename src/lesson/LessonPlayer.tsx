@@ -819,7 +819,7 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
   const hier = FASE_VOLGORDE.indexOf(nu)
   return (
     <div
-      className="row"
+      className={`row ${styles.faseBalk}`}
       style={{ justifyContent: 'center', gap: 10, marginBottom: 8, flexWrap: 'nowrap' }}
       aria-label={`Stap ${hier + 1} van 4: ${FASE_NAAM[nu]}`}
     >

@@ -1227,6 +1227,18 @@ for (const [w, h] of [[375, 667], [390, 844]]) {
   await ctx.close()
 }
 
+// Eerste les op een korte telefoon: het hele bord in beeld, want de tweede zin laat de
+// onderste rij oplichten (b1, c1, d1) en die viel eerst onder de vouw.
+{
+  const ctx = await browser.newContext({ viewport: { width: 375, height: 667 } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/les/weide-1/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(800)
+  const onder = await p.evaluate(() => Math.round(document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect().bottom ?? 1e4))
+  meld('eerste les 375×667: het hele bord in beeld', onder <= 667, `onderkant ${onder}`)
+  await ctx.close()
+}
+
 // Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
 // waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
 // niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.

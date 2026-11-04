@@ -352,3 +352,13 @@
   .wereldAf > * { grid-column: 1; }
   .wereldAf > .wereldAfHeld { display: none; }
 }
+/* Korte staande telefoons in de kijkfase: de wereldband wijkt, zodat Pip op het bord
+   hoger in beeld komt (wow-meting na ronde 43: bord pas vanaf 390 px). De wereld staat
+   ook in het wapen op de kaart en in de kop van de les. */
+@media (max-width: 499px) and (orientation: portrait) and (max-height: 700px) {
+  .wereldpagina:has(.vertelStack) .wereldband { display: none; }
+  /* En de fasebalk zonder ondermarge: zo staat de onderste rij er ook nog op, en juist
+     die licht op in de tweede zin van weide-1. */
+  .wereldpagina:has(.vertelStack) .faseBalk { margin-bottom: 0 !important; }
+  .vertelStack { gap: 6px !important; }
+}

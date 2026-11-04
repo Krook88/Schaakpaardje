@@ -25,3 +25,8 @@
   .woord { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
   .titel { font-size: 1.02rem; overflow-wrap: normal; }
 }
+/* Korte staande telefoons: minder ruimte boven en onder de kop (eerste les: de onderste
+   bordrij viel onder de vouw). */
+@media (max-width: 499px) and (orientation: portrait) and (max-height: 700px) {
+  .kop { padding: 4px 0 8px; }
+}
