@@ -46,7 +46,11 @@
 .tegenstanderGezicht { width: 56px; height: 56px; display: block; }
 @media (min-width: 900px) and (min-height: 800px) { .tegenstanderGezicht { width: 76px; height: 76px; } }
 /* Dwars staat de tegenstander al in de kop naast het bord; de extra regel liet de pagina scrollen. */
-@media (max-height: 700px) { .tegenstander { display: none; } }
+/* Verborgen waar elke pixel telt: lage laptops (knoppen moeten in beeld) en dwars (de
+   naam staat in de kop naast het bord). Staande telefoons houden hem: daar scrolt het
+   scherm toch al en was de uil nergens te zien (wow-meting na ronde 32). */
+@media (max-height: 700px) and (min-width: 900px), (orientation: landscape) and (max-height: 500px) { .tegenstander { display: none; } }
+@media (max-height: 700px) and (max-width: 899px) { .tegenstanderGezicht { width: 44px; height: 44px; } }
 /* In het midden van de uitslagkaart: links leek het een vergeten plaatje (52e review). */
 .uitslagBot { display: block; margin-inline: auto; }
 @media (orientation: landscape) and (max-height: 500px) { .uitslagBot { width: 44px; height: 44px; } }

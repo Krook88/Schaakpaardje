@@ -91,3 +91,5 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 30: uitgeschakelde knoppen met stippelrand en gedempte tekst, geen doorzichtigheid (leesbaar in donker).
 - Ronde 31: 53e review (schaakmeester + codebase over 16–30) verwerkt: dwars-CSS samengevoegd, speelscherm in drie blokken, test op bot-tekeningen, laptopregel in doorloop.
 - Ronde 32: 54e review verwerkt (kop dwars alleen pijl, blokwissel alleen smal, doorloopregel 667×375).
+- Wow-meting na ronde 32 (375/844): start 7/8, les 5/5, wereld af 8/7, kaart 7/6, spel 4/5. De eerste les blijft het laagst.
+- Ronde 33: tegenstander-tekening ook op staande telefoons onder 700 px hoogte (44 px).
