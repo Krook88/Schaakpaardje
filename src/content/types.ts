@@ -180,6 +180,8 @@ export type Lesson = {
   vertel: (string | VertelZin)[]
   /** Stelling die tijdens het vertellen op het bord staat. */
   vertelFen?: Fen
+  /** Het witte paard in `vertelFen` is Pip zelf en wordt als Pip getekend (begroeting). */
+  vertelPip?: boolean
   /** Velden die tijdens het hele vertellen oplichten, ongeacht welke zin er klinkt. */
   vertelWijs?: Square[]
   meedoen: Exercise[]

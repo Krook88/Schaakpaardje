@@ -38,6 +38,7 @@ export const wereld0: World = {
       // (wow-meting ronde 18). e5: midden op het bord, geen beginveld van het paard
       // (schaakmeester), en donker: een wit stuk op crème viel weg (43e review). Hij zet niet en is weg zodra de eerste opgave begint.
       vertelFen: '8/8/8/4N3/8/8/8/8 w - - 0 1',
+      vertelPip: true,
       meedoen: [
         {
           kind: 'tapSquares',

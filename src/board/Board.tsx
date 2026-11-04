@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import styles from './Board.module.css'
 import { GLYPH } from './pieces'
+import { pipLos } from '@/ui/beelden'
 import {
   FILES,
   fileIndex,
@@ -55,6 +56,9 @@ type Props = {
    *  Alleen voor borden waar niet op getikt wordt: `.golf .square` wint van de schud-
    *  en pop-animatie van `.wrong` en `.goedVeld`. */
   golf?: boolean
+  /** Witte paarden als Pip getekend in plaats van als schaakteken. Alleen voor de
+   *  begroeting in de eerste les: daar staat Pip zelf op het bord ("Daar sta ik!"). */
+  pipAlsPaard?: boolean
   /** Op een smalle telefoon tot vlak bij de rand (standaard), zodat velden ≥ 44 px
    *  blijven. Op de startpagina even uitgezet (36e review), maar dan werden de velden
    *  op 360 breed 41 px; de lat gaat voor, en een veeg om te scrollen is geen tik. */
@@ -113,6 +117,7 @@ export function Board({
   shake = null,
   label = 'Schaakbord',
   golf = false,
+  pipAlsPaard = false,
   randTotRand = true,
 }: Props) {
   const board: BoardMap = useMemo(
@@ -204,9 +209,12 @@ export function Board({
               if (marks.last?.includes(sq)) classes.push(styles.last)
               if (shaking === sq) classes.push(styles.wrong)
 
-              const naam = piece
-                ? `${piece.color === 'w' ? 'witte' : 'zwarte'} ${PIECE_NAME[piece.type]}`
-                : 'leeg'
+              const isPip = pipAlsPaard && piece?.color === 'w' && piece.type === 'n'
+              const naam = isPip
+                ? 'Pip, het witte paard'
+                : piece
+                  ? `${piece.color === 'w' ? 'witte' : 'zwarte'} ${PIECE_NAME[piece.type]}`
+                  : 'leeg'
               const kleurKlasse = light ? styles.opLicht : styles.opDonker
 
               return (
@@ -232,7 +240,10 @@ export function Board({
                   }
                 >
                   {has(marks.goals, sq) && <Ster />}
-                  {piece && (
+                  {isPip && (
+                    <img src={pipLos('blij')} alt="" aria-hidden="true" draggable={false} className={`${styles.piece} ${styles.pipStuk}`} />
+                  )}
+                  {piece && !isPip && (
                     <span
                       className={`${styles.piece} ${piece.color === 'w' ? styles.white : styles.black}`}
                       aria-hidden="true"

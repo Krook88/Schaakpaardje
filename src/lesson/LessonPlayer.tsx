@@ -478,6 +478,7 @@ export function LessonPlayer({
               <Board
                 key={vertelIndex}
                 golf={vertelIndex === 0}
+                pipAlsPaard={Boolean(les.vertelPip)}
                 position={les.vertelFen}
                 marks={{ glow: les.vertelWijs, spoor }}
                 showCoordinates={instellingen.coordinaten || Boolean(les.toonCoordinaten)}

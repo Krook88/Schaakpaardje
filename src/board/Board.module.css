@@ -212,3 +212,6 @@
 @media (max-width: 390px) and (orientation: portrait) {
   .randTotRand { margin-inline: -14px; width: calc(100% + 28px); }
 }
+
+/* Pip zelf op het bord in de begroeting: groter dan een schaakteken, binnen het veld. */
+.pipStuk { width: 92%; height: 92%; object-fit: contain; font-size: inherit; filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.25)); }
