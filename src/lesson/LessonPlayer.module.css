@@ -151,10 +151,10 @@
 
 /* Het oogje in de fasebalk is buiten de kijkfase een knop: "laat het nog eens zien".
    Hij moet er als een knop uitzien zonder de balk te laten schreeuwen — een rustige
-   rand en een handje, meer niet. Volle 44 bij 44, want kindervingers. */
+   rand en een handje, meer niet. 64 bij 64, want kindervingers (32e review). */
 .nogEens {
-  width: 44px;
-  height: 44px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -189,7 +189,7 @@
    moest een kind scrollen om de onderste rij te zien. Nu staat Pip met de knoppen
    naast het bord, en is het bord zo hoog als er onder de kop past. */
 @media (orientation: landscape) and (min-width: 640px) {
-  /* Wat er boven het bord staat: kop (± 84) + wereldband (± 56) + fasebalk (± 54) +
+  /* Wat er boven het bord staat: kop (± 92, knoppen 64) + wereldband (± 56) + fasebalk (± 54) +
      marges. Met de hand gemeten; wordt de kop hoger, dan vangt de doorloop het. */
   .wereldpagina {
     --boven-bord: 260px;

@@ -47,15 +47,18 @@
   display: grid; place-items: center;
 }
 .luister:active { transform: translateY(-50%) scale(0.94); }
-.luister:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+/* Om de zichtbare cirkel (52), niet om het raakvlak (64): anders sneed de ring door de
+   ballonrand. */
+.luister:focus-visible { outline: 3px solid var(--accent); outline-offset: -4px; }
 .ballon::before {
   content: ''; position: absolute; left: -9px; top: 24px;
   width: 14px; height: 14px; background: var(--surface);
   border-left: 2px solid var(--line); border-bottom: 2px solid var(--line);
   transform: rotate(45deg);
 }
-.klein .pip { width: 52px; height: 52px; }
-.klein .gezicht { font-size: 27px; }
+/* 64 px: Pip is een knop (nog eens horen), en dit is een scherm van het kind (32e review). */
+.klein .pip { width: 64px; height: 64px; }
+.klein .gezicht { font-size: 32px; }
 /* Op de kleine Pip nog een maatje kleiner, anders is het speldje half zo groot als
    het gezicht waar het bij hoort. */
 .klein .badge { width: 20px; height: 20px; font-size: 12px; top: -5px; right: -5px; }

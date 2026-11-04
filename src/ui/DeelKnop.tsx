@@ -56,7 +56,7 @@ export function DeelKnop({
 
   return (
     <div className="stack center" style={{ gap: 6 }}>
-      <button type="button" className="btn btn--ghost" onClick={deel} style={{ minHeight: 56, alignSelf: 'center' }} data-deelknop>
+      <button type="button" className="btn btn--ghost" onClick={deel} style={{ alignSelf: 'center' }} data-deelknop>
         <span aria-hidden="true" style={{ fontSize: 24, lineHeight: 1 }}>
           💌
         </span>{' '}

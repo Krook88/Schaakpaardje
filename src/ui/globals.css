@@ -107,7 +107,8 @@ a { color: inherit; }
 /* Knoppen zijn groot: kleine kinderen mikken slecht. */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  min-height: 56px; padding: 0 22px; border-radius: var(--radius);
+  /* 64: de lat voor de schermen van het kind; ook voor de ouder groot genoeg (32e review). */
+  min-height: 64px; padding: 0 22px; border-radius: var(--radius);
   border: 2px solid var(--line); background: var(--surface); color: var(--ink);
   font-weight: 700; cursor: pointer; box-shadow: var(--shadow);
   transition: transform 0.12s ease, background 0.12s ease;

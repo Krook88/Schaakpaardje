@@ -732,7 +732,6 @@ export function LessonPlayer({
               className="btn"
               onClick={vraagHint}
               disabled={stand.klaar}
-              style={{ minHeight: 60 }}
             >
               <span aria-hidden="true" style={{ fontSize: 28, lineHeight: 1 }}>
                 💡

@@ -197,3 +197,10 @@
   .goedVeld, .goedVeld .merkGoed, .golf .square { animation: none; }
   .vonk { display: none; }
 }
+
+/* Smalle telefoon (360): met de paginarand van 18 px waren de velden 41 px, onder de 44
+   voor een vinger (32e review). Daar loopt het bord tot vlak bij de rand, in elke les,
+   partij en minispel. */
+@media (max-width: 390px) and (orientation: portrait) {
+  .wrap { margin-inline: -14px; width: calc(100% + 28px); }
+}

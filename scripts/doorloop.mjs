@@ -1113,7 +1113,7 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
       .filter((e) => !e.closest('[data-square]'))
       .map((e) => ({ e, r: e.getBoundingClientRect() }))
       .filter(({ r }) => r.width > 0 && r.height > 0 && (r.width < lat || r.height < lat))
-      .filter(({ e }) => !(e.tagName === 'A' && getComputedStyle(e).display === 'inline'))
+      .filter(({ e }) => !(e.tagName === 'A' && getComputedStyle(e).display === 'inline' && e.closest('p')))
       .map(({ e, r }) => `${Math.round(r.width)}×${Math.round(r.height)} ${(e.getAttribute('aria-label') || e.textContent || '').trim().slice(0, 24)}`), lat)
   meld(`raakvlakken op ${pad} minstens ${lat} px`, klein.length === 0, klein.slice(0, 3).join(' | '))
   await ctx.close()

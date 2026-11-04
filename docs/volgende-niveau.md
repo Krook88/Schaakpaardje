@@ -17,7 +17,7 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 |---|---|---|
 | Geen horizontaal scrollen (10 formaten, licht+donker) | start en eerste les: nergens | 🟢 |
 | Bord past zonder scrollen | ronde 2: staand ja; liggend 1024×768, 1180×820, 1440×900, 844×390 bord én pagina passen (velden 64/70/70/47 px). Open: 667×375 velden 36 px; staande telefoon scrolt onder het bord (knoppen) | 🟢 (bewaakt in doorloop) |
-| Raakvlakken ≥ 48 px | (volgende ronde) ook: kopknoppen 44 px, fasebalk/voortgangsrondjes klein (27e review L4). 18 links op de startpagina kleiner (stukkenlinks, voettekst, "Of maak eerst een profiel", 🔊). Les-knoppen ok | 🔴 |
+| Raakvlakken ≥ 48 px (64 kind) | ronde 7: 0 te klein op 8 schermen × 360/390 breed (scripts/raakvlakken.mjs), bordveld ≥ 44; doorloop bewaakt /, les, kaart | 🟢 |
 | Lighthouse Performance ≥ 90 | 98 | 🟢 |
 | Lighthouse Toegankelijkheid 100 | 95; enige afwijking is `meta-viewport`, bewust (zie besluiten) | 🟢 |
 | Lighthouse Best Practices ≥ 95 | 96. De console-404 op `/sfx/manifest.json` is lokaal en bewust (hosting-klaar); live bestaat het manifest | 🟢 |
@@ -41,7 +41,7 @@ Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4)
 
 1. ~~Wereldkaart~~ (r5). Rest: één doorlopend landschap met slingerpad, Pip stuitert op de halte, alles-af-toestand.
 2. ~~Startpagina-held~~ (r6). Rest: tikbaar paard in de held.
-3. **Raakvlakken**: kopknoppen 44 → 48/64 px, fasebalk/voortgangsrondjes, startpagina-links, en de sfx-404.
+3. ~~Raakvlakken~~ (r7).
 4. **Wereld 0–2 offline voorladen.**
 5. **OG per pagina.**
 6. Tik-reactie < 100 ms meten in de doorloop.
@@ -54,3 +54,4 @@ Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4)
 - Ronde 4: eerste les levendiger — bord rolt in een golf binnen bij de eerste zin, goed veld veert op met een vonkje, Pip groot op liggende schermen. Reduced-motion bewaakt in doorloop.
 - Ronde 5: wereldkaart — reis-strook, heuvels, tegels 'Nog te ontdekken' (tik geeft antwoord), afgeronde werelden inklapbaar (64 px), 'Begin hier', scroll naar Pip (bewezen in doorloop).
 - Ronde 6: startpagina — held met paardbord (begint bij de L), Pip met ballon bij het bord, beloftes als labels, verse schermafbeeldingen en deelkaart (scripts/schermen.mjs).
+- Ronde 7: raakvlakken — alle knoppen 64 px, Pip en luisterknop 64, bord rand-tot-rand op smalle telefoons (veld 44), meetscript raakvlakken.mjs.
