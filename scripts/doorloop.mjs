@@ -1168,6 +1168,60 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
   await ctx.close()
 }
 
+// Gevoel: elke tik geeft binnen 100 ms iets zichtbaars. Gemeten van de klik tot de
+// eerste verandering op het scherm (een klasse op het veld, een nieuwe zin, een vinkje),
+// voor een goed veld, een fout veld en de hulpknop. En met minder beweging: geen enkele
+// animatie die eindeloos doorloopt (35e review).
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  for (let i = 0; i < 10 && !(await p.getByRole('button', { name: /Ik ga het proberen/ }).count()); i++) {
+    await p.getByRole('button', { name: /Verder/ }).first().click()
+    await p.waitForTimeout(300)
+  }
+  await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
+  await p.waitForTimeout(700)
+  const reactie = (kies) =>
+    p.evaluate(
+      (kies) =>
+        new Promise((klaar) => {
+          const doel = kies === 'hulp' ? [...document.querySelectorAll('button')].find((b) => /Help me even/.test(b.textContent)) : document.querySelector(`[data-square="${kies}"]`)
+          const start = performance.now()
+          const obs = new MutationObserver(() => {
+            obs.disconnect()
+            // Tot de volgende verf: dan staat het echt op het scherm.
+            requestAnimationFrame(() => klaar(Math.round(performance.now() - start)))
+          })
+          obs.observe(document.querySelector('main') ?? document.body, { subtree: true, attributes: true, childList: true, characterData: true })
+          doel.click()
+          setTimeout(() => { obs.disconnect(); klaar(9999) }, 2000)
+        }),
+      kies,
+    )
+  const goed = await reactie('a1')
+  await p.waitForTimeout(400)
+  const fout = await reactie('b1')
+  await p.waitForTimeout(1500)
+  const hulp = await reactie('hulp')
+  meld('elke tik reageert binnen 100 ms', Math.max(goed, fout, hulp) <= 100, `goed ${goed} ms, fout ${fout} ms, hulp ${hulp} ms`)
+  await ctx.close()
+
+  const rustig = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
+  const r = await rustig.newPage()
+  const eindeloos = []
+  for (const pad of ['/', '/les/weide-1/', '/kaart/']) {
+    await r.goto(`${URL}${pad}`, { waitUntil: 'networkidle' })
+    await r.waitForTimeout(600)
+    eindeloos.push(...(await r.evaluate((pad) =>
+      document.getAnimations()
+        .filter((a) => a.playState === 'running' && a.effect?.getComputedTiming().iterations === Infinity)
+        .map((a) => `${pad} ${a.animationName ?? 'animatie'}`), pad)))
+  }
+  meld('minder beweging: geen eindeloze animaties', eindeloos.length === 0, eindeloos.slice(0, 4).join(' | '))
+  await rustig.close()
+}
+
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 
 await browser.close()

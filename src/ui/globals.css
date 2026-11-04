@@ -136,8 +136,17 @@ a { color: inherit; }
   position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
 }
+/* Minder beweging: alles naar het eindbeeld. Ook het aantal herhalingen naar 1: een
+   eindeloze animatie (de hintgloed, Pip die ademt) van 0,01 ms bleef anders eindeloos
+   doorspringen, en dat is precies het flikkeren dat iemand hiermee wil uitzetten
+   (35e review). */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Invoervelden (contactformulier): een placeholder die ook in donker te lezen is. */
