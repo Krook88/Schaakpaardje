@@ -1149,6 +1149,22 @@ for (const [w, h] of [[320, 640], [844, 390], [1440, 900]]) {
   await ctx.close()
 }
 
+// Startpagina dwars: knop naar de eerste les en het proefbord met Pip in één beeld. Onder
+// elkaar zag je alleen tekst (wow 4 na ronde 22).
+for (const [w, h] of [[844, 390], [667, 375]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const m = await p.evaluate(() => {
+    const k = [...document.querySelectorAll('a')].find((a) => /eerste les/.test(a.textContent))?.getBoundingClientRect()
+    const f = document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect()
+    return k && f ? { knop: Math.round(k.bottom), bordBoven: Math.round(f.top) } : null
+  })
+  meld(`startpagina ${w}×${h}: knop en proefbord in beeld`, Boolean(m) && m.knop <= h && m.bordBoven < h - 100, JSON.stringify(m))
+  await ctx.close()
+}
+
 // Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
 // waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
 // niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.
