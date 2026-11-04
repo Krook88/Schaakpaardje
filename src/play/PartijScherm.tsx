@@ -382,7 +382,7 @@ export function PartijScherm({ botId }: { botId: string }) {
 
   return (
     <main className={`page ${styles.pagina}`}>
-      <Kop titel={bot ? `${bot.emoji} ${bot.naam}` : '👨‍👩‍👧 Samen spelen'} terug="/spelen/" />
+      <Kop titel={bot ? bot.naam : '👨‍👩‍👧 Samen spelen'} terug="/spelen/" />
       <div className={`stack ${styles.vlak}`}>
         <Pip zegt={zin} stemming={stemming} klein />
 
@@ -398,7 +398,7 @@ export function PartijScherm({ botId }: { botId: string }) {
             <span>{bot.naam}</span>
           </div>
         )}
-        <div className={styles.bord} style={{ maxWidth: 'min(100%, 620px, max(calc(100svh - 390px), min(70vh, 300px)))', margin: '0 auto', width: '100%' }}>
+        <div className={styles.bord} style={{ maxWidth: 'min(100%, 620px, max(calc(100svh - 410px), min(70vh, 300px)))', margin: '0 auto', width: '100%' }}>
           <Board
             position={fen}
             // Bij samen spelen draait het bord naar wie er aan zet is, zodat elk kind

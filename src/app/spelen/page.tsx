@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { pipBeeld } from '@/ui/beelden'
+import { botBeeld, pipBeeld } from '@/ui/beelden'
 import Link from 'next/link'
 import { Kop } from '@/ui/Kop'
 import { Pip } from '@/ui/Pip'
@@ -54,9 +54,9 @@ export default function Spelen() {
               className="btn btn--big"
               style={{ justifyContent: 'flex-start', textAlign: 'left', padding: '14px 18px', height: 'auto', minHeight: 78 }}
             >
-              <span style={{ fontSize: 32 }} aria-hidden="true">
-                {bot.emoji}
-              </span>
+              {/* De tekening, net als op het speelscherm: eerst een emoji-kuiken kiezen en dan
+                  tegen een getekende kip spelen klopte niet (51e review). */}
+              <img src={botBeeld(bot.id)} alt="" width={60} height={60} aria-hidden="true" draggable={false} style={{ flexShrink: 0 }} />
               <span style={{ display: 'grid', gap: 2, flex: 1 }}>
                 <strong>{bot.naam}</strong>
                 <small className="muted" style={{ fontWeight: 400 }}>

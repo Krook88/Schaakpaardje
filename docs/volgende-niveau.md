@@ -84,3 +84,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 26: speelscherm — tegenstander met gezicht en naam boven het bord (verborgen onder 700 px hoogte, daar staat hij in de kop).
 - Wow-meting na ronde 26 (staand/dwars): start 6/7, les 5/5, wereld af 8/6, kaart 7/5, spel 4/4. Volgende: bots als eigen getekende figuren (illustrator), dan Pip groot in de eerste kijkzin.
 - Ronde 27: zeven getekende bots (scripts/bots-tekenen.py, illustrator), tegenstander boven het bord als tekening.
+- Ronde 27: 51e review verwerkt (keuzescherm met tekeningen, kop zonder emoji). Open: bots bij uitslag/stal, Oscars borstveertjes.

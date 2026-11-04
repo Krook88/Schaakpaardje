@@ -29,5 +29,6 @@
   font-weight: 800; font-size: 1.05rem; margin: 0 auto -4px;
 }
 .tegenstanderGezicht { width: 56px; height: 56px; display: block; }
+@media (min-width: 900px) and (min-height: 800px) { .tegenstanderGezicht { width: 76px; height: 76px; } }
 /* Dwars staat de tegenstander al in de kop naast het bord; de extra regel liet de pagina scrollen. */
 @media (max-height: 700px) { .tegenstander { display: none; } }
