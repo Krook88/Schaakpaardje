@@ -121,7 +121,9 @@ a { color: inherit; }
 .btn--ghost { background: transparent; box-shadow: none; }
 /* Een vierkante knop met alleen een plaatje, zoals de bel en het tandwiel. */
 .knopSmal { padding: 0 12px; min-width: 56px; }
-.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+/* Niet doorzichtig: in donker werd een doorzichtige lichte knop lichtgrijs met lichte
+   tekst (52e review). Nu de gewone achtergrond, een stippelrand en gedempte tekst. */
+.btn[disabled] { opacity: 1; cursor: not-allowed; background: transparent; border-style: dashed; color: var(--muted); box-shadow: none; }
 
 .card {
   background: var(--surface); border: 2px solid var(--line);

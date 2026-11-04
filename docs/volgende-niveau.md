@@ -88,3 +88,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 28: tekening van de bot op de uitslagkaart.
 - Ronde 29: eerste les — het paard huppelt twee keer na de golf (niet bij minder beweging).
 - Ronde 29: 52e review verwerkt. Open: uitslagkaart dwars onder de vouw; uitgeschakelde knoppen in donker.
+- Ronde 30: uitgeschakelde knoppen met stippelrand en gedempte tekst, geen doorzichtigheid (leesbaar in donker).
