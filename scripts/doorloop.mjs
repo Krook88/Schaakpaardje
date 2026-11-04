@@ -1195,6 +1195,21 @@ for (const [w, h] of [[1440, 900], [1366, 650], [1280, 800]]) {
   await ctx.close()
 }
 
+// Na de zet van de bot hoort Pip iets nieuws te zeggen. Eerst bleef de zin van het kind
+// staan: "Mooi, schaak!" terwijl de bot net de dame sloeg (wow-meting traject 2).
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  await p.locator('[data-square="e2"]').click()
+  await p.locator('[data-square="e4"]').click()
+  await p.waitForTimeout(3500)
+  const zin = await p.evaluate(() => document.querySelector('[aria-live="polite"]')?.textContent ?? '')
+  meld('partij: na de botzet zegt Pip iets nieuws', /Nu jij|schaak/i.test(zin), JSON.stringify(zin.slice(0, 60)))
+  await ctx.close()
+}
+
 // Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
 // waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
 // niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.

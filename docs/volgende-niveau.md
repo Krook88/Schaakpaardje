@@ -101,3 +101,5 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 37: bots in drie stemmingen (blij, denkt, verrast), het gezicht volgt de partij.
 - Ronde 37: 56e review verwerkt (Pip op 667 dwars terug, verrast 1,4 s, doorloopregel "er juicht een Pip").
 - Ronde 38: botstemmingen duidelijker (denkwolkje, wenkbrauwen, grotere o), bredere crème rand voor donker.
+- Wow-meting traject 2 (375/844): start 7/8, les 6/7, wereld af 7/6, kaart 7/6, bot 4/5. Fout gevonden: oude Pip-zin na de botzet.
+- Ronde 39: Pip zegt na elke botzet "Hij heeft gezet. Nu jij!" (nieuwe opname bij publiceren), doorloopregel.

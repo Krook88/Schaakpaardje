@@ -26,7 +26,7 @@ import {
   SCHAAK_VAN_JOU,
   ZET_TERUGGENOMEN,
   pipZinnen,
-} from '@/content/voice'
+ BOT_HEEFT_GEZET } from '@/content/voice'
 import { PIECE_NAME, type PieceType, type Square } from '@/engine/board'
 import { Game, blunderVerlies, isPromotie, materialBalance } from '@/engine/game'
 import { getBot, KidBot } from '@/engine/bots'
@@ -204,6 +204,11 @@ export function PartijScherm({ botId }: { botId: string }) {
       }
       denkTimer.current = null
       setBotDenkt(false)
+      // Eerst de gewone zin; controleerEinde zet er een schaak- of eindzin overheen.
+      if (gedaanDoorBot) {
+        setZin(BOT_HEEFT_GEZET[0])
+        setStemming('blij')
+      }
       if (controleerEinde(game)) return
       // Het pionnenspel geldt beide kanten op: haalt de bot als eerste de overkant,
       // dan heeft hij gewonnen. Zonder dit werkte de winregel maar één kant op.

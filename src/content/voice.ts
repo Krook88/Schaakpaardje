@@ -92,6 +92,9 @@ export const SCHAAK_VAN_JOU = [
   'Schaak! Jij valt zijn koning aan.',
   'Mooi, schaak! Nu moet hij wat.',
 ] as const
+/** Na de zet van de bot, als er niets bijzonders is: anders bleef een oude zin staan
+ *  ("Mooi, schaak!" terwijl de bot net de dame sloeg, wow-meting traject 2). */
+export const BOT_HEEFT_GEZET = ['Hij heeft gezet. Nu jij!'] as const
 export const MAT_VOOR_JOU = ['Mat! De koning kan nergens meer heen.'] as const
 
 /** Wordt gebruikt als er geen specifieke fout-tip in de opgave staat. */
