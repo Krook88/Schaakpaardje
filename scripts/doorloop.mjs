@@ -1232,6 +1232,32 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
   await rustig.close()
 }
 
+// Het paard in de held: een stip aantikken laat het springen, een veld zonder stip
+// niet, en na drie sprongen staat er een weg naar de eerste les (36e review).
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/`, { waitUntil: 'networkidle' })
+  const bord = p.getByRole('group', { name: /Probeer het zelf/ })
+  const paardOp = () => bord.locator('[data-square]').evaluateAll((vs) => vs.filter((v) => /paard/.test(v.getAttribute('aria-label'))).map((v) => v.dataset.square))
+  const begin = (await paardOp()).join()
+  await bord.locator('[data-square="a1"]').click()
+  await p.waitForTimeout(200)
+  const naFout = (await paardOp()).join()
+  for (const v of ['e6', 'g5', 'e4']) {
+    await bord.locator(`[data-square="${v}"]`).click()
+    await p.waitForTimeout(250)
+  }
+  const eind = (await paardOp()).join()
+  const link = await p.getByRole('link', { name: /Leer het met Pip/ }).getAttribute('href').catch(() => null)
+  meld(
+    'held: het paard springt alleen naar een stip, en na drie sprongen naar de les',
+    begin === 'd4' && naFout === 'd4' && eind === 'e4' && /\/les\/weide-1\//.test(link ?? ''),
+    `begin ${begin}, na fout ${naFout}, eind ${eind}, link ${link}`,
+  )
+  await ctx.close()
+}
+
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 
 await browser.close()

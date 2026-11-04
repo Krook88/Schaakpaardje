@@ -4,6 +4,7 @@ import { ALLE_LESSEN, WERELDEN } from '@/content'
 import { SCHAAKREGELS, onderwerpMet } from '@/content/schaakregels'
 import { Animatiebord } from '@/uitleg/Animatiebord'
 import { bouwBeelden } from '@/uitleg/beelden'
+import { HeldSpel } from './HeldSpel'
 
 /** Dezelfde basis als de rest van de app, voor als hij ooit in een submap staat. */
 const BASIS = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
@@ -100,23 +101,8 @@ export function Welkom() {
         </a>
       </header>
       <div className={styles.heldBord}>
-        {/* Pip bij het bord, sprekend: een figuur die je iets leert, niet een los kopje
-            boven de tekst (31e review). */}
-        <p className={styles.heldPip}>
-          <span aria-hidden="true" className={`${styles.heldPipGezicht} ${styles.pip}`}>
-            🐴
-          </span>
-          <span className={styles.heldBallon}>Kijk, zo spring ik!</span>
-        </p>
-        <Animatiebord
-          id="welkom-paard"
-          titel="Het paard springt in een L"
-          beschrijving={paard.beschrijving}
-          beelden={bouwBeelden(paard)}
-          kort
-          kopNiveau={2}
-          beginStap={1}
-        />
+        {/* Zelf proberen in plaats van kijken: zie HeldSpel. */}
+        <HeldSpel eersteLes={ALLE_LESSEN[0].id} />
       </div>
       </div>
 
@@ -168,8 +154,16 @@ export function Welkom() {
           bij het bord, en krijgt daarna elk stuk een eigen wereld: eerst de toren en de
           loper, dan de dame, het paard, de koning en de pion. Pas als alle stukken zitten,
           komen schaak, mat en rokade. Ook het paard dat bovenaan springt, krijgt zijn
-          eigen wereld, na de dame.
+          eigen wereld, na de dame. Zo legt het bord het uit:
         </p>
+        <Animatiebord
+          id="welkom-paard"
+          titel="Het paard springt in een L"
+          beschrijving={paard.beschrijving}
+          beelden={bouwBeelden(paard)}
+          kort
+          beginStap={1}
+        />
         <p style={{ margin: 0 }}>
           Alle schaakregels staan zo op een bewegend bord, om zelf even op te frissen of
           samen te bekijken:
