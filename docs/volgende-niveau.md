@@ -47,6 +47,7 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 4. Emoji in de uitslagen van partijen en live spelen. Dat zijn niet de wow-schermen, dus later.
 
 ## Logboek
+- Traject 2 (na merge #32), ronde 36: wereld af dwars — juichende Pip terug naast het wapen, rechts alleen de ballon.
 - Ronde 1: nulmeting. Niets aan de app veranderd.
 - Ronde 2: lesscherm liggend (bord naast Pip, volle hoogte op telefoon dwars). 27e review verwerkt. Wow-cijfers gemeten.
 - Ronde 3: trots moment — deelknop (link + vaste zin, telling), diploma-voorproef met wereldwapens, wereld af als held. 28e review verwerkt. Pip-zin 'Hoefijzer verdiend' weg (klopte niet na wereld 1).

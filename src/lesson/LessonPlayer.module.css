@@ -330,8 +330,12 @@
     align-items: center; text-align: left; padding: 10px 16px !important;
   }
   .wereldAf > * { grid-column: 2; }
-  .wereldAf > .wereldAfHeld { grid-column: 1; grid-row: 1 / span 5; transform: scale(0.75); transform-origin: center; }
-  .wereldAf .wereldAfPip, .wereldAf .wereldAfTel { display: none; }
+  /* zoom in plaats van scale: dan krimpt ook de ruimte die het inneemt, en houdt de wapenrij 8+7. */
+  .wereldAf > .wereldAfHeld { grid-column: 1; grid-row: 1 / span 5; zoom: 0.62; }
+  /* Eén feestplaatje: de grote juichende Pip naast het wapen, en rechts alleen zijn
+     ballon met luisterknop (wow-meting na ronde 35: "Pip los als ballon"). */
+  .wereldAf .wereldAfTel { display: none; }
+  .feestPip [data-pip-gezicht] { display: none; }
   .wereldAf .wereldAfKop { font-size: 1.5rem; margin: 0; }
   .wereldAf .wapenRij { justify-content: flex-start; margin: 2px 0 0 !important; }
 }

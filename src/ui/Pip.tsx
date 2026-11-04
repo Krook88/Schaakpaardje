@@ -107,6 +107,9 @@ export function Pip({
       <button
         type="button"
         className={`${styles.pip} ${pratend ? styles.pratend : ''}`}
+        // Vast haakje voor schermen die het gezicht willen verbergen en de ballon houden
+        // (wereld af dwars: daar juicht Pip al groot naast het wapen).
+        data-pip-gezicht=""
         onClick={() => {
           if (zegt) void speak(zegt, true)
           onKlaar?.()
