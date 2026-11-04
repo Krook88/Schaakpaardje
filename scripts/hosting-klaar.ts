@@ -337,7 +337,7 @@ function vooraadOffline() {
   // De illustraties: alle Pips en wapens (klein, overal te zien) en de kaartstroken van
   // wereld 0–2. Ze staan in geen HTML of CSS, dus het zoeken hierboven vond ze niet, en
   // offline was Pip een lege cirkel (37e review).
-  for (const map of ['pip', 'werelden']) {
+  for (const map of ['pip', 'werelden', 'iconen']) {
     const pad = join(UIT, 'illustraties', map)
     if (existsSync(pad)) for (const f of readdirSync(pad)) bestanden.add(`./illustraties/${map}/${f}`)
   }

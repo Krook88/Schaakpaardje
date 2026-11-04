@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { WERELDEN } from '../src/content'
-import { kaartBeeld, pipBeeld, wapenBeeld } from '../src/ui/beelden'
+import { icoonBeeld, kaartBeeld, lesIcoon, pipBeeld, pipLos, wapenBeeld, type IcoonNaam } from '../src/ui/beelden'
 import type { PipStemming } from '../src/ui/Pip'
 
 /**
@@ -19,8 +19,17 @@ describe('illustraties', () => {
     expect(bestaat(kaartBeeld(id)), kaartBeeld(id)).toBe(true)
     expect(bestaat(kaartBeeld(id, true)), kaartBeeld(id, true)).toBe(true)
   })
-  it.each(STEMMINGEN)('Pip %s bestaat, met en zonder voetstuk', (s) => {
+  it.each(STEMMINGEN)('Pip %s bestaat, met voetstuk, als knop en los', (s) => {
     expect(bestaat(pipBeeld(s))).toBe(true)
     expect(bestaat(pipBeeld(s, true))).toBe(true)
+    expect(bestaat(pipLos(s))).toBe(true)
+  })
+  it.each(WERELDEN.flatMap((w) => w.lessen.map((l) => l.id)))('les %s heeft een icoon', (id) => {
+    expect(bestaat(lesIcoon(id)), lesIcoon(id)).toBe(true)
+  })
+  const VAST: IcoonNaam[] = ['minispel', 'slot', 'beker', 'sticker', 'deel', 'hint', 'geluid', 'instellingen', 'bel',
+    'fase-kijken', 'fase-meedoen', 'fase-zelf', 'fase-toets', 'punt-voorlezen', 'punt-begint-bij-nul', 'punt-niet-verliezen']
+  it.each(VAST)('icoon %s bestaat', (n) => {
+    expect(bestaat(icoonBeeld(n))).toBe(true)
   })
 })
