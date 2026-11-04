@@ -1132,6 +1132,22 @@ for (const [w, h] of [[320, 640], [844, 390], [1440, 900]]) {
   await ctx.close()
 }
 
+// Speelscherm dwars: bord links, knoppen rechts. Onder elkaar viel het bord half onder
+// de rand, velden 34 px (46e review).
+{
+  const ctx = await browser.newContext({ viewport: { width: 844, height: 390 } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const m = await p.evaluate(() => {
+    const f = document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect()
+    const k = [...document.querySelectorAll('button')].find((x) => /Nog een keer/.test(x.textContent))?.getBoundingClientRect()
+    return f && k ? { veld: Math.round(f.width / 8), bordOnder: Math.round(f.bottom), knopOnder: Math.round(k.bottom) } : null
+  })
+  meld('speelscherm 844×390: velden ≥ 44 px, bord en knoppen in beeld', Boolean(m) && m.veld >= 44 && m.bordOnder <= 390 && m.knopOnder <= 390, JSON.stringify(m))
+  await ctx.close()
+}
+
 // Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
 // waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
 // niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.

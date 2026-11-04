@@ -1,0 +1,15 @@
+/* Telefoon dwars: het bord links over de volle hoogte; kop, Pip, status en knoppen
+   rechts. Onder elkaar viel het bord voor de helft onder de rand, velden 34 px
+   (46e review). Zelfde aanpak als het lesscherm (27e review). */
+@media (orientation: landscape) and (max-height: 500px) {
+  .pagina {
+    --bord: calc(100svh - 16px);
+    display: grid; grid-template-columns: var(--bord) minmax(0, 1fr);
+    column-gap: 16px; row-gap: 8px; align-content: start;
+    padding-top: 8px; padding-bottom: 8px; max-width: none;
+  }
+  .pagina > * { grid-column: 2; }
+  .vlak { display: contents; }
+  .vlak > * { grid-column: 2; }
+  .vlak > .bord { grid-column: 1; grid-row: 1 / span 30; max-width: none !important; align-self: start; }
+}
