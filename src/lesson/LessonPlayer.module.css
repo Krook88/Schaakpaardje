@@ -259,7 +259,7 @@
 }
 @media (prefers-reduced-motion: reduce) { .wereldAfWapen { animation: none; } }
 .wereldAfKop { font-size: clamp(1.6rem, 6vw, 2.2rem); margin: 0; }
-.wapenRij { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 6px; max-width: 340px; }
+.wapenRij { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 6px auto 0; max-width: 340px; }
 /* 8 + 7 in plaats van 7 + 7 + 1: één los wapen onderaan oogde als een fout (37e review). */
 .wapenKlein {
   display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;

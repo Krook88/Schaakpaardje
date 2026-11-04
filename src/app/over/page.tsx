@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
+import { pipBeeld } from '@/ui/beelden'
 import Link from 'next/link'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
 import { MINISPELLEN } from '@/play/minispellen'
@@ -467,7 +468,8 @@ export default function Over() {
 
       <section className={s.slot}>
         <span aria-hidden="true" className={s.pipkop}>
-          🐴
+          {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
+          <img src={pipBeeld('blij')} alt="" width={56} height={56} style={{ display: 'inline-block' }} />
         </span>
         <h2>Zin om te beginnen?</h2>
         <p style={{ maxWidth: '40ch', margin: 0 }}>

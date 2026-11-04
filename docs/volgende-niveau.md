@@ -30,7 +30,7 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | Tik-reactie < 100 ms | ronde 10: goed veld 31 ms, fout veld 31 ms, hulp 13 ms (zichtbare verandering, na de verf); bewaakt in doorloop | 🟢 |
 | Beloningsmoment per wereld | ronde 3: eigen held-kaart (wapen 128 px, confetti, wapenrij), diploma-voorproef | 🟢 (wow nog te meten) |
 | `prefers-reduced-motion` | ronde 10: elke animatie stopt na één keer; doorloop: geen eindeloze animaties op /, les, kaart, minispel; golf/vonk aan én uit bewaakt | 🟢 |
-| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 11 (alle vier opnieuw): start 7,5/7,5, les 6,5/7, wereld af 7/7, kaart 7/7,5 — vast op beeldtaal, zie vraag 1. ronde 6: start 7/8. ronde 5: kaart 6,5/7,5. ronde 4: eerste les 7/7. ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
+| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 12 (illustraties): start 7/7,5, les 6,5/7,5, wereld af 7,5/8, kaart 7–8/8. ronde 11 (alle vier opnieuw): start 7,5/7,5, les 6,5/7, wereld af 7/7, kaart 7/7,5 — vast op beeldtaal, zie vraag 1. ronde 6: start 7/8. ronde 5: kaart 6,5/7,5. ronde 4: eerste les 7/7. ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
 | OG-afbeelding per pagina | ronde 9: 28 eigen plaatjes (werelden, schaakregels, schaakclub), lessen delen hun wereld; build controleert 206 verwijzingen. Nog te testen: vierkante uitsnede in echte WhatsApp | 🟢 |
 | Deelknop op trotse momenten | ronde 3: op wereld af en diploma, alleen link + vaste zin, anonieme telling `Gedeeld`; doorloop bewaakt share én kopieer zonder naam | 🟢 |
 | Installeerbaar | manifest + service worker aanwezig | 🟢 |
@@ -38,17 +38,11 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | `npm run check` + doorloop groen | ronde 2: groen (doorloop 23 regels) | 🟢 |
 | `/release-review` go | 27e review: go voor deze fase, na verwerking | 🟢 |
 
-## Rangschikking (wow per uur werk), bijgewerkt na ronde 4
+## Rangschikking, na ronde 12
 
-Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4), wereldkaart (r5).
-
-1. ~~Wereldkaart~~ (r5). Rest: één doorlopend landschap met slingerpad, Pip stuitert op de halte, alles-af-toestand.
-2. ~~Startpagina-held~~ (r6). Rest: tikbaar paard in de held.
-3. ~~Raakvlakken~~ (r7).
-4. ~~Wereld 0–2 offline~~ (r8).
-5. ~~OG per pagina~~ (r9).
-6. ~~Tik-reactie~~ (r10).
-7. Pip leeft mee in de les (springt bij goed veld, groter in zijkolom, huppelt het bord op) — 29e review.
+1. **Illustratieronde 2: één stijl tot in het kleinste icoon.** Fase-iconen (👀 🤝 🙋 ⭐), halte-iconen en 🔒 op de kaart, 🏆 🏅 💌, de knoppen 🔔 ⚙️ 💡 🔊, de drie punten op de startpagina en de 🐴 als standaardavatar. Daarnaast: Pip zonder plankje op de halte, marge in de knopvarianten, het vlekje bij juicht, een paard in het wapen van Paardenstal, en kaartstroken die op brede schermen niet opblazen.
+2. **Pip groot in juichmomenten:** wereld af en de kennismaking in de kijkfase.
+3. Pip in de les die naar het veld wijst.
 
 ## Logboek
 - Ronde 1: nulmeting. Niets aan de app veranderd.
@@ -62,3 +56,4 @@ Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4)
 - Ronde 9: deelplaatjes per wereld, schaakregel en schaakclub; pat-uitleg aangescherpt; basePath-correcte og:image met buildcontrole.
 - Ronde 10: gevoel — tik-reactie gemeten en bewaakt, minder beweging zonder eindeloze animaties.
 - Ronde 11: speelbaar paard in de held; alle vier wow-schermen opnieuw gemeten. Loop gestopt: beeldtaal is een keuze voor Kaj (vraag 1).
+- Ronde 12: eigen illustraties (Pip, wapens, kaartstroken) ingebouwd; bordje in wapens rechtsonder licht; offline en test op bestaan.

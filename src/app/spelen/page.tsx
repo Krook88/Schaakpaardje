@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { pipBeeld } from '@/ui/beelden'
 import Link from 'next/link'
 import { Kop } from '@/ui/Kop'
 import { Pip } from '@/ui/Pip'
@@ -82,7 +83,8 @@ export default function Spelen() {
               style={{ justifyContent: 'flex-start', textAlign: 'left', padding: '14px 18px', minHeight: 66 }}
             >
               <span style={{ fontSize: 30 }} aria-hidden="true">
-                🐴
+                {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
+                <img src={pipBeeld('blij')} alt="" width={40} height={40} style={{ display: 'inline-block' }} />
               </span>
               <span style={{ flex: 1 }}>Nog {verborgen} tegenstanders die beter nadenken</span>
             </button>

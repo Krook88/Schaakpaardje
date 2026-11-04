@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { pipBeeld } from '@/ui/beelden'
 
 export const metadata: Metadata = {
   title: 'Deze pagina bestaat niet',
@@ -21,7 +22,8 @@ export default function NietGevonden() {
     <main className="page">
       <div className="stack" style={{ maxWidth: 520, margin: '0 auto', textAlign: 'center', alignItems: 'center', gap: 18 }}>
         <span aria-hidden="true" style={{ fontSize: 64, lineHeight: 1 }}>
-          🐴
+          {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
+          <img src={pipBeeld('verrast')} alt="" width={96} height={96} style={{ display: 'inline-block' }} />
         </span>
         <h1 style={{ fontSize: '1.7rem', margin: 0 }}>Deze pagina bestaat niet</h1>
         <p style={{ margin: 0 }}>

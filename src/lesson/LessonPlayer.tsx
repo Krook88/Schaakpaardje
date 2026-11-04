@@ -237,7 +237,7 @@ export function LessonPlayer({
         const eerste = startOpgave(lijst[0])
         setStand(eerste)
         setZin('vraag' in lijst[0] ? lijst[0].vraag : '')
-        setStemming('denkt')
+        setStemming('blij')
       }
     },
     [les, bewaarHervatpunt],
@@ -295,7 +295,8 @@ export function LessonPlayer({
       setOpgaveIndex(opgaveIndex + 1)
       setStand(startOpgave(nieuw))
       setZin('vraag' in nieuw ? nieuw.vraag : '')
-      setStemming('denkt')
+      // 'blij', niet 'denkt': bij een opdracht las dat als "Pip weet het zelf niet" (37e review).
+      setStemming('blij')
     } else {
       volgendeFase()
     }

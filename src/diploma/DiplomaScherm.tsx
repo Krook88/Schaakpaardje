@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { WereldWapen } from '@/ui/beelden'
+import { WereldWapen, pipBeeld } from '@/ui/beelden'
 import Link from 'next/link'
 import { Confetti } from '@/ui/Confetti'
 import { DeelKnop } from '@/ui/DeelKnop'
@@ -133,7 +133,10 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
           ))}
         </div>
         <p className={styles.datum}>{datum}</p>
-        <p className={styles.handtekening}>🐴 Pip het schaakpaardje</p>
+        <p className={styles.handtekening}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
+          <img src={pipBeeld('trots')} alt="" width={40} height={40} style={{ verticalAlign: 'middle' }} /> Pip het schaakpaardje
+        </p>
       </article>
 
       <div className={`${styles.knoppen} ${styles.verbergBijPrinten}`}>
