@@ -550,6 +550,12 @@ def t_bel():
             + p('M50 15C36 15 28 27 28 41V56L19 68H81L72 56V41C72 27 64 15 50 15Z', GOUD) + glans('M37 30Q38 24 44 21'))
 
 
+def t_bel_uit():
+    # Geluid uit aan de vorm, niet alleen aan doorzichtigheid: dezelfde bel met een
+    # schuine streep erdoor (codebase-review K3).
+    return t_bel() + dik('M20 16L82 86', ROOD, 6)
+
+
 def t_ster():
     return p(sterpad(50, 53, 38, .48), GOUD) + glans('M42 32L46 24')
 
@@ -627,6 +633,7 @@ VAST = {
     'geluid': ('Geluid', t_geluid),
     'instellingen': ('Instellingen', t_tandwiel),
     'bel': ('Bel', t_bel),
+    'bel-uit': ('Bel uit', t_bel_uit),
     'ster-vol': ('Ster gehaald', t_ster_vol),
     'ster-leeg': ('Ster nog niet gehaald', t_ster_leeg),
     'medaille-brons': ('Bronzen medaille', lambda: medaille('#d08a4e', '#a5642f')),
