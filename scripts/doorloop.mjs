@@ -1206,7 +1206,7 @@ for (const [w, h] of [[1440, 900], [1366, 650], [1280, 800]]) {
   await p.locator('[data-square="e4"]').click()
   await p.waitForTimeout(3500)
   const zin = await p.evaluate(() => document.querySelector('[aria-live="polite"]')?.textContent ?? '')
-  meld('partij: na de botzet zegt Pip iets nieuws', /Nu jij|schaak/i.test(zin), JSON.stringify(zin.slice(0, 60)))
+  meld('partij: na de botzet zegt Pip iets nieuws', /Jouw beurt|schaak/i.test(zin), JSON.stringify(zin.slice(0, 60)))
   await ctx.close()
 }
 
