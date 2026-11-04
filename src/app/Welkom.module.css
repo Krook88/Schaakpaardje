@@ -160,7 +160,8 @@
 @media (orientation: landscape) and (max-height: 500px) and (min-width: 600px) {
   .held { grid-template-columns: minmax(0, 1fr) calc(100svh - 110px); align-items: start; }
   .kop { font-size: 1.9rem !important; margin: 0; }
-  .heldTekst { gap: 6px; }
+  .heldTekst { gap: 4px; }
+  .heldTekst :global(.btn) { margin-top: 0 !important; }
   .heldTekst > p:not(:first-child) { font-size: 0.95rem; margin: 0; }
   .heldPip { margin: 0 0 4px; }
   .heldPip .heldPipGezicht { font-size: 40px; }

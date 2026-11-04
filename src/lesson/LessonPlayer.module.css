@@ -335,7 +335,7 @@
   /* Pip met zijn ballon naast de feestkaart in plaats van erboven: zo blijft de luister-
      knop er (48e review) en past "Volgende les" toch in beeld. */
   .wereldpagina:has(.wereldAf) > :global(.stack) {
-    display: grid; grid-template-columns: minmax(0, 1fr) 220px; column-gap: 12px; align-items: start;
+    display: grid; grid-template-columns: minmax(0, 1fr) 300px; column-gap: 12px; align-items: start;
   }
   .wereldpagina:has(.wereldAf) > :global(.stack) > * { grid-column: 1 / -1; }
   .wereldpagina:has(.wereldAf) > :global(.stack) > :first-child { grid-column: 2; grid-row: 1; }
@@ -347,4 +347,12 @@
   .wereldAf > .wereldAfHeld { display: none; }
   .wereldAf { grid-template-columns: minmax(0, 1fr); }
   .wereldAf > * { grid-column: 1; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  /* Pip juicht dwars al naast de kaart; de grote Pip in de kaart was dubbel en nam de
+     ballon zijn breedte af (49e review). Het wapen blijft. */
+  .wereldAf .wereldAfPip { display: none; }
+}
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 720px) {
+  .wereldpagina:has(.wereldAf) > :global(.stack) { grid-template-columns: minmax(0, 1fr) 230px; }
 }
