@@ -1,10 +1,11 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Board } from '@/board/Board'
 import { applyMove, parseBoard, pieceMoves, type Square } from '@/engine/board'
 import { sfx } from '@/audio/sfx'
+import { tel } from '@/progress/tellen'
 import styles from './Welkom.module.css'
 
 /**
@@ -20,14 +21,25 @@ import styles from './Welkom.module.css'
  * Geometrisch, met engine/board: één paard op een leeg bord is geen geldige partij,
  * dus chess.js zou hem weigeren (zie CLAUDE.md, twee zetmotoren).
  */
-const BEGIN = '8/8/8/8/3N4/8/8/8'
-const ZINNEN = ['Hop! Dat is een L.', 'Nog een L! Twee recht, één opzij.', 'Jij kunt het al!']
+// d5 en niet d4: op een telefoon van 360×740 viel het paard op d4 net onder de vouw
+// (36e review), en dan zag een ouder alleen stippen.
+const BEGIN = '8/8/8/3N4/8/8/8/8'
+const ZINNEN = ['Hop! Dat is een L.', 'Nog een L! Twee recht, één opzij.', 'Jij kunt het al! Zullen we echt beginnen?']
 
 export function HeldSpel({ eersteLes }: { eersteLes: string }) {
   const [bord, setBord] = useState(() => parseBoard(BEGIN))
   const [sprongen, setSprongen] = useState(0)
   const [bericht, setBericht] = useState('Tik op een stip: daar mag ik heen!')
   const [schud, setSchud] = useState<Square | null>(null)
+  const [vorige, setVorige] = useState<[Square, Square] | undefined>(undefined)
+  const uitnodiging = useRef<HTMLDivElement>(null)
+  const schudTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(schudTimer.current), [])
+  // De uitnodiging schuift in beeld: op een telefoon viel hij onder de vouw, en dan
+  // zag het kind "Jij kunt het al!" en daarna niets (36e review).
+  useEffect(() => {
+    if (sprongen === 3) uitnodiging.current?.scrollIntoView({ block: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+  }, [sprongen])
   const plek = useMemo(() => (Object.keys(bord) as Square[]).find((v) => bord[v]) ?? ('d4' as Square), [bord])
   const doelen = useMemo(() => pieceMoves(bord, plek).all, [bord, plek])
 
@@ -36,11 +48,14 @@ export function HeldSpel({ eersteLes }: { eersteLes: string }) {
     if (!doelen.includes(veld)) {
       sfx.fout()
       setSchud(veld)
-      setTimeout(() => setSchud(null), 450)
+      clearTimeout(schudTimer.current)
+      schudTimer.current = setTimeout(() => setSchud(null), 450)
       return setBericht('Daar kan ik niet heen. Kijk naar de stippen.')
     }
     sfx.zet()
     setBord(applyMove(bord, plek, veld))
+    // Waar het vandaan kwam blijft zichtbaar: zo zie je de L achteraf.
+    setVorige([plek, veld])
     setBericht(ZINNEN[Math.min(sprongen, ZINNEN.length - 1)])
     setSprongen((n) => n + 1)
   }
@@ -55,16 +70,21 @@ export function HeldSpel({ eersteLes }: { eersteLes: string }) {
       </p>
       <Board
         position={bord}
-        marks={{ targets: doelen, last: undefined }}
+        marks={{ targets: doelen, last: vorige }}
         onSquare={tik}
         shake={schud}
-        showCoordinates
+        randTotRand={false}
         label="Probeer het zelf: tik waar het paard heen mag"
       />
+      {/* Secundair, niet nog een oranje hoofdknop naast "Probeer de eerste les": twee
+          gelijke knoppen naar dezelfde les deden een ouder twijfelen (36e review). */}
       {sprongen >= 3 && (
-        <Link href={`/les/${eersteLes}/`} className="btn btn--primary" style={{ alignSelf: 'center' }}>
-          <span aria-hidden="true">▶︎</span> Leer het met Pip, stap voor stap
-        </Link>
+        <div ref={uitnodiging} className={styles.uitnodiging}>
+          <span aria-hidden="true" className={styles.sterren}>⭐⭐⭐</span>
+          <Link href={`/les/${eersteLes}/`} className="btn" onClick={() => tel('Held naar les')}>
+            <span aria-hidden="true">▶︎</span> Leer het met Pip, stap voor stap
+          </Link>
+        </div>
       )}
     </div>
   )

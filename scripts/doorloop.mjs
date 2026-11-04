@@ -1244,7 +1244,7 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
   await bord.locator('[data-square="a1"]').click()
   await p.waitForTimeout(200)
   const naFout = (await paardOp()).join()
-  for (const v of ['e6', 'g5', 'e4']) {
+  for (const v of ['e7', 'g6', 'e5']) {
     await bord.locator(`[data-square="${v}"]`).click()
     await p.waitForTimeout(250)
   }
@@ -1252,7 +1252,7 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
   const link = await p.getByRole('link', { name: /Leer het met Pip/ }).getAttribute('href').catch(() => null)
   meld(
     'held: het paard springt alleen naar een stip, en na drie sprongen naar de les',
-    begin === 'd4' && naFout === 'd4' && eind === 'e4' && /\/les\/weide-1\//.test(link ?? ''),
+    begin === 'd5' && naFout === 'd5' && eind === 'e5' && /\/les\/weide-1\//.test(link ?? ''),
     `begin ${begin}, na fout ${naFout}, eind ${eind}, link ${link}`,
   )
   await ctx.close()

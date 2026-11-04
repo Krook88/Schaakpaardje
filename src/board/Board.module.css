@@ -202,5 +202,5 @@
    voor een vinger (32e review). Daar loopt het bord tot vlak bij de rand, in elke les,
    partij en minispel. */
 @media (max-width: 390px) and (orientation: portrait) {
-  .wrap { margin-inline: -14px; width: calc(100% + 28px); }
+  .randTotRand { margin-inline: -14px; width: calc(100% + 28px); }
 }

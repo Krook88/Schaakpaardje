@@ -55,6 +55,9 @@ type Props = {
    *  Alleen voor borden waar niet op getikt wordt: `.golf .square` wint van de schud-
    *  en pop-animatie van `.wrong` en `.goedVeld`. */
   golf?: boolean
+  /** Op een smalle telefoon tot vlak bij de rand (standaard). Uit op de startpagina,
+   *  waar een duim die wil scrollen anders steeds een veld raakte (36e review). */
+  randTotRand?: boolean
 }
 
 /** Vinkje en kruisje zijn getekend, niet als emoji: die zien er op elk toestel anders uit. */
@@ -109,6 +112,7 @@ export function Board({
   shake = null,
   label = 'Schaakbord',
   golf = false,
+  randTotRand = true,
 }: Props) {
   const board: BoardMap = useMemo(
     () => (typeof position === 'string' ? parseBoard(position) : position),
@@ -176,7 +180,7 @@ export function Board({
   }
 
   return (
-    <div className={styles.wrap}>
+    <div className={`${styles.wrap} ${randTotRand ? styles.randTotRand : ''}`}>
       <div className={`${styles.frame} ${golf ? styles.golf : ''}`} role="group" aria-label={label}>
         <div className={styles.grid}>
           {ranks.map((rank, ri) =>
