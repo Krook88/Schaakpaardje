@@ -113,3 +113,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 44: eerste les op korte telefoons — wereldband weg, kop en fasebalk compacter, hele bord in beeld (doorloop 375×667).
 - Ronde 44: 60e review verwerkt (bord heel in beeld bij elke zin en de eerste opgave op 320/360/375, doorloop).
 - Ronde 45: speelscherm op korte telefoons — Pip-ballon en tegenstander op één rij, hele bord in beeld (doorloop 320/375).
+- Ronde 46: het oogje in de fasebalk als klaar-knop (groen, doorgetrokken) in plaats van gestippeld.

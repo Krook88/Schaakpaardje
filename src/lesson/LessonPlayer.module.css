@@ -161,8 +161,11 @@
   font-size: 22px;
   padding: 0;
   cursor: pointer;
-  background: var(--surface);
-  border: 2px dashed var(--line);
+  /* Een gewone knop met een groen randje: de kijkfase is klaar en je mag terug. Gestippeld
+     las als "nog niet gedaan", en stippellijn betekent sinds ronde 30 "kan nu niet" (60e review). */
+  background: var(--grass-soft);
+  border: 2px solid var(--grass);
+  box-shadow: var(--shadow);
   color: inherit;
 }
 .nogEens:active { transform: scale(0.94); }
