@@ -1,5 +1,6 @@
 'use client'
 
+import { botBeeld } from '@/ui/beelden'
 import styles from './PartijScherm.module.css'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
@@ -393,7 +394,7 @@ export function PartijScherm({ botId }: { botId: string }) {
             uit de vaste lijst, niets van het kind. */}
         {bot && (
           <div className={styles.tegenstander} aria-hidden="true">
-            <span className={styles.tegenstanderGezicht}>{bot.emoji}</span>
+            <img src={botBeeld(bot.id)} alt="" width={56} height={56} className={styles.tegenstanderGezicht} draggable={false} />
             <span>{bot.naam}</span>
           </div>
         )}

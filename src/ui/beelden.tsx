@@ -48,3 +48,6 @@ export function Icoon({ naam, src, maat, className, style }: IcoonProps) {
     <img src={src ?? icoonBeeld(naam as IcoonNaam)} alt="" width={maat} height={maat} className={className} style={{ verticalAlign: 'middle', ...style }} draggable={false} decoding="async" />
   )
 }
+
+/** Het gezicht van een bot (id uit src/engine/bots.ts), uit scripts/bots-tekenen.py. */
+export const botBeeld = (id: string) => `${BASIS}/illustraties/bots/bot-${id}.svg`
