@@ -28,7 +28,7 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | Beloningsmoment per wereld | ronde 3: eigen held-kaart (wapen 128 px, confetti, wapenrij), diploma-voorproef | 🟢 (wow nog te meten) |
 | `prefers-reduced-motion` | nieuwe animaties (golf, vonk, wapen) bewaakt in doorloop, aan én uit; oudere nog niet allemaal nagelopen | 🟡 |
 | Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 6: start 7/8. ronde 5: kaart 6,5/7,5. ronde 4: eerste les 7/7. ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
-| OG-afbeelding per pagina | één algemene `og.png` voor alle pagina's | 🔴 |
+| OG-afbeelding per pagina | ronde 9: 28 eigen plaatjes (werelden, schaakregels, schaakclub), lessen delen hun wereld; build controleert 206 verwijzingen. Nog te testen: vierkante uitsnede in echte WhatsApp | 🟢 |
 | Deelknop op trotse momenten | ronde 3: op wereld af en diploma, alleen link + vaste zin, anonieme telling `Gedeeld`; doorloop bewaakt share én kopieer zonder naam | 🟢 |
 | Installeerbaar | manifest + service worker aanwezig | 🟢 |
 | Wereld 0–2 offline | ronde 8: 51 bestanden (1,3 MB) vooraf na het eerste bezoek; doorloop bewijst les, minispel, kaart, kaart→les en offlinepagina | 🟢 |
@@ -43,7 +43,7 @@ Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4)
 2. ~~Startpagina-held~~ (r6). Rest: tikbaar paard in de held.
 3. ~~Raakvlakken~~ (r7).
 4. ~~Wereld 0–2 offline~~ (r8).
-5. **OG per pagina.**
+5. ~~OG per pagina~~ (r9).
 6. Tik-reactie < 100 ms meten in de doorloop.
 7. Pip leeft mee in de les (springt bij goed veld, groter in zijkolom, huppelt het bord op) — 29e review.
 
@@ -56,3 +56,4 @@ Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4)
 - Ronde 6: startpagina — held met paardbord (begint bij de L), Pip met ballon bij het bord, beloftes als labels, verse schermafbeeldingen en deelkaart (scripts/schermen.mjs).
 - Ronde 7: raakvlakken — alle knoppen 64 px, Pip en luisterknop 64, bord rand-tot-rand op smalle telefoons (veld 44), meetscript raakvlakken.mjs.
 - Ronde 8: wereld 0–2 offline na het eerste bezoek, kindvriendelijke offlinepagina, belofte op startpagina en /over preciezer.
+- Ronde 9: deelplaatjes per wereld, schaakregel en schaakclub; pat-uitleg aangescherpt; basePath-correcte og:image met buildcontrole.

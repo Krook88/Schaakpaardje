@@ -725,7 +725,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
     zoektitel: 'Pat bij schaken: wat het is en hoe je het voorkomt',
     omschrijving:
       'Pat is gelijkspel: je staat niet schaak, maar je kunt geen enkele zet meer doen. Zo ziet het eruit, en zo voorkom je het. Met bewegend bord.',
-    kort: 'Niet schaak, maar geen zet meer: gelijkspel.',
+    kort: 'Niet schaak, maar geen geldige zet meer: remise.',
     teken: '½',
     antwoord:
       'Pat is als de speler die aan zet is niet schaak staat, maar ook geen enkele geldige zet meer heeft. Dan is de partij afgelopen in remise, gelijkspel, ook als de ander veel meer stukken heeft.',

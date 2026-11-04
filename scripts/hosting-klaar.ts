@@ -372,15 +372,29 @@ function vooraadOffline() {
 function controleerDeelplaatjes() {
   const fout: string[] = []
   let geteld = 0
+  const basis = (process.env.NEXT_PUBLIC_BASE_PATH ?? '').replace(/^\/|\/$/g, '')
   for (const b of alleBestanden(UIT)) {
     if (!b.endsWith('.html')) continue
-    for (const m of readFileSync(b, 'utf8').matchAll(/property="og:image" content="([^"]+)"/g)) {
+    const html = readFileSync(b, 'utf8')
+    // og:image én twitter:image, en in welke volgorde Next de attributen ook zet.
+    for (const m of html.matchAll(/<meta[^>]*(?:property="og:image"|name="twitter:image")[^>]*>/g)) {
+      const inhoud = m[0].match(/content="([^"]+)"/)?.[1]
+      if (!inhoud) continue
       geteld++
-      const pad = new URL(m[1]).pathname.replace(/^\//, '')
-      const basis = (process.env.NEXT_PUBLIC_BASE_PATH ?? '').replace(/^\/|\/$/g, '')
-      const lokaal = basis && pad.startsWith(basis + '/') ? pad.slice(basis.length + 1) : pad
-      if (!existsSync(join(UIT, lokaal))) fout.push(`${b.slice(UIT.length)} → ${m[1]}`)
+      let pad = new URL(inhoud, 'https://schaakmaatje.nl').pathname.replace(/^\//, '')
+      if (basis) {
+        if (!pad.startsWith(basis + '/')) {
+          fout.push(`${b.slice(UIT.length)} → ${inhoud} (zonder ${basis}/)`)
+          continue
+        }
+        pad = pad.slice(basis.length + 1)
+      }
+      if (!existsSync(join(UIT, pad))) fout.push(`${b.slice(UIT.length)} → ${inhoud}`)
     }
+  }
+  if (geteld === 0) {
+    console.error('Hosting-klaar: geen enkel deelplaatje gevonden in de HTML. Is de uitvoer van Next veranderd?')
+    process.exit(1)
   }
   if (fout.length) {
     console.error(`Hosting-klaar: deelplaatjes die niet bestaan:\n  ${fout.slice(0, 5).join('\n  ')}`)

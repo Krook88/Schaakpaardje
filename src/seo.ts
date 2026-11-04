@@ -76,9 +76,12 @@ export function deelkaart(kaart: {
    */
   beeld?: { pad: string; alt: string }
 }): Pick<Metadata, 'openGraph' | 'twitter'> {
+  // metadataBase zet de basePath er niet voor; zonder deze regel wees elk deelplaatje in
+  // een submap naar een 404 (34e review).
+  const basis = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
   const plaatje = kaart.beeld
-    ? { url: kaart.beeld.pad, width: 1200, height: 630, alt: kaart.beeld.alt }
-    : { url: '/og.png', width: 1200, height: 630, alt: `${NAAM}: ${SLOGAN}` }
+    ? { url: `${basis}${kaart.beeld.pad}`, width: 1200, height: 630, alt: kaart.beeld.alt }
+    : { url: `${basis}/og.png`, width: 1200, height: 630, alt: `${NAAM}: ${SLOGAN}` }
   return {
     openGraph: {
       type: 'website',
