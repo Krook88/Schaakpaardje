@@ -63,3 +63,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 15: trofeeënplank boven de huidige wereld en in beeld bij binnenkomst (doorloop). 40e review: GO; wow layout 6–7,5, conversie 6–7,5.
 - Ronde 16: wereld af toont "3 van de 15 werelden af" (verborgen onder 720 px hoogte, zodat Volgende les in beeld blijft).
 - Ronde 16: 41e review (GO, wow wereld af 7,5); telling alleen verborgen op smalle lage schermen.
+- Ronde 17: lange wapennamen (Koningskasteel) breken netjes af op de plank.
