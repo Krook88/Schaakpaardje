@@ -4,6 +4,7 @@
    ster, de omlijsting mag je nauwelijks opvallen. */
 .frame {
   position: relative; width: 100%; aspect-ratio: 1;
+  container-type: inline-size;
   border-radius: 10px; overflow: hidden;
   background: var(--light-sq);
   box-shadow:
@@ -13,15 +14,16 @@
 }
 .grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   /* Expliciete rijen: zonder dit groeien rijen mee met hun inhoud en worden de
      velden met een stuk erop hoger dan de lege. */
-  grid-template-rows: repeat(8, 1fr);
+  grid-template-rows: repeat(8, minmax(0, 1fr));
   width: 100%; height: 100%;
 }
 
 .square {
   position: relative; border: 0; padding: 0; margin: 0; cursor: pointer;
+  min-width: 0; min-height: 0; /* het veld is leidend, niet het stuk (44e review) */
   display: grid; place-items: center; background: var(--light-sq);
   -webkit-tap-highlight-color: transparent; outline-offset: -3px;
 }
@@ -39,7 +41,9 @@
      onderscheiden. */
   font-variant-emoji: text;
   font-family: 'Schaakstukken', sans-serif;
-  font-size: min(9.5vw, 44px); line-height: 1; user-select: none;
+  /* Naar de bordbreedte, niet het venster: het stuk vulde maar ~40% van het veld
+     (43e review). 11cqi blijft onder een veld (12,5cqi): 15cqi zakte onder het veld uit en werd afgesneden (45e review). */
+  font-size: min(9.5vw, 44px); font-size: 11cqi; line-height: 1; user-select: none;
   transition: transform 0.14s ease;
   filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.28));
   position: relative; z-index: 2;
@@ -167,3 +171,47 @@
   25% { transform: translateX(-4px); }
   75% { transform: translateX(4px); }
 }
+
+/* Goed veld: het veld veert even op en er stijgt een vonkje uit. De beloning per tik,
+   niet pas aan het eind van de opgave. */
+.goedVeld { animation: veldPop 380ms cubic-bezier(0.3, 1.6, 0.5, 1) 1; z-index: 2; }
+.goedVeld .merkGoed { animation: merkIn 320ms ease-out 1; }
+.vonk {
+  /* Vanuit linksonder en pas ná het vinkje, anders schoof hij er dwars doorheen. */
+  position: absolute; left: 30%; top: 55%; font-size: 1.1em; line-height: 1;
+  pointer-events: none; z-index: 4; opacity: 0;
+  animation: vonkOp 800ms ease-out 250ms 1 both;
+}
+@keyframes veldPop { 0% { transform: scale(1); } 45% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes merkIn { from { transform: scale(0.2); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes vonkOp {
+  0% { transform: translate(-50%, 0) scale(0.6); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translate(-50%, -140%) scale(1.2); opacity: 0; }
+}
+
+/* De kennismaking: de velden rollen in een golf van linksboven naar rechtsonder in. */
+/* Alleen schalen, nooit doorzichtig: met opacity 0 leek een half bord even een bord dat
+   nog laadde, en was een aangewezen veld onzichtbaar (29e review). Elk golffront is één
+   diagonaal en dus één kleur. Speelt opnieuw bij terug naar zin 1; dat is bewust. */
+.golf .square { animation: golfIn 360ms ease-out both; animation-delay: calc(var(--golf, 0) * 30ms); }
+@keyframes golfIn { from { transform: scale(0.6); } to { transform: none; } }
+/* Na de golf maakt het stuk een huppeltje: "daar sta ik!" (wow-meting na ronde 26).
+   Twee keer, daarna stil; geen eindeloze beweging. */
+.golf .square:not(.selected) .piece { animation: huppel 520ms ease-in-out 2; animation-delay: 700ms; }
+@keyframes huppel { 0%, 100% { transform: none; } 40% { transform: translateY(-22%) rotate(-6deg); } 70% { transform: translateY(0) rotate(3deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .goedVeld, .goedVeld .merkGoed, .golf .square, .golf .square .piece { animation: none; }
+  .vonk { display: none; }
+}
+
+/* Smalle telefoon (360): met de paginarand van 18 px waren de velden 41 px, onder de 44
+   voor een vinger (32e review). Daar loopt het bord tot vlak bij de rand, in elke les,
+   partij en minispel. */
+@media (max-width: 390px) and (orientation: portrait) {
+  .randTotRand { margin-inline: -14px; width: calc(100% + 28px); }
+}
+
+/* Pip zelf op het bord in de begroeting: groter dan een schaakteken, binnen het veld. */
+.pipStuk { width: 92%; height: 92%; object-fit: contain; font-size: inherit; filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.25)); }

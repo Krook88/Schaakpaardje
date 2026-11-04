@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Icoon, lesIcoon } from '@/ui/beelden'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Confetti } from '@/ui/Confetti'
@@ -228,7 +229,7 @@ export function OpfrisScherm() {
                 opacity: i <= index ? 1 : 0.45,
               }}
             >
-              {o.icoon}
+              <Icoon src={lesIcoon(o.lesId)} maat={i === index ? 36 : 30} />
             </span>
           ))}
         </div>
@@ -286,9 +287,7 @@ export function OpfrisScherm() {
                 setZin(HINT_GEGEVEN)
               }}
             >
-              <span aria-hidden="true" style={{ fontSize: 28 }}>
-                💡
-              </span>{' '}
+              <Icoon naam="hint" maat={32} />{' '}
               Help me even
             </button>
           )}

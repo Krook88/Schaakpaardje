@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
+import { pipBeeld } from '@/ui/beelden'
 import Link from 'next/link'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
 import { MINISPELLEN } from '@/play/minispellen'
@@ -80,7 +81,7 @@ const VRAGEN: [string, string][] = [
   ],
   [
     'Werkt het op een telefoon?',
-    'Ja, op telefoon, tablet en computer. Een tablet is het prettigst, want dan is het bord groot genoeg voor kindervingers. Wat je kind één keer geopend heeft, werkt daarna ook zonder internet.',
+    'Ja, op telefoon, tablet en computer. Een tablet is het prettigst, want dan is het bord groot genoeg voor kindervingers. De eerste drie werelden werken na het eerste bezoek ook zonder internet; latere lessen zodra je kind ze één keer geopend heeft.',
   ],
 ]
 
@@ -467,7 +468,8 @@ export default function Over() {
 
       <section className={s.slot}>
         <span aria-hidden="true" className={s.pipkop}>
-          🐴
+          {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
+          <img src={pipBeeld('blij')} alt="" width={56} height={56} style={{ display: 'inline-block' }} />
         </span>
         <h2>Zin om te beginnen?</h2>
         <p style={{ maxWidth: '40ch', margin: 0 }}>

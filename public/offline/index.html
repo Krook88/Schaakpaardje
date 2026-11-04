@@ -1,0 +1,52 @@
+<!doctype html>
+<!--
+  Wat de service worker toont als een kind offline een pagina opent die niet in de
+  voorraad zit (een les na wereld 2). Eerst kreeg het dan de startpagina voor ouders,
+  onder de URL van de les en zonder uitleg (33e review). Bewust een losse pagina zonder
+  Next: hij moet altijd werken, ook als de brokjes van de app er niet zijn.
+-->
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex">
+<title>Even geen internet · Schaakmaatje</title>
+<style>
+  :root { --bg: #f5f0e6; --surface: #fffdf8; --ink: #22201b; --muted: #6b6357; --line: #e2d9c8; --accent: #b55d16; --accent-ink: #fff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1c1a16; --surface: #26231e; --ink: #f2ece0; --muted: #b3a692; --line: #3a352d; --accent: #e2903f; --accent-ink: #1c1a16; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: var(--bg); color: var(--ink); font: 1.1rem/1.45 system-ui, sans-serif; text-align: center; }
+  main { max-width: 420px; display: grid; gap: 18px; justify-items: center; }
+  .pip { font-size: 88px; line-height: 1; }
+  .ballon { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 12px 12px 12px 18px; text-align: left; font-weight: 600; }
+  button, a.knop { min-height: 64px; min-width: 64px; border-radius: 18px; font: inherit; font-weight: 800; cursor: pointer; }
+  button { border: 0; background: var(--accent); color: var(--accent-ink); font-size: 28px; flex: 0 0 auto; }
+  a.knop { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 0 28px; background: var(--accent); color: var(--accent-ink); text-decoration: none; font-size: 1.2rem; }
+  p.klein { color: var(--muted); font-size: 0.95rem; margin: 0; }
+</style>
+</head>
+<body>
+<main>
+  <div class="pip" aria-hidden="true">🐴</div>
+  <div class="ballon">
+    <span id="zin">Deze les heeft internet nodig. Op de kaart staan lessen die je nu wél kunt doen.</span>
+    <button type="button" id="zeg" aria-label="Zeg het nog eens">🔊</button>
+  </div>
+  <a class="knop" href="../kaart/"><span aria-hidden="true">🗺️</span> Naar de kaart</a>
+  <p class="klein">Is het internet er weer? Dan werkt deze les gewoon.</p>
+</main>
+<script>
+  // Met de stem van het apparaat: de opnames van Pip zijn er offline niet.
+  document.getElementById('zeg').addEventListener('click', function () {
+    try {
+      var u = new SpeechSynthesisUtterance(document.getElementById('zin').textContent)
+      u.lang = 'nl-NL'
+      speechSynthesis.cancel()
+      speechSynthesis.speak(u)
+    } catch (e) {}
+  })
+</script>
+</body>
+</html>

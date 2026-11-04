@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-labelledby="t"><title id="t">Pip denkt na</title>
+<defs><g id="s"><path d="M94 58C86 36 92 18 104 8C116 20 122 38 117 56Z"/><path d="M122 56C130 38 146 28 164 28C162 44 152 56 138 62Z"/><path d="M84 120C78 145 70 165 66 184L168 184C168 150 160 115 146 96Z"/><path d="M100 46C128 28 160 36 168 62C180 74 180 96 172 106C184 120 184 140 176 150C186 162 186 178 180 186L150 186C152 150 146 120 132 96Z"/><ellipse cx="112" cy="86" rx="48" ry="44"/><ellipse cx="66" cy="117" rx="37" ry="28" transform="rotate(-16 66 117)"/></g></defs>
+<g stroke-linejoin="round" stroke-linecap="round">
+<ellipse cx="114" cy="190" rx="66" ry="8" fill="#3b2414" opacity=".16"/><g transform="rotate(7 116 182)">
+<use href="#s" fill="#fff8ec" stroke="#fff8ec" stroke-width="22"/>
+<use href="#s" fill="#3b2414" stroke="#3b2414" stroke-width="11"/>
+<g fill="#e8923a"><path d="M94 58C86 36 92 18 104 8C116 20 122 38 117 56Z"/><path d="M122 56C130 38 146 28 164 28C162 44 152 56 138 62Z"/><path d="M84 120C78 145 70 165 66 184L168 184C168 150 160 115 146 96Z"/></g>
+<g fill="#f4a77c"><path d="M100 52C96 38 99 26 104 18C110 26 113 38 111 50Z"/><path d="M128 54C135 42 145 36 156 34C152 44 145 52 136 56Z"/></g>
+<path d="M100 46C128 28 160 36 168 62C180 74 180 96 172 106C184 120 184 140 176 150C186 162 186 178 180 186L150 186C152 150 146 120 132 96Z" fill="#5b3418"/>
+<g fill="#e8923a"><ellipse cx="112" cy="86" rx="48" ry="44"/><ellipse cx="66" cy="117" rx="37" ry="28" transform="rotate(-16 66 117)"/></g>
+<path d="M150 120C146 140 150 162 156 184" fill="none" stroke="#3b2414" stroke-width="4" opacity=".35"/>
+<ellipse cx="57" cy="121" rx="27" ry="20" transform="rotate(-16 57 121)" fill="#f8cd96"/>
+<path d="M106 48C97 48 90 53 86 60C94 58 100 59 105 60C106 65 111 67 117 66C115 59 117 53 122 48Z" fill="#5b3418"/>
+<ellipse cx="40" cy="110" rx="4.5" ry="6" transform="rotate(-30 40 110)" fill="#3b2414"/>
+<ellipse cx="120" cy="110" rx="11" ry="7" fill="#f07a5c" opacity=".5"/>
+<ellipse cx="101" cy="84" rx="8" ry="10" fill="#3b2414"/><circle cx="98" cy="80" r="3.6" fill="#fff"/><path d="M91 64Q101 56 112 64" fill="none" stroke="#3b2414" stroke-width="5"/><path d="M46 134Q53 130 60 134T72 133" fill="none" stroke="#3b2414" stroke-width="4.5"/>
+</g><g fill="#fff8ec" stroke="#3b2414" stroke-width="3.5"><circle cx="22" cy="58" r="5"/><circle cx="38" cy="46" r="6.5"/><circle cx="58" cy="34" r="8"/></g>
+</g></svg>

@@ -29,6 +29,8 @@ const TELLINGEN = [
     'Profiel gemaakt' => ['na'],
     'Eerste opgave' => ['les'],
     'Opgave lastig' => ['les', 'opgave', 'hulp'],
+    'Gedeeld' => ['hoe', 'waar'],
+    'Held naar les' => [],
 ];
 
 /**

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Icoon } from '@/ui/beelden'
 import { useRouter } from 'next/navigation'
 import { stopSpeaking } from '@/audio/voice'
 import { GeluidKnop } from './GeluidKnop'
@@ -25,7 +26,7 @@ export function Kop({ titel, terug = '/' }: { titel: string; terug?: string }) {
       <h2 className={styles.titel}>{titel}</h2>
       <GeluidKnop className={styles.knop} />
       <Link href="/ouders/" className={`btn btn--ghost ${styles.knop}`} aria-label="Voor ouders">
-        ⚙️
+        <Icoon naam="instellingen" maat={30} />
       </Link>
     </header>
   )

@@ -14,50 +14,45 @@
    groeide hij mee met het teken en dekte hij op de kleine Pip zijn halve gezicht af.
    Je zag dan een ster met een stukje paard eronder. Hij hangt nu grotendeels buiten
    de cirkel, als een meldingsbolletje. */
-.badge {
-  position: absolute; top: -7px; right: -7px;
-  width: 26px; height: 26px;
-  display: grid; place-items: center;
-  font-size: 15px; line-height: 1;
-  background: var(--surface); border-radius: 50%;
-  border: 2px solid var(--line);
-  box-shadow: var(--shadow);
-}
 .ballon {
   position: relative; background: var(--surface); border: 2px solid var(--line);
-  border-radius: 14px; padding: 12px 62px 12px 16px; box-shadow: var(--shadow);
+  border-radius: 14px; padding: 12px 68px 12px 16px; box-shadow: var(--shadow);
   font-size: 1.02rem; flex: 1;
-  /* Minstens zo hoog als de luisterknop (46 px) plus wat lucht: anders steekt die bij
-     een zin van één regel boven en onder de ballon uit. */
-  min-height: 58px; display: flex; align-items: center;
+  /* Minstens zo hoog als de luisterknop (64 px): anders steekt die bij een zin van
+     één regel boven en onder de ballon uit. */
+  min-height: 64px; display: flex; align-items: center;
 }
 /* De luisterknop hoort bij de ballon, niet bij de knoppenrij eronder: hij zegt
    "dit stukje nog eens", niet "doe iets anders". Vol formaat, ook in de kleine
    variant — dit is de knop die een niet-lezend kind het vaakst nodig heeft. */
 .luister {
-  position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
-  width: 46px; height: 46px; border-radius: 50%; padding: 0;
+  /* Raakvlak 64 px (de lat voor de schermen van het kind), zichtbare cirkel 52 px: een
+     dikke bol van 64 maakte de ballon zwaarder dan de zin erin (32e review). */
+  position: absolute; top: 50%; right: 2px; transform: translateY(-50%);
+  width: 64px; height: 64px; border-radius: 50%; padding: 0;
   /* Gevuld met de accentkleur, niet met accent-soft: dat laatste haalde 1,16:1
      tegen de ballon en was dus geen zichtbare knop — op precies de knop waar een
      niet-lezend kind het meest op aangewezen is. */
-  border: 2px solid var(--accent); background: var(--accent);
+  border: 0; background: radial-gradient(circle, var(--accent) 25.5px, transparent 26.5px);
   font-size: 24px; line-height: 1; cursor: pointer;
   display: grid; place-items: center;
 }
 .luister:active { transform: translateY(-50%) scale(0.94); }
-.luister:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+/* Om de zichtbare cirkel (52), niet om het raakvlak (64): anders sneed de ring door de
+   ballonrand. */
+.luister:focus-visible { outline: 3px solid var(--accent); outline-offset: -4px; }
 .ballon::before {
   content: ''; position: absolute; left: -9px; top: 24px;
   width: 14px; height: 14px; background: var(--surface);
   border-left: 2px solid var(--line); border-bottom: 2px solid var(--line);
   transform: rotate(45deg);
 }
-.klein .pip { width: 52px; height: 52px; }
-.klein .gezicht { font-size: 27px; }
+/* 64 px: Pip is een knop (nog eens horen), en dit is een scherm van het kind (32e review). */
+.klein .pip { width: 64px; height: 64px; }
+.klein .gezicht { font-size: 32px; }
 /* Op de kleine Pip nog een maatje kleiner, anders is het speldje half zo groot als
    het gezicht waar het bij hoort. */
-.klein .badge { width: 20px; height: 20px; font-size: 12px; top: -5px; right: -5px; }
-.klein .ballon { font-size: 0.92rem; padding: 9px 60px 9px 12px; }
+.klein .ballon { font-size: 0.92rem; padding: 9px 68px 9px 12px; }
 /* Pip beweegt, want zijn gezicht kan het nog niet.
  *
  * Alle zes de stemmingen waren hetzelfde emoji met een ander speldje ernaast. Voor een
@@ -115,3 +110,21 @@
   0%, 100% { transform: translateY(0) rotate(-2deg); }
   50% { transform: translateY(-4px) rotate(2deg); }
 }
+
+/* De tekening vult de ronde knop. */
+.tekening { display: block; width: 100%; height: 100%; }
+.gezicht:has(.tekening) { width: 100%; height: 100%; font-size: 0; }
+.pip:has(.tekening) { overflow: hidden; }
+
+.luisterIcoon { display: block; filter: brightness(0) invert(1); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .luisterIcoon { filter: brightness(0); }
+}
+:root[data-theme='dark'] .luisterIcoon { filter: brightness(0); }
+.groot .pip { width: 112px; height: 112px; }
+/* Op een laag scherm duwde de grote Pip "Verder" onder de vouw (39e review). */
+@media (max-height: 779px) { .groot .pip { width: 76px; height: 76px; } }
+
+/* Zacht krimpen na de kennismaking, geen schok (39e review). */
+.pip { transition: width 250ms ease, height 250ms ease; }
+@media (prefers-reduced-motion: reduce) { .pip { transition: none; } }

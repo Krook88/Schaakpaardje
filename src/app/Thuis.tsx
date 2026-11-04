@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Icoon, WereldWapen, lesIcoon, pipLos } from '@/ui/beelden'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
 import { GeluidKnop } from '@/ui/GeluidKnop'
@@ -176,7 +177,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
                   Twee eigen regels die niet afbreken: in één zin brak het op een
                   telefoon in vier losse stukjes, met het kalendertje los van "dagen". */}
               <p className="muted" style={{ fontSize: '0.9rem', margin: 0, whiteSpace: 'nowrap' }}>
-                ⭐ {totaal} van de {maxSterren}
+                <Icoon naam="ster-vol" maat={20} /> {totaal} van de {maxSterren}
               </p>
               {/* Alleen omhoog, nooit terug naar nul: zie `oefendagen` in de store. */}
               {oefendagen > 0 && (
@@ -190,7 +191,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
           <div className="row" style={{ gap: 6, flexWrap: 'nowrap', flexShrink: 0 }}>
             <GeluidKnop className="knopSmal" />
             <Link href="/ouders/" className="btn btn--ghost knopSmal" aria-label="Voor ouders">
-              ⚙️
+              <Icoon naam="instellingen" maat={30} />
             </Link>
           </div>
         </div>
@@ -235,8 +236,8 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
               className="btn btn--primary btn--big"
               style={{ padding: 18, gap: 14, minHeight: 88 }}
             >
-              <span aria-hidden="true" style={{ fontSize: 38, lineHeight: 1 }}>
-                🏆
+              <span aria-hidden="true" style={{ lineHeight: 1 }}>
+                <Icoon naam="beker" maat={44} />
               </span>
               <span style={{ flex: 1, textAlign: 'left' }}>
                 Alle lessen gehaald! Speel een partij tegen een maatje
@@ -251,8 +252,8 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
             <span aria-hidden="true" style={{ fontSize: 38, lineHeight: 1 }}>
               ▶︎
             </span>
-            <span aria-hidden="true" style={{ fontSize: 38, lineHeight: 1 }}>
-              {verderLes?.icoon ?? '🐴'}
+            <span aria-hidden="true" style={{ lineHeight: 1 }}>
+              <Icoon src={verderLes ? lesIcoon(verderLes.id) : pipLos('blij')} maat={48} />
             </span>
             {/* "Verder leren" klopt niet als je nog nergens was. */}
             <span style={{ flex: 1, textAlign: 'left' }}>
@@ -401,7 +402,7 @@ function Wereldrij({
               : null),
           }}
         >
-          {w.emoji}
+          <WereldWapen id={w.id} maat={30} />
         </span>
       ))}
       {straks.map((w) => (
@@ -411,7 +412,7 @@ function Wereldrij({
           aria-hidden="true"
           style={{ fontSize: 26, filter: 'grayscale(1)', opacity: 0.38 }}
         >
-          {w.emoji}
+          <WereldWapen id={w.id} maat={30} />
         </span>
       ))}
       {verborgen > 0 && (
@@ -524,7 +525,7 @@ function NieuwProfiel({
           <Pip zegt={WELKOM} stemming="blij" vanzelf={false} />
           <p className="muted" style={{ margin: 0 }}>
             Pip leest alles voor, dus lezen hoeft nog niet. Zet het geluid van je apparaat
-            aan en tik op de luidspreker <span aria-hidden="true">🔊</span> om hem te horen. Na
+            aan en tik op de luidspreker <Icoon naam="geluid" maat={22} /> om hem te horen. Na
             &ldquo;Beginnen&rdquo; praat hij vanzelf.
           </p>
         </>

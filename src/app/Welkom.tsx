@@ -4,6 +4,8 @@ import { ALLE_LESSEN, WERELDEN } from '@/content'
 import { SCHAAKREGELS, onderwerpMet } from '@/content/schaakregels'
 import { Animatiebord } from '@/uitleg/Animatiebord'
 import { bouwBeelden } from '@/uitleg/beelden'
+import { HeldSpel } from './HeldSpel'
+import { Icoon, type IcoonNaam } from '@/ui/beelden'
 
 /** Dezelfde basis als de rest van de app, voor als hij ooit in een submap staat. */
 const BASIS = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
@@ -47,10 +49,10 @@ const SCHERMEN: { bron: string; titel: string; uitleg: string }[] = [
   },
 ]
 
-const PUNTEN: [string, string, string][] = [
-  ['🔊', 'Lezen hoeft nog niet', 'Pip spreekt elke opdracht uit. Elke knop heeft een plaatje.'],
-  ['🌱', 'Begint bij nul', 'De eerste wereld gaat nog niet over schaken, maar over het bord.'],
-  ['🤗', 'Je kunt niet verliezen', 'Geen levens, geen game-over, geen klok. Fout? Dan volgt een tip.'],
+const PUNTEN: [IcoonNaam, string, string][] = [
+  ['punt-voorlezen', 'Lezen hoeft nog niet', 'Pip spreekt elke opdracht uit. Elke knop heeft een plaatje.'],
+  ['punt-begint-bij-nul', 'Begint bij nul', 'De eerste wereld gaat nog niet over schaken, maar over het bord.'],
+  ['punt-niet-verliezen', 'Je kunt niet verliezen', 'Geen levens, geen game-over, geen klok. Fout? Dan volgt een tip.'],
 ]
 
 export function Welkom() {
@@ -60,21 +62,32 @@ export function Welkom() {
 
   return (
     <div className="stack" style={{ gap: 22 }}>
-      <header className="stack" style={{ gap: 10, textAlign: 'center', alignItems: 'center' }}>
-        <span aria-hidden="true" style={{ fontSize: 64, lineHeight: 1 }}>
-          🐴
-        </span>
+      {/* De held. Eerst stond hier een emoji, een kop en een alinea: rustig, maar er
+          bewoog niets en er was niets te zien van wat je kind gaat doen (27e review:
+          6 en 7 van 10). Nu springt het paard meteen in beeld, zwaait Pip, en staat
+          de belofte als vier labels in plaats van in een zin onderaan de pagina. */}
+      <div className={styles.held}>
+      <header className={`stack ${styles.heldTekst}`}>
         {/* De kop draagt de zoekterm ("schaken leren voor kinderen"); op "Pip" zoekt
             niemand. clamp, want op een smalle telefoon raakte de kop de rand. */}
         <p className="muted" style={{ margin: 0, fontWeight: 600 }}>Met Pip het schaakpaardje</p>
-        <h1 style={{ fontSize: 'clamp(1.6rem, 7.5vw, 2.1rem)', margin: 0, lineHeight: 1.15 }}>
-          Schaken leren voor kinderen
-        </h1>
+        <h1 className={styles.kop}>Schaken leren voor kinderen</h1>
         <p style={{ fontSize: '1.15rem', margin: 0, maxWidth: 460 }}>
-          Een gratis Nederlandse schaakapp voor kinderen van 3 tot 10 jaar. Van het bord
+          Een Nederlandse schaakapp voor kinderen van 3 tot 10 jaar. Van het bord
           leren kennen tot je eerste echte partij, in {werelden} werelden en {lessen}{' '}
           lessen.
         </p>
+        <ul className={styles.beloftes} aria-label="Wat je krijgt">
+          {/* Een vinkje in plaats van 🚫 en 🔐: die lazen als "verboden" en "slot". */}
+          {['Gratis', 'Geen reclame', 'Geen account', 'Pip leest voor'].map((b) => (
+            <li key={b}>
+              <span aria-hidden="true" className={styles.vink}>
+                ✓
+              </span>{' '}
+              {b}
+            </li>
+          ))}
+        </ul>
         {/* Meteen spelen, zonder formulier. Op 45 bezoeken van de startpagina begonnen
             er 24 aan een les: de weg liep via een sprong van 2500 px naar een formulier
             met naam, leeftijd en maatje. Een les speelt ook zonder profiel, en wat het
@@ -84,24 +97,29 @@ export function Welkom() {
         </Link>
         {/* Een gewone ankerlink naar het formulier, dus hij werkt ook zonder
             JavaScript en ook in de gebouwde HTML. */}
-        <a href="#beginnen" style={{ fontSize: '1rem', display: 'inline-block', padding: '10px 6px' }}>
+        <a href="#beginnen" style={{ fontSize: '1rem', display: 'inline-block', padding: '12px 6px', minHeight: 48 }}>
           Of maak eerst een profiel voor je kind
         </a>
       </header>
+      <div className={styles.heldBord}>
+        {/* Zelf proberen in plaats van kijken: zie HeldSpel. */}
+        <HeldSpel eersteLes={ALLE_LESSEN[0].id} />
+      </div>
+      </div>
 
       {/* Zien wat je krijgt, vóór je de naam van je kind invult. Op een telefoon
           schuiven ze opzij; vanaf een tablet staan ze naast elkaar. */}
       <ul className={styles.schermen}>
-        {SCHERMEN.map((s, i) => (
+        {SCHERMEN.map((s) => (
           <li key={s.bron} className="stack" style={{ gap: 10 }}>
             <img
               src={s.bron}
               alt={s.titel}
               width={400}
               height={640}
-              // Het eerste plaatje is het grootste element in beeld: niet lui laden.
-              loading={i === 0 ? 'eager' : 'lazy'}
-              fetchPriority={i === 0 ? 'high' : undefined}
+              // Lui: sinds de held met het speelbord staan ze ver onder de vouw, en met
+              // fetchPriority high concurreerde de eerste op 4G met CSS en JS (37e review).
+              loading="lazy"
               className={styles.plaatje}
             />
             <div>
@@ -118,7 +136,7 @@ export function Welkom() {
         {PUNTEN.map(([teken, kop, uitleg]) => (
           <li key={kop} className={styles.punt}>
             <span aria-hidden="true" className={styles.teken}>
-              {teken}
+              <Icoon naam={teken} maat={40} />
             </span>
             <span>
               <strong style={{ display: 'block' }}>{kop}</strong>
@@ -136,7 +154,8 @@ export function Welkom() {
           Kinderen leren schaken het best met één stuk tegelijk. Daarom begint Schaakmaatje
           bij het bord, en krijgt daarna elk stuk een eigen wereld: eerst de toren en de
           loper, dan de dame, het paard, de koning en de pion. Pas als alle stukken zitten,
-          komen schaak, mat en rokade. Kijk maar hoe het paard springt:
+          komen schaak, mat en rokade. Ook het paard dat bovenaan springt, krijgt zijn
+          eigen wereld, na de dame. Zo legt het bord het uit:
         </p>
         <Animatiebord
           id="welkom-paard"
@@ -144,6 +163,7 @@ export function Welkom() {
           beschrijving={paard.beschrijving}
           beelden={bouwBeelden(paard)}
           kort
+          beginStap={1}
         />
         <p style={{ margin: 0 }}>
           Alle schaakregels staan zo op een bewegend bord, om zelf even op te frissen of
@@ -165,7 +185,8 @@ export function Welkom() {
 
       <p className="muted" style={{ margin: 0, fontSize: '0.95rem' }}>
         Geen reclame, geen account, geen aankopen in de app. Alles blijft op dit
-        apparaat staan en na de eerste keer werkt het ook zonder internet.{' '}
+        apparaat staan. Na het eerste bezoek kun je de eerste lessen ook zonder
+        internet spelen, bijvoorbeeld in de auto.{' '}
         <Link href="/over/">Lees meer voor ouders</Link> of bekijk{' '}
         <Link href="/lessen/">alle {lessen} lessen</Link>. Klaar voor het echte bord?{' '}
         <Link href="/schaakclub/">Zo vind je een schaakclub</Link>, of bekijk{' '}

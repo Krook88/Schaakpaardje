@@ -36,3 +36,7 @@ public/teller/wachtwoord.php
 # Lopende live partijen, als ze in de webmap belanden (lokaal testen)
 public/live/data/*.json
 public/live/data/*.txt
+
+# Tijdelijke meetscripts van reviewers
+scripts/.tmp-*
+scripts/_*.mjs

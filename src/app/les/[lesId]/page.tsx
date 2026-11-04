@@ -43,6 +43,7 @@ export async function generateMetadata({
       titel: `${les.titel} | Schaakmaatje`,
       omschrijving: les.doel,
       url: `${SITE}/les/${les.id}/`,
+      beeld: { pad: `/og/wereld-${wereld.id}.png`, alt: `${wereld.naam}: ${wereld.belofte}` },
     }),
   }
 }

@@ -126,6 +126,10 @@ describe('wat er geteld wordt, ligt vast', () => {
     'Profiel gemaakt': ['na'],
     'Eerste opgave': ['les'],
     'Opgave lastig': ['les', 'opgave', 'hulp'],
+    // Alleen óf de knop iets doet: gedeeld/gekopieerd, op wereld af of diploma.
+    Gedeeld: ['hoe', 'waar'],
+    // Alleen óf het paard op de startpagina iemand naar de les brengt.
+    'Held naar les': [],
   }
   const bestanden = (map: string): string[] =>
     readdirSync(map).flatMap((n) => {

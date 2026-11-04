@@ -56,7 +56,9 @@ export const STER3 = ['Drie sterren! Je krijgt er een sticker bij.'] as const
 
 export const WERELD_AF = [
   'Deze hele wereld is uit! Wat ben jij goed bezig.',
-  'Klaar met deze wereld. Hoefijzer verdiend!',
+  // Hier stond ook "Klaar met deze wereld. Hoefijzer verdiend!", maar een hoefijzer
+  // krijg je pas na wereld 6, 12 en 14. Na De Weide zocht een kind er een dat er niet
+  // was (28e review). Een nieuwe zin vraagt een nieuwe opname; tot dan deze ene.
 ] as const
 
 export const PARTIJ_START = [
@@ -266,7 +268,7 @@ export const STER3_OUDER = ['Drie sterren, en een sticker erbij.'] as const
 
 export const WERELD_AF_OUDER = [
   'Deze wereld is uit. Goed bezig.',
-  'Wereld uitgespeeld. Hoefijzer verdiend.',
+  // Zie WERELD_AF: het hoefijzer komt pas na wereld 6, 12 en 14.
 ] as const
 
 export const WELKOM_TERUG_OUDER = [

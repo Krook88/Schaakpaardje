@@ -33,18 +33,28 @@ export function Animatiebord({
   beschrijving,
   beelden,
   kort,
+  kopNiveau = 3,
+  beginStap = 0,
 }: {
   id: string
   titel: string
   beschrijving: string
   beelden: Beeld[]
+  /** Op de startpagina staat het bord direct onder de h1; dan is het een h2. */
+  kopNiveau?: 2 | 3
+  /**
+   * Bij welke stap het stilstaande bord begint. Op de startpagina stap 1 (de L
+   * gemarkeerd): stap 0 was één paard op een leeg bord, en een screenshot daarvan
+   * zei niets (31e review).
+   */
+  beginStap?: number
   /**
    * Alleen de zin van nu onder het bord, geen hele stappenlijst. Voor de startpagina,
    * waar het bord een voorproefje is en het aanmeldformulier niet ver weg mag raken.
    */
   kort?: boolean
 }) {
-  const [stap, setStap] = useState(0)
+  const [stap, setStap] = useState(beginStap)
   const [speelt, setSpeelt] = useState(false)
   const [inBeeld, setInBeeld] = useState(false)
   /** Bij het terugspringen naar het begin glijden de stukken niet terug, ze staan er gewoon. */
@@ -156,11 +166,12 @@ export function Animatiebord({
     setMelding(`Stap ${naar + 1} van ${beelden.length}: ${beelden[naar].tekst}`)
   }
 
+  const Kop = kopNiveau === 2 ? 'h2' : 'h3'
   return (
     <figure className={s.figuur} id={id} aria-labelledby={`${id}-kop`}>
-      <h3 id={`${id}-kop`} className={s.kop}>
+      <Kop id={`${id}-kop`} className={s.kop}>
         {titel}
-      </h3>
+      </Kop>
       <div className={s.opstelling}>
         <div className={s.bordkant}>
           {/* De coördinaten staan naast het bord in plaats van in de hoek van een veld:

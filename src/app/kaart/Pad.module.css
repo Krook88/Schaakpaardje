@@ -178,6 +178,6 @@
    een halve, anders breekt een titel als "Paardensprong-parcours" in zes regels. */
 @media (max-width: 380px) {
   .knoop { grid-template-columns: 1fr 68px 1fr; min-height: 100px; }
-  .bol { width: 62px; height: 62px; font-size: 28px; border-width: 3px; }
+  .bol { width: 64px; height: 64px; font-size: 28px; border-width: 3px; }
   .titel { font-size: 0.85rem; }
 }

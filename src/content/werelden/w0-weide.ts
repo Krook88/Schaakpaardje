@@ -24,9 +24,9 @@ export const wereld0: World = {
       doel: 'Je kind ziet dat het bord om en om licht en donker is.',
       geleerd: 'Nu zie je meteen welk veld licht is en welk veld donker.',
       vertel: [
-        'Hoi! Ik ben Pip. Dit is een schaakbord.',
+        'Hoi! Ik ben Pip. Daar sta ik!',
         {
-          tekst: 'Kijk eens: een licht veld, een donker veld, een licht veld. Steeds om en om.',
+          tekst: 'Dit is het schaakbord. Kijk: een licht veld, een donker veld, een licht veld. Steeds om en om.',
           // Precies drie velden, in de volgorde die de zin noemt: licht, donker, licht.
           // Ze lichten één voor één op, dus een kind dat de woorden niet kent ziet het
           // om-en-om vanzelf gebeuren.
@@ -34,7 +34,11 @@ export const wereld0: World = {
         },
         'Zullen we samen wat velden aantikken?',
       ],
-      vertelFen: LEEG,
+      // Pip staat tijdens het vertellen op het bord: een leeg raster is geen begroeting
+      // (wow-meting ronde 18). e5: midden op het bord, geen beginveld van het paard
+      // (schaakmeester), en donker: een wit stuk op crème viel weg (43e review). Hij zet niet en is weg zodra de eerste opgave begint.
+      vertelFen: '8/8/8/4N3/8/8/8/8 w - - 0 1',
+      vertelPip: true,
       meedoen: [
         {
           kind: 'tapSquares',

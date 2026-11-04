@@ -1,0 +1,56 @@
+/* Het bord laat ruimte voor kop, Pip, status en knoppen: op 1440×900 vielen de knoppen
+   eronder weg bij 70vh (45e review). --naast-bord is die opgetelde hoogte (~410 px met de
+   tegenstander erbij); de doorloop bewaakt het op 1440×900 en 1366×650. Op lage schermen
+   blijft 300 px de ondergrens. */
+.bord {
+  --naast-bord: 410px;
+  max-width: min(100%, 620px, max(calc(100svh - var(--naast-bord)), min(70vh, 300px)));
+  margin: 0 auto; width: 100%;
+}
+
+/* Telefoon dwars: het bord links over de volle hoogte; kop, Pip, status en knoppen
+   rechts. Onder elkaar viel het bord voor de helft onder de rand, velden 34 px
+   (46e review). Drie rijen rechts: kop, boven, onder; het bord loopt over alle drie. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .pagina {
+    display: grid; grid-template-columns: calc(100svh - 16px) minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr); column-gap: 16px; row-gap: 8px; align-content: start;
+    padding-top: 8px; padding-bottom: 8px; max-width: none;
+    /* Precies één scherm hoog: wat rechts niet past scrolt in zijn eigen blok, niet de
+       hele pagina (dan schoof het bord weg, 47e review). */
+    height: 100svh; box-sizing: border-box; min-height: 0;
+  }
+  .pagina > * { grid-column: 2; margin: 0; }
+  .vlak { display: contents; }
+  .boven { grid-column: 2; grid-row: 2; margin: 0; }
+  .onder { grid-column: 2; grid-row: 3; margin: 0; min-height: 0; overflow-y: auto; }
+  .bord {
+    grid-column: 1; grid-row: 1 / -1; max-width: none; margin: 0;
+    align-self: start; position: sticky; top: 8px;
+  }
+}
+/* Kleinste telefoon dwars (667×375, alleen smal: op 844 staat Pip gewoon onder de kop,
+   54e review): Pips ballon wordt in de smalle kolom zo hoog dat de
+   knoppen eronder wegvielen (47e review). Dan komt het onderblok (status en knoppen) vóór
+   Pip. Alleen de twee blokken wisselen, binnen een blok blijft de DOM-volgorde. */
+@media (orientation: landscape) and (max-height: 400px) and (max-width: 720px) {
+  /* Hier mag de pagina wel scrollen: in één vaste schermhoogte viel Pip er helemaal af. */
+  .pagina { height: auto; min-height: 100svh; grid-template-rows: auto auto auto; }
+  .onder { grid-row: 2; overflow-y: visible; }
+  .boven { grid-row: 3; }
+}
+.tegenstander {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-weight: 800; font-size: 1.05rem; margin: 0 auto -4px;
+}
+.tegenstanderGezicht { width: 56px; height: 56px; display: block; }
+@media (min-width: 900px) and (min-height: 800px) { .tegenstanderGezicht { width: 76px; height: 76px; } }
+/* Dwars staat de tegenstander al in de kop naast het bord; de extra regel liet de pagina scrollen. */
+/* Verborgen waar elke pixel telt: lage laptops (knoppen moeten in beeld) en dwars (de
+   naam staat in de kop naast het bord). Staande telefoons houden hem: daar scrolt het
+   scherm toch al en was de uil nergens te zien (wow-meting na ronde 32). */
+@media (max-height: 700px) and (min-width: 900px), (orientation: landscape) and (max-height: 500px) { .tegenstander { display: none; } }
+@media (max-height: 700px) and (max-width: 899px) { .tegenstanderGezicht { width: 44px; height: 44px; } }
+/* In het midden van de uitslagkaart: links leek het een vergeten plaatje (52e review). */
+.uitslagBot { display: block; margin-inline: auto; }
+@media (orientation: landscape) and (max-height: 500px) { .uitslagBot { width: 44px; height: 44px; } }

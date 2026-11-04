@@ -107,7 +107,8 @@ a { color: inherit; }
 /* Knoppen zijn groot: kleine kinderen mikken slecht. */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  min-height: 56px; padding: 0 22px; border-radius: var(--radius);
+  /* 64: de lat voor de schermen van het kind; ook voor de ouder groot genoeg (32e review). */
+  min-height: 64px; padding: 0 22px; border-radius: var(--radius);
   border: 2px solid var(--line); background: var(--surface); color: var(--ink);
   font-weight: 700; cursor: pointer; box-shadow: var(--shadow);
   transition: transform 0.12s ease, background 0.12s ease;
@@ -120,7 +121,9 @@ a { color: inherit; }
 .btn--ghost { background: transparent; box-shadow: none; }
 /* Een vierkante knop met alleen een plaatje, zoals de bel en het tandwiel. */
 .knopSmal { padding: 0 12px; min-width: 56px; }
-.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+/* Niet doorzichtig: in donker werd een doorzichtige lichte knop lichtgrijs met lichte
+   tekst (52e review). Nu de gewone achtergrond, een stippelrand en gedempte tekst. */
+.btn[disabled] { opacity: 1; cursor: not-allowed; background: transparent; border-style: dashed; color: var(--muted); box-shadow: none; }
 
 .card {
   background: var(--surface); border: 2px solid var(--line);
@@ -135,8 +138,17 @@ a { color: inherit; }
   position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
 }
+/* Minder beweging: alles naar het eindbeeld. Ook het aantal herhalingen naar 1: een
+   eindeloze animatie (de hintgloed, Pip die ademt) van 0,01 ms bleef anders eindeloos
+   doorspringen, en dat is precies het flikkeren dat iemand hiermee wil uitzetten
+   (35e review). */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Invoervelden (contactformulier): een placeholder die ook in donker te lezen is. */
@@ -144,3 +156,6 @@ a { color: inherit; }
 
 /* Een summary die eruitziet als knop: zonder het driehoekje van Safari. */
 summary.btn::-webkit-details-marker { display: none; }
+
+/* Een wereldwapen naast een naam staat op de regel, niet erboven. */
+img[src*="/illustraties/werelden/"] { vertical-align: middle; flex: 0 0 auto; }

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="4.3 -19.4 197.4 197.4" role="img" aria-labelledby="t"><title id="t">Pip slaapt</title>
+<defs><g id="s"><path d="M96 58C96 40 106 26 120 20C126 34 124 46 117 58Z"/><path d="M122 56C132 42 148 36 166 38C162 52 152 60 138 64Z"/><path d="M84 120C78 145 70 165 66 184L168 184C168 150 160 115 146 96Z"/><path d="M100 46C128 28 160 36 168 62C180 74 180 96 172 106C184 120 184 140 176 150C186 162 186 178 180 186L150 186C152 150 146 120 132 96Z"/><ellipse cx="112" cy="86" rx="48" ry="44"/><ellipse cx="66" cy="117" rx="37" ry="28" transform="rotate(-16 66 117)"/></g><clipPath id="k"><circle cx="103" cy="84" r="94"/></clipPath></defs>
+<g stroke-linejoin="round" stroke-linecap="round">
+<g clip-path="url(#k)"><g transform="translate(0 0)"><g transform="translate(0 4) rotate(-7 116 182)">
+<use href="#s" fill="#fff8ec" stroke="#fff8ec" stroke-width="22"/>
+<use href="#s" fill="#3b2414" stroke="#3b2414" stroke-width="11"/>
+<g fill="#e8923a"><path d="M96 58C96 40 106 26 120 20C126 34 124 46 117 58Z"/><path d="M122 56C132 42 148 36 166 38C162 52 152 60 138 64Z"/><path d="M84 120C78 145 70 165 66 184L168 184C168 150 160 115 146 96Z"/></g>
+<g fill="#f4a77c"><path d="M102 54C102 42 108 32 117 27C119 36 117 46 113 54Z"/><path d="M128 56C136 46 147 42 158 43C154 52 146 57 136 59Z"/></g>
+<path d="M100 46C128 28 160 36 168 62C180 74 180 96 172 106C184 120 184 140 176 150C186 162 186 178 180 186L150 186C152 150 146 120 132 96Z" fill="#5b3418"/>
+<g fill="#e8923a"><ellipse cx="112" cy="86" rx="48" ry="44"/><ellipse cx="66" cy="117" rx="37" ry="28" transform="rotate(-16 66 117)"/></g>
+<path d="M150 120C146 140 150 162 156 184" fill="none" stroke="#3b2414" stroke-width="4" opacity=".35"/>
+<ellipse cx="57" cy="121" rx="27" ry="20" transform="rotate(-16 57 121)" fill="#f8cd96"/>
+<path d="M106 48C97 48 90 53 86 60C94 58 100 59 105 60C106 65 111 67 117 66C115 59 117 53 122 48Z" fill="#5b3418"/>
+<ellipse cx="40" cy="110" rx="4.5" ry="6" transform="rotate(-30 40 110)" fill="#3b2414"/>
+<ellipse cx="120" cy="110" rx="11" ry="7" fill="#f07a5c" opacity=".5"/>
+<path d="M93 88Q103 96 114 88" fill="none" stroke="#3b2414" stroke-width="5.5"/><path d="M92 90L88 94M100 93L99 98M108 93L110 97" fill="none" stroke="#3b2414" stroke-width="3"/><path d="M46 132Q56 136 66 132" fill="none" stroke="#3b2414" stroke-width="4.5"/>
+</g></g></g><path d="M26 52h11l-11 11h11" fill="none" stroke="#fff8ec" stroke-width="14.1"/><path d="M26 52h11l-11 11h11" fill="none" stroke="#6a7fb5" stroke-width="4.3"/><path d="M42 28h14l-14 14h14" fill="none" stroke="#fff8ec" stroke-width="15.7"/><path d="M42 28h14l-14 14h14" fill="none" stroke="#6a7fb5" stroke-width="5.2"/><path d="M64 0h17l-17 17h17" fill="none" stroke="#fff8ec" stroke-width="17.4"/><path d="M64 0h17l-17 17h17" fill="none" stroke="#6a7fb5" stroke-width="6.1"/>
+</g></svg>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { pipBeeld } from '@/ui/beelden'
 
 /**
  * Wat een kind ziet als er iets stukgaat.
@@ -44,7 +45,8 @@ export default function Fout({ error, reset }: { error: Error; reset: () => void
     <main className="page">
       <div className="card stack center" style={{ maxWidth: 460, margin: '10vh auto' }}>
         <span style={{ fontSize: 64 }} aria-hidden="true">
-          🐴
+          {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
+          <img src={pipBeeld('denkt')} alt="" width={96} height={96} style={{ display: 'inline-block' }} />
         </span>
         <h1 style={{ fontSize: '1.3rem' }}>Oeps, Pip struikelde even</h1>
         <p className="muted">

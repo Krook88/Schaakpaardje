@@ -3,28 +3,9 @@
 import { useEffect, useState } from 'react'
 import { onSubtitle, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import styles from './Pip.module.css'
+import { icoonBeeld, pipBeeld } from './beelden'
 
 export type PipStemming = 'blij' | 'juicht' | 'verrast' | 'denkt' | 'moedigt' | 'trots' | 'slaapt'
-
-const GEZICHT: Record<PipStemming, string> = {
-  blij: '🐴',
-  juicht: '🐴',
-  verrast: '🐴',
-  denkt: '🐴',
-  moedigt: '🐴',
-  trots: '🐴',
-  slaapt: '🐴',
-}
-
-const BADGE: Record<PipStemming, string> = {
-  blij: '',
-  juicht: '🎉',
-  verrast: '❗',
-  denkt: '💭',
-  moedigt: '💪',
-  trots: '⭐',
-  slaapt: '💤',
-}
 
 /** Wat Pip met zijn hoofd doet bij elke stemming. Zie Pip.module.css. */
 const BEWEGING: Record<PipStemming, string> = {
@@ -40,27 +21,39 @@ const BEWEGING: Record<PipStemming, string> = {
 /**
  * De mascotte met zijn tekstballon.
  *
- * Voorlopig is Pip een emoji in een cirkel. Bij de visuele oplevering komt hier een
- * Rive-animatie met echte gezichtsuitdrukkingen; de component-interface blijft gelijk,
- * dus dat is één bestand omwisselen.
- *
- * Tot die tijd doet de beweging het werk dat het gezicht nog niet kan doen. Pip was
+ * Pip is een eigen tekening in zeven stemmingen (scripts/pip-tekenen.py, goedgekeurd
+ * door Kaj op 4 nov 2026), geen emoji meer. De beweging blijft het werk doen dat een
+ * stilstaand gezicht niet kan. Pip was
  * zes stemmingen lang exact hetzelfde plaatje met een ander speldje ernaast — hij
  * praatte wel, maar hij deed niets. Nu knikt hij als hij aanmoedigt, kantelt hij als
  * hij nadenkt, springt hij als je het goed hebt, en wiebelt hij zachtjes zolang hij
  * aan het woord is. Dat laatste is het belangrijkste: een kind ziet daaraan dat het
  * even moet luisteren, en ziet even goed wanneer het weer aan de beurt is.
  */
+// Alle stemmingen één keer vooraf ophalen: anders was de cirkel bij de eerste keer
+// "juicht" heel even leeg terwijl het plaatje binnenkwam (37e review).
+let vooraf = false
+function haalPipsOp() {
+  if (vooraf || typeof window === 'undefined') return
+  vooraf = true
+  for (const s of ['blij', 'juicht', 'verrast', 'denkt', 'moedigt', 'trots', 'slaapt'] as PipStemming[]) {
+    new Image().src = pipBeeld(s, true)
+  }
+}
+
 export function Pip({
   zegt,
   stemming = 'blij',
   klein = false,
+  groot = false,
   vanzelf = true,
   onKlaar,
 }: {
   zegt?: string
   stemming?: PipStemming
   klein?: boolean
+  /** Bij de kennismaking: Pip groot in beeld, niet een rondje naast de ballon (39e review). */
+  groot?: boolean
   /**
    * Zegt Pip zijn zin zodra hij in beeld komt? Op de welkomstpagina niet: daar komt
    * een ouder voor het eerst binnen, en een paardje dat ineens begint te praten (of,
@@ -82,6 +75,7 @@ export function Pip({
    */
   const [puls, setPuls] = useState(0)
 
+  useEffect(haalPipsOp, [])
   useEffect(() => {
     onSubtitle(setOndertitel)
     return () => onSubtitle(null)
@@ -109,7 +103,7 @@ export function Pip({
   const tekst = ondertitel ?? zegt ?? null
 
   return (
-    <div className={`${styles.wrap} ${klein ? styles.klein : ''}`}>
+    <div className={`${styles.wrap} ${klein ? styles.klein : ''} ${groot ? styles.groot : ''}`}>
       <button
         type="button"
         className={`${styles.pip} ${pratend ? styles.pratend : ''}`}
@@ -119,14 +113,12 @@ export function Pip({
         }}
         aria-label={zegt ? `Pip zegt: ${zegt}. Tik om het nog eens te horen.` : 'Pip'}
       >
+        {/* De getekende Pip (public/illustraties/pip/) in plaats van één emoji met een
+            speldje ernaast: de stemming zit nu in zijn gezicht. De beweging blijft. */}
         <span key={puls} className={`${styles.gezicht} ${BEWEGING[stemming]}`} aria-hidden="true">
-          {GEZICHT[stemming]}
+          {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
+          <img src={pipBeeld(stemming, true)} alt="" className={styles.tekening} draggable={false} />
         </span>
-        {BADGE[stemming] && (
-          <span className={styles.badge} aria-hidden="true">
-            {BADGE[stemming]}
-          </span>
-        )}
       </button>
       {tekst && (
         <p className={styles.ballon} aria-live="polite">
@@ -143,7 +135,9 @@ export function Pip({
               aria-label="Zeg het nog eens"
               title="Zeg het nog eens"
             >
-              <span aria-hidden="true">🔊</span>
+              {/* Silhouet in de kleur van --accent-ink: wit op het donkere oranje van licht, donker
+                  op het lichte oranje van donker (wit haalde daar maar 2,5:1, 38e review). */}
+              <img src={icoonBeeld('geluid')} alt="" width={30} height={30} className={styles.luisterIcoon} />
             </button>
           )}
         </p>

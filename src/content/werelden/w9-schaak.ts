@@ -106,7 +106,7 @@ export const wereld9: World = {
       vertel: [
         'Nu jij! Je kunt de koning van de tegenstander ook aanvallen.',
         'Zoek een zet waarmee jouw stuk bij zijn koning kan komen.',
-        'Lukt het? Dan roep je: schaak!',
+        "Lukt het? Dan mag je 'schaak' zeggen, maar het hoeft niet.",
       ],
       vertelFen: '4k3/8/8/8/8/8/8/R5K1',
       meedoen: [

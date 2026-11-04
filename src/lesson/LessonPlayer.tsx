@@ -1,18 +1,20 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Icoon, WereldWapen, pipLos, type IcoonNaam } from '@/ui/beelden'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Kop } from '@/ui/Kop'
 import { Pip, type PipStemming } from '@/ui/Pip'
 import { Confetti } from '@/ui/Confetti'
+import { DeelKnop } from '@/ui/DeelKnop'
 import { Sterren } from '@/ui/Sterren'
 import { Teller } from '@/ui/Teller'
 import { gebruikTip } from '@/ui/gebruikTip'
 import { sfx } from '@/audio/sfx'
 import { kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import { HINT_GEGEVEN, OPNIEUW_PROBEREN, pipZinnen } from '@/content/voice'
-import { volgendeLes, wereldMet, type Lesson, type World } from '@/content'
+import { WERELDEN, volgendeLes, wereldMet, type Lesson, type World } from '@/content'
 import { vertelTekst, vertelWijzers } from '@/content/types'
 import { type Square } from '@/engine/board'
 import {
@@ -34,10 +36,12 @@ import {
   useProfielStore,
   useToestandGeladen,
   useVoortgang,
+  volgendeOpenLes,
   wereldIsAf,
 } from '@/progress/store'
 import { eenKeer, maakLastigMelder, maakStopMelder } from './lesTellingen'
 import { tel } from '@/progress/tellen'
+import { useMediaQuery } from '@/ui/useMediaQuery'
 import styles from './LessonPlayer.module.css'
 
 type Fase = 'kijken' | 'meedoen' | 'zelf' | 'toets' | 'beloning'
@@ -52,12 +56,12 @@ const FASE_NAAM: Record<Fase, string> = {
 }
 
 /** Dezelfde vier fasen, maar dan zonder woorden. De volgorde is altijd deze. */
-const FASE_BEELD: Record<Fase, string> = {
-  kijken: '👀',
-  meedoen: '🤝',
-  zelf: '🙋',
-  toets: '⭐',
-  beloning: '🎉',
+const FASE_BEELD: Record<Fase, IcoonNaam> = {
+  kijken: 'fase-kijken',
+  meedoen: 'fase-meedoen',
+  zelf: 'fase-zelf',
+  toets: 'fase-toets',
+  beloning: 'beker',
 }
 const FASE_VOLGORDE: Fase[] = ['kijken', 'meedoen', 'zelf', 'toets']
 
@@ -109,6 +113,12 @@ export function LessonPlayer({
   // sterren zijn al bewaard; bij de beloning vragen we of het ze onder een naam wil houden.
   const profiel = useProfiel()
   const voortgang = useVoortgang()
+  const ruimNaast = useMediaQuery('(orientation: landscape) and (min-width: 640px) and (min-height: 521px)')
+  // Naar boven bij de beloning: de pagina bleef staan waar het bord stond, en dan viel
+  // "Volgende les" onder de vouw (39e review). Zonder animatie: het is een nieuw scherm.
+  useEffect(() => {
+    if (fase === 'beloning') window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [fase])
   const geladen = useToestandGeladen()
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
@@ -233,7 +243,7 @@ export function LessonPlayer({
         const eerste = startOpgave(lijst[0])
         setStand(eerste)
         setZin('vraag' in lijst[0] ? lijst[0].vraag : '')
-        setStemming('denkt')
+        setStemming('blij')
       }
     },
     [les, bewaarHervatpunt],
@@ -291,7 +301,8 @@ export function LessonPlayer({
       setOpgaveIndex(opgaveIndex + 1)
       setStand(startOpgave(nieuw))
       setZin('vraag' in nieuw ? nieuw.vraag : '')
-      setStemming('denkt')
+      // 'blij', niet 'denkt': bij een opdracht las dat als "Pip weet het zelf niet" (37e review).
+      setStemming('blij')
     } else {
       volgendeFase()
     }
@@ -452,17 +463,22 @@ export function LessonPlayer({
         <Kop titel={les.titel} terug="/kaart/" />
         <WereldBand wereld={wereld} />
         <FaseBalk nu="kijken" />
-        <div className="stack">
-          <Pip
-            zegt={dezeZin ? vertelTekst(dezeZin) : ''}
-            stemming={vertelIndex === 0 ? 'blij' : 'denkt'}
-          />
+        <div className={`stack ${styles.vertelStack} ${les.vertelFen ? styles.speelvlak : ''}`}>
+          <div className={styles.vakPip}>
+            <Pip
+              groot={vertelIndex === 0}
+              zegt={dezeZin ? vertelTekst(dezeZin) : ''}
+              stemming={vertelIndex === 0 ? 'blij' : 'denkt'}
+            />
+          </div>
           {les.vertelFen && (
-            <div className={styles.bord}>
+            <div className={`${styles.bord} ${styles.vakBord}`}>
               {/* De sleutel is de zin, niet het bord: bij elke nieuwe zin begint het
                   spoor opnieuw te lopen in plaats van te blijven staan waar het stond. */}
               <Board
                 key={vertelIndex}
+                golf={vertelIndex === 0}
+                pipAlsPaard={Boolean(les.vertelPip)}
                 position={les.vertelFen}
                 marks={{ glow: les.vertelWijs, spoor }}
                 showCoordinates={instellingen.coordinaten || Boolean(les.toonCoordinaten)}
@@ -470,7 +486,7 @@ export function LessonPlayer({
               />
             </div>
           )}
-          <div className={`row ${styles.kolom}`} style={{ justifyContent: 'space-between' }}>
+          <div className={`row ${styles.kolom} ${styles.vakKnoppen} ${styles.rijUiteen}`}>
             <span className="muted">
               {vertelIndex + 1} van {les.vertel.length}
             </span>
@@ -491,7 +507,7 @@ export function LessonPlayer({
               }}
             >
               <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1 }}>
-                {!laatste ? '▶︎' : kijkTerug ? '↩︎' : '🤝'}
+                {!laatste ? '▶︎' : kijkTerug ? '↩︎' : <Icoon naam="fase-meedoen" maat={34} />}
               </span>{' '}
               {!laatste ? 'Verder' : kijkTerug ? 'Terug naar de opgave' : 'Ik ga het proberen'}
             </button>
@@ -502,7 +518,10 @@ export function LessonPlayer({
   }
 
   if (fase === 'beloning') {
-    const volgende = volgendeLes(les.id)
+    // Is de wereld net af, dan naar de eerste les die nog open staat: in volgorde was
+    // dat soms een les die al af was, als het kind de lessen door elkaar deed (38e review).
+    const naDeze = { ...voortgang, [les.id]: { sterren, fouten: 0, hints: 0, laatst: '' } }
+    const volgende = wereldIsAf(wereld.id, naDeze) ? (volgendeOpenLes(naDeze, modus) ?? volgendeLes(les.id)) : volgendeLes(les.id)
     const wereldKlaar = wereldIsAf(wereld.id, { ...voortgang, [les.id]: { sterren, fouten: 0, hints: 0, laatst: '' } })
     // Ging er met deze les een héle nieuwe wereld open? Dat gebeurde tot nu toe
     // stilzwijgend: je maakte Torenburcht af, drukte op "volgende les" en stond
@@ -514,25 +533,78 @@ export function LessonPlayer({
       <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
         <Kop titel="Klaar!" terug="/kaart/" />
         <div className="stack center">
-          <Pip zegt={zin} stemming="trots" />
+          {/* Klein als de grote Pip hieronder bij het wapen juicht: twee grote Pips kostten hoogte. */}
+          {/* Eigen klasse: de dwarsindeling zet Pip in de rechterkolom (codebase-review). */}
+          <div className={styles.feestPip}>
+            <Pip zegt={zin} stemming="trots" klein={wereldKlaar} />
+          </div>
+          {/* Een hele wereld uit is groter dan een les: vier lessen werk. Eerst stond
+              het als regel tekst in de lesuitslag, daarna als tweede kaart eronder
+              (28e review: "het feest staat op de tweede plek"). Nu is de wereld de held:
+              groot wapen bovenaan, de naam, en alle wapens op een rij zodat je ziet
+              waar je staat. De lesuitslag schuift klein eronder. */}
+          {wereldKlaar && (
+            <div className={`card stack center ${styles.wereldAf}`} style={{ position: 'relative', overflow: 'hidden' }}>
+              <Confetti />
+              {/* Pip viert mee, groot naast het wapen: op het hoogtepunt van de app was hij
+                  een klein rondje bovenin (38e review). */}
+              <div className={styles.wereldAfHeld} aria-hidden="true">
+                <span className={styles.wereldAfWapen}>
+                  <WereldWapen id={wereld.id} maat={140} />
+                </span>
+                <span className={styles.wereldAfPip}>
+                  <Icoon src={pipLos('juicht')} maat={130} />
+                </span>
+              </div>
+              <h2 className={styles.wereldAfKop}>{wereld.naam} is af!</h2>
+              <p style={{ margin: 0 }}>
+                {profiel ? <><strong>{profiel.naam}</strong> heeft</> : 'Jij hebt'} alle lessen van {wereld.naam}{' '}
+                uitgespeeld.
+              </p>
+              <div className={styles.wapenRij} aria-label="Jouw wereldwapens">
+                {WERELDEN.map((w) => {
+                  const af = w.id === wereld.id || wereldIsAf(w.id, voortgang)
+                  return (
+                    <span
+                      key={w.id}
+                      className={`${styles.wapenKlein} ${af ? styles.wapenAf : ''} ${w.id === wereld.id ? styles.wapenNu : ''}`}
+                      title={af ? w.naam : 'nog niet'}
+                      aria-label={af ? `${w.naam}, af` : 'nog niet af'}
+                    >
+                      <WereldWapen id={w.id} maat={30} />
+                    </span>
+                  )
+                })}
+              </div>
+              {/* Waar je staat, zonder druk: een telling, geen opdracht. Verborgen op lage
+                  schermen, anders zakt "Volgende les" onder de vouw (doorloop, 320×640). */}
+              <p className={styles.wereldAfTel}>
+                {WERELDEN.filter((w) => w.id === wereld.id || wereldIsAf(w.id, voortgang)).length} van de {WERELDEN.length} werelden af
+              </p>
+            </div>
+          )}
           {/* Het moment waar een kind een hele les voor heeft gewerkt. Dat mag je niet
               stilzwijgend voorbij laten gaan: de sterren vliegen één voor één binnen,
               er valt confetti en Pip springt. Wie beweging heeft uitgezet krijgt
               gewoon het eindbeeld. */}
-          <div className="card stack center" style={{ position: 'relative', overflow: 'hidden' }}>
-            <Confetti />
-            <Sterren aantal={sterren} groot vier />
-            <h2>{les.titel}</h2>
-            {/* Niet les.doel: dat is de zin voor de ouder ("Je kind ziet dat...") en
-                die stond hier letterlijk, over het kind gepraat tegen het kind. */}
-            <p>{les.geleerd}</p>
-            {sterren >= 3 && <p>🏅 Sticker verdiend!</p>}
-            {wereldKlaar && (
-              <p>
-                🐴 <strong>{wereld.naam}</strong> is helemaal uit!
-              </p>
-            )}
-          </div>
+          {wereldKlaar ? (
+            // Klein, één regel: anders zakte "Volgende les" op een telefoon onder de vouw.
+            <div className={`card ${styles.lesKort}`}>
+              <Sterren aantal={sterren} vier />
+              <strong>{les.titel}</strong>
+              {sterren >= 3 && <span role="img" aria-label="Sticker verdiend"><Icoon naam="sticker" maat={28} /></span>}
+            </div>
+          ) : (
+            <div className="card stack center" style={{ position: 'relative', overflow: 'hidden' }}>
+              <Confetti />
+              <Sterren aantal={sterren} groot vier />
+              <h2>{les.titel}</h2>
+              {/* Niet les.doel: dat is de zin voor de ouder ("Je kind ziet dat...") en
+                  die stond hier letterlijk, over het kind gepraat tegen het kind. */}
+              <p>{les.geleerd}</p>
+              {sterren >= 3 && <p><Icoon naam="sticker" maat={30} /> Sticker verdiend!</p>}
+            </div>
+          )}
 
           {nieuweWereld && (
             <div
@@ -540,7 +612,7 @@ export function LessonPlayer({
               style={{ '--toon': nieuweWereld.toon } as React.CSSProperties}
             >
               <span className={styles.poortWapen} aria-hidden="true">
-                {nieuweWereld.emoji}
+                <WereldWapen id={nieuweWereld.id} maat={56} />
               </span>
               <div>
                 <p className={styles.poortKop}>Een nieuwe wereld gaat open!</p>
@@ -551,16 +623,20 @@ export function LessonPlayer({
               </div>
             </div>
           )}
-          <div className="row" style={{ justifyContent: 'center' }}>
-            <Link href="/kaart/" className="btn">
-              Naar de kaart
-            </Link>
+          {/* De hoofdknop eerst: op een telefoon stond "Naar de kaart" erboven (28e review).
+              Bij wereld af direct onder de feestkaart (CSS-volgorde): daaronder viel hij op
+              de meeste schermen onder de vouw (39e review). */}
+          <div className={`row ${wereldKlaar ? styles.naFeest : ''}`} style={{ justifyContent: 'center' }}>
             {volgende && (
               <Link href={`/les/${volgende.id}/`} className="btn btn--primary btn--big">
                 Volgende les →
               </Link>
             )}
+            <Link href="/kaart/" className="btn">
+              Naar de kaart
+            </Link>
           </div>
+          {wereldKlaar && <DeelKnop waar="wereld" plaatje={`/og/wereld-${wereld.id}.png`} />}
           {/* Voor de ouder, en ónder de knoppen: als grote kaart erboven duwde hij
               "Volgende les" op een telefoon onder de vouw, en een kind dat niet leest
               tikte op het grootste vlak en stond in een formulier (negentiende review, L1).
@@ -599,12 +675,17 @@ export function LessonPlayer({
         }}
       />
 
-      <div className="stack">
-        <Pip zegt={zin} stemming={stemming} klein />
+      <div className={`stack ${styles.speelvlak}`}>
+        <div className={styles.vakPip}>
+          {/* Klein waar de hoogte krap is (staand: boven het bord). Liggend staat Pip in
+              een eigen kolom met ruimte over; daar was hij een rondje van 52 px naast
+              een leeg vlak (27e review). */}
+          <Pip zegt={zin} stemming={stemming} klein={!ruimNaast} />
+        </div>
 
         {/* Bij één opgave zei die ene losse stip niets; dan laten we hem weg. */}
         {opgaven.length > 1 && (
-        <div className={styles.voortgang} aria-label={`Opgave ${opgaveIndex + 1} van ${opgaven.length}`}>
+        <div className={`${styles.voortgang} ${styles.vakVoortgang}`} aria-label={`Opgave ${opgaveIndex + 1} van ${opgaven.length}`}>
           {opgaven.map((_, i) => (
             <span
               key={i}
@@ -618,7 +699,7 @@ export function LessonPlayer({
         )}
 
         {opgave.kind === 'quiz' ? (
-          <div className={styles.quiz}>
+          <div className={`${styles.quiz} ${styles.vakBord}`}>
             {opgave.opties.map((optie, i) => (
               <button
                 key={optie.label}
@@ -649,7 +730,7 @@ export function LessonPlayer({
             ))}
           </div>
         ) : (
-          <div className={styles.bord}>
+          <div className={`${styles.bord} ${styles.vakBord}`}>
             <Board
               position={stand.board}
               selected={stand.geselecteerd}
@@ -667,12 +748,12 @@ export function LessonPlayer({
             de knoppen, want daar viel het buiten beeld zodra "Opnieuw" een regel
             omlaag ging. */}
         {totaalTeVinden > 0 && (
-          <div className={`row ${styles.kolom}`} style={{ justifyContent: 'center' }}>
+          <div className={`row ${styles.kolom} ${styles.vakTeller} ${styles.rijMidden}`}>
             <Teller gevonden={stand.gevonden.length} totaal={totaalTeVinden} />
           </div>
         )}
 
-        <div className={`row ${styles.kolom}`} style={{ justifyContent: 'space-between' }}>
+        <div className={`row ${styles.kolom} ${styles.vakKnoppen} ${styles.rijUiteen}`}>
           {opgave.kind !== 'quiz' && (
             // Bij een quiz gaf hint() geen enkel veld terug: het kind zag niets
             // gebeuren en raakte stilzwijgend een ster kwijt. Dan hoort de knop er
@@ -682,11 +763,8 @@ export function LessonPlayer({
               className="btn"
               onClick={vraagHint}
               disabled={stand.klaar}
-              style={{ minHeight: 60 }}
             >
-              <span aria-hidden="true" style={{ fontSize: 28, lineHeight: 1 }}>
-                💡
-              </span>{' '}
+              <Icoon naam="hint" maat={32} />{' '}
               Help me even
             </button>
           )}
@@ -757,7 +835,7 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
               aria-label="Laat de uitleg nog eens zien"
               title="Laat de uitleg nog eens zien"
             >
-              <span aria-hidden="true">{FASE_BEELD[f]}</span>
+              <Icoon naam={FASE_BEELD[f]} maat={30} />
             </button>
           )
         }
@@ -776,10 +854,11 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
             background: i === hier ? 'var(--accent-soft)' : 'transparent',
             border: i === hier ? '2px solid var(--accent)' : '2px solid transparent',
             filter: i <= hier ? 'none' : 'grayscale(1)',
-            opacity: i <= hier ? 1 : 0.45,
+            // 0,6 en niet 0,45: in donker werden de komende fasen schimmen (38e review).
+            opacity: i <= hier ? 1 : 0.6,
           }}
         >
-          {FASE_BEELD[f]}
+          <Icoon naam={FASE_BEELD[f]} maat={30} />
         </span>
         )
       })}
@@ -793,7 +872,7 @@ function WereldBand({ wereld }: { wereld: World }) {
   return (
     <div className={styles.wereldband} style={{ '--toon': wereld.toon } as React.CSSProperties}>
       <span aria-hidden="true" style={{ fontSize: 22 }}>
-        {wereld.emoji}
+        <WereldWapen id={wereld.id} maat={26} />
       </span>
       {wereld.naam}
     </div>

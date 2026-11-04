@@ -24,7 +24,7 @@
  */
 import { chromium } from 'playwright'
 import { spawn, spawnSync } from 'node:child_process'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -924,6 +924,491 @@ if (ALLEEN && !gedraaid) {
   console.error(`Geen regel past op DOORLOOP_ALLEEN=${process.env.DOORLOOP_ALLEEN}.`)
   await browser.close()
   process.exit(1)
+}
+
+// Liggend scherm: het bord liep op 1024×768 en 1440×900 onder de rand, en een kind
+// moest scrollen voor de onderste rij. Op elk liggend formaat moet het hele bord in
+// beeld staan, bij het kijken én bij de eerste opgave (die heeft een ander raster).
+for (const [w, h] of [[1024, 768], [1440, 900], [844, 390]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  await p.waitForSelector('[data-square]')
+  for (const fase of ['kijken', 'opgave']) {
+  if (fase === 'opgave') {
+    const knop = p.getByRole('button', { name: /Verder|proberen/ })
+    for (let i = 0; i < 8 && (await knop.count()); i++) {
+      await knop.first().click()
+      await p.waitForTimeout(300)
+    }
+  }
+  const { onder, hoog, veld, over } = await p.evaluate(() => {
+    const r = document.querySelector('[data-square]').closest('[role=group]').getBoundingClientRect()
+    // Pip mag niet onder het bord schuiven: op 1440 breed paste bord + zijkolom niet
+    // in de kolom van 940 en lag het bord over de ballon heen.
+    const ballon = [...document.querySelectorAll('p, div')].find((e) => e.textContent?.trim() && e.getBoundingClientRect().left > r.left && e.getBoundingClientRect().top < r.bottom && e.closest('[class*=vakPip]'))
+    const over = ballon ? ballon.getBoundingClientRect().left < r.right - 1 : false
+    return { onder: r.bottom, hoog: document.documentElement.scrollHeight, veld: r.width / 8, over }
+  })
+  // Ook de pagina zelf: met de 96 px onderrand van .page paste het bord wel, maar
+  // verscheen er een scrollbalk en schoof het bord mee (27e review).
+  meld(
+    `bord past zonder scrollen op ${w}×${h} (${fase})`,
+    onder <= h && hoog <= h + 1 && veld >= 44 && !over,
+    `onderkant ${Math.round(onder)} px, pagina ${hoog} px, veld ${Math.round(veld)} px${over ? ', bord ligt over Pip' : ''}`,
+  )
+  }
+  await ctx.close()
+}
+
+// Delen op het trotse moment: de deelknop op het diploma stuurt alleen de link naar
+// de startpagina en een vaste zin. Nooit de naam van het kind, ook al staat die op
+// het diploma zelf (CLAUDE.md: niets over een kind naar internet).
+{
+  const lessen = readdirSync(join(import.meta.dirname, '..', 'out', 'les'))
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  await ctx.addInitScript((lessen) => {
+    if (sessionStorage.getItem('gezaaid')) return
+    sessionStorage.setItem('gezaaid', '1')
+    const id = 'kind-doorloop'
+    const voortgang = Object.fromEntries(lessen.map((l) => [l, { sterren: 3, fouten: 0, hints: 0, laatst: '2026-11-01' }]))
+    localStorage.setItem('schaakmaatje-v1', JSON.stringify({
+      version: 0,
+      state: {
+        profielen: [{ id, naam: 'Femkeziet', leeftijd: 7, modus: 'pip', avatar: '🦊', gemaakt: '2026-11-01' }],
+        actiefId: id,
+        voortgang: { [id]: voortgang },
+      },
+    }))
+    window.__gedeeld = []
+    Object.defineProperty(navigator, 'share', { value: async (d) => { window.__gedeeld.push({ ...d, files: d.files?.map((f) => f.name) }) } })
+    Object.defineProperty(navigator, 'canShare', { value: () => true })
+  }, lessen)
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/diploma/brons/`, { waitUntil: 'networkidle' })
+  const knop = p.locator('[data-deelknop]')
+  const zichtbaar = (await knop.count()) > 0 && (await p.getByText('Femkeziet').count()) > 0
+  meld('diploma behaald: naam op het diploma en een deelknop', zichtbaar)
+  if (zichtbaar) {
+    await knop.click()
+    await p.waitForTimeout(200)
+    const gedeeld = await p.evaluate(() => window.__gedeeld)
+    const tekst = JSON.stringify(gedeeld)
+    meld(
+      'deelknop stuurt alleen de link en een vaste zin, geen naam',
+      // Met plaatje: de link staat dan in de tekst, en het bestand is het vaste plaatje.
+      gedeeld.length === 1 && !tekst.includes('Femkeziet') &&
+        (gedeeld[0].files ? gedeeld[0].files.join() === 'schaakmaatje-og.png' && /https:\/\/[^/ ]+\/$/.test(gedeeld[0].text) : /^https:\/\/[^/]+\/$/.test(gedeeld[0].url)),
+      tekst.slice(0, 160),
+    )
+  }
+  await ctx.close()
+}
+
+// En de terugval zonder deelfunctie (laptop, oudere browser): ook wat er gekopieerd
+// wordt, bevat nooit de naam (28e review).
+{
+  const lessen = readdirSync(join(import.meta.dirname, '..', 'out', 'les'))
+  const ctx = await browser.newContext({ viewport: { width: 1024, height: 768 } })
+  await ctx.addInitScript((lessen) => {
+    if (!sessionStorage.getItem('gezaaid')) {
+      sessionStorage.setItem('gezaaid', '1')
+      const id = 'kind-doorloop'
+      const voortgang = Object.fromEntries(lessen.map((l) => [l, { sterren: 3, fouten: 0, hints: 0, laatst: '2026-11-01' }]))
+      localStorage.setItem('schaakmaatje-v1', JSON.stringify({
+        version: 0,
+        state: {
+          profielen: [{ id, naam: 'Femkeziet', leeftijd: 7, modus: 'pip', avatar: '🦊', gemaakt: '2026-11-01' }],
+          actiefId: id,
+          voortgang: { [id]: voortgang },
+        },
+      }))
+    }
+    window.__gekopieerd = []
+    Object.defineProperty(navigator, 'share', { value: undefined })
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (t) => { window.__gekopieerd.push(t) } } })
+  }, lessen)
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/diploma/brons/`, { waitUntil: 'networkidle' })
+  await p.locator('[data-deelknop]').click().catch(() => {})
+  await p.waitForTimeout(200)
+  const gekopieerd = await p.evaluate(() => window.__gekopieerd)
+  const status = await p.locator('[role=status]').innerText().catch(() => '')
+  meld(
+    'zonder deelfunctie: gekopieerde tekst heeft de link en geen naam',
+    gekopieerd.length === 1 && gekopieerd[0].includes('https://') && !gekopieerd[0].includes('Femkeziet') && /gekopieerd/.test(status),
+    JSON.stringify(gekopieerd).slice(0, 160),
+  )
+  await ctx.close()
+}
+
+// Wie beweging heeft uitgezet (prefers-reduced-motion), krijgt geen golf bij het
+// eerste bord en geen opstijgend vonkje bij een goed veld: alleen het eindbeeld. En
+// andersom: mét beweging zijn ze er wel, anders bewijst "uit" niets (29e review).
+// a1 is in weide-1 het eerste goede veld (zie gastHoudtZijnSterren).
+for (const beweging of ['reduce', 'no-preference']) {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: beweging })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  await p.waitForSelector('[data-square]')
+  const golfAnim = await p.evaluate(() => getComputedStyle(document.querySelector('[data-square]')).animationName)
+  for (let i = 0; i < 10 && !(await p.getByRole('button', { name: /Ik ga het proberen/ }).count()); i++) {
+    await p.getByRole('button', { name: /Verder/ }).first().click()
+    await p.waitForTimeout(300)
+  }
+  await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
+  await p.waitForTimeout(500)
+  await p.locator('[data-square="a1"]').click()
+  await p.waitForTimeout(100)
+  const { bestaat, zichtbaar } = await p.evaluate(() => {
+    const v = [...document.querySelectorAll('[data-square="a1"] *')].find((e) => e.textContent === '✨')
+    return { bestaat: Boolean(v), zichtbaar: Boolean(v) && getComputedStyle(v).display !== 'none' }
+  })
+  if (beweging === 'reduce') {
+    meld('beweging uit: geen golf en geen vonkje', bestaat && golfAnim === 'none' && !zichtbaar, `golf=${golfAnim} vonk in DOM=${bestaat} zichtbaar=${zichtbaar}`)
+  } else {
+    meld('beweging aan: golf bij het eerste bord en een vonkje bij een goed veld', golfAnim !== 'none' && zichtbaar, `golf=${golfAnim} vonk=${zichtbaar}`)
+  }
+  await ctx.close()
+}
+
+// De kaart: met drie werelden af staat de les van vandaag (waar Pip staat) na het
+// laden in beeld, zonder langs drie volle paden te scrollen (30e review).
+{
+  // Laag scherm, zodat de les zonder scrollen onder de rand zou staan: anders test
+  // dit niet of er gescrold wordt (30e review).
+  const lessen = readdirSync(join(import.meta.dirname, '..', 'out', 'les')).filter((l) => /^(weide|toren|loper)-/.test(l))
+  // Dwars erbij: daar opende de kaart zonder plank (wow 5 na ronde 22).
+  for (const [w, h] of [[390, 500], [844, 390], [667, 375]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h }, reducedMotion: 'reduce' })
+  await ctx.addInitScript((lessen) => {
+    const id = 'kind-kaart'
+    localStorage.setItem('schaakmaatje-v1', JSON.stringify({
+      version: 0,
+      state: {
+        profielen: [{ id, naam: 'Kaartkind', leeftijd: 6, modus: 'pip', avatar: '🦊', gemaakt: '2026-11-01' }],
+        actiefId: id,
+        voortgang: { [id]: Object.fromEntries(lessen.map((l) => [l, { sterren: 3, fouten: 0, hints: 0, laatst: '2026-11-01' }])) },
+      },
+    }))
+  }, lessen)
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/kaart/`, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(600)
+  const r = await p.evaluate(() => {
+    const el = document.querySelector('[data-hier]')
+    if (!el) return null
+    const b = el.getBoundingClientRect()
+    return { top: Math.round(b.top), bottom: Math.round(b.bottom), scrollY: Math.round(window.scrollY) }
+  })
+  meld(`kaart ${w}×${h}: de kaart scrolt naar de les van vandaag`, Boolean(r) && r.scrollY > 0 && r.top >= 0 && r.bottom <= h, JSON.stringify(r))
+
+  // En de trofeeënplank scrolt mee: hij staat vlak boven de wereld van vandaag. Bovenaan
+  // de kaart zag niemand hem, omdat de kaart naar Pip scrolt (40e review).
+  const plank = await p.evaluate(() => {
+    const el = document.getElementById('plank-kop')
+    if (!el) return null
+    const b = el.getBoundingClientRect()
+    return { top: Math.round(b.top), bottom: Math.round(b.bottom) }
+  })
+  meld(`kaart ${w}×${h}: de trofeeënplank staat in beeld bij binnenkomst`, Boolean(plank) && plank.top >= 0 && plank.bottom <= h, JSON.stringify(plank))
+  await ctx.close()
+  }
+}
+
+// Het veld is leidend, niet het stuk: met 15cqi rekte het stuk de velden op en viel de
+// h-lijn half van het bord (44e review). Volle beginstelling, drie formaten.
+for (const [w, h] of [[320, 640], [844, 390], [1440, 900]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const m = await p.evaluate(() => {
+    const vak = document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect()
+    const v = [...document.querySelectorAll('[class*="Board_square"]')].map((x) => x.getBoundingClientRect())
+    if (!vak || v.length !== 64) return null
+    const rechts = Math.max(...v.map((b) => b.right)), onder = Math.max(...v.map((b) => b.bottom))
+    const hoog = v.map((b) => Math.round(b.height))
+    return { bord: Math.round(vak.width), over: Math.round(Math.max(rechts - vak.right, onder - vak.bottom)), rijen: Math.max(...hoog) - Math.min(...hoog) }
+  })
+  meld(`bord op ${w}×${h}: 8 velden passen precies, rijen even hoog`, Boolean(m) && m.over <= 1 && m.rijen <= 1, JSON.stringify(m))
+  await ctx.close()
+}
+
+// Speelscherm dwars: bord links, knoppen rechts. Onder elkaar viel het bord half onder
+// de rand, velden 34 px (46e review).
+{
+  const ctx = await browser.newContext({ viewport: { width: 844, height: 390 } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const m = await p.evaluate(() => {
+    const f = document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect()
+    const k = [...document.querySelectorAll('button')].find((x) => /Nog een keer/.test(x.textContent))?.getBoundingClientRect()
+    return f && k ? { veld: Math.round(f.width / 8), bordOnder: Math.round(f.bottom), knopOnder: Math.round(k.bottom), hoog: document.documentElement.scrollHeight } : null
+  })
+  // hoog: de rij-truc gaf 230 px leeg scrollen onder de pagina (47e review).
+  meld('speelscherm 844×390: velden ≥ 44 px, bord en knoppen in beeld, niets te scrollen', Boolean(m) && m.veld >= 44 && m.bordOnder <= 390 && m.knopOnder <= 390 && m.hoog <= 390, JSON.stringify(m))
+  await ctx.close()
+}
+
+// Startpagina dwars: knop naar de eerste les en het proefbord met Pip in één beeld. Onder
+// elkaar zag je alleen tekst (wow 4 na ronde 22).
+for (const [w, h] of [[844, 390], [667, 375]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const m = await p.evaluate(() => {
+    const k = [...document.querySelectorAll('a')].find((a) => /eerste les/.test(a.textContent))?.getBoundingClientRect()
+    const f = document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect()
+    return k && f ? { knop: Math.round(k.bottom), bordBoven: Math.round(f.top) } : null
+  })
+  meld(`startpagina ${w}×${h}: knop en proefbord in beeld`, Boolean(m) && m.knop <= h && m.bordBoven < h - 100, JSON.stringify(m))
+  await ctx.close()
+}
+
+// Speelscherm op laptops: --naast-bord (410 px) is de opgetelde hoogte van kop, Pip,
+// tegenstander en knoppen. Verandert een daarvan, dan vallen de knoppen weg (45e review).
+for (const [w, h] of [[1440, 900], [1366, 650], [1280, 800]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const onder = await p.evaluate(() => Math.round([...document.querySelectorAll('button')].find((x) => /Nog een keer/.test(x.textContent))?.getBoundingClientRect().bottom ?? 1e4))
+  meld(`speelscherm ${w}×${h}: knoppen in beeld`, onder <= h, `onderkant ${onder}`)
+  await ctx.close()
+}
+
+// Speelscherm 667×375: de kop werd een verticale strook letters, knoppen onder de rand
+// (54e review). Titel minstens 60 px breed en "Nog een keer" in beeld.
+{
+  const ctx = await browser.newContext({ viewport: { width: 667, height: 375 } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const m = await p.evaluate(() => ({
+    titel: Math.round(document.querySelector('header h2')?.getBoundingClientRect().width ?? 0),
+    knop: Math.round([...document.querySelectorAll('button')].find((x) => /Nog een keer/.test(x.textContent))?.getBoundingClientRect().bottom ?? 1e4),
+  }))
+  meld('speelscherm 667×375: kop leesbaar en knoppen in beeld', m.titel >= 60 && m.knop <= 375, JSON.stringify(m))
+  await ctx.close()
+}
+
+// Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
+// waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
+// niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.
+for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(URL + pad, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const klein = await p.evaluate((lat) =>
+    [...document.querySelectorAll('a, button, summary, [role=button]')]
+      .filter((e) => !e.closest('[data-square]'))
+      .map((e) => ({ e, r: e.getBoundingClientRect() }))
+      .filter(({ r }) => r.width > 0 && r.height > 0 && (r.width < lat || r.height < lat))
+      .filter(({ e }) => !(e.tagName === 'A' && getComputedStyle(e).display === 'inline' && e.closest('p')))
+      .map(({ e, r }) => `${Math.round(r.width)}×${Math.round(r.height)} ${(e.getAttribute('aria-label') || e.textContent || '').trim().slice(0, 24)}`), lat)
+  meld(`raakvlakken op ${pad} minstens ${lat} px`, klein.length === 0, klein.slice(0, 3).join(' | '))
+  await ctx.close()
+}
+
+// Offline: wie alleen de startpagina heeft geopend, kan daarna zonder internet alle
+// lessen van wereld 0–2 en hun minispellen spelen (nulmeting volgende niveau: alleen
+// wat al bezocht was werkte offline). Direct openen én vanaf de kaart doortikken.
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/`, { waitUntil: 'networkidle' })
+  // Wachten op precies de voorraad uit sw.js, in de cache met die naam (33e review:
+  // een vast getal kon te vroeg offline gaan).
+  await p.evaluate(async () => {
+    const sw = await (await fetch('./sw.js')).text()
+    const naam = sw.match(/const CACHE = '([^']+)'/)[1]
+    const nodig = JSON.parse(sw.match(/const VOORAF = (\[.*?\])/)[1]).length
+    await navigator.serviceWorker.ready
+    for (let i = 0; i < 200; i++) {
+      const n = (await caches.has(naam)) ? (await (await caches.open(naam)).keys()).length : 0
+      if (n >= nodig) return
+      await new Promise((r) => setTimeout(r, 100))
+    }
+    throw new Error('voorraad niet op tijd binnen')
+  })
+  await ctx.setOffline(true)
+  const resultaten = []
+  for (const pad of ['/les/loper-2/', '/spel/torenjacht/', '/kaart/']) {
+    const ok = await p.goto(`${URL}${pad}`, { waitUntil: 'load' }).then(() => true).catch(() => false)
+    await p.waitForTimeout(800)
+    const iets = pad === '/kaart/' ? await p.locator('[data-hier]').count() : await p.locator('[data-square]').count()
+    // Ook de tekeningen: offline was Pip een lege cirkel (37e review). Alleen wat in
+    // beeld is en dus geladen hoort te zijn (lazy plaatjes eronder tellen niet).
+    const kapot = await p.evaluate(() =>
+      [...document.images].filter((i) => i.loading !== 'lazy' && i.complete && i.naturalWidth === 0).map((i) => i.src.split('/').pop()),
+    )
+    resultaten.push(`${pad}:${ok && iets > 0 && kapot.length === 0 ? 'ja' : `nee${kapot.length ? ` (kapot: ${kapot.join(',')})` : ''}`}`)
+  }
+  // Doortikken vanaf de kaart: dat gaat via het RSC-bestand, niet via de HTML.
+  await p.locator('[data-hier] a').first().click({ force: true }).catch(() => {})
+  await p.waitForTimeout(1200)
+  const doorgetikt = /\/les\//.test(p.url()) && (await p.locator('[data-square]').count()) > 0
+  resultaten.push(`kaart→les:${doorgetikt ? 'ja' : 'nee'}`)
+  // En een les die níet in de voorraad zit: de offlinepagina met een weg naar de kaart,
+  // niet de startpagina voor ouders onder de URL van de les.
+  await p.goto(`${URL}/les/dame-1/`, { waitUntil: 'load' }).catch(() => {})
+  await p.waitForTimeout(500)
+  const offlinePagina = /\/offline\/$/.test(p.url()) && (await p.getByRole('link', { name: /Naar de kaart/ }).count()) === 1
+  resultaten.push(`buiten-voorraad→offlinepagina:${offlinePagina ? 'ja' : 'nee'}`)
+  if (offlinePagina) {
+    await p.getByRole('link', { name: /Naar de kaart/ }).click()
+    await p.waitForTimeout(800)
+    resultaten.push(`offlinepagina→kaart:${(await p.locator('[data-hier]').count()) > 0 ? 'ja' : 'nee'}`)
+  }
+  meld('offline na alleen de startpagina: wereld 0–2 speelt', !resultaten.some((r) => r.includes(':nee')), resultaten.join(' '))
+  await ctx.close()
+}
+
+// Gevoel: elke tik geeft binnen 100 ms iets zichtbaars. Gemeten van de klik tot de
+// eerste verandering op het scherm (een klasse op het veld, een nieuwe zin, een vinkje),
+// voor een goed veld, een fout veld en de hulpknop. En met minder beweging: geen enkele
+// animatie die eindeloos doorloopt (35e review).
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  for (let i = 0; i < 10 && !(await p.getByRole('button', { name: /Ik ga het proberen/ }).count()); i++) {
+    await p.getByRole('button', { name: /Verder/ }).first().click()
+    await p.waitForTimeout(300)
+  }
+  await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
+  await p.waitForTimeout(700)
+  // Per tik de verandering die een kind ziet, niet de eerste mutatie ergens in de DOM
+  // (een aria-live-zin of de praatklasse op Pip zou de klok te vroeg stilzetten):
+  // een veld: een nieuwe klasse op dát veld; de hulpknop: een veld met de hintgloed.
+  // Gemeten tot ná de verf (rAF + setTimeout 0).
+  const reactie = (kies) =>
+    p.evaluate(
+      (kies) =>
+        new Promise((klaar) => {
+          const doel = kies === 'hulp'
+            ? [...document.querySelectorAll('button')].find((b) => /Help me even/.test(b.textContent))
+            : document.querySelector(`[data-square="${kies}"]`)
+          if (!doel) return klaar(`geen ${kies} gevonden`)
+          const zichtbaar = kies === 'hulp'
+            ? () => Boolean(document.querySelector('[data-square][class*=glow]'))
+            : (() => { const voor = doel.className; return () => doel.className !== voor })()
+          const start = performance.now()
+          const kijk = () => {
+            if (zichtbaar()) return requestAnimationFrame(() => setTimeout(() => klaar(Math.round(performance.now() - start)), 0))
+            if (performance.now() - start > 2000) return klaar(9999)
+            requestAnimationFrame(kijk)
+          }
+          doel.click()
+          kijk()
+        }),
+      kies,
+    )
+  const goed = await reactie('a1')
+  await p.waitForTimeout(400)
+  const fout = await reactie('b1')
+  await p.waitForTimeout(1500)
+  const hulp = await reactie('hulp')
+  const ms = [goed, fout, hulp]
+  meld('elke tik reageert binnen 100 ms', ms.every((m) => typeof m === 'number' && m <= 100), `goed ${goed} ms, fout ${fout} ms, hulp ${hulp} ms`)
+  await ctx.close()
+
+  const rustig = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
+  const r = await rustig.newPage()
+  const eindeloos = []
+  for (const pad of ['/', '/les/weide-1/', '/kaart/', '/spel/torenjacht/']) {
+    await r.goto(`${URL}${pad}`, { waitUntil: 'networkidle' })
+    await r.waitForTimeout(600)
+    eindeloos.push(...(await r.evaluate((pad) =>
+      document.getAnimations()
+        .filter((a) => a.playState === 'running' && a.effect?.getComputedTiming().iterations === Infinity)
+        .map((a) => `${pad} ${a.animationName}`), pad)))
+  }
+  meld('minder beweging: geen eindeloze animaties', eindeloos.length === 0, eindeloos.slice(0, 4).join(' | '))
+  await rustig.close()
+}
+
+// Het paard in de held: een stip aantikken laat het springen, een veld zonder stip
+// niet, en na drie sprongen staat er een weg naar de eerste les (36e review).
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/`, { waitUntil: 'networkidle' })
+  const bord = p.getByRole('group', { name: /Probeer het zelf/ })
+  const paardOp = () => bord.locator('[data-square]').evaluateAll((vs) => vs.filter((v) => /paard/.test(v.getAttribute('aria-label'))).map((v) => v.dataset.square))
+  const begin = (await paardOp()).join()
+  await bord.locator('[data-square="a1"]').click()
+  await p.waitForTimeout(200)
+  const naFout = (await paardOp()).join()
+  for (const v of ['e7', 'g6', 'e5']) {
+    await bord.locator(`[data-square="${v}"]`).click()
+    await p.waitForTimeout(250)
+  }
+  const eind = (await paardOp()).join()
+  const link = await p.getByRole('link', { name: /Leer het met Pip/ }).getAttribute('href').catch(() => null)
+  meld(
+    'held: het paard springt alleen naar een stip, en na drie sprongen naar de les',
+    begin === 'd5' && naFout === 'd5' && eind === 'e5' && /\/les\/weide-1\//.test(link ?? ''),
+    `begin ${begin}, na fout ${naFout}, eind ${eind}, link ${link}`,
+  )
+  await ctx.close()
+}
+
+// De eerste stap van een nieuwe bezoeker: "Verder" in de kijkfase helemaal in beeld,
+// ook op een kleine telefoon. De grotere Pip duwde hem eronder (39e review).
+for (const [w, h] of [[360, 740], [375, 667]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(500)
+  const r = await p.getByRole('button', { name: /^.?\s*Verder/ }).first().boundingBox()
+  meld(`kijkfase: "Verder" in beeld op ${w}×${h}`, Boolean(r) && r.y + r.height <= h, r ? `onderkant ${Math.round(r.y + r.height)} px` : 'geen knop')
+  await ctx.close()
+}
+
+// Wereld af: "Volgende les" in beeld en de wapenrij altijd 8 + 7, op elke breedte.
+// Speelt weide-1 uit met weide-2 en -3 al af (39e review: 7+7+1 op 320, 9+6 op 393).
+for (const [w, h] of [[320, 640], [393, 852], [1024, 768], [844, 390], [667, 375]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h }, reducedMotion: 'reduce' })
+  await ctx.addInitScript(() => {
+    if (sessionStorage.getItem('z')) return
+    sessionStorage.setItem('z', '1')
+    const id = 'k', r = { sterren: 3, fouten: 0, hints: 0, laatst: 'x' }
+    localStorage.setItem('schaakmaatje-v1', JSON.stringify({ version: 0, state: { profielen: [{ id, naam: 'Noor', leeftijd: 7, modus: 'pip', avatar: '🦊', gemaakt: 'x' }], actiefId: id, voortgang: { [id]: { 'weide-2': r, 'weide-3': r } } } }))
+  })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  for (let i = 0; i < 10 && !(await p.getByRole('button', { name: /Ik ga het proberen/ }).count()); i++) {
+    await p.getByRole('button', { name: /Verder/ }).first().click()
+    await p.waitForTimeout(250)
+  }
+  await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
+  await p.waitForTimeout(500)
+  for (const v of [['a1', 'c1', 'e1', 'g1'], ['b1', 'd1', 'f1', 'h1'], ['a8', 'c8', 'e8', 'g8'], ['d4', 'e5'], ['d5', 'e4']]) {
+    for (const s of v) { await p.locator(`[data-square="${s}"]`).click(); await p.waitForTimeout(150) }
+    await p.waitForTimeout(2300)
+    for (let i = 0; i < 6; i++) {
+      const d = p.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ })
+      if (!(await d.count())) break
+      await d.first().click()
+      await p.waitForTimeout(350)
+    }
+  }
+  await p.getByText(/is af!/).waitFor({ timeout: 8000 }).catch(() => {})
+  await p.waitForTimeout(400)
+  const { rijen, knop } = await p.evaluate(() => {
+    const ws = [...document.querySelectorAll('[aria-label="Jouw wereldwapens"] > *')]
+    const tops = [...new Set(ws.map((e) => Math.round(e.getBoundingClientRect().top)))]
+    const per = tops.map((t) => ws.filter((e) => Math.round(e.getBoundingClientRect().top) === t).length)
+    const k = [...document.querySelectorAll('a')].find((a) => /Volgende les/.test(a.textContent))
+    return { rijen: per.join('+'), knop: k ? Math.round(k.getBoundingClientRect().bottom) : null }
+  })
+  meld(`wereld af op ${w}×${h}: wapens 8+7 en "Volgende les" in beeld`, rijen === '8+7' && knop !== null && knop <= h, `rijen ${rijen}, knop onderkant ${knop}`)
+  await ctx.close()
 }
 
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))

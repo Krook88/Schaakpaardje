@@ -35,6 +35,7 @@ export const metadata: Metadata = {
     titel: 'Een schaakclub voor je kind vinden | Schaakmaatje',
     omschrijving: OMSCHRIJVING,
     url: `${SITE}/schaakclub/`,
+    beeld: { pad: '/og/schaakclub.png', alt: 'Een schaakclub voor je kind vinden' },
   }),
 }
 

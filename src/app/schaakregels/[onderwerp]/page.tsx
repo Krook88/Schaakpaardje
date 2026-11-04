@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Icoon, lesIcoon } from '@/ui/beelden'
 import { notFound } from 'next/navigation'
 import { ALLE_LESSEN, lesMet } from '@/content'
 import { SCHAAKREGELS, onderwerpMet } from '@/content/schaakregels'
@@ -33,7 +34,12 @@ export async function generateMetadata({
     title: o.zoektitel,
     description: o.omschrijving,
     alternates: { canonical: url },
-    ...deelkaart({ titel: o.vraag, omschrijving: o.omschrijving, url }),
+    ...deelkaart({
+      titel: o.vraag,
+      omschrijving: o.omschrijving,
+      url,
+      beeld: { pad: `/og/regel-${o.slug}.png`, alt: o.vraag },
+    }),
   }
 }
 
@@ -147,7 +153,7 @@ export default async function Onderwerp({ params }: { params: Promise<{ onderwer
             <li key={les.id}>
               <Link href={`/les/${les.id}/`}>
                 <span aria-hidden="true" className={s.icoon}>
-                  {les.icoon}
+                  <Icoon src={lesIcoon(les.id)} maat={40} />
                 </span>
                 <span>
                   <strong>{les.titel}</strong>

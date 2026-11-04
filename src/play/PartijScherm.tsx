@@ -1,5 +1,7 @@
 'use client'
 
+import { botBeeld } from '@/ui/beelden'
+import styles from './PartijScherm.module.css'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
@@ -379,12 +381,28 @@ export function PartijScherm({ botId }: { botId: string }) {
   }
 
   return (
-    <main className="page">
-      <Kop titel={bot ? `${bot.emoji} ${bot.naam}` : '👨‍👩‍👧 Samen spelen'} terug="/spelen/" />
-      <div className="stack">
+    <main className={`page ${styles.pagina}`}>
+      <Kop titel={bot ? bot.naam : '👨‍👩‍👧 Samen spelen'} terug="/spelen/" />
+      <div className={`stack ${styles.vlak}`}>
+        {/* Drie blokken: boven (Pip), het bord, onder (status, kaarten, knoppen). Dwars
+            staat het bord links en de blokken rechts; geen rij-truc meer (codebase-review). */}
+        <div className={`stack ${styles.boven}`}>
         <Pip zegt={zin} stemming={stemming} klein />
 
-        <div style={{ maxWidth: 'min(100%, 70vh, 620px)', margin: '0 auto', width: '100%' }}>
+        {/* Bord plus kop, Pip, status en knoppen in één scherm: op 1440×900 vielen de
+            knoppen eronder weg bij 70vh (45e review). Op lage liggende schermen blijft
+            70vh de ondergrens; daar is een eigen indeling nodig (scorebord). */}
+        {/* De tegenstander aan zijn eigen kant van het bord: "mijn kind speelt tegen Bas de
+            Hond", niet tegen een kaal bord (wow 4 na ronde 22). Alleen de tekening en de naam
+            uit de vaste lijst, niets van het kind. */}
+        {bot && (
+          <div className={styles.tegenstander} aria-hidden="true">
+            <img src={botBeeld(bot.id)} alt="" width={56} height={56} className={styles.tegenstanderGezicht} draggable={false} />
+            <span>{bot.naam}</span>
+          </div>
+        )}
+        </div>
+        <div className={styles.bord}>
           <Board
             position={fen}
             // Bij samen spelen draait het bord naar wie er aan zet is, zodat elk kind
@@ -400,7 +418,7 @@ export function PartijScherm({ botId }: { botId: string }) {
             label="Partij"
           />
         </div>
-
+        <div className={`stack ${styles.onder}`}>
         <div className="row" style={{ justifyContent: 'space-between' }}>
           <span className="muted" aria-live="polite">
             {uitslag && samen
@@ -512,6 +530,8 @@ export function PartijScherm({ botId }: { botId: string }) {
 
         {uitslag && !samen && (
           <div className="card stack center">
+            {/* De tegenstander geeft je een hand: bij elke uitslag, nooit uitlachen. */}
+            {bot && <img src={botBeeld(bot.id)} alt="" width={64} height={64} aria-hidden="true" draggable={false} className={styles.uitslagBot} />}
             <h2>{uitslag === 'gewonnen' ? 'Gewonnen! 🏆' : uitslag === 'verloren' ? 'Deze ging verloren' : 'Gelijkspel'}</h2>
             <p className="muted">
               Je deed {zetten} zetten. {laatsteZet && `De laatste ging naar ${laatsteZet[1]}.`}
@@ -525,7 +545,7 @@ export function PartijScherm({ botId }: { botId: string }) {
         )}
 
         {/* De knoppen onder de uitslag: anders viel de uitslag op een telefoon onder de vouw. */}
-        <div className="row" style={{ justifyContent: 'center' }}>
+        <div className={`row ${styles.knoppen}`} style={{ justifyContent: 'center' }}>
           <button type="button" className="btn" onClick={neemTerug} disabled={zetten === 0}>
             ↩︎ Terugnemen
           </button>
@@ -550,7 +570,7 @@ export function PartijScherm({ botId }: { botId: string }) {
             {samen ? 'Terug naar spelen' : 'Andere tegenstander'}
           </Link>
         </div>
-
+        </div>
       </div>
     </main>
   )

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import styles from './Board.module.css'
 import { GLYPH } from './pieces'
+import { pipLos } from '@/ui/beelden'
 import {
   FILES,
   fileIndex,
@@ -50,6 +51,18 @@ type Props = {
   /** Veld dat net fout was; schudt één keer. */
   shake?: Square | null
   label?: string
+  /** Het bord rolt één keer in een golf binnen. Voor de kennismaking in de eerste les:
+   *  een leeg bord dat er gewoon stond, was het eerste wat een kind zag (27e review).
+   *  Alleen voor borden waar niet op getikt wordt: `.golf .square` wint van de schud-
+   *  en pop-animatie van `.wrong` en `.goedVeld`. */
+  golf?: boolean
+  /** Witte paarden als Pip getekend in plaats van als schaakteken. Alleen voor de
+   *  begroeting in de eerste les: daar staat Pip zelf op het bord ("Daar sta ik!"). */
+  pipAlsPaard?: boolean
+  /** Op een smalle telefoon tot vlak bij de rand (standaard), zodat velden ≥ 44 px
+   *  blijven. Op de startpagina even uitgezet (36e review), maar dan werden de velden
+   *  op 360 breed 41 px; de lat gaat voor, en een veeg om te scrollen is geen tik. */
+  randTotRand?: boolean
 }
 
 /** Vinkje en kruisje zijn getekend, niet als emoji: die zien er op elk toestel anders uit. */
@@ -103,6 +116,9 @@ export function Board({
   showCoordinates = false,
   shake = null,
   label = 'Schaakbord',
+  golf = false,
+  pipAlsPaard = false,
+  randTotRand = true,
 }: Props) {
   const board: BoardMap = useMemo(
     () => (typeof position === 'string' ? parseBoard(position) : position),
@@ -170,11 +186,11 @@ export function Board({
   }
 
   return (
-    <div className={styles.wrap}>
-      <div className={styles.frame} role="group" aria-label={label}>
+    <div className={`${styles.wrap} ${randTotRand ? styles.randTotRand : ''}`}>
+      <div className={`${styles.frame} ${golf ? styles.golf : ''}`} role="group" aria-label={label}>
         <div className={styles.grid}>
-          {ranks.map((rank) =>
-            files.map((file) => {
+          {ranks.map((rank, ri) =>
+            files.map((file, fi) => {
               const sq = toSquare(file, rank)
               const piece = board[sq]
               const light = isLightSquare(sq)
@@ -193,9 +209,12 @@ export function Board({
               if (marks.last?.includes(sq)) classes.push(styles.last)
               if (shaking === sq) classes.push(styles.wrong)
 
-              const naam = piece
-                ? `${piece.color === 'w' ? 'witte' : 'zwarte'} ${PIECE_NAME[piece.type]}`
-                : 'leeg'
+              const isPip = pipAlsPaard && piece?.color === 'w' && piece.type === 'n'
+              const naam = isPip
+                ? 'Pip, het witte paard'
+                : piece
+                  ? `${piece.color === 'w' ? 'witte' : 'zwarte'} ${PIECE_NAME[piece.type]}`
+                  : 'leeg'
               const kleurKlasse = light ? styles.opLicht : styles.opDonker
 
               return (
@@ -214,10 +233,17 @@ export function Board({
                   aria-label={`${sq}, ${naam}${isTarget ? ', hier kun je heen' : ''}`}
                   aria-pressed={selected === sq}
                   data-square={sq}
-                  style={stap >= 0 ? ({ '--stap': stap } as React.CSSProperties) : undefined}
+                  style={
+                    stap >= 0 || golf
+                      ? ({ ...(stap >= 0 ? { '--stap': stap } : {}), ...(golf ? { '--golf': ri + fi } : {}) } as React.CSSProperties)
+                      : undefined
+                  }
                 >
                   {has(marks.goals, sq) && <Ster />}
-                  {piece && (
+                  {isPip && (
+                    <img src={pipLos('blij')} alt="" aria-hidden="true" draggable={false} className={`${styles.piece} ${styles.pipStuk}`} />
+                  )}
+                  {piece && !isPip && (
                     <span
                       className={`${styles.piece} ${piece.color === 'w' ? styles.white : styles.black}`}
                       aria-hidden="true"
@@ -228,6 +254,13 @@ export function Board({
                   {isTarget && !piece && <span className={styles.dot} aria-hidden="true" />}
                   {isTarget && piece && <span className={styles.ring} aria-hidden="true" />}
                   {goed && <Vinkje />}
+                  {/* Een vonkje dat opstijgt: per goed veld een kleine beloning, niet
+                      alleen een vinkje dat er ineens staat. */}
+                  {goed && (
+                    <span className={styles.vonk} aria-hidden="true">
+                      ✨
+                    </span>
+                  )}
                   {fout && <Kruisje />}
                   {showCoordinates && rank === onderste && (
                     <span className={`${styles.coordLijn} ${kleurKlasse}`} aria-hidden="true">
