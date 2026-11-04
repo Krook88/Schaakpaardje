@@ -124,3 +124,7 @@
 .groot .pip { width: 112px; height: 112px; }
 /* Op een laag scherm duwde de grote Pip "Verder" onder de vouw (39e review). */
 @media (max-height: 779px) { .groot .pip { width: 76px; height: 76px; } }
+
+/* Zacht krimpen na de kennismaking, geen schok (39e review). */
+.pip { transition: width 250ms ease, height 250ms ease; }
+@media (prefers-reduced-motion: reduce) { .pip { transition: none; } }

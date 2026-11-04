@@ -614,8 +614,10 @@ export function LessonPlayer({
               </div>
             </div>
           )}
-          {/* De hoofdknop eerst: op een telefoon stond "Naar de kaart" erboven (28e review). */}
-          <div className="row" style={{ justifyContent: 'center' }}>
+          {/* De hoofdknop eerst: op een telefoon stond "Naar de kaart" erboven (28e review).
+              Bij wereld af direct onder de feestkaart (CSS-volgorde): daaronder viel hij op
+              de meeste schermen onder de vouw (39e review). */}
+          <div className={`row ${wereldKlaar ? styles.naFeest : ''}`} style={{ justifyContent: 'center' }}>
             {volgende && (
               <Link href={`/les/${volgende.id}/`} className="btn btn--primary btn--big">
                 Volgende les →

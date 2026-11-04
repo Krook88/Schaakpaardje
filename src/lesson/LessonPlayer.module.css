@@ -294,3 +294,17 @@
   .vertelStack > .vakKnoppen { order: -1; }
   .vertelStack > .vakPip { order: -2; }
 }
+
+/* Altijd 8 + 7, op elke breedte (39e review: flex-wrap gaf 7+7+1 op 320 en 9+6 op 393).
+   De maat van een wapen volgt de breedte, en de rij is precies 8 wapens breed. */
+.wapenRij { --wapen: min(36px, calc((100vw - 96px - 28px) / 8)); gap: 4px !important; max-width: calc(8 * var(--wapen) + 28px) !important; }
+.wapenKlein { width: var(--wapen) !important; height: var(--wapen) !important; }
+.wapenKlein img { width: 82% !important; height: 82% !important; }
+
+/* Wereld af: Pip, feestkaart, knoppen, dan pas lesuitslag en nieuwe wereld. */
+.wereldAf { order: 1; }
+.naFeest { order: 2; }
+.wereldAf ~ *:not(.naFeest) { order: 3; }
+
+/* De getinte achtergrond loopt door tot onder de knoppen (39e review: naad door "Volgende les"). */
+.wereldpagina { min-height: 100dvh; }

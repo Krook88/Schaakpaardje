@@ -1278,6 +1278,47 @@ for (const [w, h] of [[360, 740], [375, 667]]) {
   await ctx.close()
 }
 
+// Wereld af: "Volgende les" in beeld en de wapenrij altijd 8 + 7, op elke breedte.
+// Speelt weide-1 uit met weide-2 en -3 al af (39e review: 7+7+1 op 320, 9+6 op 393).
+for (const [w, h] of [[320, 640], [393, 852], [1024, 768]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h }, reducedMotion: 'reduce' })
+  await ctx.addInitScript(() => {
+    if (sessionStorage.getItem('z')) return
+    sessionStorage.setItem('z', '1')
+    const id = 'k', r = { sterren: 3, fouten: 0, hints: 0, laatst: 'x' }
+    localStorage.setItem('schaakmaatje-v1', JSON.stringify({ version: 0, state: { profielen: [{ id, naam: 'Noor', leeftijd: 7, modus: 'pip', avatar: '🦊', gemaakt: 'x' }], actiefId: id, voortgang: { [id]: { 'weide-2': r, 'weide-3': r } } } }))
+  })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  for (let i = 0; i < 10 && !(await p.getByRole('button', { name: /Ik ga het proberen/ }).count()); i++) {
+    await p.getByRole('button', { name: /Verder/ }).first().click()
+    await p.waitForTimeout(250)
+  }
+  await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
+  await p.waitForTimeout(500)
+  for (const v of [['a1', 'c1', 'e1', 'g1'], ['b1', 'd1', 'f1', 'h1'], ['a8', 'c8', 'e8', 'g8'], ['d4', 'e5'], ['d5', 'e4']]) {
+    for (const s of v) { await p.locator(`[data-square="${s}"]`).click(); await p.waitForTimeout(150) }
+    await p.waitForTimeout(2300)
+    for (let i = 0; i < 6; i++) {
+      const d = p.getByRole('button', { name: /^(Verder|Ik ga het proberen)/ })
+      if (!(await d.count())) break
+      await d.first().click()
+      await p.waitForTimeout(350)
+    }
+  }
+  await p.getByText(/is af!/).waitFor({ timeout: 8000 }).catch(() => {})
+  await p.waitForTimeout(400)
+  const { rijen, knop } = await p.evaluate(() => {
+    const ws = [...document.querySelectorAll('[aria-label="Jouw wereldwapens"] > *')]
+    const tops = [...new Set(ws.map((e) => Math.round(e.getBoundingClientRect().top)))]
+    const per = tops.map((t) => ws.filter((e) => Math.round(e.getBoundingClientRect().top) === t).length)
+    const k = [...document.querySelectorAll('a')].find((a) => /Volgende les/.test(a.textContent))
+    return { rijen: per.join('+'), knop: k ? Math.round(k.getBoundingClientRect().bottom) : null }
+  })
+  meld(`wereld af op ${w}×${h}: wapens 8+7 en "Volgende les" in beeld`, rijen === '8+7' && knop !== null && knop <= h, `rijen ${rijen}, knop onderkant ${knop}`)
+  await ctx.close()
+}
+
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 
 await browser.close()
