@@ -81,3 +81,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 24: 49e review verwerkt. Open: proefbord dwars < 44 px.
 - Ronde 25: kaart dwars — plank als smalle strook (wapens 44 px, geen namen), plank en les samen in beeld (doorloop 844×390).
 - Ronde 25: 50e review verwerkt (667×375 in doorloop, title op wapens, namen sr-only).
+- Ronde 26: speelscherm — tegenstander met gezicht en naam boven het bord (verborgen onder 700 px hoogte, daar staat hij in de kop).

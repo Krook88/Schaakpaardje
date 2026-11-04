@@ -24,3 +24,13 @@
   .vlak > * { order: 2; }
   .vlak > .knoppen { order: 1; }
 }
+.tegenstander {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-weight: 800; font-size: 1.05rem; margin: 0 auto -4px;
+}
+.tegenstanderGezicht {
+  font-size: 34px; line-height: 1; width: 48px; height: 48px; display: grid; place-items: center;
+  border-radius: 50%; background: var(--surface); border: 2px solid var(--line);
+}
+/* Dwars staat de tegenstander al in de kop naast het bord; de extra regel liet de pagina scrollen. */
+@media (max-height: 700px) { .tegenstander { display: none; } }

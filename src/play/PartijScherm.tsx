@@ -388,7 +388,16 @@ export function PartijScherm({ botId }: { botId: string }) {
         {/* Bord plus kop, Pip, status en knoppen in één scherm: op 1440×900 vielen de
             knoppen eronder weg bij 70vh (45e review). Op lage liggende schermen blijft
             70vh de ondergrens; daar is een eigen indeling nodig (scorebord). */}
-        <div className={styles.bord} style={{ maxWidth: 'min(100%, 620px, max(calc(100svh - 330px), min(70vh, 300px)))', margin: '0 auto', width: '100%' }}>
+        {/* De tegenstander aan zijn eigen kant van het bord: "mijn kind speelt tegen Bas de
+            Hond", niet tegen een kaal bord (wow 4 na ronde 22). Alleen een emoji en de naam
+            uit de vaste lijst, niets van het kind. */}
+        {bot && (
+          <div className={styles.tegenstander} aria-hidden="true">
+            <span className={styles.tegenstanderGezicht}>{bot.emoji}</span>
+            <span>{bot.naam}</span>
+          </div>
+        )}
+        <div className={styles.bord} style={{ maxWidth: 'min(100%, 620px, max(calc(100svh - 390px), min(70vh, 300px)))', margin: '0 auto', width: '100%' }}>
           <Board
             position={fen}
             // Bij samen spelen draait het bord naar wie er aan zet is, zodat elk kind
