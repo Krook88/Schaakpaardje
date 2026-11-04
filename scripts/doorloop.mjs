@@ -1113,6 +1113,25 @@ for (const beweging of ['reduce', 'no-preference']) {
   await ctx.close()
 }
 
+// Het veld is leidend, niet het stuk: met 15cqi rekte het stuk de velden op en viel de
+// h-lijn half van het bord (44e review). Volle beginstelling, drie formaten.
+for (const [w, h] of [[320, 640], [844, 390], [1440, 900]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const m = await p.evaluate(() => {
+    const vak = document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect()
+    const v = [...document.querySelectorAll('[class*="Board_square"]')].map((x) => x.getBoundingClientRect())
+    if (!vak || v.length !== 64) return null
+    const rechts = Math.max(...v.map((b) => b.right)), onder = Math.max(...v.map((b) => b.bottom))
+    const hoog = v.map((b) => Math.round(b.height))
+    return { bord: Math.round(vak.width), over: Math.round(Math.max(rechts - vak.right, onder - vak.bottom)), rijen: Math.max(...hoog) - Math.min(...hoog) }
+  })
+  meld(`bord op ${w}×${h}: 8 velden passen precies, rijen even hoog`, Boolean(m) && m.over <= 1 && m.rijen <= 1, JSON.stringify(m))
+  await ctx.close()
+}
+
 // Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
 // waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
 // niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.
