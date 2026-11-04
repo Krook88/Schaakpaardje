@@ -120,3 +120,8 @@
   0%, 100% { transform: translateY(0) rotate(-2deg); }
   50% { transform: translateY(-4px) rotate(2deg); }
 }
+
+/* De tekening vult de ronde knop. */
+.tekening { display: block; width: 100%; height: 100%; }
+.gezicht:has(.tekening) { width: 100%; height: 100%; font-size: 0; }
+.pip:has(.tekening) { overflow: hidden; }

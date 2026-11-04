@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { WereldWapen, kaartBeeld, pipBeeld } from '@/ui/beelden'
 import Link from 'next/link'
 import { Kop } from '@/ui/Kop'
 import { Sterren } from '@/ui/Sterren'
@@ -98,7 +99,7 @@ export default function Kaart() {
                 aria-label={`${w.naam}${af ? ', af' : w.id === hierWereld ? ', hier ben je' : ''}`}
                 role="img"
               >
-                {w.emoji}
+                <WereldWapen id={w.id} maat={28} />
               </span>
             )
           })}
@@ -157,7 +158,7 @@ export default function Kaart() {
             >
               <div className={styles.band}>
                 <span className={styles.wapen} aria-hidden="true">
-                  {wereld.emoji}
+                  <WereldWapen id={wereld.id} maat={46} />
                 </span>
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <h2 style={{ fontSize: '1.15rem' }}>
@@ -221,7 +222,8 @@ export default function Kaart() {
                     <>
                       {halte.jij && (
                         <span className={pad.pip} aria-hidden="true">
-                          🐴
+                          {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
+                          <img src={pipBeeld('blij')} alt="" width={40} height={40} style={{ display: 'block' }} />
                         </span>
                       )}
                       <span className={pad.icoon} aria-hidden="true">
@@ -282,7 +284,13 @@ export default function Kaart() {
               )}
               </div>
               </Uitklap>
-              <div className={styles.heuvels} aria-hidden="true" />
+              {/* De kaartstrook van deze wereld (getekend), in plaats van drie CSS-heuvels:
+                  de kaart als landschap, niet als stapel kaarten (36e review). */}
+              <picture className={styles.strook} aria-hidden="true">
+                <source media="(prefers-color-scheme: dark)" srcSet={kaartBeeld(wereld.id, true)} />
+                {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
+                <img src={kaartBeeld(wereld.id)} alt="" loading="lazy" decoding="async" />
+              </picture>
             </section>
           )
         })}
@@ -308,7 +316,7 @@ export default function Kaart() {
                   aria-label={`${w.nummer}. ${w.naam}, nog op slot. ${w.belofte}`}
                 >
                 <span className={styles.tegelWapen} aria-hidden="true">
-                  {w.emoji}
+                  <WereldWapen id={w.id} maat={48} />
                 </span>
                 <strong className={styles.tegelNaam}>
                   {w.nummer}. {w.naam}

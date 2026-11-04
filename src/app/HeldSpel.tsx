@@ -6,6 +6,7 @@ import { Board } from '@/board/Board'
 import { applyMove, parseBoard, pieceMoves, type Square } from '@/engine/board'
 import { sfx } from '@/audio/sfx'
 import { tel } from '@/progress/tellen'
+import { pipBeeld } from '@/ui/beelden'
 import styles from './Welkom.module.css'
 
 /**
@@ -70,7 +71,8 @@ export function HeldSpel({ eersteLes }: { eersteLes: string }) {
     <div className="stack" style={{ gap: 10 }}>
       <p className={styles.heldPip} aria-live="polite">
         <span aria-hidden="true" className={`${styles.heldPipGezicht} ${styles.pip}`} key={sprongen}>
-          🐴
+          {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
+          <img src={pipBeeld(sprongen >= 3 ? 'juicht' : sprongen > 0 ? 'blij' : 'moedigt')} alt="" width={64} height={64} />
         </span>
         <span className={styles.heldBallon} key={tikken}>{bericht}</span>
       </p>
@@ -79,7 +81,6 @@ export function HeldSpel({ eersteLes }: { eersteLes: string }) {
         marks={{ targets: doelen, last: vorige }}
         onSquare={tik}
         shake={schud}
-        randTotRand={false}
         label="Probeer het zelf: tik waar het paard heen mag"
       />
       {/* Secundair, niet nog een oranje hoofdknop naast "Probeer de eerste les": twee

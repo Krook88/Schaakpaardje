@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { WereldWapen } from '@/ui/beelden'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Kop } from '@/ui/Kop'
@@ -183,7 +184,7 @@ function OuderPaneel() {
               return (
                 <li key={wereld.id}>
                   <strong>
-                    {wereld.emoji} {wereld.naam}
+                    <WereldWapen id={wereld.id} maat={22} /> {wereld.naam}
                   </strong>
                   <ul style={{ listStyle: 'none', margin: '6px 0 0', padding: 0, display: 'grid', gap: 4 }}>
                     {lessen.map((l) => (

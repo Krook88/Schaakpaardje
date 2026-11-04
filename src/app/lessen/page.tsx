@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { WereldWapen } from '@/ui/beelden'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
 import { SITE, deelkaart } from '@/seo'
 
@@ -64,7 +65,7 @@ export default function Lessen() {
             style={{ '--toon': wereld.toon } as React.CSSProperties}
           >
             <h2 style={{ margin: 0 }}>
-              <span aria-hidden="true">{wereld.emoji}</span> Wereld {wereld.nummer}:{' '}
+              <span aria-hidden="true"><WereldWapen id={wereld.id} maat={24} /></span> Wereld {wereld.nummer}:{' '}
               {wereld.naam}
             </h2>
             <p className="muted" style={{ margin: 0 }}>

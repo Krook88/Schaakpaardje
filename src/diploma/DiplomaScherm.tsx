@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { WereldWapen } from '@/ui/beelden'
 import Link from 'next/link'
 import { Confetti } from '@/ui/Confetti'
 import { DeelKnop } from '@/ui/DeelKnop'
@@ -69,7 +70,7 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
             <div className={styles.werelden}>
               {werelden.map((w) => (
                 <span key={w.id} className={styles.wereld}>
-                  {w.emoji} {w.naam}
+                  <WereldWapen id={w.id} maat={22} /> {w.naam}
                 </span>
               ))}
             </div>
@@ -85,7 +86,7 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
             <div className={styles.stappen} aria-label={`${af} van ${werelden.length} werelden uitgespeeld`}>
               {werelden.map((w) => (
                 <span key={w.id} className={`${styles.stap} ${wereldIsAf(w.id, voortgang) ? styles.stapAf : ''}`} aria-hidden="true">
-                  {w.emoji}
+                  <WereldWapen id={w.id} maat={30} />
                 </span>
               ))}
             </div>
@@ -127,7 +128,7 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
         <div className={styles.werelden}>
           {werelden.map((w) => (
             <span key={w.id} className={styles.wereld}>
-              {w.emoji} {w.naam}
+              <WereldWapen id={w.id} maat={22} /> {w.naam}
             </span>
           ))}
         </div>

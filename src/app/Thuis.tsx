@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { WereldWapen } from '@/ui/beelden'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
 import { GeluidKnop } from '@/ui/GeluidKnop'
@@ -401,7 +402,7 @@ function Wereldrij({
               : null),
           }}
         >
-          {w.emoji}
+          <WereldWapen id={w.id} maat={30} />
         </span>
       ))}
       {straks.map((w) => (
@@ -411,7 +412,7 @@ function Wereldrij({
           aria-hidden="true"
           style={{ fontSize: 26, filter: 'grayscale(1)', opacity: 0.38 }}
         >
-          {w.emoji}
+          <WereldWapen id={w.id} maat={30} />
         </span>
       ))}
       {verborgen > 0 && (

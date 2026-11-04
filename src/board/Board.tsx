@@ -55,8 +55,9 @@ type Props = {
    *  Alleen voor borden waar niet op getikt wordt: `.golf .square` wint van de schud-
    *  en pop-animatie van `.wrong` en `.goedVeld`. */
   golf?: boolean
-  /** Op een smalle telefoon tot vlak bij de rand (standaard). Uit op de startpagina,
-   *  waar een duim die wil scrollen anders steeds een veld raakte (36e review). */
+  /** Op een smalle telefoon tot vlak bij de rand (standaard), zodat velden ≥ 44 px
+   *  blijven. Op de startpagina even uitgezet (36e review), maar dan werden de velden
+   *  op 360 breed 41 px; de lat gaat voor, en een veeg om te scrollen is geen tik. */
   randTotRand?: boolean
 }
 

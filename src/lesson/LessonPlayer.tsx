@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { WereldWapen } from '@/ui/beelden'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Kop } from '@/ui/Kop'
@@ -530,7 +531,7 @@ export function LessonPlayer({
             <div className={`card stack center ${styles.wereldAf}`} style={{ position: 'relative', overflow: 'hidden' }}>
               <Confetti />
               <span className={styles.wereldAfWapen} aria-hidden="true">
-                {wereld.emoji}
+                <WereldWapen id={wereld.id} maat={140} />
               </span>
               <h2 className={styles.wereldAfKop}>{wereld.naam} is af!</h2>
               <p style={{ margin: 0 }}>
@@ -547,7 +548,7 @@ export function LessonPlayer({
                       title={af ? w.naam : 'nog niet'}
                       aria-label={af ? `${w.naam}, af` : 'nog niet af'}
                     >
-                      {w.emoji}
+                      <WereldWapen id={w.id} maat={30} />
                     </span>
                   )
                 })}
@@ -583,7 +584,7 @@ export function LessonPlayer({
               style={{ '--toon': nieuweWereld.toon } as React.CSSProperties}
             >
               <span className={styles.poortWapen} aria-hidden="true">
-                {nieuweWereld.emoji}
+                <WereldWapen id={nieuweWereld.id} maat={56} />
               </span>
               <div>
                 <p className={styles.poortKop}>Een nieuwe wereld gaat open!</p>
@@ -842,7 +843,7 @@ function WereldBand({ wereld }: { wereld: World }) {
   return (
     <div className={styles.wereldband} style={{ '--toon': wereld.toon } as React.CSSProperties}>
       <span aria-hidden="true" style={{ fontSize: 22 }}>
-        {wereld.emoji}
+        <WereldWapen id={wereld.id} maat={26} />
       </span>
       {wereld.naam}
     </div>

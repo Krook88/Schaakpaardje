@@ -3,28 +3,9 @@
 import { useEffect, useState } from 'react'
 import { onSubtitle, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import styles from './Pip.module.css'
+import { pipBeeld } from './beelden'
 
 export type PipStemming = 'blij' | 'juicht' | 'verrast' | 'denkt' | 'moedigt' | 'trots' | 'slaapt'
-
-const GEZICHT: Record<PipStemming, string> = {
-  blij: '🐴',
-  juicht: '🐴',
-  verrast: '🐴',
-  denkt: '🐴',
-  moedigt: '🐴',
-  trots: '🐴',
-  slaapt: '🐴',
-}
-
-const BADGE: Record<PipStemming, string> = {
-  blij: '',
-  juicht: '🎉',
-  verrast: '❗',
-  denkt: '💭',
-  moedigt: '💪',
-  trots: '⭐',
-  slaapt: '💤',
-}
 
 /** Wat Pip met zijn hoofd doet bij elke stemming. Zie Pip.module.css. */
 const BEWEGING: Record<PipStemming, string> = {
@@ -40,11 +21,9 @@ const BEWEGING: Record<PipStemming, string> = {
 /**
  * De mascotte met zijn tekstballon.
  *
- * Voorlopig is Pip een emoji in een cirkel. Bij de visuele oplevering komt hier een
- * Rive-animatie met echte gezichtsuitdrukkingen; de component-interface blijft gelijk,
- * dus dat is één bestand omwisselen.
- *
- * Tot die tijd doet de beweging het werk dat het gezicht nog niet kan doen. Pip was
+ * Pip is een eigen tekening in zeven stemmingen (scripts/pip-tekenen.py, goedgekeurd
+ * door Kaj op 4 nov 2026), geen emoji meer. De beweging blijft het werk doen dat een
+ * stilstaand gezicht niet kan. Pip was
  * zes stemmingen lang exact hetzelfde plaatje met een ander speldje ernaast — hij
  * praatte wel, maar hij deed niets. Nu knikt hij als hij aanmoedigt, kantelt hij als
  * hij nadenkt, springt hij als je het goed hebt, en wiebelt hij zachtjes zolang hij
@@ -119,14 +98,12 @@ export function Pip({
         }}
         aria-label={zegt ? `Pip zegt: ${zegt}. Tik om het nog eens te horen.` : 'Pip'}
       >
+        {/* De getekende Pip (public/illustraties/pip/) in plaats van één emoji met een
+            speldje ernaast: de stemming zit nu in zijn gezicht. De beweging blijft. */}
         <span key={puls} className={`${styles.gezicht} ${BEWEGING[stemming]}`} aria-hidden="true">
-          {GEZICHT[stemming]}
+          {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
+          <img src={pipBeeld(stemming, true)} alt="" className={styles.tekening} draggable={false} />
         </span>
-        {BADGE[stemming] && (
-          <span className={styles.badge} aria-hidden="true">
-            {BADGE[stemming]}
-          </span>
-        )}
       </button>
       {tekst && (
         <p className={styles.ballon} aria-live="polite">
