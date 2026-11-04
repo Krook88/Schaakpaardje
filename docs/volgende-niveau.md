@@ -64,3 +64,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 16: wereld af toont "3 van de 15 werelden af" (verborgen onder 720 px hoogte, zodat Volgende les in beeld blijft).
 - Ronde 16: 41e review (GO, wow wereld af 7,5); telling alleen verborgen op smalle lage schermen.
 - Ronde 17: lange wapennamen (Koningskasteel) breken netjes af op de plank.
+- Ronde 18: wow-meting (start 7, les 6, wereld af 8, kaart 6); plank toont sterren en "3 van de 15 werelden". Volgende: Pip op het bord in de eerste kijkzin; oorkonde met naam en deelknop direct eronder.
