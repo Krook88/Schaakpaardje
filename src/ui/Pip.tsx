@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { onSubtitle, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import styles from './Pip.module.css'
-import { pipBeeld } from './beelden'
+import { icoonBeeld, pipBeeld } from './beelden'
 
 export type PipStemming = 'blij' | 'juicht' | 'verrast' | 'denkt' | 'moedigt' | 'trots' | 'slaapt'
 
@@ -132,7 +132,7 @@ export function Pip({
               aria-label="Zeg het nog eens"
               title="Zeg het nog eens"
             >
-              <span aria-hidden="true">🔊</span>
+              <img src={icoonBeeld('geluid')} alt="" width={30} height={30} style={{ display: 'block', filter: 'brightness(0) invert(1)' }} />
             </button>
           )}
         </p>

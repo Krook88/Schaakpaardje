@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { WereldWapen } from '@/ui/beelden'
+import { Icoon, WereldWapen, type IcoonNaam } from '@/ui/beelden'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Kop } from '@/ui/Kop'
@@ -55,12 +55,12 @@ const FASE_NAAM: Record<Fase, string> = {
 }
 
 /** Dezelfde vier fasen, maar dan zonder woorden. De volgorde is altijd deze. */
-const FASE_BEELD: Record<Fase, string> = {
-  kijken: '👀',
-  meedoen: '🤝',
-  zelf: '🙋',
-  toets: '⭐',
-  beloning: '🎉',
+const FASE_BEELD: Record<Fase, IcoonNaam> = {
+  kijken: 'fase-kijken',
+  meedoen: 'fase-meedoen',
+  zelf: 'fase-zelf',
+  toets: 'fase-toets',
+  beloning: 'beker',
 }
 const FASE_VOLGORDE: Fase[] = ['kijken', 'meedoen', 'zelf', 'toets']
 
@@ -499,7 +499,7 @@ export function LessonPlayer({
               }}
             >
               <span aria-hidden="true" style={{ fontSize: 30, lineHeight: 1 }}>
-                {!laatste ? '▶︎' : kijkTerug ? '↩︎' : '🤝'}
+                {!laatste ? '▶︎' : kijkTerug ? '↩︎' : <Icoon naam="fase-meedoen" maat={34} />}
               </span>{' '}
               {!laatste ? 'Verder' : kijkTerug ? 'Terug naar de opgave' : 'Ik ga het proberen'}
             </button>
@@ -565,7 +565,7 @@ export function LessonPlayer({
             <div className={`card ${styles.lesKort}`}>
               <Sterren aantal={sterren} vier />
               <strong>{les.titel}</strong>
-              {sterren >= 3 && <span aria-label="Sticker verdiend">🏅</span>}
+              {sterren >= 3 && <span role="img" aria-label="Sticker verdiend"><Icoon naam="sticker" maat={28} /></span>}
             </div>
           ) : (
             <div className="card stack center" style={{ position: 'relative', overflow: 'hidden' }}>
@@ -575,7 +575,7 @@ export function LessonPlayer({
               {/* Niet les.doel: dat is de zin voor de ouder ("Je kind ziet dat...") en
                   die stond hier letterlijk, over het kind gepraat tegen het kind. */}
               <p>{les.geleerd}</p>
-              {sterren >= 3 && <p>🏅 Sticker verdiend!</p>}
+              {sterren >= 3 && <p><Icoon naam="sticker" maat={30} /> Sticker verdiend!</p>}
             </div>
           )}
 
@@ -735,9 +735,7 @@ export function LessonPlayer({
               onClick={vraagHint}
               disabled={stand.klaar}
             >
-              <span aria-hidden="true" style={{ fontSize: 28, lineHeight: 1 }}>
-                💡
-              </span>{' '}
+              <Icoon naam="hint" maat={32} />{' '}
               Help me even
             </button>
           )}
@@ -808,7 +806,7 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
               aria-label="Laat de uitleg nog eens zien"
               title="Laat de uitleg nog eens zien"
             >
-              <span aria-hidden="true">{FASE_BEELD[f]}</span>
+              <Icoon naam={FASE_BEELD[f]} maat={30} />
             </button>
           )
         }
@@ -830,7 +828,7 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
             opacity: i <= hier ? 1 : 0.45,
           }}
         >
-          {FASE_BEELD[f]}
+          <Icoon naam={FASE_BEELD[f]} maat={30} />
         </span>
         )
       })}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { WereldWapen } from '@/ui/beelden'
+import { Icoon, WereldWapen } from '@/ui/beelden'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
 import { GeluidKnop } from '@/ui/GeluidKnop'
@@ -191,7 +191,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
           <div className="row" style={{ gap: 6, flexWrap: 'nowrap', flexShrink: 0 }}>
             <GeluidKnop className="knopSmal" />
             <Link href="/ouders/" className="btn btn--ghost knopSmal" aria-label="Voor ouders">
-              ⚙️
+              <Icoon naam="instellingen" maat={30} />
             </Link>
           </div>
         </div>
@@ -236,8 +236,8 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
               className="btn btn--primary btn--big"
               style={{ padding: 18, gap: 14, minHeight: 88 }}
             >
-              <span aria-hidden="true" style={{ fontSize: 38, lineHeight: 1 }}>
-                🏆
+              <span aria-hidden="true" style={{ lineHeight: 1 }}>
+                <Icoon naam="beker" maat={44} />
               </span>
               <span style={{ flex: 1, textAlign: 'left' }}>
                 Alle lessen gehaald! Speel een partij tegen een maatje

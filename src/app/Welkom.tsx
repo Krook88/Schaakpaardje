@@ -5,6 +5,7 @@ import { SCHAAKREGELS, onderwerpMet } from '@/content/schaakregels'
 import { Animatiebord } from '@/uitleg/Animatiebord'
 import { bouwBeelden } from '@/uitleg/beelden'
 import { HeldSpel } from './HeldSpel'
+import { Icoon, type IcoonNaam } from '@/ui/beelden'
 
 /** Dezelfde basis als de rest van de app, voor als hij ooit in een submap staat. */
 const BASIS = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
@@ -48,10 +49,10 @@ const SCHERMEN: { bron: string; titel: string; uitleg: string }[] = [
   },
 ]
 
-const PUNTEN: [string, string, string][] = [
-  ['🔊', 'Lezen hoeft nog niet', 'Pip spreekt elke opdracht uit. Elke knop heeft een plaatje.'],
-  ['🌱', 'Begint bij nul', 'De eerste wereld gaat nog niet over schaken, maar over het bord.'],
-  ['🤗', 'Je kunt niet verliezen', 'Geen levens, geen game-over, geen klok. Fout? Dan volgt een tip.'],
+const PUNTEN: [IcoonNaam, string, string][] = [
+  ['punt-voorlezen', 'Lezen hoeft nog niet', 'Pip spreekt elke opdracht uit. Elke knop heeft een plaatje.'],
+  ['punt-begint-bij-nul', 'Begint bij nul', 'De eerste wereld gaat nog niet over schaken, maar over het bord.'],
+  ['punt-niet-verliezen', 'Je kunt niet verliezen', 'Geen levens, geen game-over, geen klok. Fout? Dan volgt een tip.'],
 ]
 
 export function Welkom() {
@@ -135,7 +136,7 @@ export function Welkom() {
         {PUNTEN.map(([teken, kop, uitleg]) => (
           <li key={kop} className={styles.punt}>
             <span aria-hidden="true" className={styles.teken}>
-              {teken}
+              <Icoon naam={teken} maat={40} />
             </span>
             <span>
               <strong style={{ display: 'block' }}>{kop}</strong>

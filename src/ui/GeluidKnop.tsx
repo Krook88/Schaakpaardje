@@ -1,6 +1,7 @@
 'use client'
 
 import { useInstellingen, useProfielStore } from '@/progress/store'
+import { Icoon } from '@/ui/beelden'
 
 /**
  * Geluid aan of uit, voor het kind zelf.
@@ -37,7 +38,7 @@ export function GeluidKnop({ className = '' }: { className?: string }) {
       }}
       style={{ minWidth: 56 }}
     >
-      <span aria-hidden="true">{aan ? '🔔' : '🔕'}</span>
+      <span aria-hidden="true" style={{ opacity: aan ? 1 : 0.45, display: 'inline-flex' }}><Icoon naam="bel" maat={30} /></span>
     </button>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { WereldWapen, kaartBeeld, pipBeeld } from '@/ui/beelden'
+import { Icoon, WereldWapen, icoonBeeld, kaartBeeld, lesIcoon, pipBeeld, pipLos } from '@/ui/beelden'
 import Link from 'next/link'
 import { Kop } from '@/ui/Kop'
 import { Sterren } from '@/ui/Sterren'
@@ -124,7 +124,7 @@ export default function Kaart() {
           const haltes: Halte[] = [
             ...wereld.lessen.map((les) => ({
               id: les.id,
-              icoon: les.icoon,
+              icoon: lesIcoon(les.id),
               titel: les.titel,
               href: `/les/${les.id}/`,
               open: isOntgrendeld(les.id, voortgang, modus),
@@ -136,7 +136,7 @@ export default function Kaart() {
               ? [
                   {
                     id: `spel-${wereld.minispel}`,
-                    icoon: '🎲',
+                    icoon: icoonBeeld('minispel'),
                     titel: `Minispel: ${wereld.minispel.replaceAll('-', ' ')}`,
                     href: `/spel/${wereld.minispel}/`,
                     open: true,
@@ -170,7 +170,7 @@ export default function Kaart() {
                 </div>
                 {af && (
                   <span title="Deze wereld is uit" style={{ fontSize: 28, flexShrink: 0 }}>
-                    🏆
+                    <Icoon naam="beker" maat={30} />
                   </span>
                 )}
               </div>
@@ -223,15 +223,15 @@ export default function Kaart() {
                       {halte.jij && (
                         <span className={pad.pip} aria-hidden="true">
                           {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
-                          <img src={pipBeeld('blij')} alt="" width={40} height={40} style={{ display: 'block' }} />
+                          <img src={pipLos('blij')} alt="" width={44} height={44} style={{ display: 'block' }} />
                         </span>
                       )}
                       <span className={pad.icoon} aria-hidden="true">
-                        {halte.icoon}
+                        <Icoon src={halte.icoon} maat={44} style={{ display: 'block' }} />
                       </span>
                       {!halte.open && (
                         <span className={pad.slot} aria-hidden="true">
-                          🔒
+                          <Icoon naam="slot" maat={22} style={{ display: 'block' }} />
                         </span>
                       )}
                     </>
@@ -279,7 +279,7 @@ export default function Kaart() {
 
               {wereld.diploma && af && (
                 <Link href={`/diploma/${wereld.diploma}/`} className="btn btn--primary">
-                  🏅 Bekijk je hoefijzer {wereld.diploma}
+                  <Icoon naam="sticker" maat={26} /> Bekijk je hoefijzer {wereld.diploma}
                 </Link>
               )}
               </div>
@@ -325,7 +325,7 @@ export default function Kaart() {
                 </strong>
                 <span className={styles.tegelBelofte}>{w.belofte}</span>
                 <span className={styles.tegelSlot} aria-hidden="true">
-                  🔒
+                  <Icoon naam="slot" maat={18} />
                 </span>
                 {wiebel === w.id && hierNaam && (
                   <span className={styles.tegelEerst} role="status">

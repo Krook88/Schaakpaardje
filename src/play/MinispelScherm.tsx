@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Icoon } from '@/ui/beelden'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Kop } from '@/ui/Kop'
@@ -231,7 +232,7 @@ export function MinispelScherm({ spelId }: { spelId: string }) {
             }}
             disabled={stand.klaar}
           >
-            💡 Tipje
+            <Icoon naam="hint" maat={30} /> Tipje
           </button>
           {teVinden > 0 && (
             <span className="muted">

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { WereldWapen, pipBeeld } from '@/ui/beelden'
+import { Icoon, WereldWapen, pipBeeld } from '@/ui/beelden'
 import Link from 'next/link'
 import { Confetti } from '@/ui/Confetti'
 import { DeelKnop } from '@/ui/DeelKnop'
@@ -76,8 +76,8 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
             </div>
           </article>
           <div className={`card stack center ${styles.slot}`}>
-            <p style={{ fontSize: 46, margin: 0 }} aria-hidden="true">
-              🔒
+            <p style={{ margin: 0 }} aria-hidden="true">
+              <Icoon naam="slot" maat={56} />
             </p>
             <h2>Nog even doorzetten</h2>
             {/* Geen gladde balk: bij 0 van 7 was dat een lege grijze streep (28e review).

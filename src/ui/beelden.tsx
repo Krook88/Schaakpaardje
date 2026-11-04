@@ -12,6 +12,14 @@ const BASIS = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
 export const pipBeeld = (stemming: PipStemming, knop = false) =>
   `${BASIS}/illustraties/pip/pip-${knop ? 'knop-' : ''}${stemming}.svg`
+/** Pip zonder plankje, met een zachte schaduw: op de kaarthalte en in de held. */
+export const pipLos = (stemming: PipStemming) => `${BASIS}/illustraties/pip/pip-los-${stemming}.svg`
+export const lesIcoon = (lesId: string) => `${BASIS}/illustraties/iconen/les-${lesId}.svg`
+export type IcoonNaam =
+  | 'minispel' | 'slot' | 'beker' | 'sticker' | 'deel' | 'hint' | 'geluid' | 'instellingen' | 'bel'
+  | 'fase-kijken' | 'fase-meedoen' | 'fase-zelf' | 'fase-toets'
+  | 'punt-voorlezen' | 'punt-begint-bij-nul' | 'punt-niet-verliezen'
+export const icoonBeeld = (naam: IcoonNaam) => `${BASIS}/illustraties/iconen/${naam}.svg`
 export const wapenBeeld = (wereldId: string) => `${BASIS}/illustraties/werelden/wereld-${wereldId}.svg`
 export const kaartBeeld = (wereldId: string, donker = false) =>
   `${BASIS}/illustraties/kaart/kaart-${wereldId}${donker ? '-donker' : ''}.svg`
@@ -24,5 +32,13 @@ export function WereldWapen({ id, maat, className }: { id: string; maat: number;
   return (
     // eslint-disable-next-line @next/next/no-img-element -- statische export, SVG
     <img src={wapenBeeld(id)} alt="" width={maat} height={maat} className={className} draggable={false} decoding="async" />
+  )
+}
+
+/** Een getekend icoon in plaats van een emoji. Decoratief: de tekst ernaast zegt het. */
+export function Icoon({ naam, src, maat, className, style }: { naam?: IcoonNaam; src?: string; maat: number; className?: string; style?: React.CSSProperties }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- statische export, SVG
+    <img src={src ?? icoonBeeld(naam!)} alt="" width={maat} height={maat} className={className} style={{ verticalAlign: 'middle', ...style }} draggable={false} decoding="async" />
   )
 }

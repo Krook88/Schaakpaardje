@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { icoonBeeld } from '@/ui/beelden'
 import { tel } from '@/progress/tellen'
 import { SITE } from '@/seo'
 
@@ -86,7 +87,7 @@ export function DeelKnop({
     <div className="stack center" style={{ gap: 6 }}>
       <button type="button" className="btn btn--ghost" onClick={deel} style={{ alignSelf: 'center' }} data-deelknop>
         <span aria-hidden="true" style={{ fontSize: 24, lineHeight: 1 }}>
-          💌
+          <img src={icoonBeeld('deel')} alt="" width={28} height={28} style={{ verticalAlign: 'middle' }} />
         </span>{' '}
         {label}
       </button>

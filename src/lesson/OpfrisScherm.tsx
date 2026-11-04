@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Icoon } from '@/ui/beelden'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Confetti } from '@/ui/Confetti'
@@ -286,9 +287,7 @@ export function OpfrisScherm() {
                 setZin(HINT_GEGEVEN)
               }}
             >
-              <span aria-hidden="true" style={{ fontSize: 28 }}>
-                💡
-              </span>{' '}
+              <Icoon naam="hint" maat={32} />{' '}
               Help me even
             </button>
           )}
