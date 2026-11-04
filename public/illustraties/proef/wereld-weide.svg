@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-labelledby="t"><title id="t">Wereld De Weide</title>
+<defs><clipPath id="c"><circle cx="100" cy="100" r="80"/></clipPath>
+<g id="aar" stroke="#3b2414" stroke-width="4" stroke-linejoin="round"><path d="M0 0V-70" fill="none" stroke="#b9822a" stroke-width="6" stroke-linecap="round"/>
+<g fill="#f0b94a"><ellipse cx="-8" cy="-36" rx="7" ry="12" transform="rotate(-28 -8 -36)"/><ellipse cx="8" cy="-44" rx="7" ry="12" transform="rotate(28 8 -44)"/><ellipse cx="-8" cy="-54" rx="7" ry="12" transform="rotate(-28 -8 -54)"/><ellipse cx="8" cy="-62" rx="7" ry="12" transform="rotate(28 8 -62)"/><ellipse cx="0" cy="-76" rx="7" ry="12"/></g></g></defs>
+<circle cx="100" cy="100" r="93" fill="#fff8ec"/>
+<g clip-path="url(#c)">
+<rect width="200" height="200" fill="#fbead7"/>
+<circle cx="146" cy="62" r="20" fill="#f6c453"/>
+<path d="M20 100C50 80 82 82 110 94S170 92 190 84V200H20Z" fill="#8fb87e"/>
+<path d="M10 124C52 106 98 108 132 120S180 116 196 110V200H10Z" fill="#6f9e63"/>
+<g transform="translate(100 156) scale(1 .45) rotate(45)"><rect x="-48" y="-48" width="96" height="96" fill="#f2ebdd"/>
+<path d="M-48-48h24v24h-24zM0-48h24v24H0zM-24-24h24v24h-24zM24-24h24v24H24zM-48 0h24v24h-24zM0 0h24v24H0zM-24 24h24v24h-24zM24 24h24v24H24z" fill="#4e7a54"/></g>
+<use href="#aar" transform="translate(76 150) rotate(-20) scale(.9)"/>
+<use href="#aar" transform="translate(124 150) rotate(20) scale(.9)"/>
+<use href="#aar" transform="translate(100 150)"/>
+<path d="M0 176C60 166 140 166 200 176V200H0Z" fill="#4e7a54"/>
+</g>
+<circle cx="100" cy="100" r="82" fill="none" stroke="#3b2414" stroke-width="9"/>
+</svg>

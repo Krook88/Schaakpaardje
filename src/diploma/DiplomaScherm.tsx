@@ -144,7 +144,7 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
         </Link>
       </div>
       <div className={styles.verbergBijPrinten} style={{ marginTop: 18 }}>
-        <DeelKnop waar="diploma" />
+        <DeelKnop waar="diploma" plaatje="/og.png" />
       </div>
     </main>
   )

@@ -605,7 +605,7 @@ export function LessonPlayer({
               Naar de kaart
             </Link>
           </div>
-          {wereldKlaar && <DeelKnop waar="wereld" />}
+          {wereldKlaar && <DeelKnop waar="wereld" plaatje={`/og/wereld-${wereld.id}.png`} />}
           {/* Voor de ouder, en ónder de knoppen: als grote kaart erboven duwde hij
               "Volgende les" op een telefoon onder de vouw, en een kind dat niet leest
               tikte op het grootste vlak en stond in een formulier (negentiende review, L1).

@@ -981,7 +981,8 @@ for (const [w, h] of [[1024, 768], [1440, 900], [844, 390]]) {
       },
     }))
     window.__gedeeld = []
-    Object.defineProperty(navigator, 'share', { value: async (d) => { window.__gedeeld.push(d) } })
+    Object.defineProperty(navigator, 'share', { value: async (d) => { window.__gedeeld.push({ ...d, files: d.files?.map((f) => f.name) }) } })
+    Object.defineProperty(navigator, 'canShare', { value: () => true })
   }, lessen)
   const p = await ctx.newPage()
   await p.goto(`${URL}/diploma/brons/`, { waitUntil: 'networkidle' })
@@ -995,7 +996,9 @@ for (const [w, h] of [[1024, 768], [1440, 900], [844, 390]]) {
     const tekst = JSON.stringify(gedeeld)
     meld(
       'deelknop stuurt alleen de link en een vaste zin, geen naam',
-      gedeeld.length === 1 && !tekst.includes('Femkeziet') && /^https:\/\/[^/]+\/$/.test(gedeeld[0].url),
+      // Met plaatje: de link staat dan in de tekst, en het bestand is het vaste plaatje.
+      gedeeld.length === 1 && !tekst.includes('Femkeziet') &&
+        (gedeeld[0].files ? gedeeld[0].files.join() === 'schaakmaatje-og.png' && /https:\/\/[^/ ]+\/$/.test(gedeeld[0].text) : /^https:\/\/[^/]+\/$/.test(gedeeld[0].url)),
       tekst.slice(0, 160),
     )
   }

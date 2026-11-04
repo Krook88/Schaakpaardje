@@ -3,15 +3,11 @@
 Geheugen van de `/loop`. Elke ronde: lees dit, pak het hoogste rode punt, bouw, bewijs, review, werk bij.
 
 ## Open vragen voor Kaj
-
-**1. Beeldtaal (de loop is hierop gestopt).** Alles op het scorebord is groen behalve de wow-toets. Die blijft na vier rondes rond de 7 hangen (36e review: startpagina 7,5/7,5, eerste les 6,5/7, wereld af 7/7, kaart 7/7,5). Beide reviewers noemen hetzelfde wat naar een 9 ontbreekt: een getekende Pip met mimiek in plaats van de emoji 🐴, en echte illustraties voor werelden en kaart. Dat is een keuze voor de hele app:
-- **a.** Een illustrator laten tekenen: Pip in ±6 stemmingen, 15 wereldwapens en één kaartlandschap. Dat kost geld, dus alleen met jouw akkoord.
-- **b.** Ik teken zelf een eenvoudige vectorstijl als SVG. Dat is gratis, maar wel een smaakkeuze. Ik zou beginnen met Pip en één wereld als proef, die jij eerst bekijkt.
-- **c.** De emoji houden en de wow-lat bijstellen naar 8. Dan gaat de loop verder met de juichmomenten (punt 2 in de 36e review).
-
-**2. Delen.** Delen stuurt nu alleen een link en een vaste zin. Mag er ook een **vast plaatje zonder naam** mee, bijvoorbeeld het wereldwapen met Pip? Tot je antwoord blijft het bij de link en de zin (28e review, L3).
+- (geen open vragen; proef beeldtaal volgt ter beoordeling)
 
 ## Besluiten van Kaj
+- 4 nov 2026: **beeldtaal 1b**. Er komen eigen SVG's, gemaakt door een illustrator-agent. Eerst een proef (Pip en één wereld) ter beoordeling, daarna de uitrol.
+- 4 nov 2026: **delen mag met een vast plaatje zonder naam**, bijvoorbeeld het wereldwapen. Nooit de naam van het kind of iets anders wat het kind intypt.
 - 3 nov 2026: `maximum-scale=1` blijft, bewust tegen per ongeluk zoomen door kleine kinderen. Lat voor Lighthouse Toegankelijkheid daarom: 100 op alles behalve de audit `meta-viewport`.
 
 ## Nulmeting — ronde 1 (3 nov 2026)
