@@ -1219,9 +1219,11 @@ for (const [w, h] of [[375, 667], [390, 844]]) {
   const m = await p.evaluate(() => {
     const pa = [...document.querySelectorAll('[data-square]')].find((x) => /paard/.test(x.getAttribute('aria-label') || ''))?.getBoundingClientRect()
     const k = [...document.querySelectorAll('a')].find((a) => /eerste les/.test(a.textContent))?.getBoundingClientRect()
-    return pa && k ? { paardBoven: Math.round(pa.top), knop: Math.round(k.bottom) } : null
+    return pa && k ? { paardOnder: Math.round(pa.bottom), knop: Math.round(k.bottom) } : null
   })
-  meld(`startpagina ${w}×${h}: paard en knop boven de vouw`, Boolean(m) && m.paardBoven < h - 20 && m.knop <= h, JSON.stringify(m))
+  // Het hele veld van het paard: met alleen de bovenkant gemeten zag je op 375×667 maar
+  // zijn oren (59e review).
+  meld(`startpagina ${w}×${h}: paard en knop boven de vouw`, Boolean(m) && m.paardOnder <= h && m.knop <= h, JSON.stringify(m))
   await ctx.close()
 }
 

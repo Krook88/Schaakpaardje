@@ -182,4 +182,8 @@
    zelf al in beeld bij het bord. */
 @media (max-width: 499px) and (orientation: portrait) and (max-height: 700px) {
   .heldTekst > p:first-child { display: none; }
+  /* Nog wat lucht eruit: het paard viel met 5 px onder de vouw (59e review). */
+  .held { gap: 4px; }
+  .heldPip { margin: 0; }
+  .heldTekst { gap: 4px; }
 }
