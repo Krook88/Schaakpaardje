@@ -9,6 +9,7 @@ import { WERELDEN } from '@/content'
 import { DIPLOMAS } from '@/content/diplomas'
 import {
   diplomaBehaald,
+  useProfiel,
   isOntgrendeld,
   sterrenTotaal,
   useModus,
@@ -40,6 +41,7 @@ type Halte = {
  */
 export default function Kaart() {
   const voortgang = useVoortgang()
+  const profiel = useProfiel()
   const modus = useModus()
   const geladen = useToestandGeladen()
   // Waar het kind gebleven is: de enige plek op de hele kaart waar Pip staat.
@@ -78,6 +80,7 @@ export default function Kaart() {
   const hierWereld = WERELDEN.find((w) => w.lessen.some((l) => l.id === hier))?.id
   const hoefijzers = DIPLOMAS.filter((d) => diplomaBehaald(d.soort, voortgang))
   const hierNaam = WERELDEN.find((w) => w.id === hierWereld)?.naam
+  const gewonnen = WERELDEN.filter((w) => wereldIsAf(w.id, voortgang))
 
   return (
     <main className="page">
@@ -87,6 +90,28 @@ export default function Kaart() {
           eerst alleen de wereld waar je nu was, en daaronder veertien grijze stroken
           (27e review: "meer een lijst dan een kaart"). */}
       <section className={`card ${styles.reis}`} aria-label="Jouw reis">
+        {/* De trofeeënplank: wat dit kind al gehaald heeft, groot en in één beeld. Bij
+            drie werelden af stond dat ingeklapt onder elkaar en zag je het nergens in één
+            keer (39e review: kaart met 3 af een 6). */}
+        {gewonnen.length > 0 && (
+          <div className={styles.plank}>
+            <p className={styles.plankKop}>{profiel ? `Wat ${profiel.naam} al kan` : 'Wat je al kunt'}</p>
+            <ul className={styles.plankRij}>
+              {gewonnen.map((w) => (
+                <li key={w.id} className={styles.plankWapen} style={{ '--toon': w.toon } as React.CSSProperties}>
+                  <WereldWapen id={w.id} maat={64} />
+                  <span>{w.naam}</span>
+                </li>
+              ))}
+              {hoefijzers.map((d) => (
+                <li key={d.soort} className={styles.plankWapen}>
+                  <Icoon naam={`medaille-${d.soort}`} maat={64} />
+                  <span>{d.naam}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div className={styles.reisWapens}>
           {WERELDEN.map((w) => {
             const af = wereldIsAf(w.id, voortgang)

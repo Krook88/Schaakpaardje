@@ -194,3 +194,13 @@
 
 .strook { display: block; height: 120px; overflow: hidden; margin-top: 0; }
 .strook img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 70%; }
+
+/* ---------- De trofeeënplank ---------- */
+.plank {
+  margin: -4px -4px 6px; padding: 12px 10px 10px; border-radius: 14px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 10%, transparent), transparent);
+  border-bottom: 3px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+}
+.plankKop { margin: 0 0 8px; text-align: center; font-weight: 800; font-size: 1.05rem; }
+.plankRij { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; }
+.plankWapen { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 76px; text-align: center; font-size: 0.78rem; font-weight: 700; line-height: 1.15; }
