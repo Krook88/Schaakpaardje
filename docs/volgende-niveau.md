@@ -95,3 +95,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 33: tegenstander-tekening ook op staande telefoons onder 700 px hoogte (44 px).
 - Ronde 34: eerste les — Pip als getekend paardje op e5 in plaats van het schaakteken (vertelPip, alleen begroeting).
 - Ronde 34: 55e review (GO, eerste les 8, spel 7).
+- Ronde 35: kaart dwars — plank op één rij (kop en telling links, wapens 52 px rechts).

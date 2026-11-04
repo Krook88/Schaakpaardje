@@ -209,12 +209,14 @@
 /* Telefoon dwars: de plank als smalle strook, zodat hij met de les van vandaag in beeld
    past. Anders opende de kaart dwars zonder "Wat Noor al kan" (wow 5 na ronde 22). */
 @media (orientation: landscape) and (max-height: 500px) {
-  .plank { padding: 6px 12px; }
-  .plankKop { margin: 0 0 4px; font-size: 0.95rem; }
-  .plankRij { gap: 6px 10px; }
+  /* Eén rij: kop en telling links, de wapens rechts. Zo kunnen de wapens groter
+     (52 px, wow-meting na ronde 32: "dwars zijn de wapens klein") en blijft de strook laag. */
+  .plank { padding: 6px 12px; display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; align-items: center; }
+  .plankKop { margin: 0; font-size: 0.95rem; text-align: left; grid-column: 1; grid-row: 1; }
+  .plankRij { gap: 6px 10px; grid-column: 2; grid-row: 1 / span 2; justify-content: flex-start; }
   .plankWapen { width: auto; gap: 0; }
-  .plankWapen > :first-child { width: 40px !important; height: 40px !important; }
+  .plankWapen > :first-child { width: 52px !important; height: 52px !important; }
   /* Namen alleen voor de schermlezer: font-size 0 brak bij een minimum-lettergrootte (50e review). */
   .plankWapen > span:last-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .plankTel { margin-top: 4px; font-size: 0.9rem; }
+  .plankTel { margin: 2px 0 0; font-size: 0.9rem; grid-column: 1; grid-row: 2; justify-content: flex-start; flex-direction: column; align-items: flex-start; }
 }
