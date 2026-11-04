@@ -1182,20 +1182,29 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
   }
   await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
   await p.waitForTimeout(700)
+  // Per tik de verandering die een kind ziet, niet de eerste mutatie ergens in de DOM
+  // (een aria-live-zin of de praatklasse op Pip zou de klok te vroeg stilzetten):
+  // een veld: een nieuwe klasse op dát veld; de hulpknop: een veld met de hintgloed.
+  // Gemeten tot ná de verf (rAF + setTimeout 0).
   const reactie = (kies) =>
     p.evaluate(
       (kies) =>
         new Promise((klaar) => {
-          const doel = kies === 'hulp' ? [...document.querySelectorAll('button')].find((b) => /Help me even/.test(b.textContent)) : document.querySelector(`[data-square="${kies}"]`)
+          const doel = kies === 'hulp'
+            ? [...document.querySelectorAll('button')].find((b) => /Help me even/.test(b.textContent))
+            : document.querySelector(`[data-square="${kies}"]`)
+          if (!doel) return klaar(`geen ${kies} gevonden`)
+          const zichtbaar = kies === 'hulp'
+            ? () => Boolean(document.querySelector('[data-square][class*=glow]'))
+            : (() => { const voor = doel.className; return () => doel.className !== voor })()
           const start = performance.now()
-          const obs = new MutationObserver(() => {
-            obs.disconnect()
-            // Tot de volgende verf: dan staat het echt op het scherm.
-            requestAnimationFrame(() => klaar(Math.round(performance.now() - start)))
-          })
-          obs.observe(document.querySelector('main') ?? document.body, { subtree: true, attributes: true, childList: true, characterData: true })
+          const kijk = () => {
+            if (zichtbaar()) return requestAnimationFrame(() => setTimeout(() => klaar(Math.round(performance.now() - start)), 0))
+            if (performance.now() - start > 2000) return klaar(9999)
+            requestAnimationFrame(kijk)
+          }
           doel.click()
-          setTimeout(() => { obs.disconnect(); klaar(9999) }, 2000)
+          kijk()
         }),
       kies,
     )
@@ -1204,19 +1213,20 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
   const fout = await reactie('b1')
   await p.waitForTimeout(1500)
   const hulp = await reactie('hulp')
-  meld('elke tik reageert binnen 100 ms', Math.max(goed, fout, hulp) <= 100, `goed ${goed} ms, fout ${fout} ms, hulp ${hulp} ms`)
+  const ms = [goed, fout, hulp]
+  meld('elke tik reageert binnen 100 ms', ms.every((m) => typeof m === 'number' && m <= 100), `goed ${goed} ms, fout ${fout} ms, hulp ${hulp} ms`)
   await ctx.close()
 
   const rustig = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
   const r = await rustig.newPage()
   const eindeloos = []
-  for (const pad of ['/', '/les/weide-1/', '/kaart/']) {
+  for (const pad of ['/', '/les/weide-1/', '/kaart/', '/spel/torenjacht/']) {
     await r.goto(`${URL}${pad}`, { waitUntil: 'networkidle' })
     await r.waitForTimeout(600)
     eindeloos.push(...(await r.evaluate((pad) =>
       document.getAnimations()
         .filter((a) => a.playState === 'running' && a.effect?.getComputedTiming().iterations === Infinity)
-        .map((a) => `${pad} ${a.animationName ?? 'animatie'}`), pad)))
+        .map((a) => `${pad} ${a.animationName}`), pad)))
   }
   meld('minder beweging: geen eindeloze animaties', eindeloos.length === 0, eindeloos.slice(0, 4).join(' | '))
   await rustig.close()
