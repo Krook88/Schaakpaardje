@@ -33,7 +33,12 @@ export async function generateMetadata({
     title: o.zoektitel,
     description: o.omschrijving,
     alternates: { canonical: url },
-    ...deelkaart({ titel: o.vraag, omschrijving: o.omschrijving, url }),
+    ...deelkaart({
+      titel: o.vraag,
+      omschrijving: o.omschrijving,
+      url,
+      beeld: { pad: `/og/regel-${o.slug}.png`, alt: o.vraag },
+    }),
   }
 }
 

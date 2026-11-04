@@ -119,6 +119,7 @@ function main() {
   lessenVoorDeTeller()
   stempelDeCacheversie()
   vooraadOffline()
+  controleerDeelplaatjes()
   controleerSitemap()
 }
 
@@ -361,4 +362,29 @@ function vooraadOffline() {
     }, 0) / 1024,
   )
   console.log(`Hosting-klaar: ${paginas.length} pagina's van wereld 0–2 offline, ${lijst.length} bestanden, ${kb} kB${weg.length ? ` (${weg.length} genoemd maar niet gevonden: ${weg.slice(0, 4).join(', ')})` : ''}.`)
+}
+
+/**
+ * Elk deelplaatje (og:image) moet echt bestaan. Een pagina die naar een plaatje wijst
+ * dat er niet is, geeft in WhatsApp een kale link zonder beeld, en dat merk je pas als
+ * een ouder hem doorstuurt.
+ */
+function controleerDeelplaatjes() {
+  const fout: string[] = []
+  let geteld = 0
+  for (const b of alleBestanden(UIT)) {
+    if (!b.endsWith('.html')) continue
+    for (const m of readFileSync(b, 'utf8').matchAll(/property="og:image" content="([^"]+)"/g)) {
+      geteld++
+      const pad = new URL(m[1]).pathname.replace(/^\//, '')
+      const basis = (process.env.NEXT_PUBLIC_BASE_PATH ?? '').replace(/^\/|\/$/g, '')
+      const lokaal = basis && pad.startsWith(basis + '/') ? pad.slice(basis.length + 1) : pad
+      if (!existsSync(join(UIT, lokaal))) fout.push(`${b.slice(UIT.length)} → ${m[1]}`)
+    }
+  }
+  if (fout.length) {
+    console.error(`Hosting-klaar: deelplaatjes die niet bestaan:\n  ${fout.slice(0, 5).join('\n  ')}`)
+    process.exit(1)
+  }
+  console.log(`Hosting-klaar: ${geteld} deelplaatjes nagekeken, alle bestaan.`)
 }

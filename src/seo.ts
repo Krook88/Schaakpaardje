@@ -70,8 +70,15 @@ export function deelkaart(kaart: {
   omschrijving: string
   /** Volledige URL van de pagina zelf. */
   url: string
+  /**
+   * Een eigen plaatje uit public/og/ (zie scripts/deelbeelden.ts), met wat erop staat.
+   * Zonder valt hij terug op het algemene plaatje van de site.
+   */
+  beeld?: { pad: string; alt: string }
 }): Pick<Metadata, 'openGraph' | 'twitter'> {
-  const plaatje = { url: '/og.png', width: 1200, height: 630, alt: `${NAAM}: ${SLOGAN}` }
+  const plaatje = kaart.beeld
+    ? { url: kaart.beeld.pad, width: 1200, height: 630, alt: kaart.beeld.alt }
+    : { url: '/og.png', width: 1200, height: 630, alt: `${NAAM}: ${SLOGAN}` }
   return {
     openGraph: {
       type: 'website',
