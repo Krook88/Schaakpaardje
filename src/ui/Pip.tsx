@@ -45,12 +45,15 @@ export function Pip({
   zegt,
   stemming = 'blij',
   klein = false,
+  groot = false,
   vanzelf = true,
   onKlaar,
 }: {
   zegt?: string
   stemming?: PipStemming
   klein?: boolean
+  /** Bij de kennismaking: Pip groot in beeld, niet een rondje naast de ballon (39e review). */
+  groot?: boolean
   /**
    * Zegt Pip zijn zin zodra hij in beeld komt? Op de welkomstpagina niet: daar komt
    * een ouder voor het eerst binnen, en een paardje dat ineens begint te praten (of,
@@ -100,7 +103,7 @@ export function Pip({
   const tekst = ondertitel ?? zegt ?? null
 
   return (
-    <div className={`${styles.wrap} ${klein ? styles.klein : ''}`}>
+    <div className={`${styles.wrap} ${klein ? styles.klein : ''} ${groot ? styles.groot : ''}`}>
       <button
         type="button"
         className={`${styles.pip} ${pratend ? styles.pratend : ''}`}

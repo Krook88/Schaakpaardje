@@ -121,3 +121,4 @@
   :root:not([data-theme='light']) .luisterIcoon { filter: brightness(0); }
 }
 :root[data-theme='dark'] .luisterIcoon { filter: brightness(0); }
+.groot .pip { width: 112px; height: 112px; }

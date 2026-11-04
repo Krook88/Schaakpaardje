@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Icoon, WereldWapen, type IcoonNaam } from '@/ui/beelden'
+import { Icoon, WereldWapen, pipLos, type IcoonNaam } from '@/ui/beelden'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Kop } from '@/ui/Kop'
@@ -461,6 +461,7 @@ export function LessonPlayer({
         <div className={`stack ${les.vertelFen ? styles.speelvlak : ''}`}>
           <div className={styles.vakPip}>
             <Pip
+              groot={vertelIndex === 0}
               zegt={dezeZin ? vertelTekst(dezeZin) : ''}
               stemming={vertelIndex === 0 ? 'blij' : 'denkt'}
             />
@@ -535,9 +536,16 @@ export function LessonPlayer({
           {wereldKlaar && (
             <div className={`card stack center ${styles.wereldAf}`} style={{ position: 'relative', overflow: 'hidden' }}>
               <Confetti />
-              <span className={styles.wereldAfWapen} aria-hidden="true">
-                <WereldWapen id={wereld.id} maat={140} />
-              </span>
+              {/* Pip viert mee, groot naast het wapen: op het hoogtepunt van de app was hij
+                  een klein rondje bovenin (38e review). */}
+              <div className={styles.wereldAfHeld} aria-hidden="true">
+                <span className={styles.wereldAfWapen}>
+                  <WereldWapen id={wereld.id} maat={140} />
+                </span>
+                <span className={styles.wereldAfPip}>
+                  <Icoon src={pipLos('juicht')} maat={130} />
+                </span>
+              </div>
               <h2 className={styles.wereldAfKop}>{wereld.naam} is af!</h2>
               <p style={{ margin: 0 }}>
                 {profiel ? <><strong>{profiel.naam}</strong> heeft</> : 'Jij hebt'} alle lessen van {wereld.naam}{' '}

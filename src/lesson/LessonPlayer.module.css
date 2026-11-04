@@ -276,3 +276,12 @@
 
 /* Op een liggend scherm van 768 hoog viel "Volgende les" onder de vouw (38e review). */
 @media (max-height: 820px) { .wereldAfWapen img { width: 104px; height: 104px; } }
+
+.wereldAfHeld { display: flex; align-items: flex-end; justify-content: center; gap: 4px; }
+.wereldAfPip { display: block; margin-left: -18px; animation: pipJuicht 900ms cubic-bezier(0.3, 1.5, 0.5, 1) 300ms 2 both; }
+@keyframes pipJuicht { 0%, 100% { transform: none; } 40% { transform: translateY(-18px) rotate(-6deg); } }
+@media (max-height: 820px) { .wereldAfPip img { width: 96px; height: 96px; } }
+@media (prefers-reduced-motion: reduce) { .wereldAfPip { animation: none; } }
+
+/* Op een telefoon 8 + 7 in plaats van 7 + 7 + 1 (39e review). */
+@media (max-width: 420px) { .wapenRij { gap: 4px; } .wapenKlein { width: 32px; height: 32px; } .wapenKlein img { width: 28px; height: 28px; } }
