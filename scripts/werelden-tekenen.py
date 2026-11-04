@@ -61,6 +61,10 @@ def g(inhoud, t=''):
     return f'<g transform="{t}">{inhoud}</g>' if t else inhoud
 
 
+BORD = dict(y0=137, y1=168, w0=58, w1=72)
+KLIP = 82  # straal van de clipPath van het wapen
+
+
 def bord(P, y0=146, y1=192, w0=88, w1=164, cols=4, rows=2, cx=100, sw=3):
     """Een geblokt schaakbordje in licht perspectief: licht en donker, duidelijk."""
     def pt(i, j):
@@ -74,6 +78,11 @@ def bord(P, y0=146, y1=192, w0=88, w1=164, cols=4, rows=2, cx=100, sw=3):
     # verkeerd om (schaakmeester, 37e review).
     donker = lambda i, j: (i + j) % 2 == 1
     assert not donker(cols - 1, rows - 1), 'het veld rechtsvoor moet licht zijn'
+    # En het moet ook helemaal te zien zijn: beide onderhoeken van het veld rechtsvoor
+    # (plus de halve lijndikte) binnen de cirkel van het wapen.
+    for i in (cols - 1, cols):
+        x, y = (float(v) for v in pt(i, rows).split())
+        assert (x - 100) ** 2 + (y - 100) ** 2 <= (KLIP - sw) ** 2, f'veld rechtsvoor valt buiten het wapen ({x}, {y})'
     vlakken = ''.join(f'M{pt(i, j)}L{pt(i + 1, j)}L{pt(i + 1, j + 1)}L{pt(i, j + 1)}Z'
                       for j in range(rows) for i in range(cols) if donker(i, j))
     rand = f'M{pt(0, 0)}L{pt(cols, 0)}L{pt(cols, rows)}L{pt(0, rows)}Z'
@@ -368,10 +377,14 @@ def wapen(w):
     P = pal(w['toon'])
     motief, achter, metzon = WAPEN[w['id']]
     zx, zy = ZONPLEK.get(w['id'], (146, 60))
+    # Het bordje moest hoger en smaller: op y 146-192 sneed de cirkel (r 82) de voorste
+    # rij zo af dat van het lichte veld rechtsvoor een sliertje over was, en las het wapen
+    # op 64 px als "donker rechtsonder" (schaakmeester, ronde 2). Nu ligt de voorste rij
+    # helemaal binnen de cirkel; het landschap zakt iets in (grond op 140) om plaats te maken.
     body = (f'<rect width="200" height="200" fill="{P["lucht"]}"/>' + (zon(P, zx, zy) if metzon else '')
-            + achter(P) + motief(P) + bord(P))
+            + g(achter(P) + motief(P), 'translate(100 140) scale(.94) translate(-100 -150)') + bord(P, **BORD))
     s = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-labelledby="t"><title id="t">Wapen van {w["naam"]}</title>'
-         f'<defs><clipPath id="c"><circle cx="100" cy="100" r="82"/></clipPath></defs>'
+         f'<defs><clipPath id="c"><circle cx="100" cy="100" r="{KLIP}"/></clipPath></defs>'
          f'<circle cx="100" cy="100" r="95" fill="{HALO}"/>'
          f'<g clip-path="url(#c)">{body}</g>'
          f'<circle cx="100" cy="100" r="83" fill="none" stroke="{L}" stroke-width="7"/></svg>')

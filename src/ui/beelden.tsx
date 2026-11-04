@@ -3,8 +3,8 @@
  * stemmingen, een wapen en een kaartstrook per wereld. Gemaakt door de illustrator-
  * agent na goedkeuring van Kaj (4 nov 2026); Pip komt uit scripts/pip-tekenen.py.
  *
- * Eén plek voor de paden. tests/illustraties.test.ts controleert dat er voor elke wereld
- * een wapen en twee kaartstroken zijn, en voor elke stemming twee Pips.
+ * Eén plek voor de paden. tests/illustraties.test.ts controleert dat elk wapen, elke
+ * kaartstrook, elke Pip (met voetstuk, knop en los), elk lesicoon en elk vast icoon bestaat.
  */
 import type { PipStemming } from './Pip'
 
@@ -36,9 +36,14 @@ export function WereldWapen({ id, maat, className }: { id: string; maat: number;
 }
 
 /** Een getekend icoon in plaats van een emoji. Decoratief: de tekst ernaast zegt het. */
-export function Icoon({ naam, src, maat, className, style }: { naam?: IcoonNaam; src?: string; maat: number; className?: string; style?: React.CSSProperties }) {
+type IcoonProps = ({ naam: IcoonNaam; src?: never } | { src: string; naam?: never }) & {
+  maat: number
+  className?: string
+  style?: React.CSSProperties
+}
+export function Icoon({ naam, src, maat, className, style }: IcoonProps) {
   return (
     // eslint-disable-next-line @next/next/no-img-element -- statische export, SVG
-    <img src={src ?? icoonBeeld(naam!)} alt="" width={maat} height={maat} className={className} style={{ verticalAlign: 'middle', ...style }} draggable={false} decoding="async" />
+    <img src={src ?? icoonBeeld(naam as IcoonNaam)} alt="" width={maat} height={maat} className={className} style={{ verticalAlign: 'middle', ...style }} draggable={false} decoding="async" />
   )
 }

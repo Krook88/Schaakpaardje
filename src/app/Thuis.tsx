@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Icoon, WereldWapen } from '@/ui/beelden'
+import { Icoon, WereldWapen, lesIcoon, pipLos } from '@/ui/beelden'
 import Link from 'next/link'
 import { Pip } from '@/ui/Pip'
 import { GeluidKnop } from '@/ui/GeluidKnop'
@@ -252,8 +252,8 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
             <span aria-hidden="true" style={{ fontSize: 38, lineHeight: 1 }}>
               ▶︎
             </span>
-            <span aria-hidden="true" style={{ fontSize: 38, lineHeight: 1 }}>
-              {verderLes?.icoon ?? '🐴'}
+            <span aria-hidden="true" style={{ lineHeight: 1 }}>
+              <Icoon src={verderLes ? lesIcoon(verderLes.id) : pipLos('blij')} maat={48} />
             </span>
             {/* "Verder leren" klopt niet als je nog nergens was. */}
             <span style={{ flex: 1, textAlign: 'left' }}>

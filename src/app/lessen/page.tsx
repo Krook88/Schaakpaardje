@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { WereldWapen } from '@/ui/beelden'
+import { Icoon, WereldWapen, lesIcoon } from '@/ui/beelden'
 import { ALLE_LESSEN, WERELDEN } from '@/content'
 import { SITE, deelkaart } from '@/seo'
 
@@ -76,7 +76,7 @@ export default function Lessen() {
                 <li key={les.id}>
                   <h3 style={{ margin: 0, fontSize: '1.02rem' }}>
                     <Link href={`/les/${les.id}/`}>
-                      <span aria-hidden="true">{les.icoon}</span> {les.titel}
+                      <Icoon src={lesIcoon(les.id)} maat={28} /> {les.titel}
                     </Link>
                   </h3>
                   <p className="muted" style={{ margin: '2px 0 0' }}>

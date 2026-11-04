@@ -132,6 +132,7 @@ export function Pip({
               aria-label="Zeg het nog eens"
               title="Zeg het nog eens"
             >
+              {/* Wit silhouet: in de oranje knop moet het icoon licht zijn, en zo blijft hij één bestand. */}
               <img src={icoonBeeld('geluid')} alt="" width={30} height={30} style={{ display: 'block', filter: 'brightness(0) invert(1)' }} />
             </button>
           )}

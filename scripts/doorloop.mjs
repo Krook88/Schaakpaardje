@@ -1172,7 +1172,7 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
     await p.waitForTimeout(800)
     resultaten.push(`offlinepagina→kaart:${(await p.locator('[data-hier]').count()) > 0 ? 'ja' : 'nee'}`)
   }
-  meld('offline na alleen de startpagina: wereld 0–2 speelt', !resultaten.some((r) => r.endsWith('nee')), resultaten.join(' '))
+  meld('offline na alleen de startpagina: wereld 0–2 speelt', !resultaten.some((r) => r.includes(':nee')), resultaten.join(' '))
   await ctx.close()
 }
 

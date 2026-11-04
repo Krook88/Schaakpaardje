@@ -161,8 +161,28 @@ def zwaard(rot):
              + rect(-14, 14, 28, 8, 4, GOUD) + rect(-4, 22, 8, 14, 3, HOUT) + c(0, 40, 4.5, GOUD))
 
 
-def cijfer(d, x, rot):
-    return g(f'translate({x} 50) rotate({rot})', rect(-12, -17, 24, 34, 6, ROOM) + lijn(d, 4.5))
+def cijfer(d, x, rot, sc=1):
+    return g(f'translate({x} 50) rotate({rot}) scale({sc})', rect(-12, -17, 24, 34, 6, ROOM) + lijn(d, 4.5))
+
+
+KONING_D = (('M-6-56H6M0-63V-48', 'kruis'), 'M-14-34C-17-44-8-49 0-49C8-49 17-44 14-34Z',
+            'M-18 0C-18-8-12-12-8-14L-11-34H11L8-14C12-12 18-8 18 0Z')
+TOREN_D = 'M-14 0V-9H-10L-11-27H-15V-40H-9V-35H-3V-40H3V-35H9V-40H15V-27H11L10-9H14V0Z'
+
+
+def koning_stuk(t, kleur=ROOM):
+    return g(t, dik(KONING_D[0][0], kleur, 4) + p(KONING_D[1], kleur) + p(KONING_D[2], kleur) + lijn('M-9-16H9', 3))
+
+
+def toren_stuk(t, kleur=ROOM):
+    return g(t, p(TOREN_D, kleur) + lijn('M-10-27H10M-9-9H9', 3))
+
+
+def pijlpunt(x, y, dx, dy, kleur, lang=10, breed=8):
+    """Driehoekje met de punt op (x, y), in richting (dx, dy)."""
+    n = math.hypot(dx, dy); dx, dy = dx / n, dy / n
+    bx, by = x - dx * lang, y - dy * lang
+    return p(f'M{x:.1f} {y:.1f}L{bx - dy * breed:.1f} {by + dx * breed:.1f}L{bx + dy * breed:.1f} {by - dx * breed:.1f}Z', kleur, ' stroke-width="4"')
 
 
 def luidspreker(golven):
@@ -175,10 +195,29 @@ def t_licht_donker():
             + c(50, 50, 34, 'none') + glans('M66 26Q74 32 76 40'))
 
 
+def t_rij_lijn():
+    vakken = ''
+    for k in range(-2, 3):
+        kl = LICHT_VELD if k % 2 == 0 else DONKER_VELD
+        vakken += f'<rect x="{42 + 16 * k}" y="42" width="16" height="16" fill="{kl}" stroke="none"/>'
+        if k:
+            vakken += f'<rect x="42" y="{42 + 16 * k}" width="16" height="16" fill="{kl}" stroke="none"/>'
+    kruis = 'M42 10H58V42H90V58H58V90H42V58H10V42H42Z'
+    return p(kruis, LICHT_VELD) + vakken + p(kruis, 'none')
+
+
 def t_kompas():
     return (c(50, 50, 36, ROOM) + c(50, 50, 27, 'none', ' stroke-width="3"')
             + lijn('M50 14V20M50 80V86M14 50H20M80 50H86', 3.5)
             + p('M50 24L59 50H41Z', ROOD) + p('M41 50H59L50 76Z', WIT) + c(50, 50, 4, L, ' stroke="none"'))
+
+
+def t_toren_recht():
+    pijltjes = (dik('M50 24V18', ORANJE, 5) + pijlpunt(50, 9, 0, -1, ORANJE, 11, 10)
+                + dik('M50 80V82', ORANJE, 5) + pijlpunt(50, 91, 0, 1, ORANJE, 11, 10)
+                + dik('M30 52H18', ORANJE, 5) + pijlpunt(9, 52, -1, 0, ORANJE, 11, 10)
+                + dik('M70 52H82', ORANJE, 5) + pijlpunt(91, 52, 1, 0, ORANJE, 11, 10))
+    return pijltjes + toren_stuk('translate(50 76) scale(1.15)')
 
 
 def t_plus():
@@ -193,6 +232,15 @@ def t_muur():
 
 def t_bord_bestek():
     return c(50, 50, 24, WIT) + c(50, 50, 15, ROOM, ' stroke-width="3"') + vork(17, 26) + mes(84, 26)
+
+
+def t_lichte_diagonaal():
+    # 4x4 uit de hoek rechtsonder van het bord: rechtsonder licht, en de diagonaal
+    # daarvandaan naar linksboven is helemaal licht. Daar blijft een loper altijd op.
+    velden = ''.join(f'<rect x="{18 + 16 * i}" y="{18 + 16 * j}" width="16" height="16" fill="{DONKER_VELD}" stroke="none"/>'
+                     for i in range(4) for j in range(4) if (i + j) % 2)
+    return (rect(18, 18, 64, 64, 8, LICHT_VELD) + velden + rect(18, 18, 64, 64, 8, 'none')
+            + dik('M26 26L74 74', GOUD, 4) + ''.join(c(26 + 16 * k, 26 + 16 * k, 4.5, GOUD, ' stroke-width="3"') for k in range(4)))
 
 
 def t_palet():
@@ -222,7 +270,9 @@ def t_diamant():
 
 
 def t_l_sprong():
-    return p('M26 82V22H58V10L84 30L58 50V38H42V82Z', ORANJE) + glans('M34 70V32')
+    # Twee rechtdoor, één opzij: de staande arm (hartlijn x 38, van y 84 tot 24) is 60
+    # lang, de liggende (y 24, van x 38 tot de punt op 68) 30 (schaakmeester, ronde 2).
+    return p('M30 84V16H50V6L68 24L50 42V32H46V84Z', ORANJE) + glans('M36 74V28')
 
 
 def t_takje():
@@ -265,7 +315,8 @@ def t_heen_weer():
 
 
 def t_vooruit_snel():
-    return p('M14 26L48 50L14 74Z', ORANJE) + p('M50 26L84 50L50 74Z', ORANJE)
+    # Omhoog, niet opzij: een pion gaat nooit opzij (schaakmeester, ronde 2).
+    return p('M50 46L78 78H22Z', ORANJE) + p('M50 14L78 46H22Z', ORANJE)
 
 
 def t_schaar():
@@ -293,7 +344,10 @@ def t_getallen():
     een = 'M-4-8L1-12V12M-5 12H6'
     drie = 'M-6-9C-3-13 6-13 6-6C6-2 2-1 0-1C3-1 7 1 7 6C7 13-3 13-7 9'
     vijf = 'M6-12H-4L-5-2C-2-4 7-4 7 4C7 12-3 13-7 9'
-    return cijfer(een, 23, -8) + cijfer(vijf, 77, 8) + g('translate(0 -8)', cijfer(drie, 50, 0))
+    negen = 'M7-4C4 1-7 1-7-5C-7-12 7-13 7-4V3C7 10 1 13-6 10'
+    # Pion 1, paard en loper 3, toren 5, dame 9.
+    return (g('translate(0 4)', cijfer(een, 17, -8, .78)) + g('translate(0 -4)', cijfer(drie, 39, -3, .78))
+            + g('translate(0 -4)', cijfer(vijf, 61, 3, .78)) + g('translate(0 4)', cijfer(negen, 83, 8, .78)))
 
 
 def t_cadeau():
@@ -340,10 +394,8 @@ def t_deur():
 
 
 def t_omgevallen_koning():
-    koning = (dik('M-6-56H6M0-63V-48', ROOM, 4) + p('M-14-34C-17-44-8-49 0-49C8-49 17-44 14-34Z', ROOM)
-              + p('M-18 0C-18-8-12-12-8-14L-11-34H11L8-14C12-12 18-8 18 0Z', ROOM) + lijn('M-9-16H9', 3))
     # Een omgevallen koning: zo eindigt een partij als er mat staat.
-    return (g('translate(84 66) rotate(-90) scale(1.12)', koning)
+    return (koning_stuk('translate(84 66) rotate(-90) scale(1.12)')
             + p(sterpad(30, 28, 9), GOUD, ' stroke-width="3.5"') + p(sterpad(52, 18, 6.5), GOUD, ' stroke-width="3.5"'))
 
 
@@ -360,6 +412,14 @@ def t_handdruk():
             + p('M28 48C34 40 44 38 52 42L66 50C70 53 70 60 64 62C58 66 48 66 40 62L32 58Z', SNUIT)
             + lijn('M50 46C54 50 54 58 50 64M58 50C62 54 62 60 58 64', 3)
             + p('M72 46C64 40 54 40 46 44C50 48 58 48 66 50Z', HUID2))
+
+
+def t_rokade():
+    # De koning gaat naar rechts, de toren springt over hem heen naar links: twee
+    # pijlen die elkaar boven de stukken kruisen.
+    a, b = 'M28 42Q44 36 66 20', 'M72 42Q56 36 34 20'
+    return (koning_stuk('translate(30 88) scale(.6)') + toren_stuk('translate(71 88) scale(.92)')
+            + dik(a, ORANJE, 5) + pijlpunt(74, 14, 1, -.75, ORANJE) + dik(b, BLAUWD, 5) + pijlpunt(26, 14, -1, -.75, BLAUWD))
 
 
 def t_kasteel():
@@ -379,6 +439,12 @@ def t_klembord():
     return rect(22, 16, 56, 74, 7, HOUT) + rect(29, 27, 42, 56, 3, WIT, ' stroke-width="3.5"') + rect(38, 11, 24, 12, 4, GRIJS) + rijen
 
 
+def t_veldnaam():
+    # Een naamkaartje met e4 erop, getekend als lijnen (geen lettertype).
+    return (p('M30 26H80A6 6 0 0 1 86 32V68A6 6 0 0 1 80 74H30L14 50Z', ROOM) + c(26, 50, 4, 'none', ' stroke-width="3"')
+            + lijn('M39 52H57A9 9 0 1 0 54 59', 5.5) + lijn('M76 66V36L62 56H80', 5.5))
+
+
 def t_letters():
     return (rect(12, 26, 76, 48, 10, BLAUW) + c(29, 56, 7, 'none', ' stroke-width="4.5"') + lijn('M36 48V63', 4.5)
             + lijn('M44 36V63', 4.5) + c(51, 56, 7, 'none', ' stroke-width="4.5"') + lijn('M77 51A7 7 0 1 0 77 61', 4.5))
@@ -392,6 +458,14 @@ def t_potlood():
 
 def t_stoplicht():
     return rect(33, 12, 34, 76, 13, '#5b4636') + c(50, 29, 8, ROOD) + c(50, 50, 8, GOUD) + c(50, 71, 8, GROEN)
+
+
+def t_splitspijl():
+    # Eén stuk, twee doelen: een pijl die zich in tweeën splitst.
+    lijnen = 'M50 86V58L34 40M50 58L66 40'
+    koppen = '<path d="M20.7 25.1L43.9 28.5L21.5 48.5Z"/><path d="M79.3 25.1L56.1 28.5L78.5 48.5Z"/>'
+    return (lijn(lijnen, 12 + 2 * W) + f'<g fill="{L}" stroke-width="{2 * W}">{koppen}</g>'
+            + lijn(lijnen, 12, ORANJE) + f'<g fill="{ORANJE}" stroke="none">{koppen}</g>')
 
 
 def t_drietand():
@@ -410,6 +484,10 @@ def t_punaise():
 
 def t_prins():
     return gezicht(MANEN, p('M32 36L29 16L40 24L50 12L60 24L71 16L68 36Z', GOUD) + c(50, 28, 3, ROZE, ' stroke-width="2.5"'))
+
+
+def t_kroon_toren():
+    return (toren_stuk('translate(72 82) scale(1.05)') + g('translate(38 52) scale(.72) translate(-50 -52)', t_kroon()))
 
 
 def t_prinses():
@@ -476,6 +554,25 @@ def t_ster():
     return p(sterpad(50, 53, 38, .48), GOUD) + glans('M42 32L46 24')
 
 
+def t_ster_vol():
+    return p(sterpad(50, 54, 42, .5), GOUD) + glans('M42 30L46 22')
+
+
+def t_ster_leeg():
+    # Nog niet gehaald: alleen de omtrek, met een zacht vlak zodat hij op elke grond leest.
+    return p(sterpad(50, 54, 42, .5), 'none', f' stroke-width="{W + 2}"')
+
+
+HOEFIJZER = 'M-15 12C-24 2-22-18-10-22C-4-24 4-24 10-22C22-18 24 2 15 12L7 8C12 0 12-10 6-13C2-15-2-15-6-13C-12-10-12 0-7 8Z'
+
+
+def medaille(kleur, donker):
+    nagels = ''.join(c(x, y, 1.8, L, ' stroke="none"') for x, y in ((-16, -2), (-14, -13), (-6, -19), (6, -19), (14, -13), (16, -2)))
+    return (p('M28 8H46L58 40H40Z', BLAUWD) + p('M72 8H54L42 40H60Z', ROOD)
+            + c(50, 62, 26, kleur) + c(50, 62, 19, 'none', f' stroke="{donker}" stroke-width="3"')
+            + g('translate(50 64) scale(1.05)', p(HOEFIJZER, WIT, ' stroke-width="3.5"') + nagels))
+
+
 def t_meedoen():
     return hand('translate(35 84) rotate(-12) scale(.82)', SNUIT, ROOD) + hand('translate(65 84) rotate(12) scale(-.82 .82)', HUID2, BLAUWD)
 
@@ -508,6 +605,18 @@ LES = {
     '🤴': t_prins, '👸': t_prinses, '🌱': kiemplant,
 }
 
+# Waar de emoji het idee van de les niet goed vangt, tekenen we de les zelf
+# (schaakmeester en conversie-reviewer, ronde 2). Dit gaat vóór LES.
+PER_LES = {
+    'weide-2': t_rij_lijn,           # Rijen en lijnen: een rij en een lijn die elkaar kruisen
+    'toren-1': t_toren_recht,        # De toren loopt recht: het plusteken las als EHBO-kruis
+    'loper-2': t_lichte_diagonaal,   # Altijd dezelfde kleur: een diagonaal van alleen lichte velden
+    'rokade-1': t_rokade,            # Twee stukken tegelijk: koning en toren, pijlen kruisen
+    'notatie-1': t_veldnaam,         # Elk veld heeft een naam: e4
+    'tactiek-1': t_splitspijl,       # De dubbele aanval: één pijl, twee punten
+    'eindspel-2': t_kroon_toren,     # Mat met dame en met toren
+}
+
 VAST = {
     'minispel': ('Minispel', t_dobbelsteen),
     'slot': ('Nog op slot', t_slot),
@@ -518,6 +627,11 @@ VAST = {
     'geluid': ('Geluid', t_geluid),
     'instellingen': ('Instellingen', t_tandwiel),
     'bel': ('Bel', t_bel),
+    'ster-vol': ('Ster gehaald', t_ster_vol),
+    'ster-leeg': ('Ster nog niet gehaald', t_ster_leeg),
+    'medaille-brons': ('Bronzen medaille', lambda: medaille('#d08a4e', '#a5642f')),
+    'medaille-zilver': ('Zilveren medaille', lambda: medaille('#d3d7da', '#9aa1a6')),
+    'medaille-goud': ('Gouden medaille', lambda: medaille(GOUD, GOUDD)),
     'fase-kijken': ('Kijken', ogen),
     'fase-meedoen': ('Meedoen', t_meedoen),
     'fase-zelf': ('Zelf doen', t_zelf),
@@ -552,7 +666,10 @@ def lessen():
 
 if __name__ == '__main__':
     ls = lessen()
-    zonder = [l for l in ls if sleutel(l['icoon']) not in LES]
+    onbekend = set(PER_LES) - {l['id'] for l in ls}
+    if onbekend:
+        sys.exit(f'PER_LES noemt lessen die niet bestaan: {", ".join(sorted(onbekend))}')
+    zonder = [l for l in ls if l['id'] not in PER_LES and sleutel(l['icoon']) not in LES]
     if zonder:
         sys.exit('Geen tekening voor deze les(sen); voeg er een toe aan LES in scripts/iconen-tekenen.py:\n'
                  + '\n'.join(f"  {l['id']} ({l['bestand']}): {l['icoon']}  {l['titel']}" for l in zonder))
@@ -562,7 +679,7 @@ if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
     geschreven = []
     for l in ls:
-        geschreven.append((f"les-{l['id']}.svg", svg(f"Les: {l['titel']}", LES[sleutel(l['icoon'])]())))
+        geschreven.append((f"les-{l['id']}.svg", svg(f"Les: {l['titel']}", (PER_LES.get(l['id']) or LES[sleutel(l['icoon'])])())))
     for naam, (titel, f) in VAST.items():
         geschreven.append((f'{naam}.svg', svg(titel, f())))
     for naam, s in geschreven:
@@ -570,7 +687,8 @@ if __name__ == '__main__':
         open(os.path.join(OUT, naam), 'w', encoding='utf-8').write(s)
     gedeeld = {}
     for l in ls:
-        gedeeld.setdefault(sleutel(l['icoon']), []).append(l['id'])
+        if l['id'] not in PER_LES:
+            gedeeld.setdefault(sleutel(l['icoon']), []).append(l['id'])
     for e, ids in gedeeld.items():
         if len(ids) > 1:
             print('  zelfde tekening:', e, ', '.join(ids))

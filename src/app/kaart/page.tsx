@@ -169,7 +169,7 @@ export default function Kaart() {
                   </p>
                 </div>
                 {af && (
-                  <span title="Deze wereld is uit" style={{ fontSize: 28, flexShrink: 0 }}>
+                  <span role="img" aria-label="Deze wereld is uit" title="Deze wereld is uit" style={{ flexShrink: 0 }}>
                     <Icoon naam="beker" maat={30} />
                   </span>
                 )}

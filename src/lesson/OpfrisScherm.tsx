@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Icoon } from '@/ui/beelden'
+import { Icoon, lesIcoon } from '@/ui/beelden'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Confetti } from '@/ui/Confetti'
@@ -229,7 +229,7 @@ export function OpfrisScherm() {
                 opacity: i <= index ? 1 : 0.45,
               }}
             >
-              {o.icoon}
+              <Icoon src={lesIcoon(o.lesId)} maat={i === index ? 36 : 30} />
             </span>
           ))}
         </div>
