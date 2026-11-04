@@ -4,6 +4,7 @@
    ster, de omlijsting mag je nauwelijks opvallen. */
 .frame {
   position: relative; width: 100%; aspect-ratio: 1;
+  container-type: inline-size;
   border-radius: 10px; overflow: hidden;
   background: var(--light-sq);
   box-shadow:
@@ -39,7 +40,9 @@
      onderscheiden. */
   font-variant-emoji: text;
   font-family: 'Schaakstukken', sans-serif;
-  font-size: min(9.5vw, 44px); line-height: 1; user-select: none;
+  /* Naar de bordbreedte, niet het venster: het stuk vulde maar ~40% van het veld
+     (43e review). 15cqi is ruim een veld (12,5cqi); de tekening zelf is kleiner. */
+  font-size: min(9.5vw, 44px); font-size: 15cqi; line-height: 1; user-select: none;
   transition: transform 0.14s ease;
   filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.28));
   position: relative; z-index: 2;
