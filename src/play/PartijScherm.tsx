@@ -1,6 +1,6 @@
 'use client'
 
-import { botBeeld } from '@/ui/beelden'
+import { botBeeld, type BotStemming } from '@/ui/beelden'
 import styles from './PartijScherm.module.css'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
@@ -62,6 +62,11 @@ export function PartijScherm({ botId }: { botId: string }) {
   const [stemming, setStemming] = useState<PipStemming>('blij')
   const [uitslag, setUitslag] = useState<Uitslag>(null)
   const [botDenkt, setBotDenkt] = useState(false)
+  // Het gezicht van de tegenstander: denkt tijdens zijn beurt, verrast als het kind iets
+  // sloeg, anders blij. Nooit boos of uitlachend.
+  const [botVerrast, setBotVerrast] = useState(false)
+  // Verrast gaat voor denkt: de bot begint meteen na de slag te denken, anders zag je het nooit.
+  const botStemming: BotStemming = botVerrast ? 'verrast' : botDenkt ? 'denkt' : 'blij'
   const [twijfel, setTwijfel] = useState<{ van: Square; naar: Square; verlies: number; promotie: PieceType } | null>(null)
   const [zetten, setZetten] = useState(0)
   const [samenWinnaar, setSamenWinnaar] = useState<'w' | 'b' | null>(null)
@@ -197,6 +202,7 @@ export function PartijScherm({ botId }: { botId: string }) {
       }
       denkTimer.current = null
       setBotDenkt(false)
+      setBotVerrast(false)
       if (controleerEinde(game)) return
       // Het pionnenspel geldt beide kanten op: haalt de bot als eerste de overkant,
       // dan heeft hij gewonnen. Zonder dit werkte de winregel maar één kant op.
@@ -217,6 +223,8 @@ export function PartijScherm({ botId }: { botId: string }) {
       setFen(game.fen)
       setGeselecteerd(null)
       setZetten((n) => n + 1)
+      // De tegenstander kijkt verrast als het kind iets slaat; nooit boos.
+      setBotVerrast(Boolean(gedaan.isCapture))
 
       // Pionnenspel: wie het eerst promoveert, wint.
       if (opzet?.winBijPromotie && gedaan.promotion) {
@@ -397,7 +405,7 @@ export function PartijScherm({ botId }: { botId: string }) {
             uit de vaste lijst, niets van het kind. */}
         {bot && (
           <div className={styles.tegenstander} aria-hidden="true">
-            <img src={botBeeld(bot.id)} alt="" width={56} height={56} className={styles.tegenstanderGezicht} draggable={false} />
+            <img src={botBeeld(bot.id, botStemming)} alt="" width={56} height={56} className={styles.tegenstanderGezicht} draggable={false} />
             <span>{bot.naam}</span>
           </div>
         )}

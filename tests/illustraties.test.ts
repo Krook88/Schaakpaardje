@@ -17,7 +17,7 @@ const STEMMINGEN: PipStemming[] = ['blij', 'juicht', 'verrast', 'denkt', 'moedig
 describe('illustraties', () => {
   // Een bot zonder tekening gaf stil een kapot plaatje met alt="" (codebase-review).
   it.each(BOTS.map((b) => b.id))('bot %s heeft een tekening (scripts/bots-tekenen.py)', (id) => {
-    expect(bestaat(botBeeld(id)), botBeeld(id)).toBe(true)
+    for (const st of ['blij', 'denkt', 'verrast'] as const) expect(bestaat(botBeeld(id, st)), botBeeld(id, st)).toBe(true)
   })
 
   it.each(WERELDEN.map((w) => w.id))('wereld %s heeft een wapen en twee kaartstroken', (id) => {

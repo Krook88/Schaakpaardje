@@ -98,3 +98,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 34: 55e review (GO, eerste les 8, spel 7).
 - Ronde 35: kaart dwars — plank op één rij (kop en telling links, wapens 52 px rechts).
 - Wow-meting na ronde 35 (375/844): start 7/8, les 5/6, wereld af 8/7, kaart 7/5, spel 6/6. Loop gepauzeerd: cijfers schommelen tussen reviewers, vraag aan Kaj.
+- Ronde 37: bots in drie stemmingen (blij, denkt, verrast), het gezicht volgt de partij.
