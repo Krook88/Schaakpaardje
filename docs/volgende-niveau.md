@@ -105,3 +105,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 39: Pip zegt na elke botzet "Hij heeft gezet. Nu jij!" (nieuwe opname bij publiceren), doorloopregel.
 - Ronde 40: tegenstander dwars naast Pip in beeld (52 px).
 - Ronde 40: 57e review verwerkt (geen "hij" voor bots, bemoedigende zin bij slaan).
+- Ronde 41: denkwolkjes van Mila en Fien van het oor af.

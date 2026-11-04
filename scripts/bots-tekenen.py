@@ -71,15 +71,18 @@ def neus(y=113, f=L, r=6):
     return el(100, y, r * 1.3, r, f)
 
 
-WOLK = ''.join(f'<circle cx="{x}" cy="{y}" r="{r}" fill="{ROOM}" stroke="{L}" stroke-width="{w}"/>'
-               for x, y, r, w in ((148, 62, 6, 3.5), (161, 42, 9, 4), (178, 20, 15, 4.5)))
+def wolk(dx=0):
+    """dx schuift de twee kleine bolletjes naar rechts, weg van een oor (57e review:
+    bij Mila en Fien lagen ze op het oor). De grote bol blijft binnen het beeld."""
+    return ''.join(f'<circle cx="{x + (dx if r < 15 else 0)}" cy="{y}" r="{r}" fill="{ROOM}" stroke="{L}" stroke-width="{w}"/>'
+                   for x, y, r, w in ((148, 62, 6, 3.5), (161, 42, 9, 4), (178, 20, 15, 4.5)))
 
 
-def bot(id, vormen, gezicht, kop=(100, 104, 50, 46), lijf=None):
+def bot(id, vormen, gezicht, kop=(100, 104, 50, 46), lijf=None, wolk_dx=0):
     """denkt: één denkwolkje (drie oplopende rondjes rechtsboven). Het pootje aan de kin
     is weggelaten: op 56 px werd het een vlek die de wolk overstemde."""
     for st, naam in (('blij', ''), ('denkt', '-denkt'), ('verrast', '-verrast')):
-        teken(id + naam, vormen, gezicht(st), kop, lijf, WOLK if st == 'denkt' else '')
+        teken(id + naam, vormen, gezicht(st), kop, lijf, wolk(wolk_dx) if st == 'denkt' else '')
 
 
 def teken(id, vormen, gezicht, kop, lijf, boven=''):
@@ -108,7 +111,7 @@ bot('mila', [('<circle cx="54" cy="64" r="30"/>', G), ('<circle cx="146" cy="64"
              ('<circle cx="56" cy="66" r="18"/>', ROZE), ('<circle cx="144" cy="66" r="18"/>', ROZE)],
     lambda st: ogen(st, 98) + wangen() + el(100, 114, 7, 5.5, '#ef7d8f')
     + lijn('M80 116L58 112M80 121L58 124M120 116L142 112M120 121L142 124', 3)
-    + mond(st, lijn('M92 125Q100 132 108 125', 4.5), 125), kop=(100, 106, 46, 42), lijf=(GD, G))
+    + mond(st, lijn('M92 125Q100 132 108 125', 4.5), 125), kop=(100, 106, 46, 42), lijf=(GD, G), wolk_dx=24)
 
 # Kip Kiki: room, rode kam, gele snavel, lelletje.
 bot('kiki', [('<path d="M78 66C70 46 82 34 92 44C92 26 110 24 112 42C118 28 136 36 126 58Z"/>', ROOD)],
@@ -142,7 +145,7 @@ bot('fien', [('<path d="M54 86L46 34L92 66Z"/>', V), ('<path d="M146 86L154 34L1
              ('<path d="M58 72L54 46L78 64Z"/>', '#5b3418'), ('<path d="M142 72L146 46L122 64Z"/>', '#5b3418')],
     lambda st: p('M52 104C64 112 84 114 100 128C116 114 136 112 148 104C150 130 126 148 100 148C74 148 50 130 52 104Z', ROOM)
     + ogen(st, 96) + wangen(116, 36) + neus(124, L, 6) + mond(st, lach(132, 9), 133),
-    kop=(100, 104, 50, 44), lijf=(VD, V))
+    kop=(100, 104, 50, 44), lijf=(VD, V), wolk_dx=12)
 
 # Oscar de Uil: bruin, oorpluimen, grote lichte oogschijven, oranje snavel.
 U, UD, US = '#a07a56', '#7e5c3e', '#f3e2c4'
