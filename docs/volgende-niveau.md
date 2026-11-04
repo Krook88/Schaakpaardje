@@ -87,3 +87,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 27: 51e review verwerkt (keuzescherm met tekeningen, kop zonder emoji). Open: bots bij uitslag/stal, Oscars borstveertjes.
 - Ronde 28: tekening van de bot op de uitslagkaart.
 - Ronde 29: eerste les — het paard huppelt twee keer na de golf (niet bij minder beweging).
+- Ronde 29: 52e review verwerkt. Open: uitslagkaart dwars onder de vouw; uitgeschakelde knoppen in donker.

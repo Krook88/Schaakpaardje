@@ -527,7 +527,7 @@ export function PartijScherm({ botId }: { botId: string }) {
         {uitslag && !samen && (
           <div className="card stack center">
             {/* De tegenstander geeft je een hand: bij elke uitslag, nooit uitlachen. */}
-            {bot && <img src={botBeeld(bot.id)} alt="" width={64} height={64} aria-hidden="true" draggable={false} />}
+            {bot && <img src={botBeeld(bot.id)} alt="" width={64} height={64} aria-hidden="true" draggable={false} className={styles.uitslagBot} />}
             <h2>{uitslag === 'gewonnen' ? 'Gewonnen! 🏆' : uitslag === 'verloren' ? 'Deze ging verloren' : 'Gelijkspel'}</h2>
             <p className="muted">
               Je deed {zetten} zetten. {laatsteZet && `De laatste ging naar ${laatsteZet[1]}.`}
