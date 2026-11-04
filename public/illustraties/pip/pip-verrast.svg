@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-labelledby="t"><title id="t">Pip is verrast</title>
 <defs><g id="s"><path d="M93 58C83 34 86 14 96 2C110 14 120 34 117 56Z"/><path d="M120 54C122 30 134 12 150 6C155 24 150 44 138 60Z"/><path d="M84 120C78 145 70 165 66 184L168 184C168 150 160 115 146 96Z"/><path d="M100 46C128 28 160 36 168 62C180 74 180 96 172 106C184 120 184 140 176 150C186 162 186 178 180 186L150 186C152 150 146 120 132 96Z"/><ellipse cx="112" cy="86" rx="48" ry="44"/><ellipse cx="66" cy="117" rx="37" ry="28" transform="rotate(-16 66 117)"/></g></defs>
 <g stroke-linejoin="round" stroke-linecap="round">
-<g transform="translate(3 -4) rotate(-4 116 182)">
+<g transform="translate(3 2) rotate(-4 116 182)">
 <use href="#s" fill="#fff8ec" stroke="#fff8ec" stroke-width="22"/>
 <use href="#s" fill="#3b2414" stroke="#3b2414" stroke-width="11"/>
 <g fill="#e8923a"><path d="M93 58C83 34 86 14 96 2C110 14 120 34 117 56Z"/><path d="M120 54C122 30 134 12 150 6C155 24 150 44 138 60Z"/><path d="M84 120C78 145 70 165 66 184L168 184C168 150 160 115 146 96Z"/></g>

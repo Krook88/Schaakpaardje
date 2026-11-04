@@ -3,7 +3,12 @@
 Schrijft naar public/illustraties/pip/:
   pip-<stemming>.svg       Pip op zijn voetstukje (200x200), voor de grote plekken.
   pip-knop-<stemming>.svg  Strak bijgesneden kop zonder voetstuk, rond afgesneden,
-                           zodat het gezicht een ronde knop helemaal vult.
+                           zodat het gezicht een ronde knop helemaal vult. Bovenin 5%
+                           extra lucht, zodat oren en sterren in een ronde knop met
+                           overflow:hidden niet wegvallen.
+  pip/pip-los-<stemming>.svg  Dezelfde Pip zonder groen plankje: een zachte schaduw
+                           eronder. Voor de kaarthalte en de held, waar hij op de grond
+                           van een landschap staat en een plankje een vreemd meubel is.
 
 Draaien: python3 scripts/pip-tekenen.py
 """
@@ -57,6 +62,7 @@ def pip(stemming, titel, ear, face, rot, extra='', move='', knop_extra=None, kno
 <ellipse cx="120" cy="110" rx="11" ry="7" fill="{K['wang']}" opacity=".5"/>
 {face}
 </g>'''
+    schaduw = f'<ellipse cx="114" cy="190" rx="66" ry="8" fill="{L}" opacity=".16"/>'
     voet = f'''<rect x="46" y="174" width="140" height="20" rx="10" fill="{K['gras']}" stroke="{K['halo']}" stroke-width="20" paint-order="stroke"/>
 <rect x="46" y="174" width="140" height="20" rx="10" fill="{K['gras']}" stroke="{L}" stroke-width="7"/>
 <path d="M58 180H174" stroke="{K['grasl']}" stroke-width="4"/>'''
@@ -71,9 +77,12 @@ def pip(stemming, titel, ear, face, rot, extra='', move='', knop_extra=None, kno
         open(os.path.join(OUT, naam + '.svg'), 'w').write(s)
 
     schrijf(f'pip-{stemming}', '0 0 200 200', kop + voet + extra)
+    schrijf(f'pip-los-{stemming}', '0 0 200 200', schaduw + kop + extra)
     # Knop: kop iets groter, rond afgesneden op de knop; het voetstuk valt weg.
     ke = extra if knop_extra is None else knop_extra
-    schrijf(f'pip-knop-{stemming}', '9 -10 188 188',
+    # 9 -10 188 188 was strak; 5% (9,4) erbij, gelijk verdeeld over links en rechts
+    # zodat de knop vierkant blijft, en helemaal bovenin.
+    schrijf(f'pip-knop-{stemming}', '4.3 -19.4 197.4 197.4',
             f'<g clip-path="url(#k)"><g transform="{knop_move or "translate(0 0)"}">{kop}</g></g>{ke}')
 
 
@@ -126,8 +135,11 @@ pip('blij', 'Pip is blij', 'normaal', oog() + lijn('M42 129Q56 141 74 132'), 0)
 
 pip('juicht', 'Pip juicht', 'op',
     lijn('M92 92Q103 76 114 92', 6) + lijn('M92 66Q103 59 114 65') + OPEN_MOND, -9,
-    ster(26, 62, 11) + ster(52, 34, 7) + ster(176, 22, 8),
-    knop_extra=ster(34, 40, 10) + ster(172, 22, 8), knop_move='translate(7 -3)')
+    # De ster rechtsboven (176, 22) stak met zijn witte rand half de viewBox uit en
+    # bleef op donker als los wit vlekje hangen; weg. De kop zakt 6 zodat het
+    # opgestoken oor niet meer tegen de bovenrand aan wordt afgesneden.
+    ster(26, 62, 11) + ster(52, 34, 7), 'translate(2 6) ',
+    knop_extra=ster(34, 40, 10) + ster(46, 8, 6), knop_move='translate(7 -3)')
 
 pip('trots', 'Pip is trots', 'normaal',
     f'<path d="M93 90Q103 99 114 90" fill="none" stroke="{L}" stroke-width="6"/><path d="M93 90L89 86M114 90L118 86" stroke="{L}" stroke-width="3.5"/>'
@@ -149,7 +161,8 @@ pip('moedigt', 'Pip moedigt je aan', 'voor',
 pip('verrast', 'Pip is verrast', 'op',
     f'<circle cx="104" cy="86" r="14" fill="#fff" stroke="{L}" stroke-width="4"/><circle cx="101" cy="87" r="6.5" fill="{L}"/><circle cx="99" cy="84" r="2.2" fill="#fff"/>'
     + lijn('M88 62Q103 48 118 60') + f'<ellipse cx="56" cy="134" rx="7" ry="9" fill="#6b2a17" stroke="{L}" stroke-width="4"/>', -4,
-    '', 'translate(3 -4) ')
+    # Was translate(3 -4): het opgestoken oor raakte de bovenrand en werd afgesneden.
+    '', 'translate(3 2) ')
 
 # Slaapt: kop zakt een beetje, oog dicht (boogje naar beneden), slappe oren, zzz.
 pip('slaapt', 'Pip slaapt', 'slap',

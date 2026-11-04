@@ -9,6 +9,12 @@ Elke wereld krijgt zijn eigen toon (de HSL-hue uit src/content/werelden/*.ts) al
 hoofdkleur; het motief zelf is in room, goud en hout, met dezelfde bruine lijn als Pip.
 Onderin elk wapen ligt hetzelfde geblokte schaakbordje: dat maakt ze familie.
 
+De kaartstroken moeten op elk scherm passen: de CSS kiest de uitsnede (en mag ze
+breed laten herhalen). Daarom staat alles wat een vorm heeft in de randzones
+(x < MIDDEN[0] en x > MIDDEN[1]); het midden is alleen lucht en heuvels, die je
+mag uitrekken zonder dat er iets scheef gaat. En elke heuvellijn begint en eindigt
+op dezelfde hoogte, zodat twee stroken naast elkaar naadloos aansluiten.
+
 Draaien: python3 scripts/werelden-tekenen.py
 """
 import colorsys
@@ -19,6 +25,7 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 OUT = os.path.join(ROOT, 'public', 'illustraties')
 L = '#3b2414'
 HALO = '#fff8ec'
+MIDDEN = (250, 550)  # in de kaartstrook: hier staat niets dan heuvels en lucht
 
 
 def hx(h, s, l):
@@ -151,6 +158,16 @@ def m_dame(P):
         + kroon_dame(P, 100, 62, 1.05))
 
 
+# Een schaakpaard-silhouet (geen Pip): kop naar links, voet op (0, 0), 30 breed.
+PAARDKOP = 'M-6 0C-6-9-3-14 1-18L-10-15C-14-15-16-19-14-23L-3-32L-1-37L3-33C12-31 16-20 14 0Z'
+
+
+def paardenkop(P, x, y, s):
+    """Crème paardenkop boven de staldeur, zoals een uithangbord."""
+    return (f'<g transform="translate({x} {y}) scale({s})"><path d="{PAARDKOP}" fill="{P["steen"]}"/>'
+            f'<circle cx="-2" cy="-24" r="2.2" fill="{L}" stroke="none"/></g>')
+
+
 def m_paard(P):
     return lijnstijl(
         f'<path d="M54 150V100L100 66L146 100V150Z" fill="{P["acc"]}"/>'
@@ -158,8 +175,7 @@ def m_paard(P):
         f'<path d="M80 150V114H120V150Z" fill="{P["steen"]}"/>'
         f'<path d="M80 114L120 150M120 114L80 150" fill="none" stroke="{P["accd"]}" stroke-width="5"/>'
         f'<path d="M80 150V114H120V150" fill="none"/>'
-        f'<path d="M90 82V90A10 10 0 0 0 110 90V82" fill="none" stroke="{L}" stroke-width="11"/>'
-        f'<path d="M90 82V90A10 10 0 0 0 110 90V82" fill="none" stroke="{P["goud"]}" stroke-width="5"/>'
+        + paardenkop(P, 100, 110, .82) +
         f'<path d="M36 150V128H48V150ZM152 150V128H164V150Z" fill="{P["goud"]}"/>'
         f'<path d="M36 136H48M152 136H164" fill="none" stroke-width="2.5"/>')
 
@@ -384,36 +400,36 @@ def kaart(w, donker):
         lucht += f'<circle cx="640" cy="70" r="28" fill="{P["zon"]}"/><circle cx="652" cy="62" r="24" fill="{P["lucht"]}"/>'
     else:
         lucht += (f'<circle cx="640" cy="70" r="46" fill="{P["zon"]}" opacity=".25"/><circle cx="640" cy="70" r="34" fill="{P["zon"]}"/>'
-                  + wolk(P, 'translate(110 60)') + wolk(P, 'translate(430 44) scale(.8)'))
+                  + wolk(P, 'translate(110 60)') + wolk(P, 'translate(700 140) scale(.55)'))
     # verre rand: heuvels, bergen of duinen
     if i == 'aanval':
-        ver = f'<path d="M0 170L70 96L120 140L190 70L270 150L330 120L420 160L520 110L600 150L680 80L760 140L800 120V300H0Z" fill="{P["ver"]}"/>'
+        ver = f'<path d="M0 150L70 96L120 140L190 70L250 140C330 156 470 156 550 140L610 116L680 80L760 140L800 150V300H0Z" fill="{P["ver"]}"/>'
         ver += f'<path d="M190 70L176 92L188 88L196 98L206 86ZM680 80L666 102L678 98L686 108L696 96Z" fill="{P["steen"]}" opacity=".9"/>'
     elif i == 'tactiek':
-        ver = f'<path d="M0 160L50 120L110 130L160 96L240 140L320 130L400 150L480 126L560 140L640 100L720 120L800 110V300H0Z" fill="{P["ver"]}"/>'
+        ver = f'<path d="M0 140L50 120L110 130L160 96L240 140C330 152 470 152 560 140L640 100L720 120L800 140V300H0Z" fill="{P["ver"]}"/>'
     else:
-        ver = f'<path d="M0 150C90 108 190 112 280 136S460 116 560 124 720 100 800 118V300H0Z" fill="{P["ver"]}"/>'
+        ver = f'<path d="M0 136C90 108 190 112 290 130S510 132 590 122 730 104 800 136V300H0Z" fill="{P["ver"]}"/>'
     water = ''
     if i in ('schaak', 'rokade', 'notatie', 'mat'):
         water = (f'<path d="M0 176H800V230H0Z" fill="{P["water"]}"/>'
-                 f'<path d="M120 192q10-6 20 0t20 0M520 200q10-6 20 0t20 0M660 186q10-6 20 0t20 0M300 206q10-6 20 0t20 0" fill="none" stroke="{P["waterl"]}" stroke-width="3" stroke-linecap="round"/>')
-    mid = f'<path d="M0 206C110 176 230 178 340 194S560 178 660 184 760 172 800 178V300H0Z" fill="{P["mid"]}"/>'
+                 f'<path d="M120 192q10-6 20 0t20 0M176 204q10-6 20 0t20 0M600 200q10-6 20 0t20 0M680 186q10-6 20 0t20 0" fill="none" stroke="{P["waterl"]}" stroke-width="3" stroke-linecap="round"/>')
+    mid = f'<path d="M0 196C110 176 230 178 340 192S560 186 660 184 760 180 800 196V300H0Z" fill="{P["mid"]}"/>'
     if i == 'eindspel':
-        mid = f'<path d="M0 200C120 166 240 170 360 196S600 172 700 182 770 176 800 180V300H0Z" fill="{P["mid"]}"/><path d="M360 196C330 184 320 176 330 168" fill="none" stroke="{P["dicht"]}" stroke-width="3"/>'
-    dicht = f'<path d="M0 248C130 226 260 230 400 242S640 234 800 238V300H0Z" fill="{P["dicht"]}"/>'
-    voor = f'<path d="M0 280C200 268 600 270 800 278V300H0Z" fill="{P["diep"]}"/>'
-    vakje = f'<g transform="translate(250 236) scale(1 .42) rotate(45)" opacity=".5"><rect x="-30" y="-30" width="60" height="60" fill="{P["steen"]}"/><path d="M-30-30h20v20h-20zM10-30h20v20H10zM-10-10h20v20h-20zM-30 10h20v20h-20zM10 10h20v20H10z" fill="{P["accd"]}"/></g>'
+        mid = f'<path d="M0 192C120 166 220 168 300 186S600 172 700 182 770 180 800 192V300H0Z" fill="{P["mid"]}"/>'
+    dicht = f'<path d="M0 242C130 226 260 230 400 242S640 234 800 242V300H0Z" fill="{P["dicht"]}"/>'
+    voor = f'<path d="M0 280C200 268 600 270 800 280V300H0Z" fill="{P["diep"]}"/>'
+    vakje = f'<g transform="translate(196 250) scale(1 .42) rotate(45)" opacity=".5"><rect x="-30" y="-30" width="60" height="60" fill="{P["steen"]}"/><path d="M-30-30h20v20h-20zM10-30h20v20H10zM-10-10h20v20h-20zM-30 10h20v20h-20zM10 10h20v20H10z" fill="{P["accd"]}"/></g>'
 
     links, rechts = RAND[i](P)
     s = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 300" role="img" aria-labelledby="t">'
          f'<title id="t">Landschap van {w["naam"]}{" in de schemering" if donker else ""}</title>'
-         + lucht + ver + water + mid + vakje + dicht + links + rechts + sprietjes(P, ((200, 254), (520, 252), (610, 246), (330, 258))) + voor + '</svg>')
+         + lucht + ver + water + mid + vakje + dicht + links + rechts + sprietjes(P, ((186, 258), (226, 264), (580, 250), (614, 256))) + voor + '</svg>')
     return s
 
 
 def rand_weide(P):
     bl = lambda x, y: f'<g transform="translate({x} {y})"><path d="M0 0V-14" stroke="{P["groen"]}" stroke-width="3"/><circle cy="-16" r="6" fill="#ef7d8f" stroke="{L}" stroke-width="1.8"/></g>'
-    return (plaats(m_weide(P), 70, 270, .8) + bl(170, 250) + bl(380, 262),
+    return (plaats(m_weide(P), 70, 270, .8) + bl(170, 250) + bl(228, 262),
             plaats(m_weide(P), 730, 268, .7) + bl(610, 246))
 
 
@@ -432,8 +448,8 @@ RAND = {
     'dame': eenvoudig(m_dame),
     'paard': eenvoudig(m_paard, .9, .65),
     'koning': eenvoudig(m_koning),
-    'pion': lambda P: (lijnstijl(pion(P, 60, 268, 1) + pion(P, 110, 270, 1.3) + kiem(P, 170, 262) + kiem(P, 360, 256, .8)),
-                       lijnstijl(pion(P, 690, 258, 1.1) + pion(P, 745, 262, .9) + kiem(P, 620, 252) + kiem(P, 450, 262, .8))),
+    'pion': lambda P: (lijnstijl(pion(P, 60, 268, 1) + pion(P, 110, 270, 1.3) + kiem(P, 170, 262) + kiem(P, 222, 262, .8)),
+                       lijnstijl(pion(P, 690, 258, 1.1) + pion(P, 745, 262, .9) + kiem(P, 630, 252) + kiem(P, 584, 256, .8))),
     'waarde': eenvoudig(m_waarde, .9, .6),
     'aanval': lambda P: (plaats(m_aanval(P), 100, 268, .9), plaats(m_aanval(P), 720, 256, .6)),
     'schaak': lambda P: (lijnstijl(bliksem(P, 'translate(80 40) scale(1.1)'), 3) + plaats(lijnstijl(
