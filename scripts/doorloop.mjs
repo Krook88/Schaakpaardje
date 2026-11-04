@@ -1126,16 +1126,19 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
   const p = await ctx.newPage()
   await p.goto(`${URL}/`, { waitUntil: 'networkidle' })
+  // Wachten op precies de voorraad uit sw.js, in de cache met die naam (33e review:
+  // een vast getal kon te vroeg offline gaan).
   await p.evaluate(async () => {
-    const reg = await navigator.serviceWorker.ready
-    // Wachten tot de installatie (met de voorraad) klaar is.
-    for (let i = 0; i < 100 && !reg.active; i++) await new Promise((r) => setTimeout(r, 100))
-    for (let i = 0; i < 100; i++) {
-      const namen = await caches.keys()
-      const n = namen.length ? (await (await caches.open(namen[0])).keys()).length : 0
-      if (n > 40) break
+    const sw = await (await fetch('./sw.js')).text()
+    const naam = sw.match(/const CACHE = '([^']+)'/)[1]
+    const nodig = JSON.parse(sw.match(/const VOORAF = (\[.*?\])/)[1]).length
+    await navigator.serviceWorker.ready
+    for (let i = 0; i < 200; i++) {
+      const n = (await caches.has(naam)) ? (await (await caches.open(naam)).keys()).length : 0
+      if (n >= nodig) return
       await new Promise((r) => setTimeout(r, 100))
     }
+    throw new Error('voorraad niet op tijd binnen')
   })
   await ctx.setOffline(true)
   const resultaten = []
@@ -1150,6 +1153,17 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
   await p.waitForTimeout(1200)
   const doorgetikt = /\/les\//.test(p.url()) && (await p.locator('[data-square]').count()) > 0
   resultaten.push(`kaart→les:${doorgetikt ? 'ja' : 'nee'}`)
+  // En een les die níet in de voorraad zit: de offlinepagina met een weg naar de kaart,
+  // niet de startpagina voor ouders onder de URL van de les.
+  await p.goto(`${URL}/les/dame-1/`, { waitUntil: 'load' }).catch(() => {})
+  await p.waitForTimeout(500)
+  const offlinePagina = /\/offline\/$/.test(p.url()) && (await p.getByRole('link', { name: /Naar de kaart/ }).count()) === 1
+  resultaten.push(`buiten-voorraad→offlinepagina:${offlinePagina ? 'ja' : 'nee'}`)
+  if (offlinePagina) {
+    await p.getByRole('link', { name: /Naar de kaart/ }).click()
+    await p.waitForTimeout(800)
+    resultaten.push(`offlinepagina→kaart:${(await p.locator('[data-hier]').count()) > 0 ? 'ja' : 'nee'}`)
+  }
   meld('offline na alleen de startpagina: wereld 0–2 speelt', !resultaten.some((r) => r.endsWith('nee')), resultaten.join(' '))
   await ctx.close()
 }

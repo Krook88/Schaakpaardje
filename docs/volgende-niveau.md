@@ -31,7 +31,7 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | OG-afbeelding per pagina | één algemene `og.png` voor alle pagina's | 🔴 |
 | Deelknop op trotse momenten | ronde 3: op wereld af en diploma, alleen link + vaste zin, anonieme telling `Gedeeld`; doorloop bewaakt share én kopieer zonder naam | 🟢 |
 | Installeerbaar | manifest + service worker aanwezig | 🟢 |
-| Wereld 0–2 offline | alleen `/`, manifest, icoon voorgeladen; rest pas na bezoek | 🔴 |
+| Wereld 0–2 offline | ronde 8: 51 bestanden (1,3 MB) vooraf na het eerste bezoek; doorloop bewijst les, minispel, kaart, kaart→les en offlinepagina | 🟢 |
 | `npm run check` + doorloop groen | ronde 2: groen (doorloop 23 regels) | 🟢 |
 | `/release-review` go | 27e review: go voor deze fase, na verwerking | 🟢 |
 
@@ -42,7 +42,7 @@ Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4)
 1. ~~Wereldkaart~~ (r5). Rest: één doorlopend landschap met slingerpad, Pip stuitert op de halte, alles-af-toestand.
 2. ~~Startpagina-held~~ (r6). Rest: tikbaar paard in de held.
 3. ~~Raakvlakken~~ (r7).
-4. **Wereld 0–2 offline voorladen.**
+4. ~~Wereld 0–2 offline~~ (r8).
 5. **OG per pagina.**
 6. Tik-reactie < 100 ms meten in de doorloop.
 7. Pip leeft mee in de les (springt bij goed veld, groter in zijkolom, huppelt het bord op) — 29e review.
@@ -55,3 +55,4 @@ Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4)
 - Ronde 5: wereldkaart — reis-strook, heuvels, tegels 'Nog te ontdekken' (tik geeft antwoord), afgeronde werelden inklapbaar (64 px), 'Begin hier', scroll naar Pip (bewezen in doorloop).
 - Ronde 6: startpagina — held met paardbord (begint bij de L), Pip met ballon bij het bord, beloftes als labels, verse schermafbeeldingen en deelkaart (scripts/schermen.mjs).
 - Ronde 7: raakvlakken — alle knoppen 64 px, Pip en luisterknop 64, bord rand-tot-rand op smalle telefoons (veld 44), meetscript raakvlakken.mjs.
+- Ronde 8: wereld 0–2 offline na het eerste bezoek, kindvriendelijke offlinepagina, belofte op startpagina en /over preciezer.

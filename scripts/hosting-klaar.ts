@@ -316,7 +316,7 @@ function vooraadOffline() {
     const inhoud = readFileSync(html, 'utf8') + (existsSync(txt) ? readFileSync(txt, 'utf8') : '')
     if (existsSync(txt)) bestanden.add(`./${pagina}index.txt`)
     for (const m of inhoud.matchAll(/(?:\/[\w.-]+)*\/?_next\/static\/[^"'\s,\\)\]]+/g)) {
-      const pad = relatief(m[0].startsWith('_next') ? m[0] : m[0])
+      const pad = relatief(m[0])
       bestanden.add(`./${pad.replace(/^.*?_next\//, '_next/')}`)
       if (pad.endsWith('.css')) css.add(pad.replace(/^.*?_next\//, '_next/'))
     }
@@ -336,6 +336,17 @@ function vooraadOffline() {
   // Alleen wat echt bestaat; een verkeerd pad zou de installatie stil een gat laten.
   const lijst = [...bestanden].filter((b) => b === './' || existsSync(join(UIT, b.replace(/^\.\//, '').replace(/\/$/, '/index.html'))))
   const weg = [...bestanden].filter((b) => !lijst.includes(b))
+  // Genoemd maar niet gevonden is een fout in het zoeken, en dan heeft offline een gat.
+  if (weg.length) {
+    console.error(`Hosting-klaar: offline-voorraad noemt bestanden die niet bestaan: ${weg.slice(0, 5).join(', ')}`)
+    process.exit(1)
+  }
+  // Elke pagina moet minstens HTML en RSC hebben; bij een Next-upgrade kan het zoeken
+  // naar brokjes stil niets meer vinden.
+  if (![...lijst].some((b) => b.includes('/_next/static/chunks/'))) {
+    console.error('Hosting-klaar: geen enkel JS-brokje gevonden voor offline. Is de uitvoer van Next veranderd?')
+    process.exit(1)
+  }
   const inhoud = readFileSync(sw, 'utf8')
   const uit = inhoud.replace('const VOORAF = []', `const VOORAF = ${JSON.stringify(lijst)}`)
   if (uit === inhoud) {
