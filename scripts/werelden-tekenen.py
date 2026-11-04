@@ -400,7 +400,7 @@ def kaart(w, donker):
         lucht += f'<circle cx="640" cy="70" r="28" fill="{P["zon"]}"/><circle cx="652" cy="62" r="24" fill="{P["lucht"]}"/>'
     else:
         lucht += (f'<circle cx="640" cy="70" r="46" fill="{P["zon"]}" opacity=".25"/><circle cx="640" cy="70" r="34" fill="{P["zon"]}"/>'
-                  + wolk(P, 'translate(110 60)') + wolk(P, 'translate(700 140) scale(.55)'))
+                  + wolk(P, 'translate(110 60)') + wolk(P, 'translate(196 34) scale(.55)'))
     # verre rand: heuvels, bergen of duinen
     if i == 'aanval':
         ver = f'<path d="M0 150L70 96L120 140L190 70L250 140C330 156 470 156 550 140L610 116L680 80L760 140L800 150V300H0Z" fill="{P["ver"]}"/>'
