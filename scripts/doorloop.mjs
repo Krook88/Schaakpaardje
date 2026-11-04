@@ -1407,6 +1407,9 @@ for (const [w, h] of [[320, 640], [393, 852], [1024, 768], [844, 390], [667, 375
     const k = [...document.querySelectorAll('a')].find((a) => /Volgende les/.test(a.textContent))
     return { rijen: per.join('+'), knop: k ? Math.round(k.getBoundingClientRect().bottom) : null }
   })
+  const pips = await p.evaluate(() => [...document.querySelectorAll('[data-pip-gezicht], [class*="wereldAfPip"]')].filter((e) => e.getBoundingClientRect().width > 0).length)
+  // Altijd een Pip die juicht: op 667 dwars bleef er een ballon zonder Pip over (56e review).
+  meld(`wereld af op ${w}×${h}: er juicht een Pip`, pips >= 1, `${pips} zichtbaar`)
   meld(`wereld af op ${w}×${h}: wapens 8+7 en "Volgende les" in beeld`, rijen === '8+7' && knop !== null && knop <= h, `rijen ${rijen}, knop onderkant ${knop}`)
   await ctx.close()
 }

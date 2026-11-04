@@ -335,9 +335,14 @@
   /* Eén feestplaatje: de grote juichende Pip naast het wapen, en rechts alleen zijn
      ballon met luisterknop (wow-meting na ronde 35: "Pip los als ballon"). */
   .wereldAf .wereldAfTel { display: none; }
-  .feestPip [data-pip-gezicht] { display: none; }
+
   .wereldAf .wereldAfKop { font-size: 1.5rem; margin: 0; }
   .wereldAf .wapenRij { justify-content: flex-start; margin: 2px 0 0 !important; }
+}
+/* Alleen waar het grote feestplaatje ook staat: op 667 valt dat weg, en dan bleef er een
+   ballon zonder Pip over (56e review). */
+@media (orientation: landscape) and (max-height: 500px) and (min-width: 721px) {
+  .feestPip [data-pip-gezicht] { display: none; }
 }
 /* Kleinste telefoon dwars (667×375): geen plek voor het wapen naast de tekst; het staat
    al in de wapenrij. Pips kolom smaller. */

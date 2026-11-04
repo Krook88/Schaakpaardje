@@ -65,6 +65,8 @@ export function PartijScherm({ botId }: { botId: string }) {
   // Het gezicht van de tegenstander: denkt tijdens zijn beurt, verrast als het kind iets
   // sloeg, anders blij. Nooit boos of uitlachend.
   const [botVerrast, setBotVerrast] = useState(false)
+  const verrastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => { if (verrastTimer.current) clearTimeout(verrastTimer.current) }, [])
   // Verrast gaat voor denkt: de bot begint meteen na de slag te denken, anders zag je het nooit.
   const botStemming: BotStemming = botVerrast ? 'verrast' : botDenkt ? 'denkt' : 'blij'
   const [twijfel, setTwijfel] = useState<{ van: Square; naar: Square; verlies: number; promotie: PieceType } | null>(null)
@@ -202,7 +204,6 @@ export function PartijScherm({ botId }: { botId: string }) {
       }
       denkTimer.current = null
       setBotDenkt(false)
-      setBotVerrast(false)
       if (controleerEinde(game)) return
       // Het pionnenspel geldt beide kanten op: haalt de bot als eerste de overkant,
       // dan heeft hij gewonnen. Zonder dit werkte de winregel maar één kant op.
@@ -224,7 +225,13 @@ export function PartijScherm({ botId }: { botId: string }) {
       setGeselecteerd(null)
       setZetten((n) => n + 1)
       // De tegenstander kijkt verrast als het kind iets slaat; nooit boos.
-      setBotVerrast(Boolean(gedaan.isCapture))
+      // Minstens 1,4 s, los van hoe snel de bot zet: na een halve seconde zag niemand het
+      // (56e review).
+      if (gedaan.isCapture) {
+        setBotVerrast(true)
+        if (verrastTimer.current) clearTimeout(verrastTimer.current)
+        verrastTimer.current = setTimeout(() => setBotVerrast(false), 1400)
+      }
 
       // Pionnenspel: wie het eerst promoveert, wint.
       if (opzet?.winBijPromotie && gedaan.promotion) {
