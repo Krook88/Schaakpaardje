@@ -829,7 +829,8 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
             background: i === hier ? 'var(--accent-soft)' : 'transparent',
             border: i === hier ? '2px solid var(--accent)' : '2px solid transparent',
             filter: i <= hier ? 'none' : 'grayscale(1)',
-            opacity: i <= hier ? 1 : 0.45,
+            // 0,6 en niet 0,45: in donker werden de komende fasen schimmen (38e review).
+            opacity: i <= hier ? 1 : 0.6,
           }}
         >
           <Icoon naam={FASE_BEELD[f]} maat={30} />

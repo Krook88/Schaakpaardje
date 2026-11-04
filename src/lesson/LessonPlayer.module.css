@@ -273,3 +273,6 @@
 }
 :root[data-theme='dark'] .wapenAf { background: hsl(var(--toon) 25% 25%); }
 .lesKort { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px; }
+
+/* Op een liggend scherm van 768 hoog viel "Volgende les" onder de vouw (38e review). */
+@media (max-height: 820px) { .wereldAfWapen img { width: 104px; height: 104px; } }

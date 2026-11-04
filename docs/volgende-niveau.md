@@ -3,7 +3,7 @@
 Geheugen van de `/loop`. Elke ronde: lees dit, pak het hoogste rode punt, bouw, bewijs, review, werk bij.
 
 ## Open vragen voor Kaj
-- (geen open vragen; proef beeldtaal volgt ter beoordeling)
+- **Opname.** De schaakmeester raadt aan om "Dan roep je: schaak!" (w9-schaak, les 2) te vervangen door "Je mag dan 'schaak' zeggen": het is geen regel, en bij de club leren kinderen dat het niet hoeft. Het is een ingesproken zin, dus er is een nieuwe opname nodig (`npm run audio:render`, met een ElevenLabs-sleutel). Zal ik de tekst aanpassen zodat jij hem opnieuw laat inspreken? De loop gaat intussen gewoon door.
 
 ## Besluiten van Kaj
 - 4 nov 2026: **proef beeldtaal goedgekeurd** (Pip in profiel met voetstuk, platte warme stijl; zie docs/volgende-niveau/proef-beeldtaal.png). Nu: de hele set en inbouwen.
@@ -25,12 +25,12 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | Lighthouse Toegankelijkheid 100 | 95; enige afwijking is `meta-viewport`, bewust (zie besluiten) | 🟢 |
 | Lighthouse Best Practices ≥ 95 | 96. De console-404 op `/sfx/manifest.json` is lokaal en bewust (hosting-klaar); live bestaat het manifest | 🟢 |
 | Lighthouse SEO 100 | 100 | 🟢 |
-| LCP < 2,5 s / CLS < 0,05 | 2,1 s / 0 | 🟢 |
+| LCP < 2,5 s / CLS < 0,05 | ronde 13: 2,1–2,3 s / 0 (3 metingen) | 🟢 |
 | Eerste les ≤ 2 tikken, ≤ 15 s | 1 tik, 1,4 s | 🟢 |
 | Tik-reactie < 100 ms | ronde 10: goed veld 31 ms, fout veld 31 ms, hulp 13 ms (zichtbare verandering, na de verf); bewaakt in doorloop | 🟢 |
 | Beloningsmoment per wereld | ronde 3: eigen held-kaart (wapen 128 px, confetti, wapenrij), diploma-voorproef | 🟢 (wow nog te meten) |
 | `prefers-reduced-motion` | ronde 10: elke animatie stopt na één keer; doorloop: geen eindeloze animaties op /, les, kaart, minispel; golf/vonk aan én uit bewaakt | 🟢 |
-| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 12 (illustraties): start 7/7,5, les 6,5/7,5, wereld af 7,5/8, kaart 7–8/8. ronde 11 (alle vier opnieuw): start 7,5/7,5, les 6,5/7, wereld af 7/7, kaart 7/7,5 — vast op beeldtaal, zie vraag 1. ronde 6: start 7/8. ronde 5: kaart 6,5/7,5. ronde 4: eerste les 7/7. ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
+| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 13 (iconen): start 7/7,5, les 6–7/7, wereld af 8/7,5, kaart 7–8/8. ronde 12 (illustraties): start 7/7,5, les 6,5/7,5, wereld af 7,5/8, kaart 7–8/8. ronde 11 (alle vier opnieuw): start 7,5/7,5, les 6,5/7, wereld af 7/7, kaart 7/7,5 — vast op beeldtaal, zie vraag 1. ronde 6: start 7/8. ronde 5: kaart 6,5/7,5. ronde 4: eerste les 7/7. ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
 | OG-afbeelding per pagina | ronde 9: 28 eigen plaatjes (werelden, schaakregels, schaakclub), lessen delen hun wereld; build controleert 206 verwijzingen. Nog te testen: vierkante uitsnede in echte WhatsApp | 🟢 |
 | Deelknop op trotse momenten | ronde 3: op wereld af en diploma, alleen link + vaste zin, anonieme telling `Gedeeld`; doorloop bewaakt share én kopieer zonder naam | 🟢 |
 | Installeerbaar | manifest + service worker aanwezig | 🟢 |
@@ -38,11 +38,12 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | `npm run check` + doorloop groen | ronde 2: groen (doorloop 23 regels) | 🟢 |
 | `/release-review` go | 27e review: go voor deze fase, na verwerking | 🟢 |
 
-## Rangschikking, na ronde 12
+## Rangschikking, na ronde 13
 
-1. **Illustratieronde 2: één stijl tot in het kleinste icoon.** Fase-iconen (👀 🤝 🙋 ⭐), halte-iconen en 🔒 op de kaart, 🏆 🏅 💌, de knoppen 🔔 ⚙️ 💡 🔊, de drie punten op de startpagina en de 🐴 als standaardavatar. Daarnaast: Pip zonder plankje op de halte, marge in de knopvarianten, het vlekje bij juicht, een paard in het wapen van Paardenstal, en kaartstroken die op brede schermen niet opblazen.
-2. **Pip groot in juichmomenten:** wereld af en de kennismaking in de kijkfase.
-3. Pip in de les die naar het veld wijst.
+1. **Pip groot en levend in de juichmomenten.** Bij wereld af juicht Pip groot naast het wapen, en de ballon blijft in beeld. Bij de kennismaking in de kijkfase is Pip groter en wijst hij naar het bord.
+2. **Het bord in de kijkfase laten vertellen**, bijvoorbeeld een rand in de stijl van de wereld om het bord.
+3. **Het kaartpad doorgetrokken over het landschap**, ook op brede schermen.
+4. Emoji in de uitslagen van partijen en live spelen. Dat zijn niet de wow-schermen, dus het komt later.
 
 ## Logboek
 - Ronde 1: nulmeting. Niets aan de app veranderd.
@@ -57,3 +58,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 10: gevoel — tik-reactie gemeten en bewaakt, minder beweging zonder eindeloze animaties.
 - Ronde 11: speelbaar paard in de held; alle vier wow-schermen opnieuw gemeten. Loop gestopt: beeldtaal is een keuze voor Kaj (vraag 1).
 - Ronde 12: eigen illustraties (Pip, wapens, kaartstroken) ingebouwd; bordje in wapens rechtsonder licht; offline en test op bestaan.
+- Ronde 13: één tekenstijl (71 iconen), schaakfouten in iconen hersteld, luidspreker met contrast in donker, LCP 2,1–2,3 s.

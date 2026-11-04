@@ -132,8 +132,9 @@ export function Pip({
               aria-label="Zeg het nog eens"
               title="Zeg het nog eens"
             >
-              {/* Wit silhouet: in de oranje knop moet het icoon licht zijn, en zo blijft hij één bestand. */}
-              <img src={icoonBeeld('geluid')} alt="" width={30} height={30} style={{ display: 'block', filter: 'brightness(0) invert(1)' }} />
+              {/* Silhouet in de kleur van --accent-ink: wit op het donkere oranje van licht, donker
+                  op het lichte oranje van donker (wit haalde daar maar 2,5:1, 38e review). */}
+              <img src={icoonBeeld('geluid')} alt="" width={30} height={30} className={styles.luisterIcoon} />
             </button>
           )}
         </p>
