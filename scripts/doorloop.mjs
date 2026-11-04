@@ -1266,6 +1266,18 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
   await ctx.close()
 }
 
+// De eerste stap van een nieuwe bezoeker: "Verder" in de kijkfase helemaal in beeld,
+// ook op een kleine telefoon. De grotere Pip duwde hem eronder (39e review).
+for (const [w, h] of [[360, 740], [375, 667]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(500)
+  const r = await p.getByRole('button', { name: /^.?\s*Verder/ }).first().boundingBox()
+  meld(`kijkfase: "Verder" in beeld op ${w}×${h}`, Boolean(r) && r.y + r.height <= h, r ? `onderkant ${Math.round(r.y + r.height)} px` : 'geen knop')
+  await ctx.close()
+}
+
 meld('geen fouten in de console', consolefouten.length === 0, consolefouten.slice(0, 3).join(' | '))
 
 await browser.close()

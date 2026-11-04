@@ -114,6 +114,11 @@ export function LessonPlayer({
   const profiel = useProfiel()
   const voortgang = useVoortgang()
   const ruimNaast = useMediaQuery('(orientation: landscape) and (min-width: 640px) and (min-height: 521px)')
+  // Naar boven bij de beloning: de pagina bleef staan waar het bord stond, en dan viel
+  // "Volgende les" onder de vouw (39e review). Zonder animatie: het is een nieuw scherm.
+  useEffect(() => {
+    if (fase === 'beloning') window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [fase])
   const geladen = useToestandGeladen()
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
@@ -458,7 +463,7 @@ export function LessonPlayer({
         <Kop titel={les.titel} terug="/kaart/" />
         <WereldBand wereld={wereld} />
         <FaseBalk nu="kijken" />
-        <div className={`stack ${les.vertelFen ? styles.speelvlak : ''}`}>
+        <div className={`stack ${styles.vertelStack} ${les.vertelFen ? styles.speelvlak : ''}`}>
           <div className={styles.vakPip}>
             <Pip
               groot={vertelIndex === 0}
@@ -527,7 +532,8 @@ export function LessonPlayer({
       <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
         <Kop titel="Klaar!" terug="/kaart/" />
         <div className="stack center">
-          <Pip zegt={zin} stemming="trots" />
+          {/* Klein als de grote Pip hieronder bij het wapen juicht: twee grote Pips kostten hoogte. */}
+          <Pip zegt={zin} stemming="trots" klein={wereldKlaar} />
           {/* Een hele wereld uit is groter dan een les: vier lessen werk. Eerst stond
               het als regel tekst in de lesuitslag, daarna als tweede kaart eronder
               (28e review: "het feest staat op de tweede plek"). Nu is de wereld de held:

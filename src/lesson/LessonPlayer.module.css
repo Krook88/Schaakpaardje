@@ -285,3 +285,12 @@
 
 /* Op een telefoon 8 + 7 in plaats van 7 + 7 + 1 (39e review). */
 @media (max-width: 420px) { .wapenRij { gap: 4px; } .wapenKlein { width: 32px; height: 32px; } .wapenKlein img { width: 28px; height: 28px; } }
+@media (max-width: 370px) { .wapenRij { gap: 3px; } .wapenKlein { width: 31px; height: 31px; } .wapenKlein img { width: 27px; height: 27px; } }
+
+/* Laag staand scherm (375×667): "Verder" stond onder het bord en dus onder de vouw. Daar
+   komt de knoppenrij van de kijkfase boven het bord (39e review). */
+@media (orientation: portrait) and (max-height: 700px) {
+  .vertelStack { display: flex; flex-direction: column; }
+  .vertelStack > .vakKnoppen { order: -1; }
+  .vertelStack > .vakPip { order: -2; }
+}
