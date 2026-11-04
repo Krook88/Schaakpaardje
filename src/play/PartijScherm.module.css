@@ -72,3 +72,13 @@
 .geslagenZwart { color: #2b2823; -webkit-text-stroke: 0.8px #efe7d6; paint-order: stroke fill; background: #efe7d6; }
 .geslagenWit { color: #fcf8ef; -webkit-text-stroke: 1.2px #33302a; paint-order: stroke fill; background: #6b6357; }
 @media (min-width: 900px) and (min-height: 800px) { .geslagenZwart, .geslagenWit { font-size: 2rem; } }
+/* Korte staande telefoon: Pip en de tegenstander op één rij, net als dwars. Onder elkaar
+   viel de eigen achterste rij van het kind onder de vouw op 320×640 (60e review). */
+@media (orientation: portrait) and (max-height: 700px) {
+  .boven { flex-direction: row; align-items: center; gap: 8px; }
+  .boven > .tegenstander { order: 2; margin: 0; flex-direction: column; gap: 0; font-size: 0; }
+  .boven > .tegenstander .tegenstanderGezicht { width: 48px; height: 48px; }
+  .boven > :not(.tegenstander) { flex: 1; min-width: 0; }
+  /* Pips gezicht wijkt (de luisterknop blijft), anders werd de ballon een smalle toren. */
+  .boven [data-pip-gezicht] { display: none; }
+}

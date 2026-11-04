@@ -1249,6 +1249,17 @@ for (const [w, h] of [[375, 667], [320, 640], [360, 740]]) {
   await ctx.close()
 }
 
+// Speelscherm op korte telefoons: het hele bord, ook de eigen achterste rij (60e review).
+for (const [w, h] of [[320, 640], [375, 667]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const onder = await p.evaluate(() => Math.round(document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect().bottom ?? 1e4))
+  meld(`speelscherm ${w}×${h}: het hele bord in beeld`, onder <= h, `onderkant ${onder}`)
+  await ctx.close()
+}
+
 // Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
 // waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
 // niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.
