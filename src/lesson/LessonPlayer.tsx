@@ -36,6 +36,7 @@ import {
   useProfielStore,
   useToestandGeladen,
   useVoortgang,
+  volgendeOpenLes,
   wereldIsAf,
 } from '@/progress/store'
 import { eenKeer, maakLastigMelder, maakStopMelder } from './lesTellingen'
@@ -510,7 +511,10 @@ export function LessonPlayer({
   }
 
   if (fase === 'beloning') {
-    const volgende = volgendeLes(les.id)
+    // Is de wereld net af, dan naar de eerste les die nog open staat: in volgorde was
+    // dat soms een les die al af was, als het kind de lessen door elkaar deed (38e review).
+    const naDeze = { ...voortgang, [les.id]: { sterren, fouten: 0, hints: 0, laatst: '' } }
+    const volgende = wereldIsAf(wereld.id, naDeze) ? (volgendeOpenLes(naDeze, modus) ?? volgendeLes(les.id)) : volgendeLes(les.id)
     const wereldKlaar = wereldIsAf(wereld.id, { ...voortgang, [les.id]: { sterren, fouten: 0, hints: 0, laatst: '' } })
     // Ging er met deze les een héle nieuwe wereld open? Dat gebeurde tot nu toe
     // stilzwijgend: je maakte Torenburcht af, drukte op "volgende les" en stond
