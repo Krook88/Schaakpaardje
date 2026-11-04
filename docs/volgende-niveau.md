@@ -73,3 +73,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 20: 44e en 45e review; stukken 11cqi (was venster-gebonden), rooster minmax, doorloopregel bordmaat. Open: speelscherm liggend (velden 34 px) en knoppen onder bord op 1440×900.
 - Ronde 21: speelscherm — bord past met knoppen op 1440×900 en 1366×650. Open: liggende telefoon (bord 273 px) en staande telefoon (knoppen onder de vouw).
 - Ronde 22: speelscherm dwars — bord links (velden 47 px), kop/Pip/knoppen rechts; doorloopregel. Open: 667×375 knoppen net onder de rand.
+- Ronde 22: 47e review verwerkt (geen leeg scrollen, sticky bord, knoppen boven op 667×375).

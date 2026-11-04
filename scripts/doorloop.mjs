@@ -1142,9 +1142,10 @@ for (const [w, h] of [[320, 640], [844, 390], [1440, 900]]) {
   const m = await p.evaluate(() => {
     const f = document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect()
     const k = [...document.querySelectorAll('button')].find((x) => /Nog een keer/.test(x.textContent))?.getBoundingClientRect()
-    return f && k ? { veld: Math.round(f.width / 8), bordOnder: Math.round(f.bottom), knopOnder: Math.round(k.bottom) } : null
+    return f && k ? { veld: Math.round(f.width / 8), bordOnder: Math.round(f.bottom), knopOnder: Math.round(k.bottom), hoog: document.documentElement.scrollHeight } : null
   })
-  meld('speelscherm 844×390: velden ≥ 44 px, bord en knoppen in beeld', Boolean(m) && m.veld >= 44 && m.bordOnder <= 390 && m.knopOnder <= 390, JSON.stringify(m))
+  // hoog: de rij-truc gaf 230 px leeg scrollen onder de pagina (47e review).
+  meld('speelscherm 844×390: velden ≥ 44 px, bord en knoppen in beeld, niets te scrollen', Boolean(m) && m.veld >= 44 && m.bordOnder <= 390 && m.knopOnder <= 390 && m.hoog <= 390, JSON.stringify(m))
   await ctx.close()
 }
 

@@ -529,7 +529,7 @@ export function PartijScherm({ botId }: { botId: string }) {
         )}
 
         {/* De knoppen onder de uitslag: anders viel de uitslag op een telefoon onder de vouw. */}
-        <div className="row" style={{ justifyContent: 'center' }}>
+        <div className={`row ${styles.knoppen}`} style={{ justifyContent: 'center' }}>
           <button type="button" className="btn" onClick={neemTerug} disabled={zetten === 0}>
             ↩︎ Terugnemen
           </button>
