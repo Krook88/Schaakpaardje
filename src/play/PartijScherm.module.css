@@ -49,7 +49,15 @@
 /* Verborgen waar elke pixel telt: lage laptops (knoppen moeten in beeld) en dwars (de
    naam staat in de kop naast het bord). Staande telefoons houden hem: daar scrolt het
    scherm toch al en was de uil nergens te zien (wow-meting na ronde 32). */
-@media (max-height: 700px) and (min-width: 900px), (orientation: landscape) and (max-height: 500px) { .tegenstander { display: none; } }
+@media (max-height: 700px) and (min-width: 900px) { .tegenstander { display: none; } }
+/* Dwars: de tegenstander klein naast Pip, op één rij. Eerst stond er dwars geen uil,
+   alleen de naam in de kop (wow-meting traject 2). */
+@media (orientation: landscape) and (max-height: 500px) {
+  .boven { flex-direction: row; align-items: center; gap: 8px; }
+  .boven > .tegenstander { order: 2; margin: 0; flex-direction: column; gap: 0; font-size: 0; }
+  .boven > .tegenstander .tegenstanderGezicht { width: 52px; height: 52px; }
+  .boven > :not(.tegenstander) { flex: 1; min-width: 0; }
+}
 @media (max-height: 700px) and (max-width: 899px) { .tegenstanderGezicht { width: 44px; height: 44px; } }
 /* In het midden van de uitslagkaart: links leek het een vergeten plaatje (52e review). */
 .uitslagBot { display: block; margin-inline: auto; }
