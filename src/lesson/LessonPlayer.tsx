@@ -533,7 +533,10 @@ export function LessonPlayer({
         <Kop titel="Klaar!" terug="/kaart/" />
         <div className="stack center">
           {/* Klein als de grote Pip hieronder bij het wapen juicht: twee grote Pips kostten hoogte. */}
-          <Pip zegt={zin} stemming="trots" klein={wereldKlaar} />
+          {/* Eigen klasse: de dwarsindeling zet Pip in de rechterkolom (codebase-review). */}
+          <div className={styles.feestPip}>
+            <Pip zegt={zin} stemming="trots" klein={wereldKlaar} />
+          </div>
           {/* Een hele wereld uit is groter dan een les: vier lessen werk. Eerst stond
               het als regel tekst in de lesuitslag, daarna als tweede kaart eronder
               (28e review: "het feest staat op de tweede plek"). Nu is de wereld de held:

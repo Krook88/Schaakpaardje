@@ -1168,6 +1168,18 @@ for (const [w, h] of [[844, 390], [667, 375]]) {
   await ctx.close()
 }
 
+// Speelscherm op laptops: --naast-bord (410 px) is de opgetelde hoogte van kop, Pip,
+// tegenstander en knoppen. Verandert een daarvan, dan vallen de knoppen weg (45e review).
+for (const [w, h] of [[1440, 900], [1366, 650], [1280, 800]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const onder = await p.evaluate(() => Math.round([...document.querySelectorAll('button')].find((x) => /Nog een keer/.test(x.textContent))?.getBoundingClientRect().bottom ?? 1e4))
+  meld(`speelscherm ${w}×${h}: knoppen in beeld`, onder <= h, `onderkant ${onder}`)
+  await ctx.close()
+}
+
 // Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
 // waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
 // niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.

@@ -198,11 +198,11 @@
 @keyframes golfIn { from { transform: scale(0.6); } to { transform: none; } }
 /* Na de golf maakt het stuk een huppeltje: "daar sta ik!" (wow-meting na ronde 26).
    Twee keer, daarna stil; geen eindeloze beweging. */
-.golf .piece { animation: huppel 520ms ease-in-out 2; animation-delay: 700ms; }
+.golf .square:not(.selected) .piece { animation: huppel 520ms ease-in-out 2; animation-delay: 700ms; }
 @keyframes huppel { 0%, 100% { transform: none; } 40% { transform: translateY(-22%) rotate(-6deg); } 70% { transform: translateY(0) rotate(3deg); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .goedVeld, .goedVeld .merkGoed, .golf .square, .golf .piece { animation: none; }
+  .goedVeld, .goedVeld .merkGoed, .golf .square, .golf .square .piece { animation: none; }
   .vonk { display: none; }
 }
 

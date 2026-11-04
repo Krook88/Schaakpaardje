@@ -311,48 +311,35 @@
 .wereldAfTel { margin: 0; font-weight: 700; }
 @media (max-height: 720px) and (max-width: 600px) { .wereldAfTel { display: none; } }
 
-/* Wereld af dwars: wapen en Pip links, kop, naam, wapenrij en telling rechts. Onder
-   elkaar vielen de naam, de wapenrij en "Volgende les" onder de vouw (wow-meting na
-   ronde 22). */
+/* Wereld af dwars (rondes 23–24, 47e–49e review). Links de feestkaart, rechts Pip met zijn
+   ballon en luisterknop: boven elkaar vielen naam, wapenrij en "Volgende les" onder de
+   vouw, en zonder Pip kon een kind dat niet leest de zin niet opnieuw horen. In de kaart:
+   wapen links, kop, naam en wapenrij rechts. De kleine Pip in de kaart vervalt (dubbel),
+   de telling ook (de wapenrij laat het zien). */
 @media (orientation: landscape) and (max-height: 500px) {
-  .wereldAf { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; align-items: center; text-align: left; }
-  .wereldAf > * { grid-column: 2; }
-  .wereldAf > .wereldAfHeld { grid-column: 1; grid-row: 1 / span 5; transform: scale(0.75); transform-origin: center; }
-  .wereldAf .wapenRij { justify-content: flex-start; }
-}
-@media (orientation: landscape) and (max-height: 500px) {
-  /* Pip en zijn luisterknop blijven: een kind dat niet leest moet de zin opnieuw kunnen
-     horen (48e review). Wel weg dwars: de telling, die de wapenrij er al naast laat zien. */
-  .wereldAf .wereldAfTel { display: none; }
-}
-@media (orientation: landscape) and (max-height: 500px) {
-  .wereldAf { padding: 10px 16px !important; row-gap: 4px; }
-  .wereldAf .wereldAfKop { font-size: 1.5rem; margin: 0; }
-  .wereldAf .wapenRij { margin: 2px 0 0 !important; }
   .wereldpagina:has(.wereldAf) { padding-top: 8px; }
-}
-@media (orientation: landscape) and (max-height: 500px) {
-  /* Pip met zijn ballon naast de feestkaart in plaats van erboven: zo blijft de luister-
-     knop er (48e review) en past "Volgende les" toch in beeld. */
   .wereldpagina:has(.wereldAf) > :global(.stack) {
     display: grid; grid-template-columns: minmax(0, 1fr) 300px; column-gap: 12px; align-items: start;
   }
   .wereldpagina:has(.wereldAf) > :global(.stack) > * { grid-column: 1 / -1; }
-  .wereldpagina:has(.wereldAf) > :global(.stack) > :first-child { grid-column: 2; grid-row: 1; }
+  .wereldpagina:has(.wereldAf) > :global(.stack) > .feestPip { grid-column: 2; grid-row: 1; }
   .wereldpagina:has(.wereldAf) > :global(.stack) > .wereldAf { grid-column: 1; grid-row: 1; }
+
+  .wereldAf {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; row-gap: 4px;
+    align-items: center; text-align: left; padding: 10px 16px !important;
+  }
+  .wereldAf > * { grid-column: 2; }
+  .wereldAf > .wereldAfHeld { grid-column: 1; grid-row: 1 / span 5; transform: scale(0.75); transform-origin: center; }
+  .wereldAf .wereldAfPip, .wereldAf .wereldAfTel { display: none; }
+  .wereldAf .wereldAfKop { font-size: 1.5rem; margin: 0; }
+  .wereldAf .wapenRij { justify-content: flex-start; margin: 2px 0 0 !important; }
 }
-/* Kleinste telefoon dwars (667×375): naast Pip is er geen plek voor het grote wapen in
-   de kaart; het wapen staat al groot in de wapenrij, Pip juicht ernaast. */
-@media (orientation: landscape) and (max-height: 500px) and (max-width: 720px) {
-  .wereldAf > .wereldAfHeld { display: none; }
-  .wereldAf { grid-template-columns: minmax(0, 1fr); }
-  .wereldAf > * { grid-column: 1; }
-}
-@media (orientation: landscape) and (max-height: 500px) {
-  /* Pip juicht dwars al naast de kaart; de grote Pip in de kaart was dubbel en nam de
-     ballon zijn breedte af (49e review). Het wapen blijft. */
-  .wereldAf .wereldAfPip { display: none; }
-}
+/* Kleinste telefoon dwars (667×375): geen plek voor het wapen naast de tekst; het staat
+   al in de wapenrij. Pips kolom smaller. */
 @media (orientation: landscape) and (max-height: 500px) and (max-width: 720px) {
   .wereldpagina:has(.wereldAf) > :global(.stack) { grid-template-columns: minmax(0, 1fr) 230px; }
+  .wereldAf { grid-template-columns: minmax(0, 1fr); }
+  .wereldAf > * { grid-column: 1; }
+  .wereldAf > .wereldAfHeld { display: none; }
 }

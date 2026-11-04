@@ -1,28 +1,42 @@
+/* Het bord laat ruimte voor kop, Pip, status en knoppen: op 1440×900 vielen de knoppen
+   eronder weg bij 70vh (45e review). --naast-bord is die opgetelde hoogte (~410 px met de
+   tegenstander erbij); de doorloop bewaakt het op 1440×900 en 1366×650. Op lage schermen
+   blijft 300 px de ondergrens. */
+.bord {
+  --naast-bord: 410px;
+  max-width: min(100%, 620px, max(calc(100svh - var(--naast-bord)), min(70vh, 300px)));
+  margin: 0 auto; width: 100%;
+}
+
 /* Telefoon dwars: het bord links over de volle hoogte; kop, Pip, status en knoppen
    rechts. Onder elkaar viel het bord voor de helft onder de rand, velden 34 px
-   (46e review). Zelfde aanpak als het lesscherm (27e review). */
+   (46e review). Drie rijen rechts: kop, boven, onder; het bord loopt over alle drie. */
 @media (orientation: landscape) and (max-height: 500px) {
   .pagina {
-    --bord: calc(100svh - 16px);
-    display: grid; grid-template-columns: var(--bord) minmax(0, 1fr);
-    /* Geen rij-tussenruimte: het bord loopt over alle rijen, en 29 lege tussenruimtes
-       gaven 230 px leeg scrollen (47e review). De rechterkolom houdt zijn eigen marge. */
-    column-gap: 16px; row-gap: 0; align-content: start;
+    display: grid; grid-template-columns: calc(100svh - 16px) minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr); column-gap: 16px; row-gap: 8px; align-content: start;
     padding-top: 8px; padding-bottom: 8px; max-width: none;
+    /* Precies één scherm hoog: wat rechts niet past scrolt in zijn eigen blok, niet de
+       hele pagina (dan schoof het bord weg, 47e review). */
+    height: 100svh; box-sizing: border-box; min-height: 0;
   }
-  .pagina > * { grid-column: 2; margin-top: 0; }
+  .pagina > * { grid-column: 2; margin: 0; }
   .vlak { display: contents; }
-  .vlak > * { grid-column: 2; margin: 8px 0 0 !important; }
-  .vlak > .bord {
-    grid-column: 1; grid-row: 1 / span 30; max-width: none !important; margin: 0 !important;
+  .boven { grid-column: 2; grid-row: 2; margin: 0; }
+  .onder { grid-column: 2; grid-row: 3; margin: 0; min-height: 0; overflow-y: auto; }
+  .bord {
+    grid-column: 1; grid-row: 1 / -1; max-width: none; margin: 0;
     align-self: start; position: sticky; top: 8px;
   }
 }
 /* Kleinste telefoon dwars (667×375): Pips ballon wordt in de smalle kolom zo hoog dat de
-   knoppen eronder wegvielen (47e review). De knoppen komen dan direct onder de kop. */
+   knoppen eronder wegvielen (47e review). Dan komt het onderblok (status en knoppen) vóór
+   Pip. Alleen de twee blokken wisselen, binnen een blok blijft de DOM-volgorde. */
 @media (orientation: landscape) and (max-height: 400px) {
-  .vlak > * { order: 2; }
-  .vlak > .knoppen { order: 1; }
+  /* Hier mag de pagina wel scrollen: in één vaste schermhoogte viel Pip er helemaal af. */
+  .pagina { height: auto; min-height: 100svh; grid-template-rows: auto auto auto; }
+  .onder { grid-row: 2; overflow-y: visible; }
+  .boven { grid-row: 3; }
 }
 .tegenstander {
   display: flex; align-items: center; justify-content: center; gap: 10px;

@@ -89,3 +89,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 29: eerste les — het paard huppelt twee keer na de golf (niet bij minder beweging).
 - Ronde 29: 52e review verwerkt. Open: uitslagkaart dwars onder de vouw; uitgeschakelde knoppen in donker.
 - Ronde 30: uitgeschakelde knoppen met stippelrand en gedempte tekst, geen doorzichtigheid (leesbaar in donker).
+- Ronde 31: 53e review (schaakmeester + codebase over 16–30) verwerkt: dwars-CSS samengevoegd, speelscherm in drie blokken, test op bot-tekeningen, laptopregel in doorloop.

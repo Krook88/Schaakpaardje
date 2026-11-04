@@ -384,13 +384,16 @@ export function PartijScherm({ botId }: { botId: string }) {
     <main className={`page ${styles.pagina}`}>
       <Kop titel={bot ? bot.naam : '👨‍👩‍👧 Samen spelen'} terug="/spelen/" />
       <div className={`stack ${styles.vlak}`}>
+        {/* Drie blokken: boven (Pip), het bord, onder (status, kaarten, knoppen). Dwars
+            staat het bord links en de blokken rechts; geen rij-truc meer (codebase-review). */}
+        <div className={`stack ${styles.boven}`}>
         <Pip zegt={zin} stemming={stemming} klein />
 
         {/* Bord plus kop, Pip, status en knoppen in één scherm: op 1440×900 vielen de
             knoppen eronder weg bij 70vh (45e review). Op lage liggende schermen blijft
             70vh de ondergrens; daar is een eigen indeling nodig (scorebord). */}
         {/* De tegenstander aan zijn eigen kant van het bord: "mijn kind speelt tegen Bas de
-            Hond", niet tegen een kaal bord (wow 4 na ronde 22). Alleen een emoji en de naam
+            Hond", niet tegen een kaal bord (wow 4 na ronde 22). Alleen de tekening en de naam
             uit de vaste lijst, niets van het kind. */}
         {bot && (
           <div className={styles.tegenstander} aria-hidden="true">
@@ -398,7 +401,8 @@ export function PartijScherm({ botId }: { botId: string }) {
             <span>{bot.naam}</span>
           </div>
         )}
-        <div className={styles.bord} style={{ maxWidth: 'min(100%, 620px, max(calc(100svh - 410px), min(70vh, 300px)))', margin: '0 auto', width: '100%' }}>
+        </div>
+        <div className={styles.bord}>
           <Board
             position={fen}
             // Bij samen spelen draait het bord naar wie er aan zet is, zodat elk kind
@@ -414,7 +418,7 @@ export function PartijScherm({ botId }: { botId: string }) {
             label="Partij"
           />
         </div>
-
+        <div className={`stack ${styles.onder}`}>
         <div className="row" style={{ justifyContent: 'space-between' }}>
           <span className="muted" aria-live="polite">
             {uitslag && samen
@@ -566,7 +570,7 @@ export function PartijScherm({ botId }: { botId: string }) {
             {samen ? 'Terug naar spelen' : 'Andere tegenstander'}
           </Link>
         </div>
-
+        </div>
       </div>
     </main>
   )

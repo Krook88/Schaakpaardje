@@ -150,19 +150,16 @@
 @keyframes sterrenIn { from { transform: scale(0.3); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .sterren { animation: none; } }
 /* Telefoon dwars: tekst en knop links, Pip met het proefbord rechts, in één beeld. Onder
-   elkaar zag je dwars alleen tekst (wow 4, meting na ronde 22). */
+   elkaar zag je dwars alleen tekst (wow 4, meting na ronde 22). De bordkolom is de
+   schermhoogte min Pip met zijn ballon (~110 px). */
 @media (orientation: landscape) and (max-height: 500px) and (min-width: 600px) {
-  .held { grid-template-columns: minmax(0, 1fr) min(calc(100svh - 24px), 46vw); gap: 20px; }
-  .heldTekst { text-align: left; align-items: flex-start; }
-  .beloftes { justify-content: flex-start; }
-  .heldBord { max-width: none; }
-}
-@media (orientation: landscape) and (max-height: 500px) and (min-width: 600px) {
-  .held { grid-template-columns: minmax(0, 1fr) calc(100svh - 110px); align-items: start; }
-  .kop { font-size: 1.9rem !important; margin: 0; }
-  .heldTekst { gap: 4px; }
+  .held { grid-template-columns: minmax(0, 1fr) calc(100svh - 110px); gap: 20px; align-items: start; }
+  .heldTekst { text-align: left; align-items: flex-start; gap: 4px; }
+  .heldTekst > .kop { font-size: 1.9rem; margin: 0; }
   .heldTekst :global(.btn) { margin-top: 0 !important; }
   .heldTekst > p:not(:first-child) { font-size: 0.95rem; margin: 0; }
+  .beloftes { justify-content: flex-start; }
+  .heldBord { max-width: none; }
   .heldPip { margin: 0 0 4px; }
   .heldPip .heldPipGezicht { font-size: 40px; }
 }

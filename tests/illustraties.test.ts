@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { WERELDEN } from '../src/content'
-import { icoonBeeld, kaartBeeld, lesIcoon, pipBeeld, pipLos, wapenBeeld, type IcoonNaam } from '../src/ui/beelden'
+import { botBeeld, icoonBeeld, kaartBeeld, lesIcoon, pipBeeld, pipLos, wapenBeeld, type IcoonNaam } from '../src/ui/beelden'
 import type { PipStemming } from '../src/ui/Pip'
+import { BOTS } from '../src/engine/bots'
 
 /**
  * Elke wereld een wapen en twee kaartstroken, elke stemming twee Pips. Komt er een
@@ -14,6 +15,11 @@ const bestaat = (url: string) => existsSync(join(process.cwd(), 'public', url.re
 const STEMMINGEN: PipStemming[] = ['blij', 'juicht', 'verrast', 'denkt', 'moedigt', 'trots', 'slaapt']
 
 describe('illustraties', () => {
+  // Een bot zonder tekening gaf stil een kapot plaatje met alt="" (codebase-review).
+  it.each(BOTS.map((b) => b.id))('bot %s heeft een tekening (scripts/bots-tekenen.py)', (id) => {
+    expect(bestaat(botBeeld(id)), botBeeld(id)).toBe(true)
+  })
+
   it.each(WERELDEN.map((w) => w.id))('wereld %s heeft een wapen en twee kaartstroken', (id) => {
     expect(bestaat(wapenBeeld(id)), wapenBeeld(id)).toBe(true)
     expect(bestaat(kaartBeeld(id)), kaartBeeld(id)).toBe(true)
