@@ -109,16 +109,16 @@ export function Welkom() {
       {/* Zien wat je krijgt, vóór je de naam van je kind invult. Op een telefoon
           schuiven ze opzij; vanaf een tablet staan ze naast elkaar. */}
       <ul className={styles.schermen}>
-        {SCHERMEN.map((s, i) => (
+        {SCHERMEN.map((s) => (
           <li key={s.bron} className="stack" style={{ gap: 10 }}>
             <img
               src={s.bron}
               alt={s.titel}
               width={400}
               height={640}
-              // Het eerste plaatje is het grootste element in beeld: niet lui laden.
-              loading={i === 0 ? 'eager' : 'lazy'}
-              fetchPriority={i === 0 ? 'high' : undefined}
+              // Lui: sinds de held met het speelbord staan ze ver onder de vouw, en met
+              // fetchPriority high concurreerde de eerste op 4G met CSS en JS (37e review).
+              loading="lazy"
               className={styles.plaatje}
             />
             <div>
