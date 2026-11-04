@@ -61,8 +61,14 @@ def bord(P, y0=146, y1=192, w0=88, w1=164, cols=4, rows=2, cx=100, sw=3):
         y = y0 + (y1 - y0) * t
         w = w0 + (w1 - w0) * t
         return f'{cx - w / 2 + w * i / cols:.1f} {y:.1f}'
+    # Donker waar (i + j) oneven is, met j = rows - 1 als voorste rij: dan is het veld
+    # rechtsvoor (i = cols - 1, j = rows - 1) licht, zoals wereld 0 leert ("wit
+    # rechtsonder"). Eerst stond hier == 0, en lag het bordje in alle 15 wapens
+    # verkeerd om (schaakmeester, 37e review).
+    donker = lambda i, j: (i + j) % 2 == 1
+    assert not donker(cols - 1, rows - 1), 'het veld rechtsvoor moet licht zijn'
     vlakken = ''.join(f'M{pt(i, j)}L{pt(i + 1, j)}L{pt(i + 1, j + 1)}L{pt(i, j + 1)}Z'
-                      for j in range(rows) for i in range(cols) if (i + j) % 2 == 0)
+                      for j in range(rows) for i in range(cols) if donker(i, j))
     rand = f'M{pt(0, 0)}L{pt(cols, 0)}L{pt(cols, rows)}L{pt(0, rows)}Z'
     return (f'<path d="{rand}" fill="{P["steen"]}"/><path d="{vlakken}" fill="{P["accd"]}"/>'
             f'<path d="{rand}" fill="none" stroke="{L}" stroke-width="{sw}" stroke-linejoin="round"/>')
