@@ -100,3 +100,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Wow-meting na ronde 35 (375/844): start 7/8, les 5/6, wereld af 8/7, kaart 7/5, spel 6/6. Loop gepauzeerd: cijfers schommelen tussen reviewers, vraag aan Kaj.
 - Ronde 37: bots in drie stemmingen (blij, denkt, verrast), het gezicht volgt de partij.
 - Ronde 37: 56e review verwerkt (Pip op 667 dwars terug, verrast 1,4 s, doorloopregel "er juicht een Pip").
+- Ronde 38: botstemmingen duidelijker (denkwolkje, wenkbrauwen, grotere o), bredere crème rand voor donker.

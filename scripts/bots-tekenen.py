@@ -3,12 +3,12 @@
 Schrijft naar public/illustraties/bots/:
   bot-<id>.svg          kop en schouders, frontaal, vriendelijk (200x200). De id komt
                         uit src/engine/bots.ts. Dit is de blije/neutrale stemming.
-  bot-<id>-denkt.svg    ogen omhoog-opzij, klein scheef mondje, pootje aan de kin.
-  bot-<id>-verrast.svg  grote ronde ogen, mondje als een kleine o.
+  bot-<id>-denkt.svg    ogen omhoog naar een denkwolkje rechtsboven, klein scheef mondje.
+  bot-<id>-verrast.svg  grote ronde ogen, wenkbrauwen omhoog, mondje als een o.
 Nooit boos of uitlachend: het zijn tegenstanders van kleine kinderen.
 
 Zelfde recept als Pip: één silhouet dat twee keer onder de tekening ligt, eerst als
-dikke crème rand (22) en dan als bruine lijn (11), zodat elk dier op licht én donker
+dikke crème rand (27, zodat ook Mila's grijze oren op donker niet weglopen) en dan als bruine lijn (11), zodat elk dier op licht én donker
 zijn eigen rand heeft. Daarop vlakke warme kleuren, ogen met een wit lichtje en een
 blosje. Geen tekst, geen lettertype.
 
@@ -37,13 +37,15 @@ def lijn(d, w=5):
 
 
 def ogen(st, y=98, dx=20, rx=7.5, ry=9.5):
-    if st == 'denkt':  # kijkt omhoog naar rechts, alsof het een zet bedenkt
-        return ''.join(f'<ellipse cx="{100 + s * dx + 3}" cy="{y - 2}" rx="{rx * .9}" ry="{ry * .9}" fill="{L}"/>'
-                       f'<circle cx="{100 + s * dx + 4.5}" cy="{y - 6}" r="2.6" fill="#fff"/>' for s in (-1, 1))
-    if st == 'verrast':
-        r = max(rx, ry) + 1
+    if st == 'denkt':  # kijkt duidelijk omhoog naar het denkwolkje rechtsboven
+        return ''.join(f'<ellipse cx="{100 + s * dx + 2}" cy="{y}" rx="{rx}" ry="{ry}" fill="#fff" stroke="{L}" stroke-width="3"/>'
+                       f'<circle cx="{100 + s * dx + 4}" cy="{y - ry * .45}" r="{rx * .72}" fill="{L}"/>' for s in (-1, 1))
+    if st == 'verrast':  # grote ronde ogen, wenkbrauwen hoog opgetrokken
+        r = max(rx, ry) + 3
         return ''.join(f'<circle cx="{100 + s * dx}" cy="{y}" r="{r}" fill="{L}"/>'
-                       f'<circle cx="{100 + s * dx - 3}" cy="{y - 3.5}" r="3.6" fill="#fff"/>' for s in (-1, 1))
+                       f'<circle cx="{100 + s * dx - 3.5}" cy="{y - 4}" r="4.2" fill="#fff"/>'
+                       + lijn(f'M{100 + s * dx - 9} {y - r - 7}Q{100 + s * dx} {y - r - 14} {100 + s * dx + 9} {y - r - 7}', 4.5)
+                       for s in (-1, 1))
     return ''.join(f'<ellipse cx="{100 + s * dx}" cy="{y}" rx="{rx}" ry="{ry}" fill="{L}"/>'
                    f'<circle cx="{100 + s * dx - 2.5}" cy="{y - 3.5}" r="3" fill="#fff"/>' for s in (-1, 1))
 
@@ -61,7 +63,7 @@ def mond(st, blij, y, b=8):
     if st == 'denkt':
         return lijn(f'M{100 - b * .6} {y + 2}Q{100 + b * .1} {y + 3} {100 + b * .7} {y - 1}', 4)
     if st == 'verrast':
-        return f'<ellipse cx="100" cy="{y + 2}" rx="4.5" ry="5.5" fill="{MOND}" stroke="{L}" stroke-width="3.5"/>'
+        return f'<ellipse cx="100" cy="{y + 3}" rx="6.5" ry="8" fill="{MOND}" stroke="{L}" stroke-width="4"/>'
     return blij
 
 
@@ -69,25 +71,29 @@ def neus(y=113, f=L, r=6):
     return el(100, y, r * 1.3, r, f)
 
 
+WOLK = ''.join(f'<circle cx="{x}" cy="{y}" r="{r}" fill="{ROOM}" stroke="{L}" stroke-width="{w}"/>'
+               for x, y, r, w in ((148, 62, 6, 3.5), (161, 42, 9, 4), (178, 20, 15, 4.5)))
+
+
 def bot(id, vormen, gezicht, kop=(100, 104, 50, 46), lijf=None):
+    """denkt: één denkwolkje (drie oplopende rondjes rechtsboven). Het pootje aan de kin
+    is weggelaten: op 56 px werd het een vlek die de wolk overstemde."""
     for st, naam in (('blij', ''), ('denkt', '-denkt'), ('verrast', '-verrast')):
-        poot = (f'<ellipse cx="126" cy="146" rx="18" ry="13" fill="{lijf[1]}" stroke="{L}" stroke-width="4"/>'
-                + lijn('M118 139V146M126 137V145M134 139V146', 3)) if st == 'denkt' else ''
-        teken(id + naam, vormen, gezicht(st) + poot, kop, lijf)
+        teken(id + naam, vormen, gezicht(st), kop, lijf, WOLK if st == 'denkt' else '')
 
 
-def teken(id, vormen, gezicht, kop, lijf):
+def teken(id, vormen, gezicht, kop, lijf, boven=''):
     """vormen: lijst (shape-zonder-fill, kleur) van achter naar voor, vóór de kop.
     lijf: kleur van de schouders."""
     x, y, rx, ry = kop
     kopvorm = f'<ellipse cx="{x}" cy="{y}" rx="{rx}" ry="{ry}"/>'
     sil = f'<path d="{SCHOUDERS}"/>' + ''.join(v for v, _ in vormen) + kopvorm
     kleur = lambda v, f: v.replace('/>', f' fill="{f}"/>', 1)
-    body = (f'<use href="#s" fill="{HALO}" stroke="{HALO}" stroke-width="22"/>'
+    body = (f'<use href="#s" fill="{HALO}" stroke="{HALO}" stroke-width="27"/>'
             f'<use href="#s" fill="{L}" stroke="{L}" stroke-width="11"/>'
             + kleur(f'<path d="{SCHOUDERS}"/>', lijf[0])
             + ''.join(kleur(v, f) for v, f in vormen)
-            + kleur(kopvorm, lijf[1]) + gezicht)
+            + kleur(kopvorm, lijf[1]) + gezicht + boven)
     s = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">'
          f'<defs><g id="s">{sil}</g></defs>'
          f'<g stroke-linejoin="round" stroke-linecap="round">{body}</g></svg>')
