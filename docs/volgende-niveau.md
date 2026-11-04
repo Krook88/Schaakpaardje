@@ -108,3 +108,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 41: denkwolkjes van Mila en Fien van het oor af.
 - Ronde 42: geslagen stukken naast de stand in de partij.
 - Ronde 42: 58e review verwerkt (geslagen stukken op eigen regel met "Jij pakte"/"Kwijt" en schijfjes).
+- Ronde 43: startpagina staand compacter, paard met stippen boven de vouw (doorloop 375/390).

@@ -1210,6 +1210,21 @@ for (const [w, h] of [[1440, 900], [1366, 650], [1280, 800]]) {
   await ctx.close()
 }
 
+// Startpagina staand: het paard met zijn stippen zichtbaar boven de vouw, de knop ook.
+for (const [w, h] of [[375, 667], [390, 844]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const m = await p.evaluate(() => {
+    const pa = [...document.querySelectorAll('[data-square]')].find((x) => /paard/.test(x.getAttribute('aria-label') || ''))?.getBoundingClientRect()
+    const k = [...document.querySelectorAll('a')].find((a) => /eerste les/.test(a.textContent))?.getBoundingClientRect()
+    return pa && k ? { paardBoven: Math.round(pa.top), knop: Math.round(k.bottom) } : null
+  })
+  meld(`startpagina ${w}×${h}: paard en knop boven de vouw`, Boolean(m) && m.paardBoven < h - 20 && m.knop <= h, JSON.stringify(m))
+  await ctx.close()
+}
+
 // Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
 // waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
 // niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.
