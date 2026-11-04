@@ -3,10 +3,10 @@
 Geheugen van de `/loop`. Elke ronde: lees dit, pak het hoogste rode punt, bouw, bewijs, review, werk bij.
 
 ## Open vragen voor Kaj
-- **Opname.** De schaakmeester raadt aan om "Dan roep je: schaak!" (w9-schaak, les 2) te vervangen door "Je mag dan 'schaak' zeggen": het is geen regel, en bij de club leren kinderen dat het niet hoeft. Het is een ingesproken zin, dus er is een nieuwe opname nodig (`npm run audio:render`, met een ElevenLabs-sleutel). Zal ik de tekst aanpassen zodat jij hem opnieuw laat inspreken? De loop gaat intussen gewoon door.
-- **Opname weide-1.** Pip staat nu op e5 (donker veld) in de eerste les. De schaakmeester en layout-reviewer stellen een zin voor die het paard aan Pip koppelt, bijvoorbeeld "Ik sta op een donker veld" of "Dit paard ben ik". Daarvoor is een nieuwe opname nodig. Zal ik die zin toevoegen?
+- Geen.
 
 ## Besluiten van Kaj
+- Beide opnamezinnen aangepast (w9 "schaak zeggen mag", weide-1 "daar sta ik op het bord"). De opname gebeurt bij de merge via ElevenLabs (4 nov).
 - 4 nov 2026: **proef beeldtaal goedgekeurd** (Pip in profiel met voetstuk, platte warme stijl; zie docs/volgende-niveau/proef-beeldtaal.png). Nu: de hele set en inbouwen.
 - 4 nov 2026: **beeldtaal 1b**. Er komen eigen SVG's, gemaakt door een illustrator-agent. Eerst een proef (Pip en één wereld) ter beoordeling, daarna de uitrol.
 - 4 nov 2026: **delen mag met een vast plaatje zonder naam**, bijvoorbeeld het wereldwapen. Nooit de naam van het kind of iets anders wat het kind intypt.

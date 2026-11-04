@@ -24,7 +24,7 @@ export const wereld0: World = {
       doel: 'Je kind ziet dat het bord om en om licht en donker is.',
       geleerd: 'Nu zie je meteen welk veld licht is en welk veld donker.',
       vertel: [
-        'Hoi! Ik ben Pip. Dit is een schaakbord.',
+        'Hoi! Ik ben Pip. Kijk, daar sta ik op het bord. Dit is een schaakbord.',
         {
           tekst: 'Kijk eens: een licht veld, een donker veld, een licht veld. Steeds om en om.',
           // Precies drie velden, in de volgorde die de zin noemt: licht, donker, licht.
