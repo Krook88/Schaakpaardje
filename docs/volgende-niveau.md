@@ -3,7 +3,13 @@
 Geheugen van de `/loop`. Elke ronde: lees dit, pak het hoogste rode punt, bouw, bewijs, review, werk bij.
 
 ## Open vragen voor Kaj
-- Delen stuurt nu alleen link + vaste zin. Mag er ook een **vast plaatje zonder naam** mee (bijv. het wereldwapen met Pip), zodat de ontvanger ziet wát er gevierd wordt? Tot je antwoord: alleen link + zin. (28e review, L3)
+
+**1. Beeldtaal (de loop is hierop gestopt).** Alles op het scorebord is groen behalve de wow-toets. Die blijft na vier rondes rond de 7 hangen (36e review: startpagina 7,5/7,5, eerste les 6,5/7, wereld af 7/7, kaart 7/7,5). Beide reviewers noemen hetzelfde wat naar een 9 ontbreekt: een getekende Pip met mimiek in plaats van de emoji 🐴, en echte illustraties voor werelden en kaart. Dat is een keuze voor de hele app:
+- **a.** Een illustrator laten tekenen: Pip in ±6 stemmingen, 15 wereldwapens en één kaartlandschap. Dat kost geld, dus alleen met jouw akkoord.
+- **b.** Ik teken zelf een eenvoudige vectorstijl als SVG. Dat is gratis, maar wel een smaakkeuze. Ik zou beginnen met Pip en één wereld als proef, die jij eerst bekijkt.
+- **c.** De emoji houden en de wow-lat bijstellen naar 8. Dan gaat de loop verder met de juichmomenten (punt 2 in de 36e review).
+
+**2. Delen.** Delen stuurt nu alleen een link en een vaste zin. Mag er ook een **vast plaatje zonder naam** mee, bijvoorbeeld het wereldwapen met Pip? Tot je antwoord blijft het bij de link en de zin (28e review, L3).
 
 ## Besluiten van Kaj
 - 3 nov 2026: `maximum-scale=1` blijft, bewust tegen per ongeluk zoomen door kleine kinderen. Lat voor Lighthouse Toegankelijkheid daarom: 100 op alles behalve de audit `meta-viewport`.
@@ -27,7 +33,7 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 | Tik-reactie < 100 ms | ronde 10: goed veld 31 ms, fout veld 31 ms, hulp 13 ms (zichtbare verandering, na de verf); bewaakt in doorloop | 🟢 |
 | Beloningsmoment per wereld | ronde 3: eigen held-kaart (wapen 128 px, confetti, wapenrij), diploma-voorproef | 🟢 (wow nog te meten) |
 | `prefers-reduced-motion` | ronde 10: elke animatie stopt na één keer; doorloop: geen eindeloze animaties op /, les, kaart, minispel; golf/vonk aan én uit bewaakt | 🟢 |
-| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 6: start 7/8. ronde 5: kaart 6,5/7,5. ronde 4: eerste les 7/7. ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
+| Wow-toets ≥ 9 (4 schermen, 2 reviewers) | ronde 11 (alle vier opnieuw): start 7,5/7,5, les 6,5/7, wereld af 7/7, kaart 7/7,5 — vast op beeldtaal, zie vraag 1. ronde 6: start 7/8. ronde 5: kaart 6,5/7,5. ronde 4: eerste les 7/7. ronde 3: wereld af 5/7, diploma 7,5/8 (vóór verbouwing). ronde 2: start 6/7, les 6,5/6, diploma 3/–, kaart 5/6,5 (zie 27e review) | 🔴 |
 | OG-afbeelding per pagina | ronde 9: 28 eigen plaatjes (werelden, schaakregels, schaakclub), lessen delen hun wereld; build controleert 206 verwijzingen. Nog te testen: vierkante uitsnede in echte WhatsApp | 🟢 |
 | Deelknop op trotse momenten | ronde 3: op wereld af en diploma, alleen link + vaste zin, anonieme telling `Gedeeld`; doorloop bewaakt share én kopieer zonder naam | 🟢 |
 | Installeerbaar | manifest + service worker aanwezig | 🟢 |
@@ -58,3 +64,4 @@ Gedaan: bord liggend (r2), trots moment + delen (r3), eerste les levendiger (r4)
 - Ronde 8: wereld 0–2 offline na het eerste bezoek, kindvriendelijke offlinepagina, belofte op startpagina en /over preciezer.
 - Ronde 9: deelplaatjes per wereld, schaakregel en schaakclub; pat-uitleg aangescherpt; basePath-correcte og:image met buildcontrole.
 - Ronde 10: gevoel — tik-reactie gemeten en bewaakt, minder beweging zonder eindeloze animaties.
+- Ronde 11: speelbaar paard in de held; alle vier wow-schermen opnieuw gemeten. Loop gestopt: beeldtaal is een keuze voor Kaj (vraag 1).

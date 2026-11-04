@@ -29,6 +29,9 @@ const ZINNEN = ['Hop! Dat is een L.', 'Nog een L! Twee recht, één opzij.', 'Ji
 export function HeldSpel({ eersteLes }: { eersteLes: string }) {
   const [bord, setBord] = useState(() => parseBoard(BEGIN))
   const [sprongen, setSprongen] = useState(0)
+  // Telt elke tik: als sleutel op de ballon leest een schermlezer ook een herhaalde zin
+  // opnieuw voor.
+  const [tikken, setTikken] = useState(0)
   const [bericht, setBericht] = useState('Tik op een stip: daar mag ik heen!')
   const [schud, setSchud] = useState<Square | null>(null)
   const [vorige, setVorige] = useState<[Square, Square] | undefined>(undefined)
@@ -40,16 +43,19 @@ export function HeldSpel({ eersteLes }: { eersteLes: string }) {
   useEffect(() => {
     if (sprongen === 3) uitnodiging.current?.scrollIntoView({ block: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   }, [sprongen])
-  const plek = useMemo(() => (Object.keys(bord) as Square[]).find((v) => bord[v]) ?? ('d4' as Square), [bord])
+  const plek = useMemo(() => (Object.keys(bord) as Square[]).find((v) => bord[v]) ?? ('d5' as Square), [bord])
   const doelen = useMemo(() => pieceMoves(bord, plek).all, [bord, plek])
 
   const tik = (veld: Square) => {
+    setTikken((n) => n + 1)
     if (veld === plek) return setBericht('Dat ben ik! Tik op een stip.')
     if (!doelen.includes(veld)) {
       sfx.fout()
-      setSchud(veld)
+      // Eerst los, dan weer vast: zo schudt ook een tweede misser op hetzelfde veld.
+      // Het terugzetten na het schudden doet Board zelf.
+      setSchud(null)
       clearTimeout(schudTimer.current)
-      schudTimer.current = setTimeout(() => setSchud(null), 450)
+      schudTimer.current = setTimeout(() => setSchud(veld), 0)
       return setBericht('Daar kan ik niet heen. Kijk naar de stippen.')
     }
     sfx.zet()
@@ -66,7 +72,7 @@ export function HeldSpel({ eersteLes }: { eersteLes: string }) {
         <span aria-hidden="true" className={`${styles.heldPipGezicht} ${styles.pip}`} key={sprongen}>
           🐴
         </span>
-        <span className={styles.heldBallon}>{bericht}</span>
+        <span className={styles.heldBallon} key={tikken}>{bericht}</span>
       </p>
       <Board
         position={bord}
