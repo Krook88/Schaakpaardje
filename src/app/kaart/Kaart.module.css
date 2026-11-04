@@ -209,10 +209,12 @@
 /* Telefoon dwars: de plank als smalle strook, zodat hij met de les van vandaag in beeld
    past. Anders opende de kaart dwars zonder "Wat Noor al kan" (wow 5 na ronde 22). */
 @media (orientation: landscape) and (max-height: 500px) {
-  .plank { padding: 8px 12px; }
+  .plank { padding: 6px 12px; }
   .plankKop { margin: 0 0 4px; font-size: 0.95rem; }
   .plankRij { gap: 6px 10px; }
-  .plankWapen { width: auto; font-size: 0; gap: 0; }
-  .plankWapen > :first-child { width: 44px !important; height: 44px !important; }
+  .plankWapen { width: auto; gap: 0; }
+  .plankWapen > :first-child { width: 40px !important; height: 40px !important; }
+  /* Namen alleen voor de schermlezer: font-size 0 brak bij een minimum-lettergrootte (50e review). */
+  .plankWapen > span:last-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .plankTel { margin-top: 4px; font-size: 0.9rem; }
 }

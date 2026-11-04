@@ -1079,7 +1079,7 @@ for (const beweging of ['reduce', 'no-preference']) {
   // dit niet of er gescrold wordt (30e review).
   const lessen = readdirSync(join(import.meta.dirname, '..', 'out', 'les')).filter((l) => /^(weide|toren|loper)-/.test(l))
   // Dwars erbij: daar opende de kaart zonder plank (wow 5 na ronde 22).
-  for (const [w, h] of [[390, 500], [844, 390]]) {
+  for (const [w, h] of [[390, 500], [844, 390], [667, 375]]) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, reducedMotion: 'reduce' })
   await ctx.addInitScript((lessen) => {
     const id = 'kind-kaart'

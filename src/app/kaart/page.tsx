@@ -65,7 +65,7 @@ export default function Kaart() {
       // Past de plank samen met de les van vandaag in beeld, dan begint het beeld bij de
       // plank; anders gaat de les voor (40e review).
       const plank = document.getElementById('plank-kop')?.closest('section')
-      const past = plank && el.getBoundingClientRect().bottom - plank.getBoundingClientRect().top <= window.innerHeight - 8
+      const past = plank && el.getBoundingClientRect().bottom - plank.getBoundingClientRect().top <= window.innerHeight - 4
       if (plank && past) plank.scrollIntoView({ block: 'start', behavior })
       else el.scrollIntoView({ block: 'center', behavior })
     }
@@ -172,13 +172,13 @@ export default function Kaart() {
             <h2 id="plank-kop" className={styles.plankKop}>{profiel ? `Wat ${profiel.naam} al kan` : 'Wat je al kunt'}</h2>
             <ul className={styles.plankRij} aria-labelledby="plank-kop">
               {gewonnen.map((w) => (
-                <li key={w.id} className={styles.plankWapen}>
+                <li key={w.id} className={styles.plankWapen} title={w.naam}>
                   <WereldWapen id={w.id} maat={64} />
                   <span>{w.naam}</span>
                 </li>
               ))}
               {hoefijzers.map((d) => (
-                <li key={d.soort} className={styles.plankWapen}>
+                <li key={d.soort} className={styles.plankWapen} title={d.wat}>
                   <Icoon naam={`medaille-${d.soort}`} maat={64} />
                   <span>{d.wat}</span>
                 </li>
