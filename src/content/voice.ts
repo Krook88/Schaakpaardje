@@ -90,7 +90,7 @@ export const SCHAAK_TEGEN_JOU = [
 
 export const SCHAAK_VAN_JOU = [
   'Schaak! Jij valt de koning aan.',
-  'Mooi, schaak! Nu moet de koning weg.',
+  'Mooi, schaak! Nu moet de koning gered worden.',
 ] as const
 /** Na de zet van de bot, als er niets bijzonders is: anders bleef een oude zin staan
  *  ("Mooi, schaak!" terwijl de bot net de dame sloeg, wow-meting traject 2). */
