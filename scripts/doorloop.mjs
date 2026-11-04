@@ -1326,7 +1326,7 @@ for (const [w, h] of [[360, 740], [375, 667]]) {
 
 // Wereld af: "Volgende les" in beeld en de wapenrij altijd 8 + 7, op elke breedte.
 // Speelt weide-1 uit met weide-2 en -3 al af (39e review: 7+7+1 op 320, 9+6 op 393).
-for (const [w, h] of [[320, 640], [393, 852], [1024, 768]]) {
+for (const [w, h] of [[320, 640], [393, 852], [1024, 768], [844, 390]]) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, reducedMotion: 'reduce' })
   await ctx.addInitScript(() => {
     if (sessionStorage.getItem('z')) return

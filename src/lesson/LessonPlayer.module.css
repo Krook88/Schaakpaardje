@@ -310,3 +310,23 @@
 .wereldpagina { min-height: 100dvh; }
 .wereldAfTel { margin: 0; font-weight: 700; }
 @media (max-height: 720px) and (max-width: 600px) { .wereldAfTel { display: none; } }
+
+/* Wereld af dwars: wapen en Pip links, kop, naam, wapenrij en telling rechts. Onder
+   elkaar vielen de naam, de wapenrij en "Volgende les" onder de vouw (wow-meting na
+   ronde 22). */
+@media (orientation: landscape) and (max-height: 500px) {
+  .wereldAf { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; align-items: center; text-align: left; }
+  .wereldAf > * { grid-column: 2; }
+  .wereldAf > .wereldAfHeld { grid-column: 1; grid-row: 1 / span 5; transform: scale(0.75); transform-origin: center; }
+  .wereldAf .wapenRij { justify-content: flex-start; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  /* De feestkaart zegt hetzelfde als Pips ballon erboven, en Pip juicht er groot in mee. */
+  .wereldpagina:has(.wereldAf) > :global(.stack) > :first-child { display: none; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .wereldAf { padding: 10px 16px !important; row-gap: 4px; }
+  .wereldAf .wereldAfKop { font-size: 1.5rem; margin: 0; }
+  .wereldAf .wapenRij { margin: 2px 0 0 !important; }
+  .wereldpagina:has(.wereldAf) { padding-top: 8px; }
+}

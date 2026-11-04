@@ -74,3 +74,5 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 21: speelscherm — bord past met knoppen op 1440×900 en 1366×650. Open: liggende telefoon (bord 273 px) en staande telefoon (knoppen onder de vouw).
 - Ronde 22: speelscherm dwars — bord links (velden 47 px), kop/Pip/knoppen rechts; doorloopregel. Open: 667×375 knoppen net onder de rand.
 - Ronde 22: 47e review verwerkt (geen leeg scrollen, sticky bord, knoppen boven op 667×375).
+- Wow-meting na ronde 22 (375 / 844 dwars): start 6/4, les 5/5, wereld af 8/5, kaart 7/5, bot 4/4. Rangschikking: dwars is overal het zwakst; bot een eigen gezicht; Pip zichtbaar op de startpagina dwars.
+- Ronde 23: wereld af dwars — wapen en Pip links, de rest rechts, Pip-ballon verborgen, Volgende les in beeld (doorloop 844×390).
