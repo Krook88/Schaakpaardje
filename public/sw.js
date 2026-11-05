@@ -20,7 +20,7 @@
 const CACHE = 'schaakmaatje-dev'
 
 // Wat er sowieso in moet, ook als het kind alleen de voorpagina heeft gezien.
-const KERN = ['./', './manifest.webmanifest', './icon.svg', './offline/']
+const KERN = ['./', './manifest.webmanifest', './icon.svg', './icon-192.png', './apple-touch-icon.png', './offline/']
 
 // Wereld 0 tot en met 2 (pagina's, hun RSC-bestanden en precies de JS/CSS die ze
 // gebruiken), de kaart en hun minispellen. Bij het bouwen ingevuld door

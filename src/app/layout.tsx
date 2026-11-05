@@ -32,7 +32,8 @@ export const metadata: Metadata = {
   // Elke pagina die gevonden mag worden zet nu zijn eigen canonical. De schermen van
   // de app zelf zetten `robots: { index: false }` en horen niet in de sitemap.
   manifest: `${BASIS}/manifest.webmanifest`,
-  icons: { icon: `${BASIS}/icon.svg`, apple: `${BASIS}/icon.svg` },
+  // iOS negeert svg voor het beginscherm: daar een png van 180 (scripts/app-icoon.mjs).
+  icons: { icon: [{ url: `${BASIS}/icon.svg` }, { url: `${BASIS}/icon-192.png`, sizes: '192x192' }], apple: `${BASIS}/apple-touch-icon.png` },
   appleWebApp: { capable: true, title: 'Schaakmaatje', statusBarStyle: 'default' },
   ...deelkaart({
     titel: 'Schaakmaatje: leer schaken met Pip het schaakpaardje',

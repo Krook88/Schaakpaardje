@@ -1,6 +1,7 @@
 'use client'
 
 import { botBeeld, type BotStemming } from '@/ui/beelden'
+import { Maatje } from '@/ui/Maatje'
 import { GLYPH } from '@/board/pieces'
 import styles from './PartijScherm.module.css'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -474,7 +475,7 @@ export function PartijScherm({ botId }: { botId: string }) {
               : botDenkt
                 ? `${bot?.naam ?? 'De ander'} denkt na…`
                 : wie
-                  ? `${wie.avatar} ${wie.naam} is aan zet (${aanZet === 'w' ? 'wit' : 'zwart'})`
+                  ? <><Maatje emoji={wie.avatar} maat={24} /> {wie.naam} is aan zet ({aanZet === 'w' ? 'wit' : 'zwart'})</>
                   : `Jij bent aan zet · zet ${zetten + 1}`}
           </span>
           <span className="muted" hidden={Boolean(uitslag)}>
@@ -563,7 +564,7 @@ export function PartijScherm({ botId }: { botId: string }) {
             <h2>
               {samenWinnaar ? (
                 <>
-                  <span aria-hidden="true">{spelers[samenWinnaar].avatar}</span> {spelers[samenWinnaar].naam} wint! 🏆
+                  <Maatje emoji={spelers[samenWinnaar].avatar} maat={28} /> {spelers[samenWinnaar].naam} wint! 🏆
                 </>
               ) : (
                 'Gelijkspel'

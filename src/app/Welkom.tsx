@@ -5,6 +5,7 @@ import { SCHAAKREGELS, onderwerpMet } from '@/content/schaakregels'
 import { Animatiebord } from '@/uitleg/Animatiebord'
 import { bouwBeelden } from '@/uitleg/beelden'
 import { HeldSpel } from './HeldSpel'
+import { Beginscherm } from '@/ui/Beginscherm'
 import { Icoon, type IcoonNaam } from '@/ui/beelden'
 
 /** Dezelfde basis als de rest van de app, voor als hij ooit in een submap staat. */
@@ -145,6 +146,10 @@ export function Welkom() {
           </li>
         ))}
       </ul>
+
+      {/* Onder de beloftes, niet in het eerste scherm: daar gaan de les en het bord voor.
+          Verschijnt alleen waar het kan (Android, Chrome, Edge; iPhone met uitleg). */}
+      <Beginscherm kaart />
 
       {/* Eén bewegend bord laat beter zien wat je kind gaat doen dan een alinea. Het is
           hetzelfde bord als op de schaakregelpagina's, en het verwijst ernaar door. */}

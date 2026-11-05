@@ -1,5 +1,6 @@
 'use client'
 
+import { Maatje, MAATJE_NAAM } from '@/ui/Maatje'
 import { useState } from 'react'
 import { AVATARS, useProfiel, useProfielStore, useToestandGeladen } from '@/progress/store'
 
@@ -51,7 +52,7 @@ export function SamenKiezer({ onKies }: { onKies: (wit: Speler, zwart: Speler) =
   return (
     <div className="stack">
       <p style={{ margin: 0 }}>
-        <span aria-hidden="true">{wit.avatar}</span> <strong>{wit.naam}</strong> speelt met wit en
+        <Maatje emoji={wit.avatar} maat={28} /> <strong>{wit.naam}</strong> speelt met wit en
         begint. Wie speelt er met zwart?
       </p>
 
@@ -64,9 +65,7 @@ export function SamenKiezer({ onKies }: { onKies: (wit: Speler, zwart: Speler) =
               className="btn btn--big"
               onClick={() => onKies(wit, { naam: p.naam, avatar: p.avatar, profielId: p.id })}
             >
-              <span aria-hidden="true" style={{ fontSize: 28 }}>
-                {p.avatar}
-              </span>{' '}
+              <Maatje emoji={p.avatar} maat={36} />{' '}
               {p.naam}
             </button>
           ))}
@@ -83,15 +82,16 @@ export function SamenKiezer({ onKies }: { onKies: (wit: Speler, zwart: Speler) =
               className="btn"
               onClick={() => setGastAvatar(a)}
               aria-pressed={gekozen === a}
-              aria-label={`Kies ${a}`}
+              aria-label={`Kies ${MAATJE_NAAM[a] ?? a}`}
               style={{
                 fontSize: 26,
                 minWidth: 58,
+                padding: 6,
                 borderColor: gekozen === a ? 'var(--accent)' : undefined,
                 background: gekozen === a ? 'var(--accent-soft)' : undefined,
               }}
             >
-              {a}
+              <Maatje emoji={a} maat={44} />
             </button>
           ))}
         </div>

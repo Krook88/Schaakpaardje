@@ -1,5 +1,6 @@
 'use client'
 
+import { Maatje, MAATJE_NAAM } from '@/ui/Maatje'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Icoon, WereldWapen, lesIcoon, pipLos } from '@/ui/beelden'
 import Link from 'next/link'
@@ -99,7 +100,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
       <main className="page">
         <div className="stack" style={{ maxWidth: 760, margin: '0 auto' }}>
           <button type="button" className="btn" style={{ alignSelf: 'flex-start' }} onClick={sluitNieuwKind}>
-            ← Terug naar {profiel.avatar} {profiel.naam}
+            ← Terug naar <Maatje emoji={profiel.avatar} maat={24} /> {profiel.naam}
           </button>
           <NieuwProfiel
             alleenFormulier
@@ -161,9 +162,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
       <div className="stack">
         <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
           <div className="row" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
-            <span style={{ fontSize: 34 }} aria-hidden="true">
-              {profiel.avatar}
-            </span>
+            <Maatje emoji={profiel.avatar} maat={48} />
             {/* Een lange naam als "Maximiliaan" liep onder de knoppen rechts door. Nu een
                 kleinere kop bij een lange naam, smallere knoppen, en als het dan nog niet
                 past mag hij afbreken in plaats van eronder te schuiven. */}
@@ -335,7 +334,7 @@ export function Thuis({ welkom }: { welkom: ReactNode }) {
                   aria-pressed={p.id === profiel.id}
                   style={p.id === profiel.id ? { borderColor: 'var(--accent)' } : undefined}
                 >
-                  {p.avatar} {p.naam}
+                  <Maatje emoji={p.avatar} maat={28} /> {p.naam}
                 </button>
               ))}
             </div>
@@ -537,7 +536,7 @@ function NieuwProfiel({
           <div className="row">
             {bestaand.map((p) => (
               <button key={p.id} type="button" className="btn btn--big" onClick={() => onKies(p.id)}>
-                {p.avatar} {p.naam}
+                <Maatje emoji={p.avatar} maat={28} /> {p.naam}
               </button>
             ))}
           </div>
@@ -602,7 +601,7 @@ function NieuwProfiel({
           {/* Als knop, zodat je ziet dat je erop kunt tikken (de flex-summary verloor het
               driehoekje). Het gekozen maatje staat erin, ook voor de schermlezer. */}
           <summary className="btn" style={{ listStyle: 'none', justifyContent: 'flex-start', gap: 10 }}>
-            <span style={{ fontSize: 26 }} aria-hidden="true">{avatar}</span>
+            <Maatje emoji={avatar} maat={36} />
             <span>Ander maatje kiezen</span>
             <span className="visually-hidden">, nu gekozen: {avatar}</span>
           </summary>
@@ -616,14 +615,14 @@ function NieuwProfiel({
                 className="btn"
                 onClick={() => setAvatar(a)}
                 aria-pressed={avatar === a}
-                aria-label={`Kies ${a}`}
+                aria-label={`Kies ${MAATJE_NAAM[a] ?? a}`}
                 style={{
-                  fontSize: 26, minWidth: 58,
+                  fontSize: 26, minWidth: 58, padding: 6,
                   borderColor: avatar === a ? 'var(--accent)' : undefined,
                   background: avatar === a ? 'var(--accent-soft)' : undefined,
                 }}
               >
-                {a}
+                <Maatje emoji={a} maat={44} />
               </button>
             ))}
           </div>
