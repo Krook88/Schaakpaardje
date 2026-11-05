@@ -173,7 +173,7 @@ export default function Kaart() {
             <ul className={styles.plankRij} aria-labelledby="plank-kop">
               {gewonnen.map((w) => (
                 <li key={w.id} className={styles.plankWapen} title={w.naam}>
-                  <WereldWapen id={w.id} maat={64} />
+                  <WereldWapen id={w.id} maat={72} />
                   <span>{w.naam}</span>
                 </li>
               ))}

@@ -127,3 +127,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 50: maatjes getekend en overal in plaats van emoji; 63e review verwerkt.
 - Traject 4 (5 nov, "probeer nog eens"): Lighthouse opnieuw gemeten (was van ronde 13). Start 99 perf, LCP 2,2 s, CLS 0. Les: perf 93–95, a11y 90→94 (fasebalk-label zonder rol hersteld; enige afwijking nu meta-viewport, bewust), best practices 79→96 (Pip sprak vanzelf zonder tik: afgeschafte speechSynthesis-aanroep, nu klaargezet voor de eerste tik; resterend: lokale 404 op audio-manifest). Kaart SEO 66 is bewust (noindex, app-scherm).
 - Ronde 51: startpagina — Pip als stuk op het demobord; wereld af — dichte wapens in eigen wereldkleur, volgende met stippelring, "nu open: Torenburcht" in de feestkaart; Pip met hele lijf getekend (wijst, juicht, wacht).
+- Ronde 52: kaart — trofeeënplank als houten lat onder de wapens (72 px), lucht boven de plank.
