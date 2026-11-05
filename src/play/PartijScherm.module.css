@@ -1,9 +1,9 @@
 /* Het bord laat ruimte voor kop, Pip, status en knoppen: op 1440×900 vielen de knoppen
-   eronder weg bij 70vh (45e review). --naast-bord is die opgetelde hoogte (~410 px met de
-   tegenstander erbij); de doorloop bewaakt het op 1440×900 en 1366×650. Op lage schermen
+   eronder weg bij 70vh (45e review). --naast-bord is die opgetelde hoogte (~456 px met de
+   tegenstander en de regel met geslagen stukken erbij); de doorloop bewaakt het op 1440×900 en 1366×650. Op lage schermen
    blijft 300 px de ondergrens. */
 .bord {
-  --naast-bord: 410px;
+  --naast-bord: 456px;
   max-width: min(100%, 620px, max(calc(100svh - var(--naast-bord)), min(70vh, 300px)));
   margin: 0 auto; width: 100%;
 }
@@ -49,8 +49,41 @@
 /* Verborgen waar elke pixel telt: lage laptops (knoppen moeten in beeld) en dwars (de
    naam staat in de kop naast het bord). Staande telefoons houden hem: daar scrolt het
    scherm toch al en was de uil nergens te zien (wow-meting na ronde 32). */
-@media (max-height: 700px) and (min-width: 900px), (orientation: landscape) and (max-height: 500px) { .tegenstander { display: none; } }
+@media (max-height: 700px) and (min-width: 900px) { .tegenstander { display: none; } }
+/* Dwars: de tegenstander klein naast Pip, op één rij. Eerst stond er dwars geen uil,
+   alleen de naam in de kop (wow-meting traject 2). */
+@media (orientation: landscape) and (max-height: 500px) {
+  .boven { flex-direction: row; align-items: center; gap: 8px; }
+  .boven > .tegenstander { order: 2; margin: 0; flex-direction: column; gap: 0; font-size: 0; }
+  .boven > .tegenstander .tegenstanderGezicht { width: 52px; height: 52px; }
+  .boven > :not(.tegenstander) { flex: 1; min-width: 0; }
+}
 @media (max-height: 700px) and (max-width: 899px) { .tegenstanderGezicht { width: 44px; height: 44px; } }
 /* In het midden van de uitslagkaart: links leek het een vergeten plaatje (52e review). */
 .uitslagBot { display: block; margin-inline: auto; }
 @media (orientation: landscape) and (max-height: 500px) { .uitslagBot { width: 44px; height: 44px; } }
+/* Geslagen stukken: links wat jij pakte, rechts wat je kwijt bent, elk met een woord.
+   De stukjes staan op een eigen schijfje: wit op crème was een vaag spookje (58e review). */
+.geslagen { justify-content: space-between; font-weight: 700; font-size: 0.95rem; color: var(--muted); }
+.geslagenZwart, .geslagenWit {
+  font-family: 'Schaakstukken', sans-serif; font-variant-emoji: text; font-size: 1.6rem; line-height: 1;
+  letter-spacing: -2px; padding: 2px 8px 2px 6px; border-radius: 999px; margin-left: 4px; display: inline-block; vertical-align: middle;
+}
+.geslagenZwart { color: #2b2823; -webkit-text-stroke: 0.8px #efe7d6; paint-order: stroke fill; background: #efe7d6; }
+.geslagenWit { color: #fcf8ef; -webkit-text-stroke: 1.2px #33302a; paint-order: stroke fill; background: #6b6357; }
+@media (min-width: 900px) and (min-height: 800px) { .geslagenZwart, .geslagenWit { font-size: 2rem; } }
+/* Korte staande telefoon: Pip en de tegenstander op één rij, net als dwars. Onder elkaar
+   viel de eigen achterste rij van het kind onder de vouw op 320×640 (60e review). */
+@media (orientation: portrait) and (max-height: 700px) {
+  .boven { flex-direction: row; align-items: center; gap: 8px; }
+  .boven > .tegenstander { order: 2; margin: 0; flex-direction: column; gap: 0; font-size: 0; }
+  .boven > .tegenstander .tegenstanderGezicht { width: 48px; height: 48px; }
+  .boven > :not(.tegenstander) { flex: 1; min-width: 0; }
+  /* Pips gezicht klein (niet weg): zonder gezicht leek Oscar de verteller (61e review). */
+  .boven { --pip-maat: 40px; }
+  .boven { gap: 4px; }
+  .boven > .tegenstander .tegenstanderGezicht { width: 40px; height: 40px; }
+}
+/* 320 breed: naast Pip en de ballon past de tegenstander niet zonder dat de ballon een
+   toren wordt; de naam staat in de kop. */
+@media (max-width: 340px) and (orientation: portrait) and (max-height: 700px) { .tegenstander { display: none; } }

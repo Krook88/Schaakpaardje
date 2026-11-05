@@ -3,6 +3,7 @@
 Geheugen van de `/loop`. Elke ronde: lees dit, pak het hoogste rode punt, bouw, bewijs, review, werk bij.
 
 ## Open vragen voor Kaj
+- **Traject 2 live zetten?** Rondes 36–48 staan op `volgende-niveau` (bots met gezichten, geslagen stukken, korte telefoons, vijf nieuwe Pip-zinnen die bij publiceren worden ingesproken). De wow-cijfers schommelen weer rond 5–8 per reviewer; de voorstellen herhalen zich. Loop gepauzeerd.
 - **Doorgaan of afronden?** Na 35 rondes schommelen de wow-cijfers per meting (eerste les: layout 8, conversie 5 op hetzelfde scherm). Laatste meting staand/dwars: start 7/8, les 5–8, wereld af 8/7, kaart 7/5, spel 6–7. De ideeën die nog openstaan zijn groter (bots met reacties per zet, de kaart dwars naast het pad). Loop gepauzeerd tot je besluit.
 
 ## Besluiten van Kaj
@@ -47,6 +48,7 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 4. Emoji in de uitslagen van partijen en live spelen. Dat zijn niet de wow-schermen, dus later.
 
 ## Logboek
+- Traject 2 (na merge #32), ronde 36: wereld af dwars — juichende Pip terug naast het wapen, rechts alleen de ballon.
 - Ronde 1: nulmeting. Niets aan de app veranderd.
 - Ronde 2: lesscherm liggend (bord naast Pip, volle hoogte op telefoon dwars). 27e review verwerkt. Wow-cijfers gemeten.
 - Ronde 3: trots moment — deelknop (link + vaste zin, telling), diploma-voorproef met wereldwapens, wereld af als held. 28e review verwerkt. Pip-zin 'Hoefijzer verdiend' weg (klopte niet na wereld 1).
@@ -97,3 +99,23 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 34: 55e review (GO, eerste les 8, spel 7).
 - Ronde 35: kaart dwars — plank op één rij (kop en telling links, wapens 52 px rechts).
 - Wow-meting na ronde 35 (375/844): start 7/8, les 5/6, wereld af 8/7, kaart 7/5, spel 6/6. Loop gepauzeerd: cijfers schommelen tussen reviewers, vraag aan Kaj.
+- Ronde 37: bots in drie stemmingen (blij, denkt, verrast), het gezicht volgt de partij.
+- Ronde 37: 56e review verwerkt (Pip op 667 dwars terug, verrast 1,4 s, doorloopregel "er juicht een Pip").
+- Ronde 38: botstemmingen duidelijker (denkwolkje, wenkbrauwen, grotere o), bredere crème rand voor donker.
+- Wow-meting traject 2 (375/844): start 7/8, les 6/7, wereld af 7/6, kaart 7/6, bot 4/5. Fout gevonden: oude Pip-zin na de botzet.
+- Ronde 39: Pip zegt na elke botzet "Hij heeft gezet. Nu jij!" (nieuwe opname bij publiceren), doorloopregel.
+- Ronde 40: tegenstander dwars naast Pip in beeld (52 px).
+- Ronde 40: 57e review verwerkt (geen "hij" voor bots, bemoedigende zin bij slaan).
+- Ronde 41: denkwolkjes van Mila en Fien van het oor af.
+- Ronde 42: geslagen stukken naast de stand in de partij.
+- Ronde 42: 58e review verwerkt (geslagen stukken op eigen regel met "Jij pakte"/"Kwijt" en schijfjes).
+- Ronde 43: startpagina staand compacter, paard met stippen boven de vouw (doorloop 375/390).
+- Ronde 43: 59e review verwerkt (paard heel boven de vouw op 375×667, doorloop meet hele veld).
+- Ronde 44: eerste les op korte telefoons — wereldband weg, kop en fasebalk compacter, hele bord in beeld (doorloop 375×667).
+- Ronde 44: 60e review verwerkt (bord heel in beeld bij elke zin en de eerste opgave op 320/360/375, doorloop).
+- Ronde 45: speelscherm op korte telefoons — Pip-ballon en tegenstander op één rij, hele bord in beeld (doorloop 320/375).
+- Ronde 46: het oogje in de fasebalk als klaar-knop (groen, doorgetrokken) in plaats van gestippeld.
+- Ronde 46: 61e review verwerkt (Pip klein in beeld in plaats van weg; 320 breed zonder tegenstander).
+- Ronde 47: 62e review (codebase traject 2) verwerkt: Game.geslagen in de engine met test, verrast reset, schermlezertekst.
+- Ronde 48: Pip-maat via --pip-maat in plaats van !important van buitenaf.
+- Wow-meting na ronde 48 (375/844): start 7/8, les 5–6, kaart 7/6, spel 5/6, wereld af niet gezien. Loop gepauzeerd voor Kaj.

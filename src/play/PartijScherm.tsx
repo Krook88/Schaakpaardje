@@ -1,6 +1,7 @@
 'use client'
 
-import { botBeeld } from '@/ui/beelden'
+import { botBeeld, type BotStemming } from '@/ui/beelden'
+import { GLYPH } from '@/board/pieces'
 import styles from './PartijScherm.module.css'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
@@ -26,6 +27,8 @@ import {
   SCHAAK_VAN_JOU,
   ZET_TERUGGENOMEN,
   pipZinnen,
+  BOT_HEEFT_GEZET,
+  BOT_SLOEG,
 } from '@/content/voice'
 import { PIECE_NAME, type PieceType, type Square } from '@/engine/board'
 import { Game, blunderVerlies, isPromotie, materialBalance } from '@/engine/game'
@@ -62,6 +65,13 @@ export function PartijScherm({ botId }: { botId: string }) {
   const [stemming, setStemming] = useState<PipStemming>('blij')
   const [uitslag, setUitslag] = useState<Uitslag>(null)
   const [botDenkt, setBotDenkt] = useState(false)
+  // Het gezicht van de tegenstander: denkt tijdens zijn beurt, verrast als het kind iets
+  // sloeg, anders blij. Nooit boos of uitlachend.
+  const [botVerrast, setBotVerrast] = useState(false)
+  const verrastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => { if (verrastTimer.current) clearTimeout(verrastTimer.current) }, [])
+  // Verrast gaat voor denkt: de bot begint meteen na de slag te denken, anders zag je het nooit.
+  const botStemming: BotStemming = botVerrast ? 'verrast' : botDenkt ? 'denkt' : 'blij'
   const [twijfel, setTwijfel] = useState<{ van: Square; naar: Square; verlies: number; promotie: PieceType } | null>(null)
   const [zetten, setZetten] = useState(0)
   const [samenWinnaar, setSamenWinnaar] = useState<'w' | 'b' | null>(null)
@@ -197,6 +207,11 @@ export function PartijScherm({ botId }: { botId: string }) {
       }
       denkTimer.current = null
       setBotDenkt(false)
+      // Eerst de gewone zin; controleerEinde zet er een schaak- of eindzin overheen.
+      if (gedaanDoorBot) {
+        setZin(gedaanDoorBot.isCapture ? BOT_SLOEG : BOT_HEEFT_GEZET)
+        setStemming(gedaanDoorBot.isCapture ? 'moedigt' : 'blij')
+      }
       if (controleerEinde(game)) return
       // Het pionnenspel geldt beide kanten op: haalt de bot als eerste de overkant,
       // dan heeft hij gewonnen. Zonder dit werkte de winregel maar één kant op.
@@ -217,6 +232,14 @@ export function PartijScherm({ botId }: { botId: string }) {
       setFen(game.fen)
       setGeselecteerd(null)
       setZetten((n) => n + 1)
+      // De tegenstander kijkt verrast als het kind iets slaat; nooit boos.
+      // Minstens 1,4 s, los van hoe snel de bot zet: na een halve seconde zag niemand het
+      // (56e review).
+      if (gedaan.isCapture) {
+        setBotVerrast(true)
+        if (verrastTimer.current) clearTimeout(verrastTimer.current)
+        verrastTimer.current = setTimeout(() => setBotVerrast(false), 1400)
+      }
 
       // Pionnenspel: wie het eerst promoveert, wint.
       if (opzet?.winBijPromotie && gedaan.promotion) {
@@ -313,6 +336,9 @@ export function PartijScherm({ botId }: { botId: string }) {
     // Na een uitslag is terugnemen geen troost waard: dan troostte Pip de winnaar, alsof
     // winnen een fout was. Herreview negende review.
     setZin(uitslag ? kies(PARTIJ_START, 'start') : ZET_TERUGGENOMEN)
+    // Geen verrast gezicht over een slag die er niet meer is (codebase-review traject 2).
+    if (verrastTimer.current) clearTimeout(verrastTimer.current)
+    setBotVerrast(false)
     setStemming(uitslag ? 'blij' : 'moedigt')
   }, [samen, stopDenken, uitslag])
 
@@ -333,11 +359,17 @@ export function PartijScherm({ botId }: { botId: string }) {
     setSamenWinnaar(null)
     setZetten(0)
     setZin(kies(PARTIJ_START, 'start'))
+    // Geen verrast gezicht over een slag die er niet meer is (codebase-review traject 2).
+    if (verrastTimer.current) clearTimeout(verrastTimer.current)
+    setBotVerrast(false)
     setStemming('blij')
   }, [opzet?.fen, stopDenken])
 
   useEffect(() => {
     setZin(kies(PARTIJ_START, 'start'))
+    // Geen verrast gezicht over een slag die er niet meer is (codebase-review traject 2).
+    if (verrastTimer.current) clearTimeout(verrastTimer.current)
+    setBotVerrast(false)
     if (samen) setZin(SAMEN_KIES)
     void speak(bot ? `Je speelt tegen ${bot.naam}. ${bot.tagline}` : SAMEN_KIES)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -350,6 +382,14 @@ export function PartijScherm({ botId }: { botId: string }) {
   }, [geselecteerd, laatsteZet, fen])
 
   const balans = materialBalance(fen)
+  // Wat er van elke kant van het bord af is, als stukjes naast de stand: een slag zag je
+  // eerst nergens, alleen "Je staat 1 achter" (wow-meting na ronde 41).
+  // Uit de zetten zelf (Game.geslagen), niet uit de stelling: promotie is geen slag.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fen verandert bij elke zet
+  const geslagen = useMemo(() => {
+    const g = gameRef.current.geslagen
+    return { vanZwart: g.b, vanWit: g.w }
+  }, [fen])
   const aanZet = gameRef.current.turn
   const wie = spelers?.[aanZet]
 
@@ -397,7 +437,7 @@ export function PartijScherm({ botId }: { botId: string }) {
             uit de vaste lijst, niets van het kind. */}
         {bot && (
           <div className={styles.tegenstander} aria-hidden="true">
-            <img src={botBeeld(bot.id)} alt="" width={56} height={56} className={styles.tegenstanderGezicht} draggable={false} />
+            <img src={botBeeld(bot.id, botStemming)} alt="" width={56} height={56} className={styles.tegenstanderGezicht} draggable={false} />
             <span>{bot.naam}</span>
           </div>
         )}
@@ -451,6 +491,18 @@ export function PartijScherm({ botId }: { botId: string }) {
                   : 'Gelijk'}
           </span>
         </div>
+        {/* Geslagen stukken op een eigen regel, met wie ze heeft: los in de statusregel
+            was niet te zien van wie ze waren (58e review). */}
+        {!samen && !uitslag && (geslagen.vanZwart.length > 0 || geslagen.vanWit.length > 0) && (
+          <div className={`row ${styles.geslagen}`}>
+            <span>
+              {geslagen.vanZwart.length > 0 && <>Jij pakte <span className={styles.geslagenZwart} aria-hidden="true">{geslagen.vanZwart.map((t) => GLYPH[t]).join('')}</span><span className="visually-hidden">{geslagen.vanZwart.map((t) => PIECE_NAME[t]).join(', ')}</span></>}
+            </span>
+            <span>
+              {geslagen.vanWit.length > 0 && <>Kwijt <span className={styles.geslagenWit} aria-hidden="true">{geslagen.vanWit.map((t) => GLYPH[t]).join('')}</span><span className="visually-hidden">{geslagen.vanWit.map((t) => PIECE_NAME[t]).join(', ')}</span></>}
+            </span>
+          </div>
+        )}
 
         {promotieVraag && (
           <PromotieKiezer

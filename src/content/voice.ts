@@ -80,7 +80,7 @@ export const PARTIJ_REMISE = ['Gelijkspel! Niemand wint, allebei goed gespeeld.'
 
 export const BLUNDER_WAARSCHUWING = [
   'Weet je het zeker? Dan staat je stuk te pakken.',
-  'Pas op, daar kan hij hem slaan.',
+  'Kijk nog eens: kan de ander nu iets van je slaan?',
 ] as const
 
 export const SCHAAK_TEGEN_JOU = [
@@ -89,9 +89,15 @@ export const SCHAAK_TEGEN_JOU = [
 ] as const
 
 export const SCHAAK_VAN_JOU = [
-  'Schaak! Jij valt zijn koning aan.',
-  'Mooi, schaak! Nu moet hij wat.',
+  'Schaak! Jij valt de koning aan.',
+  'Mooi, schaak! De ander moet nu iets doen.',
 ] as const
+/** Na de zet van de bot, als er niets bijzonders is: anders bleef een oude zin staan
+ *  ("Mooi, schaak!" terwijl de bot net de dame sloeg, wow-meting traject 2). */
+// Zonder "hij": Mila, Kiki en Fien zijn meisjes (57e review).
+export const BOT_HEEFT_GEZET = 'Jouw beurt!'
+/** Na een botzet die een stuk van het kind sloeg: niet lachen, wel bemoedigen. */
+export const BOT_SLOEG = 'Er is een stuk van je weg. Jouw beurt!'
 export const MAT_VOOR_JOU = ['Mat! De koning kan nergens meer heen.'] as const
 
 /** Wordt gebruikt als er geen specifieke fout-tip in de opgave staat. */

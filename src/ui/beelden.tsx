@@ -50,4 +50,7 @@ export function Icoon({ naam, src, maat, className, style }: IcoonProps) {
 }
 
 /** Het gezicht van een bot (id uit src/engine/bots.ts), uit scripts/bots-tekenen.py. */
-export const botBeeld = (id: string) => `${BASIS}/illustraties/bots/bot-${id}.svg`
+export type BotStemming = 'blij' | 'denkt' | 'verrast'
+/** De tekening van een bot; 'blij' is de gewone tekening (scripts/bots-tekenen.py). */
+export const botBeeld = (id: string, stemming: BotStemming = 'blij') =>
+  `${BASIS}/illustraties/bots/bot-${id}${stemming === 'blij' ? '' : `-${stemming}`}.svg`

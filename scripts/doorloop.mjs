@@ -1195,6 +1195,71 @@ for (const [w, h] of [[1440, 900], [1366, 650], [1280, 800]]) {
   await ctx.close()
 }
 
+// Na de zet van de bot hoort Pip iets nieuws te zeggen. Eerst bleef de zin van het kind
+// staan: "Mooi, schaak!" terwijl de bot net de dame sloeg (wow-meting traject 2).
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  await p.locator('[data-square="e2"]').click()
+  await p.locator('[data-square="e4"]').click()
+  await p.waitForTimeout(3500)
+  const zin = await p.evaluate(() => document.querySelector('[aria-live="polite"]')?.textContent ?? '')
+  meld('partij: na de botzet zegt Pip iets nieuws', /Jouw beurt|schaak/i.test(zin), JSON.stringify(zin.slice(0, 60)))
+  await ctx.close()
+}
+
+// Startpagina staand: het paard met zijn stippen zichtbaar boven de vouw, de knop ook.
+for (const [w, h] of [[375, 667], [390, 844]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const m = await p.evaluate(() => {
+    const pa = [...document.querySelectorAll('[data-square]')].find((x) => /paard/.test(x.getAttribute('aria-label') || ''))?.getBoundingClientRect()
+    const k = [...document.querySelectorAll('a')].find((a) => /eerste les/.test(a.textContent))?.getBoundingClientRect()
+    return pa && k ? { paardOnder: Math.round(pa.bottom), knop: Math.round(k.bottom) } : null
+  })
+  // Het hele veld van het paard: met alleen de bovenkant gemeten zag je op 375×667 maar
+  // zijn oren (59e review).
+  meld(`startpagina ${w}×${h}: paard en knop boven de vouw`, Boolean(m) && m.paardOnder <= h && m.knop <= h, JSON.stringify(m))
+  await ctx.close()
+}
+
+// Eerste les op korte telefoons: het hele bord in beeld, bij elke zin en bij de eerste
+// opgave. De tweede zin laat de onderste rij oplichten, en de opgave vraagt om de
+// donkere velden helemaal onderaan; die vielen eerst onder de vouw (60e review).
+for (const [w, h] of [[375, 667], [320, 640], [360, 740]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/les/weide-1/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(800)
+  const onder = () => p.evaluate(() => Math.round(document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect().bottom ?? 1e4))
+  const stappen = [await onder()]
+  for (let i = 0; i < 2; i++) {
+    await p.getByRole('button', { name: /Verder/ }).first().click()
+    await p.waitForTimeout(400)
+    stappen.push(await onder())
+  }
+  await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
+  await p.waitForTimeout(500)
+  stappen.push(await onder())
+  meld(`eerste les ${w}×${h}: het hele bord in beeld bij elke zin en de eerste opgave`, stappen.every((o) => o <= h), stappen.join(', '))
+  await ctx.close()
+}
+
+// Speelscherm op korte telefoons: het hele bord, ook de eigen achterste rij (60e review).
+for (const [w, h] of [[320, 640], [375, 667]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const onder = await p.evaluate(() => Math.round(document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect().bottom ?? 1e4))
+  meld(`speelscherm ${w}×${h}: het hele bord in beeld`, onder <= h, `onderkant ${onder}`)
+  await ctx.close()
+}
+
 // Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
 // waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
 // niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.
@@ -1407,6 +1472,9 @@ for (const [w, h] of [[320, 640], [393, 852], [1024, 768], [844, 390], [667, 375
     const k = [...document.querySelectorAll('a')].find((a) => /Volgende les/.test(a.textContent))
     return { rijen: per.join('+'), knop: k ? Math.round(k.getBoundingClientRect().bottom) : null }
   })
+  const pips = await p.evaluate(() => [...document.querySelectorAll('[data-pip-gezicht], [class*="wereldAfPip"]')].filter((e) => e.getBoundingClientRect().width > 0).length)
+  // Altijd een Pip die juicht: op 667 dwars bleef er een ballon zonder Pip over (56e review).
+  meld(`wereld af op ${w}×${h}: er juicht een Pip`, pips >= 1, `${pips} zichtbaar`)
   meld(`wereld af op ${w}×${h}: wapens 8+7 en "Volgende les" in beeld`, rijen === '8+7' && knop !== null && knop <= h, `rijen ${rijen}, knop onderkant ${knop}`)
   await ctx.close()
 }

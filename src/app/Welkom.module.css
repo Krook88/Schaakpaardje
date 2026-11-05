@@ -167,3 +167,23 @@
 @media (orientation: landscape) and (max-height: 500px) and (min-width: 600px) and (max-width: 720px) {
   .heldTekst > p:not(:first-child) { display: none; }
 }
+/* Staande telefoon: tekst en beloftes compacter, zodat het paard met zijn stippen boven
+   de vouw komt (wow-metingen traject 2: "je ziet alleen de bovenste rij"). */
+@media (max-width: 499px) and (orientation: portrait) {
+  .heldTekst { gap: 6px; }
+  .heldTekst > p:not(:first-child) { font-size: 0.92rem; line-height: 1.35; margin: 0; }
+  .beloftes { gap: 6px; }
+  .beloftes li { padding: 4px 10px; font-size: 0.85rem; }
+  .held { gap: 12px; }
+  .heldPip { margin: 0 0 4px; }
+  .heldPip .heldPipGezicht { font-size: 40px; }
+}
+/* Korte telefoons (iPhone SE): de bovenregel "Met Pip het schaakpaardje" wijkt, Pip staat
+   zelf al in beeld bij het bord. */
+@media (max-width: 499px) and (orientation: portrait) and (max-height: 700px) {
+  .heldTekst > p:first-child { display: none; }
+  /* Nog wat lucht eruit: het paard viel met 5 px onder de vouw (59e review). */
+  .held { gap: 4px; }
+  .heldPip { margin: 0; }
+  .heldTekst { gap: 4px; }
+}
