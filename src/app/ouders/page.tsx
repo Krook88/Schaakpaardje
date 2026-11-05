@@ -1,5 +1,6 @@
 'use client'
 
+import { Beginscherm } from '@/ui/Beginscherm'
 import { useState } from 'react'
 import { WereldWapen } from '@/ui/beelden'
 import Link from 'next/link'
@@ -120,6 +121,8 @@ function OuderPaneel() {
               Naar de startpagina
             </Link>
           </section>
+          {/* Op het beginscherm: voor de ouder, niet voor het kind (geen knop op het kindscherm). */}
+          <Beginscherm kaart />
           <section className="card stack">
             <h2>Privacy</h2>
             <TellenSchakel />
@@ -313,6 +316,8 @@ function OuderPaneel() {
             </span>
           </label>
         </section>
+
+        <Beginscherm kaart />
 
         <section className="card stack">
           <h2>Privacy</h2>
