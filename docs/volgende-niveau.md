@@ -3,7 +3,8 @@
 Geheugen van de `/loop`. Elke ronde: lees dit, pak het hoogste rode punt, bouw, bewijs, review, werk bij.
 
 ## Open vragen voor Kaj
-- **Traject 2 live zetten?** Rondes 36–48 staan op `volgende-niveau` (bots met gezichten, geslagen stukken, korte telefoons, vijf nieuwe Pip-zinnen die bij publiceren worden ingesproken). De wow-cijfers schommelen weer rond 5–8 per reviewer; de voorstellen herhalen zich. Loop gepauzeerd.
+- ~~Traject 2 live zetten?~~ Gedaan op 5 nov (PR #33, publicatie groen).
+- **Traject 2 (oud):** Rondes 36–48 staan op `volgende-niveau` (bots met gezichten, geslagen stukken, korte telefoons, vijf nieuwe Pip-zinnen die bij publiceren worden ingesproken). De wow-cijfers schommelen weer rond 5–8 per reviewer; de voorstellen herhalen zich. Loop gepauzeerd.
 - **Doorgaan of afronden?** Na 35 rondes schommelen de wow-cijfers per meting (eerste les: layout 8, conversie 5 op hetzelfde scherm). Laatste meting staand/dwars: start 7/8, les 5–8, wereld af 8/7, kaart 7/5, spel 6–7. De ideeën die nog openstaan zijn groter (bots met reacties per zet, de kaart dwars naast het pad). Loop gepauzeerd tot je besluit.
 
 ## Besluiten van Kaj
@@ -119,3 +120,6 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 47: 62e review (codebase traject 2) verwerkt: Game.geslagen in de engine met test, verrast reset, schermlezertekst.
 - Ronde 48: Pip-maat via --pip-maat in plaats van !important van buitenaf.
 - Wow-meting na ronde 48 (375/844): start 7/8, les 5–6, kaart 7/6, spel 5/6, wereld af niet gezien. Loop gepauzeerd voor Kaj.
+- Traject 2 live (PR #33, 5 nov). Afwegingen voor de open punten:
+  - "Help me even" onder de vouw op korte telefoons: bewust zo. De knoppen boven het bord zetten duwt de onderste rij weg, en daar vraagt de eerste opgave om. Het bord gaat voor de knop: na een misser verschijnt de hulp vanzelf.
+  - Breekpunten in de CSS op één plek: uitgesteld. Zonder PostCSS custom media is dat een herschrijving van vier modules zonder zichtbare winst voor het kind. De doorloop bewaakt de formaten.
