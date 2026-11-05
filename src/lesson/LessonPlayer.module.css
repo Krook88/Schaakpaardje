@@ -372,7 +372,7 @@
    onderste bordrij onder de vouw, precies de rij die in zin 2 oplicht (60e review). */
 @media (max-width: 499px) and (orientation: portrait) and (max-height: 760px) {
   /* Klein gezicht in plaats van geen: zonder gezicht leek in toren-1 de toren te praten (61e review). */
-  .vertelStack [data-pip-gezicht] { width: 44px !important; height: 44px !important; min-width: 44px; }
+  .vertelStack { --pip-maat: 44px; }
   .vertelStack .vakPip p { font-size: 0.95rem; padding-top: 8px; padding-bottom: 8px; }
   /* Het vertelbord wordt niet aangetikt; het mag iets kleiner zodat het heel in beeld
      staat. 325 px = kop (~84) + fasebalk (~48) + ballon van drie regels (~90) + rij met

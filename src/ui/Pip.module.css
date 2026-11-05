@@ -1,7 +1,8 @@
 .wrap { display: flex; align-items: flex-start; gap: 12px; }
 .pip {
   position: relative; flex: 0 0 auto;
-  width: 76px; height: 76px; border-radius: 50%;
+  /* --pip-maat: een scherm mag Pip kleiner zetten zonder !important (codebase-review). */
+  width: var(--pip-maat, 76px); height: var(--pip-maat, 76px); border-radius: 50%;
   border: 3px solid var(--line); background: var(--grass-soft);
   display: grid; place-items: center; cursor: pointer; padding: 0;
   box-shadow: var(--shadow); animation: adem 4s ease-in-out infinite;
@@ -48,7 +49,7 @@
   transform: rotate(45deg);
 }
 /* 64 px: Pip is een knop (nog eens horen), en dit is een scherm van het kind (32e review). */
-.klein .pip { width: 64px; height: 64px; }
+.klein .pip { width: var(--pip-maat, 64px); height: var(--pip-maat, 64px); }
 .klein .gezicht { font-size: 32px; }
 /* Op de kleine Pip nog een maatje kleiner, anders is het speldje half zo groot als
    het gezicht waar het bij hoort. */
@@ -121,9 +122,9 @@
   :root:not([data-theme='light']) .luisterIcoon { filter: brightness(0); }
 }
 :root[data-theme='dark'] .luisterIcoon { filter: brightness(0); }
-.groot .pip { width: 112px; height: 112px; }
+.groot .pip { width: var(--pip-maat, 112px); height: var(--pip-maat, 112px); }
 /* Op een laag scherm duwde de grote Pip "Verder" onder de vouw (39e review). */
-@media (max-height: 779px) { .groot .pip { width: 76px; height: 76px; } }
+@media (max-height: 779px) { .groot .pip { width: var(--pip-maat, 76px); height: var(--pip-maat, 76px); } }
 
 /* Zacht krimpen na de kennismaking, geen schok (39e review). */
 .pip { transition: width 250ms ease, height 250ms ease; }
