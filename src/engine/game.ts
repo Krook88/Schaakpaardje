@@ -39,6 +39,20 @@ export class Game {
   get history(): string[] {
     return this.chess.history()
   }
+  /**
+   * Wat er van elke kleur echt geslagen is, uit de zetten zelf. Niet uit de stelling
+   * tellen: bij promotie verdwijnt er een pion zonder dat hij geslagen is (codebase-review
+   * traject 2). En passant telt als pion. Zwaarste stuk eerst.
+   */
+  get geslagen(): { w: PieceType[]; b: PieceType[] } {
+    const uit: { w: PieceType[]; b: PieceType[] } = { w: [], b: [] }
+    for (const z of this.chess.history({ verbose: true })) {
+      if (z.captured) uit[z.color === 'w' ? 'b' : 'w'].push(z.captured as PieceType)
+    }
+    const volgorde: PieceType[] = ['q', 'r', 'b', 'n', 'p', 'k']
+    for (const k of ['w', 'b'] as const) uit[k].sort((a, c) => volgorde.indexOf(a) - volgorde.indexOf(c))
+    return uit
+  }
   /** Staat de speler die aan zet is schaak? Goedkoper dan de volledige status(). */
   get inCheck(): boolean {
     return this.chess.inCheck()

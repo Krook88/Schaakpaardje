@@ -115,3 +115,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 45: speelscherm op korte telefoons — Pip-ballon en tegenstander op één rij, hele bord in beeld (doorloop 320/375).
 - Ronde 46: het oogje in de fasebalk als klaar-knop (groen, doorgetrokken) in plaats van gestippeld.
 - Ronde 46: 61e review verwerkt (Pip klein in beeld in plaats van weg; 320 breed zonder tegenstander).
+- Ronde 47: 62e review (codebase traject 2) verwerkt: Game.geslagen in de engine met test, verrast reset, schermlezertekst.

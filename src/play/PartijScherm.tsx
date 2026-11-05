@@ -27,7 +27,9 @@ import {
   SCHAAK_VAN_JOU,
   ZET_TERUGGENOMEN,
   pipZinnen,
- BOT_HEEFT_GEZET, BOT_SLOEG } from '@/content/voice'
+  BOT_HEEFT_GEZET,
+  BOT_SLOEG,
+} from '@/content/voice'
 import { PIECE_NAME, type PieceType, type Square } from '@/engine/board'
 import { Game, blunderVerlies, isPromotie, materialBalance } from '@/engine/game'
 import { getBot, KidBot } from '@/engine/bots'
@@ -207,7 +209,7 @@ export function PartijScherm({ botId }: { botId: string }) {
       setBotDenkt(false)
       // Eerst de gewone zin; controleerEinde zet er een schaak- of eindzin overheen.
       if (gedaanDoorBot) {
-        setZin(gedaanDoorBot.isCapture ? BOT_SLOEG[0] : BOT_HEEFT_GEZET[0])
+        setZin(gedaanDoorBot.isCapture ? BOT_SLOEG : BOT_HEEFT_GEZET)
         setStemming(gedaanDoorBot.isCapture ? 'moedigt' : 'blij')
       }
       if (controleerEinde(game)) return
@@ -334,6 +336,9 @@ export function PartijScherm({ botId }: { botId: string }) {
     // Na een uitslag is terugnemen geen troost waard: dan troostte Pip de winnaar, alsof
     // winnen een fout was. Herreview negende review.
     setZin(uitslag ? kies(PARTIJ_START, 'start') : ZET_TERUGGENOMEN)
+    // Geen verrast gezicht over een slag die er niet meer is (codebase-review traject 2).
+    if (verrastTimer.current) clearTimeout(verrastTimer.current)
+    setBotVerrast(false)
     setStemming(uitslag ? 'blij' : 'moedigt')
   }, [samen, stopDenken, uitslag])
 
@@ -354,11 +359,17 @@ export function PartijScherm({ botId }: { botId: string }) {
     setSamenWinnaar(null)
     setZetten(0)
     setZin(kies(PARTIJ_START, 'start'))
+    // Geen verrast gezicht over een slag die er niet meer is (codebase-review traject 2).
+    if (verrastTimer.current) clearTimeout(verrastTimer.current)
+    setBotVerrast(false)
     setStemming('blij')
   }, [opzet?.fen, stopDenken])
 
   useEffect(() => {
     setZin(kies(PARTIJ_START, 'start'))
+    // Geen verrast gezicht over een slag die er niet meer is (codebase-review traject 2).
+    if (verrastTimer.current) clearTimeout(verrastTimer.current)
+    setBotVerrast(false)
     if (samen) setZin(SAMEN_KIES)
     void speak(bot ? `Je speelt tegen ${bot.naam}. ${bot.tagline}` : SAMEN_KIES)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -373,21 +384,12 @@ export function PartijScherm({ botId }: { botId: string }) {
   const balans = materialBalance(fen)
   // Wat er van elke kant van het bord af is, als stukjes naast de stand: een slag zag je
   // eerst nergens, alleen "Je staat 1 achter" (wow-meting na ronde 41).
+  // Uit de zetten zelf (Game.geslagen), niet uit de stelling: promotie is geen slag.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fen verandert bij elke zet
   const geslagen = useMemo(() => {
-    const tel = (f: string) => {
-      const n: Record<string, number> = {}
-      for (const c of f.split(' ')[0]) if (/[pnbrqPNBRQ]/.test(c)) n[c] = (n[c] ?? 0) + 1
-      return n
-    }
-    const begin = tel(opzet?.fen ?? 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
-    const nu = tel(fen)
-    const lijst = (kleur: 'w' | 'b') =>
-      (['q', 'r', 'b', 'n', 'p'] as const).flatMap((t) => {
-        const c = kleur === 'w' ? t.toUpperCase() : t
-        return Array(Math.max(0, (begin[c] ?? 0) - (nu[c] ?? 0))).fill(t) as PieceType[]
-      })
-    return { vanZwart: lijst('b'), vanWit: lijst('w') }
-  }, [fen, opzet?.fen])
+    const g = gameRef.current.geslagen
+    return { vanZwart: g.b, vanWit: g.w }
+  }, [fen])
   const aanZet = gameRef.current.turn
   const wie = spelers?.[aanZet]
 
@@ -494,10 +496,10 @@ export function PartijScherm({ botId }: { botId: string }) {
         {!samen && !uitslag && (geslagen.vanZwart.length > 0 || geslagen.vanWit.length > 0) && (
           <div className={`row ${styles.geslagen}`}>
             <span>
-              {geslagen.vanZwart.length > 0 && <>Jij pakte <span className={styles.geslagenZwart} aria-hidden="true">{geslagen.vanZwart.map((t) => GLYPH[t]).join('')}</span></>}
+              {geslagen.vanZwart.length > 0 && <>Jij pakte <span className={styles.geslagenZwart} aria-hidden="true">{geslagen.vanZwart.map((t) => GLYPH[t]).join('')}</span><span className="visually-hidden">{geslagen.vanZwart.map((t) => PIECE_NAME[t]).join(', ')}</span></>}
             </span>
             <span>
-              {geslagen.vanWit.length > 0 && <>Kwijt <span className={styles.geslagenWit} aria-hidden="true">{geslagen.vanWit.map((t) => GLYPH[t]).join('')}</span></>}
+              {geslagen.vanWit.length > 0 && <>Kwijt <span className={styles.geslagenWit} aria-hidden="true">{geslagen.vanWit.map((t) => GLYPH[t]).join('')}</span><span className="visually-hidden">{geslagen.vanWit.map((t) => PIECE_NAME[t]).join(', ')}</span></>}
             </span>
           </div>
         )}

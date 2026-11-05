@@ -375,12 +375,14 @@
   .vertelStack [data-pip-gezicht] { width: 44px !important; height: 44px !important; min-width: 44px; }
   .vertelStack .vakPip p { font-size: 0.95rem; padding-top: 8px; padding-bottom: 8px; }
   /* Het vertelbord wordt niet aangetikt; het mag iets kleiner zodat het heel in beeld
-     staat (325 px: kop, fasen, ballon en knoppen erboven). */
+     staat. 325 px = kop (~84) + fasebalk (~48) + ballon van drie regels (~90) + rij met
+     "1 van 3" en Verder (~64) + tussenruimtes; gemeten op 375×667, bewaakt in de doorloop. */
   .vertelStack > .vakBord { max-width: min(100%, calc(100svh - 325px)) !important; margin-inline: auto; width: 100%; }
   /* Niet rand-tot-rand: dan ontsnapte het bord aan die maat. */
   .vertelStack > .vakBord > * { margin-inline: 0 !important; width: 100% !important; }
 }
-/* 320 breed: de ballon is hier een regel hoger, het vertelbord iets kleiner. */
+/* 320 breed: de ballon is hier een regel hoger (~+40 px), het vertelbord iets kleiner.
+   380 = 325 + die regel + marge; gemeten op 320×640, bewaakt in de doorloop. */
 @media (max-width: 340px) and (orientation: portrait) and (max-height: 760px) {
   .vertelStack > .vakBord { max-width: min(100%, calc(100svh - 380px)) !important; }
 }
