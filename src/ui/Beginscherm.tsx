@@ -16,6 +16,19 @@ import { useEffect, useState } from 'react'
  */
 type InstallVraag = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }
 
+// De installatievraag komt één keer per paginalading, vaak vóór dit scherm er is (een
+// ouder landt op / en gaat naar /ouders). Daarom op moduleniveau opvangen; dit bestand
+// wordt via de startpagina en het ouderscherm geladen (codebase-review).
+let bewaard: InstallVraag | null = null
+const luisteraars = new Set<(v: InstallVraag | null) => void>()
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault()
+    bewaard = e as InstallVraag
+    luisteraars.forEach((f) => f(bewaard))
+  })
+}
+
 export function Beginscherm({ tekst = 'Zet op je beginscherm', kaart = false }: { tekst?: string; kaart?: boolean }) {
   const [vraag, setVraag] = useState<InstallVraag | null>(null)
   const [ios, setIos] = useState(false)
@@ -30,20 +43,18 @@ export function Beginscherm({ tekst = 'Zet op je beginscherm', kaart = false }: 
       setKlaar(true)
       return
     }
-    // iPadOS meldt zich als Mac, maar heeft een touchscherm.
+    // iPadOS meldt zich als Mac. Chrome op iOS in desktopmodus krijgt ook de uitleg; dat
+    // klopt, want sinds iOS 16.4 kan "Zet op beginscherm" daar ook., maar heeft een touchscherm.
     const ua = navigator.userAgent
     const isIos = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
     const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua)
     setIos(isIos && isSafari)
-    const opVraag = (e: Event) => {
-      e.preventDefault()
-      setVraag(e as InstallVraag)
-    }
+    setVraag(bewaard)
+    luisteraars.add(setVraag)
     const opGeinstalleerd = () => setKlaar(true)
-    window.addEventListener('beforeinstallprompt', opVraag)
     window.addEventListener('appinstalled', opGeinstalleerd)
     return () => {
-      window.removeEventListener('beforeinstallprompt', opVraag)
+      luisteraars.delete(setVraag)
       window.removeEventListener('appinstalled', opGeinstalleerd)
     }
   }, [])
@@ -58,10 +69,16 @@ export function Beginscherm({ tekst = 'Zet op je beginscherm', kaart = false }: 
         style={{ minHeight: 56, gap: 10 }}
         onClick={async () => {
           if (vraag) {
-            await vraag.prompt()
-            const keuze = await vraag.userChoice
-            if (keuze.outcome === 'accepted') setKlaar(true)
+            // Eerst weg: een tweede tik zou prompt() nog eens aanroepen (InvalidStateError).
+            const v = vraag
+            bewaard = null
             setVraag(null)
+            try {
+              await v.prompt()
+              if ((await v.userChoice).outcome === 'accepted') setKlaar(true)
+            } catch {
+              // De browser wilde niet; dan staat er gewoon geen knop meer.
+            }
           } else {
             setUitleg((u) => !u)
           }

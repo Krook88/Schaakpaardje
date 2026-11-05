@@ -1,5 +1,7 @@
 'use client'
 
+// Laadt Beginscherm al bij elke pagina, zodat de installatievraag niet gemist wordt.
+import './Beginscherm'
 import { useEffect } from 'react'
 
 /**
