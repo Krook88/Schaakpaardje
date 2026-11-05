@@ -1,5 +1,6 @@
 'use client'
 
+import { Maatje } from '@/ui/Maatje'
 import { Beginscherm } from '@/ui/Beginscherm'
 import { useState } from 'react'
 import { WereldWapen } from '@/ui/beelden'
@@ -144,13 +145,13 @@ function OuderPaneel() {
           <p className="muted" style={{ margin: 0 }}>
             {profielen.length > 1 ? (
               <>
-                Hieronder zie je {profiel.avatar} {profiel.naam}. Een ander kind kies je op de
+                Hieronder zie je <Maatje emoji={profiel.avatar} maat={24} /> {profiel.naam}. Een ander kind kies je op de
                 startpagina bij &ldquo;Wie speelt er?&rdquo;.
               </>
             ) : (
               <>
                 Elk kind krijgt een eigen profiel, met een eigen niveau en eigen sterren.
-                Hieronder zie je {profiel.avatar} {profiel.naam}.
+                Hieronder zie je <Maatje emoji={profiel.avatar} maat={24} /> {profiel.naam}.
               </>
             )}
           </p>

@@ -54,3 +54,12 @@ export type BotStemming = 'blij' | 'denkt' | 'verrast'
 /** De tekening van een bot; 'blij' is de gewone tekening (scripts/bots-tekenen.py). */
 export const botBeeld = (id: string, stemming: BotStemming = 'blij') =>
   `${BASIS}/illustraties/bots/bot-${id}${stemming === 'blij' ? '' : `-${stemming}`}.svg`
+
+/** Emoji uit AVATARS (src/progress/store.ts) → bestandsnaam van de tekening. */
+const MAATJES: Record<string, string> = {
+  '🐴': 'paard', '🦊': 'vos', '🐻': 'beer', '🐰': 'konijn',
+  '🦉': 'uil', '🐢': 'schildpad', '🐝': 'bij', '🦄': 'eenhoorn',
+}
+/** De tekening van een maatje (scripts/maatjes-tekenen.py), of null voor een onbekende emoji. */
+export const maatjeBeeld = (emoji: string): string | null =>
+  Object.hasOwn(MAATJES, emoji) ? `${BASIS}/illustraties/maatjes/maatje-${MAATJES[emoji]}.svg` : null

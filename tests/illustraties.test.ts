@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { WERELDEN } from '../src/content'
-import { botBeeld, icoonBeeld, kaartBeeld, lesIcoon, pipBeeld, pipLos, wapenBeeld, type IcoonNaam } from '../src/ui/beelden'
+import { botBeeld, maatjeBeeld, icoonBeeld, kaartBeeld, lesIcoon, pipBeeld, pipLos, wapenBeeld, type IcoonNaam } from '../src/ui/beelden'
 import type { PipStemming } from '../src/ui/Pip'
 import { BOTS } from '../src/engine/bots'
+import { AVATARS } from '../src/progress/store'
 
 /**
  * Elke wereld een wapen en twee kaartstroken, elke stemming twee Pips. Komt er een
@@ -15,6 +16,13 @@ const bestaat = (url: string) => existsSync(join(process.cwd(), 'public', url.re
 const STEMMINGEN: PipStemming[] = ['blij', 'juicht', 'verrast', 'denkt', 'moedigt', 'trots', 'slaapt']
 
 describe('illustraties', () => {
+  it.each([...AVATARS])('maatje %s heeft een tekening (scripts/maatjes-tekenen.py)', (emoji) => {
+    const url = maatjeBeeld(emoji)
+    expect(url, emoji).not.toBeNull()
+    expect(bestaat(url!), url!).toBe(true)
+  })
+  it('een onbekend maatje geeft null', () => expect(maatjeBeeld('🐙')).toBeNull())
+
   // Een bot zonder tekening gaf stil een kapot plaatje met alt="" (codebase-review).
   it.each(BOTS.map((b) => b.id))('bot %s heeft een tekening (scripts/bots-tekenen.py)', (id) => {
     for (const st of ['blij', 'denkt', 'verrast'] as const) expect(bestaat(botBeeld(id, st)), botBeeld(id, st)).toBe(true)

@@ -90,9 +90,9 @@ export function Beginscherm({ tekst = 'Zet op je beginscherm', kaart = false }: 
         {tekst}
       </button>
       {ios && uitleg && (
-        <ol className="muted" style={{ margin: 0, paddingLeft: 22, lineHeight: 1.5 }}>
+        <ol style={{ margin: 0, paddingLeft: 22, lineHeight: 1.5 }}>
           <li>
-            Tik onderaan op <strong>Deel</strong> (het vierkantje met het pijltje omhoog).
+            Tik op <strong>Deel</strong> (het vierkantje met het pijltje omhoog; op de iPhone onderaan, op de iPad bovenaan).
           </li>
           <li>
             Kies <strong>Zet op beginscherm</strong> en tik op <strong>Voeg toe</strong>.

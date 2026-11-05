@@ -408,7 +408,7 @@ async function samenSpelenKentDeWinnaar() {
   const naam = 'samen spelen: zet blijft staan, bord draait, winnaar heeft een naam, telt één keer'
   await page.goto(`${URL}/spelen/samen/`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(600)
-  await page.getByRole('button', { name: 'Kies 🦊' }).click()
+  await page.getByRole('button', { name: 'Kies vos' }).click()
   await page.getByRole('button', { name: 'Beginnen', exact: true }).click()
   await page.waitForTimeout(400)
   const zet = async (a, z) => {
@@ -444,7 +444,9 @@ async function samenSpelenKentDeWinnaar() {
   await zet('g2', 'g4')
   await zet('d8', 'h4')
   const kop = (await page.locator('.card h2').first().innerText().catch(() => '')).replace(/\s+/g, ' ')
-  if (!/🦊 Vos wint/.test(kop)) return meld(naam, false, `de uitslag zei "${kop}"`)
+  // Het maatje staat er sinds ronde 50 als tekening, niet meer als emoji.
+  const vosErbij = await page.locator('.card h2 img[src*="maatje-vos"]').first().count()
+  if (!/Vos wint/.test(kop) || !vosErbij) return meld(naam, false, `de uitslag zei "${kop}", tekening ${vosErbij ? 'ja' : 'nee'}`)
   // Terugnemen na mat en opnieuw mat zetten is nog steeds één partij.
   await page.getByRole('button', { name: /Terugnemen/ }).click()
   await page.waitForTimeout(1300)

@@ -124,3 +124,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
   - "Help me even" onder de vouw op korte telefoons: bewust zo. De knoppen boven het bord zetten duwt de onderste rij weg, en daar vraagt de eerste opgave om. Het bord gaat voor de knop: na een misser verschijnt de hulp vanzelf.
   - Breekpunten in de CSS op één plek: uitgesteld. Zonder PostCSS custom media is dat een herschrijving van vier modules zonder zichtbare winst voor het kind. De doorloop bewaakt de formaten.
 - Ronde 49: knop "Zet op je beginscherm" (startpagina onder de beloftes, ouderscherm), app-iconen van Pip (192, 512, maskable, apple-touch), manifest zonder vaste staande stand.
+- Ronde 50: maatjes getekend en overal in plaats van emoji; 63e review verwerkt.
