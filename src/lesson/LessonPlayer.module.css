@@ -165,6 +165,8 @@
      las als "nog niet gedaan", en stippellijn betekent sinds ronde 30 "kan nu niet" (60e review). */
   background: var(--grass-soft);
   border: 2px solid var(--grass);
+  /* Even groot als de andere fasen: groter las als "hier ben je" (61e review). Het tikvlak
+     blijft 64 px door de binnenmarge. */
   box-shadow: var(--shadow);
   color: inherit;
 }
@@ -369,11 +371,16 @@
    de luisterknop blijft) en iets kleinere letters. Een ballon van vier regels duwde de
    onderste bordrij onder de vouw, precies de rij die in zin 2 oplicht (60e review). */
 @media (max-width: 499px) and (orientation: portrait) and (max-height: 760px) {
-  .vertelStack [data-pip-gezicht] { display: none; }
+  /* Klein gezicht in plaats van geen: zonder gezicht leek in toren-1 de toren te praten (61e review). */
+  .vertelStack [data-pip-gezicht] { width: 44px !important; height: 44px !important; min-width: 44px; }
   .vertelStack .vakPip p { font-size: 0.95rem; padding-top: 8px; padding-bottom: 8px; }
   /* Het vertelbord wordt niet aangetikt; het mag iets kleiner zodat het heel in beeld
      staat (325 px: kop, fasen, ballon en knoppen erboven). */
   .vertelStack > .vakBord { max-width: min(100%, calc(100svh - 325px)) !important; margin-inline: auto; width: 100%; }
   /* Niet rand-tot-rand: dan ontsnapte het bord aan die maat. */
   .vertelStack > .vakBord > * { margin-inline: 0 !important; width: 100% !important; }
+}
+/* 320 breed: de ballon is hier een regel hoger, het vertelbord iets kleiner. */
+@media (max-width: 340px) and (orientation: portrait) and (max-height: 760px) {
+  .vertelStack > .vakBord { max-width: min(100%, calc(100svh - 380px)) !important; }
 }
