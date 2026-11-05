@@ -194,7 +194,9 @@ export function LessonPlayer({
         void wachtTotUitgesproken().then(() => {
           if (mijn === doorschakeling.current) doe()
         })
-      }, 700)
+        // 1300 en niet 700: het eerste succes (vinkjes, glinsters) was weg voor iemand het
+        // zag (wow-meting traject 4). Een stilte na een goed antwoord mag even duren.
+      }, 1300)
     },
     [later],
   )
@@ -588,7 +590,11 @@ export function LessonPlayer({
                 {WERELDEN.filter((w) => w.id === wereld.id || wereldIsAf(w.id, voortgang)).length} van de {WERELDEN.length} af
                 {nieuweWereld && (
                   <>
-                    {' · '}nu open: <WereldWapen id={nieuweWereld.id} maat={24} /> <strong>{nieuweWereld.naam}</strong>
+                    {' · '}
+                    {/* Als één geheel: anders brak "nu" en "open:" over twee regels (wow-meting). */}
+                    <span style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      nu open: <WereldWapen id={nieuweWereld.id} maat={24} /> <strong>{nieuweWereld.naam}</strong>
+                    </span>
                   </>
                 )}
               </p>
@@ -851,7 +857,7 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
               aria-label="Laat de uitleg nog eens zien"
               title="Laat de uitleg nog eens zien"
             >
-              <Icoon naam={FASE_BEELD[f]} maat={30} />
+              <Icoon naam={FASE_BEELD[f]} maat={24} />
             </button>
           )
         }

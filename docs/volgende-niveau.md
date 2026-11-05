@@ -129,3 +129,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 51: startpagina — Pip als stuk op het demobord; wereld af — dichte wapens in eigen wereldkleur, volgende met stippelring, "nu open: Torenburcht" in de feestkaart; Pip met hele lijf getekend (wijst, juicht, wacht).
 - Ronde 52: kaart — trofeeënplank als houten lat onder de wapens (72 px), lucht boven de plank.
 - Ronde 53: eerste les — wereldband met de getekende kaartstrook (licht en donker), gehaalde opgaven worden sterretjes die even opspringen.
+- Ronde 54: wow-meting traject 4 (layout/conversie): start 7,5/8, les 7/8,5 (na opgave 6), wereld af 8/8, kaart 7,5/7. Verwerkt: donkere wereldband met strook, "nu open" als geheel, oogje in fasebalk klein zichtbaar, plank met nerf en namen los van de lat, pauze na een goed antwoord 1,3 s, startpagina één Pip-gezicht (dubbele React-sleutel; doorloopregel).

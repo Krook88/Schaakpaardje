@@ -46,12 +46,12 @@
 :root[data-theme='dark'] .wereldband { background-image: var(--strook-donker, none); text-shadow: 0 0 6px #000, 0 0 2px #000; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .wereldband {
-    background: hsl(var(--toon) 26% 20%);
+    background-color: hsl(var(--toon) 26% 20%);
     border-color: hsl(var(--toon) 22% 32%);
   }
 }
 :root[data-theme='dark'] .wereldband {
-  background: hsl(var(--toon) 26% 20%);
+  background-color: hsl(var(--toon) 26% 20%);
   border-color: hsl(var(--toon) 22% 32%);
 }
 
@@ -170,13 +170,12 @@
   font-size: 22px;
   padding: 0;
   cursor: pointer;
-  /* Een gewone knop met een groen randje: de kijkfase is klaar en je mag terug. Gestippeld
-     las als "nog niet gedaan", en stippellijn betekent sinds ronde 30 "kan nu niet" (60e review). */
-  background: var(--grass-soft);
-  border: 2px solid var(--grass);
-  /* Even groot als de andere fasen: groter las als "hier ben je" (61e review). Het tikvlak
-     blijft 64 px door de binnenmarge. */
-  box-shadow: var(--shadow);
+  /* Groen: de kijkfase is klaar en je mag terug (gestippeld las als "nog niet gedaan", 60e
+     review). Zichtbaar een klein rondje (40 px) met een vinkje-kleur, het tikvlak blijft 64 px: groot
+     las als "hier ben je" terwijl de huidige fase kleiner was (wow-meting). */
+  background: radial-gradient(circle, var(--grass-soft) 19px, var(--grass) 20px, var(--grass) 21px, transparent 22px);
+  border: 0;
+  box-shadow: none;
   color: inherit;
 }
 .nogEens:active { transform: scale(0.94); }
@@ -327,7 +326,7 @@
 /* De getinte achtergrond loopt door tot onder de knoppen (39e review: naad door "Volgende les"). */
 .wereldpagina { min-height: 100dvh; }
 .wereldAfTel { margin: 0; font-weight: 700; }
-.wereldAfOpen { margin: 0; display: inline-flex; align-items: center; gap: 6px; justify-content: center; font-weight: 600; }
+.wereldAfOpen { margin: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; row-gap: 2px; justify-content: center; font-weight: 600; }
 @media (max-height: 720px) and (max-width: 600px) { .wereldAfTel { display: none; } }
 
 /* Wereld af dwars (rondes 23–24, 47e–49e review). Links de feestkaart, rechts Pip met zijn

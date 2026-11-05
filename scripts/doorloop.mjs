@@ -1262,6 +1262,21 @@ for (const [w, h] of [[320, 640], [375, 667]]) {
   await ctx.close()
 }
 
+// Startpagina: na een tik op het proefbord staat er één Pip-gezicht naast de ballon. Met
+// gelijke sleutels bleef het oude gezicht staan: drie Pips in beeld (wow-meting traject 4).
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const stip = await p.evaluate(() => [...document.querySelectorAll('[data-square]')].find((x) => /heen/.test(x.getAttribute('aria-label') || ''))?.dataset.square)
+  await p.locator(`[data-square="${stip}"]`).click()
+  await p.waitForTimeout(400)
+  const n = await p.evaluate(() => [...document.querySelectorAll('img')].filter((i) => /pip-los-/.test(i.src) && !i.closest('[data-square]') && i.getBoundingClientRect().width > 0).length)
+  meld('startpagina: na een tik één Pip-gezicht bij de ballon', n === 1, `${n} gezichten`)
+  await ctx.close()
+}
+
 // Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
 // waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
 // niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.
