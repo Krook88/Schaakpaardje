@@ -10,6 +10,11 @@ Schrijft naar public/illustraties/pip/:
                            eronder. Voor de kaarthalte en de held, waar hij op de grond
                            van een landschap staat en een plankje een vreemd meubel is.
 
+  pip-heel-<houding>.svg   Pip met zijn hele lijf (kop, romp, vier korte beentjes
+                           met hoefjes, staart): 'wijst' (naar een bord rechtsonder),
+                           'juicht' (voorhoeven omhoog) en 'wacht' (met een vlaggetje).
+                           Dezelfde kop, kleuren en randen; alleen kleiner op het vel.
+
 Draaien: python3 scripts/pip-tekenen.py
 """
 import math
@@ -171,5 +176,141 @@ pip('slaapt', 'Pip slaapt', 'slap',
     zet(20, 58, 12) + zet(40, 34, 16) + zet(66, 6, 20),
     move='translate(0 4) ',
     knop_extra=zet(26, 52, 11) + zet(42, 28, 14) + zet(64, 0, 17))
+
+
+# ---------------------------------------------------------------------------
+# Pip met zijn hele lijf. Dezelfde kop als hierboven (zelfde paden, in de kop-ruimte
+# van 200x200), met een speelgoedromp eraan. Alles wordt in "lijf-ruimte" getekend
+# (ongeveer 300x300) en daarna op 200x200 geschaald; de randen zijn daarom iets dikker
+# (H_HALO, H_LIJN), zodat ze op het vel even zwaar ogen als bij de losse kop.
+H_HALO, H_LIJN = 28, 14
+VACHT_ACHTER = '#cf7a2a'  # de twee benen aan de verre kant, een tikje donkerder
+
+
+def pil(x1, y1, x2, y2, w, plat=False):
+    """Een staafje met ronde uiteinden van (x1,y1) naar (x2,y2); plat=True: begin recht."""
+    dx, dy = x2 - x1, y2 - y1
+    n = math.hypot(dx, dy)
+    nx, ny = -dy / n * w / 2, dx / n * w / 2
+    r = w / 2
+    a1, a2 = (x1 + nx, y1 + ny), (x1 - nx, y1 - ny)
+    b1, b2 = (x2 + nx, y2 + ny), (x2 - nx, y2 - ny)
+    begin = f'L{a1[0]:.1f} {a1[1]:.1f}' if plat else f'A{r:.1f} {r:.1f} 0 0 0 {a1[0]:.1f} {a1[1]:.1f}'
+    return (f'M{a2[0]:.1f} {a2[1]:.1f}{begin}L{b1[0]:.1f} {b1[1]:.1f}'
+            f'A{r:.1f} {r:.1f} 0 0 0 {b2[0]:.1f} {b2[1]:.1f}Z')
+
+
+def been(x1, y1, x2, y2, w=26, hoef=15):
+    """(silhouet, vacht, hoef) voor één been; de hoef zit aan het (x2,y2)-eind."""
+    n = math.hypot(x2 - x1, y2 - y1)
+    t = (n - hoef) / n
+    hx, hy = x1 + (x2 - x1) * t, y1 + (y2 - y1) * t
+    return pil(x1, y1, x2, y2, w), pil(hx, hy, x2, y2, w, plat=True)
+
+
+# De romp: borst vooraan (links, onder de snuit), buik, bolle bil achteraan.
+ROMP = ('M80 150C64 174 66 208 92 224C120 238 200 240 236 230C270 220 282 190 270 166'
+        'C258 144 230 138 204 142C180 146 160 150 138 146Z')
+STAART = 'M262 160C284 140 312 148 314 176C316 200 300 214 286 226C292 206 290 190 272 184Z'
+STAART_LIJN = 'M276 166C290 160 302 168 302 182'
+
+
+def omlijn(b):
+    """Een been dat vóór de romp langs gaat (niet op de grond), krijgt een eigen lijntje."""
+    return '' if b[3] >= 250 else f' stroke="{L}" stroke-width="5" paint-order="stroke"'
+
+
+def heel(houding, titel, ear, face, rot, benen_achter, benen_voor, *, romp_rot=0, spiegel=False,
+         extra='', voor_extra='', romp_benen=(), romp_achter=(), schaal=.58, dx=-2, dy=24):
+    """benen_*: lijst (x1, y1, x2, y2) in lijf-ruimte; achter = verre kant (donkerder).
+    romp_benen: voorbenen die met de romp meedraaien (bij het steigeren), vóór de borst;
+    romp_achter: zo'n been aan de verre kant, dat achter de romp en de kop langs gaat."""
+    e1, e2 = EARS[ear]
+    i1, i2 = INNER[ear]
+    kopsil = f'<path d="{e1}"/><path d="{e2}"/><path d="{NEK}"/><path d="{MANEN}"/>{HOOFD}{SNUIT}'
+    kt = f'rotate({rot} 116 182)'
+    rt = f'rotate({romp_rot} 236 262)'
+    ba = [been(*b) for b in benen_achter]
+    bv = [been(*b) for b in benen_voor]
+    br = [been(*b) for b in romp_benen]
+    bra = [been(*b) for b in romp_achter]
+    sil = (f'<g transform="{rt}"><g transform="{kt}">{kopsil}</g><path d="{ROMP}"/><path d="{STAART}"/>'
+           + ''.join(f'<path d="{s}"/>' for s, _ in br + bra) + '</g>'
+           + ''.join(f'<path d="{s}"/>' for s, _ in ba + bv))
+    hoeven = lambda bs: ''.join(f'<path d="{h}"/>' for _, h in bs)
+    lijf = f'''<use href="#h" fill="{K['halo']}" stroke="{K['halo']}" stroke-width="{H_HALO}"/>
+<use href="#h" fill="{L}" stroke="{L}" stroke-width="{H_LIJN}"/>
+<g fill="{VACHT_ACHTER}">{''.join(f'<path d="{s}"/>' for s, _ in ba)}</g>
+<g fill="{K['manen']}">{hoeven(ba)}</g>
+<g transform="{rt}">
+<path d="{STAART}" fill="{K['manen']}"/>{lijn(STAART_LIJN, 4).replace('stroke="' + L, 'stroke="#7a4a26')}
+<g transform="{kt}">
+<g fill="{K['vacht']}"><path d="{e1}"/><path d="{e2}"/><path d="{NEK}"/></g>
+<g fill="{K['oorbinnen']}"><path d="{i1}"/><path d="{i2}"/></g>
+<path d="{MANEN}" fill="{K['manen']}"/>
+</g>
+<g fill="{VACHT_ACHTER}">{''.join(f'<path d="{s}"/>' for s, _ in bra)}</g>
+<g fill="{K['manen']}">{hoeven(bra)}</g>
+<path d="{ROMP}" fill="{K['vacht']}"/>
+<path d="M100 214C140 228 200 230 240 220" fill="none" stroke="{L}" stroke-width="4" opacity=".25"/>
+<g transform="{kt}">
+<g fill="{K['vacht']}">{HOOFD}{SNUIT}</g>
+<ellipse cx="57" cy="121" rx="27" ry="20" transform="rotate(-16 57 121)" fill="{K['snuit']}"/>
+<path d="{KUIF}" fill="{K['manen']}"/>
+<ellipse cx="40" cy="110" rx="4.5" ry="6" transform="rotate(-30 40 110)" fill="{L}"/>
+<ellipse cx="120" cy="110" rx="11" ry="7" fill="{K['wang']}" opacity=".5"/>
+{face}
+</g>
+<g fill="{K['vacht']}" stroke="{L}" stroke-width="5" paint-order="stroke">{''.join(f'<path d="{s}"/>' for s, _ in br)}</g>
+<g fill="{K['manen']}">{hoeven(br)}</g>
+</g>
+{voor_extra}
+<g fill="{K['vacht']}">{''.join(f'<path d="{s}"{omlijn(b)}/>' for (s, _), b in zip(bv, benen_voor))}</g>
+<g fill="{K['manen']}">{hoeven(bv)}</g>'''
+    schaduw = f'<ellipse cx="170" cy="268" rx="98" ry="10" fill="{L}" opacity=".16"/>'
+    plaats = f'translate({dx} {dy}) scale({schaal})'
+    if spiegel:
+        plaats = f'translate({200 - dx} {dy}) scale({-schaal} {schaal})'
+    body = f'<g transform="{plaats}">{schaduw}{lijf}</g>{extra}'
+    s = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-labelledby="t"><title id="t">{titel}</title>
+<defs><g id="h">{sil}</g></defs>
+<g stroke-linejoin="round" stroke-linecap="round">
+{body}
+</g></svg>'''
+    s = '\n'.join(l.strip() for l in s.splitlines())
+    open(os.path.join(OUT, f'pip-heel-{houding}.svg'), 'w').write(s)
+
+
+# Staande beentjes: (heup/schouder, hoef). Grond op y=262.
+VOOR_VER, VOOR_DICHT = (122, 200, 124, 260), (96, 200, 94, 262)
+ACHTER_VER, ACHTER_DICHT = (218, 200, 222, 260), (244, 200, 248, 262)
+
+# Wijst: gespiegeld, dus hij kijkt naar rechts; kop wat omlaag naar het bord, het
+# dichtstbijzijnde voorbeen gestrekt naar voren-omlaag (in de spiegel: rechtsonder).
+heel('wijst', 'Pip wijst naar het bord', 'voor',
+     oog(96, 93, 9, 11) + lijn('M88 69Q98 61 110 67') + lijn('M42 129Q56 142 76 131'), -12,
+     [VOOR_VER, ACHTER_VER], [(98, 196, 30, 236), ACHTER_DICHT], spiegel=True, dx=4)
+
+# Juicht: steigert vrolijk op zijn achterbeentjes, beide voorhoeven de lucht in. De romp
+# draait om de achterhoef omhoog; de kop draait een stukje terug, zodat hij rechtop lacht.
+heel('juicht', 'Pip juicht', 'op',
+     lijn('M92 92Q103 76 114 92', 6) + lijn('M92 66Q103 59 114 65') + GROTE_LACH, -10,
+     [(216, 206, 210, 262)], [(244, 206, 250, 262)], romp_rot=14,
+     romp_benen=[(96, 196, 22, 172)], romp_achter=[(144, 168, 206, 92)], schaal=.56, dx=0, dy=33,
+     extra=ster(20, 44, 10) + ster(174, 26, 9) + ster(184, 70, 6) + ster(24, 150, 6))
+
+# Wacht: staat rustig en kijkt je aan, met een groen vlaggetje in zijn voorhoef.
+STOK = '#7a4a26'
+# Het vlaggetje hangt onder de snuit, zodat het gezicht vrij blijft.
+DOEK = 'M52 162C38 156 26 168 8 162L12 190C28 196 40 184 52 190Z'
+VLAG = (f'<path d="M52 156V252" stroke="{K["halo"]}" stroke-width="{8 + H_LIJN}"/>'
+        f'<path d="{DOEK}" fill="{K["halo"]}" stroke="{K["halo"]}" stroke-width="{H_HALO}"/>'
+        f'<path d="M52 156V252" stroke="{L}" stroke-width="15"/><path d="M52 156V252" stroke="{STOK}" stroke-width="7"/>'
+        f'<path d="{DOEK}" fill="{K["gras"]}" stroke="{L}" stroke-width="7"/>'
+        f'<path d="M44 170C34 166 26 174 16 172" fill="none" stroke="{K["grasl"]}" stroke-width="4"/>'
+        f'<circle cx="52" cy="152" r="7" fill="#f0b429" stroke="{L}" stroke-width="4"/>')
+heel('wacht', 'Pip wacht op je', 'normaal',
+     oog(101, 88, 10, 12) + lijn('M42 129Q57 142 76 131'), 0,
+     [VOOR_VER, ACHTER_VER], [(98, 200, 56, 200), ACHTER_DICHT], voor_extra=VLAG, dx=8)
 
 print('Pip getekend in', os.path.normpath(OUT))

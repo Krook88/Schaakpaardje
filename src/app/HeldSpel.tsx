@@ -81,6 +81,8 @@ export function HeldSpel({ eersteLes }: { eersteLes: string }) {
         marks={{ targets: doelen, last: vorige }}
         onSquare={tik}
         shake={schud}
+        // Het paard is Pip, net als in de eerste les: wat de ouder hier ziet, ziet het kind straks.
+        pipAlsPaard
         label="Probeer het zelf: tik waar het paard heen mag"
       />
       {/* Secundair, niet nog een oranje hoofdknop naast "Probeer de eerste les": twee

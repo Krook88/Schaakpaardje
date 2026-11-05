@@ -268,15 +268,19 @@
 /* 8 + 7 in plaats van 7 + 7 + 1: één los wapen onderaan oogde als een fout (37e review). */
 .wapenKlein {
   display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
-  font-size: 20px; background: color-mix(in srgb, var(--ink) 6%, transparent);
-  filter: grayscale(0.7); opacity: 0.5;
+  font-size: 20px; background: hsl(var(--toon, 40) 35% 90%);
+  filter: grayscale(0.25); opacity: 0.55;
 }
+/* De wereld die nu opengaat: in kleur, met een stippelring, als belofte. */
+.wapenVolgende { filter: none; opacity: 1; outline: 2px dashed hsl(var(--toon) 45% 50%); outline-offset: 1px; }
 .wapenAf { filter: none; opacity: 1; background: hsl(var(--toon) 50% 88%); }
 .wapenNu { outline: 3px solid hsl(var(--toon) 45% 50%); outline-offset: 1px; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .wapenAf { background: hsl(var(--toon) 25% 25%); }
+  :root:not([data-theme='light']) .wapenKlein:not(.wapenAf) { background: hsl(var(--toon, 40) 18% 20%); }
 }
 :root[data-theme='dark'] .wapenAf { background: hsl(var(--toon) 25% 25%); }
+:root[data-theme='dark'] .wapenKlein:not(.wapenAf) { background: hsl(var(--toon, 40) 18% 20%); }
 .lesKort { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px; }
 
 /* Op een liggend scherm van 768 hoog viel "Volgende les" onder de vouw (38e review). */
@@ -314,6 +318,7 @@
 /* De getinte achtergrond loopt door tot onder de knoppen (39e review: naad door "Volgende les"). */
 .wereldpagina { min-height: 100dvh; }
 .wereldAfTel { margin: 0; font-weight: 700; }
+.wereldAfOpen { margin: 0; display: inline-flex; align-items: center; gap: 6px; justify-content: center; font-weight: 600; }
 @media (max-height: 720px) and (max-width: 600px) { .wereldAfTel { display: none; } }
 
 /* Wereld af dwars (rondes 23–24, 47e–49e review). Links de feestkaart, rechts Pip met zijn

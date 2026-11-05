@@ -14,6 +14,9 @@ export const pipBeeld = (stemming: PipStemming, knop = false) =>
   `${BASIS}/illustraties/pip/pip-${knop ? 'knop-' : ''}${stemming}.svg`
 /** Pip zonder plankje, met een zachte schaduw: op de kaarthalte en in de held. */
 export const pipLos = (stemming: PipStemming) => `${BASIS}/illustraties/pip/pip-los-${stemming}.svg`
+/** Pip met zijn hele lijf (scripts/pip-tekenen.py): wijst naar rechtsonder, juicht, of wacht met een vlaggetje. */
+export type PipHouding = 'wijst' | 'juicht' | 'wacht'
+export const pipHeel = (houding: PipHouding) => `${BASIS}/illustraties/pip/pip-heel-${houding}.svg`
 export const lesIcoon = (lesId: string) => `${BASIS}/illustraties/iconen/les-${lesId}.svg`
 export type IcoonNaam =
   | 'minispel' | 'slot' | 'beker' | 'sticker' | 'deel' | 'hint' | 'geluid' | 'instellingen' | 'bel' | 'bel-uit'

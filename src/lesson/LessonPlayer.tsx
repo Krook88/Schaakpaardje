@@ -567,9 +567,12 @@ export function LessonPlayer({
                   return (
                     <span
                       key={w.id}
-                      className={`${styles.wapenKlein} ${af ? styles.wapenAf : ''} ${w.id === wereld.id ? styles.wapenNu : ''}`}
-                      title={af ? w.naam : 'nog niet'}
-                      aria-label={af ? `${w.naam}, af` : 'nog niet af'}
+                      className={`${styles.wapenKlein} ${af ? styles.wapenAf : ''} ${w.id === wereld.id ? styles.wapenNu : ''} ${!af && w.id === nieuweWereld?.id ? styles.wapenVolgende : ''}`}
+                      // Elk wapen in zijn eigen wereldkleur: grijs las als "nog 14 te gaan",
+                      // gekleurd als nog 14 avonturen (wow-plan traject 4).
+                      style={{ '--toon': w.toon } as React.CSSProperties}
+                      title={af ? w.naam : w.id === nieuweWereld?.id ? `${w.naam}, gaat nu open` : 'nog niet'}
+                      aria-label={af ? `${w.naam}, af` : w.id === nieuweWereld?.id ? `${w.naam}, gaat nu open` : 'nog niet af'}
                     >
                       <WereldWapen id={w.id} maat={30} />
                     </span>
@@ -578,8 +581,16 @@ export function LessonPlayer({
               </div>
               {/* Waar je staat, zonder druk: een telling, geen opdracht. Verborgen op lage
                   schermen, anders zakt "Volgende les" onder de vouw (doorloop, 320×640). */}
-              <p className={styles.wereldAfTel}>
-                {WERELDEN.filter((w) => w.id === wereld.id || wereldIsAf(w.id, voortgang)).length} van de {WERELDEN.length} werelden af
+              {/* Eén regel: de telling, en welke wereld nu opengaat (die haak stond pas
+                  onderaan, wow-plan traject 4). Verborgen op lage schermen, anders zakt
+                  "Volgende les" onder de vouw (doorloop). */}
+              <p className={`${styles.wereldAfTel} ${styles.wereldAfOpen}`}>
+                {WERELDEN.filter((w) => w.id === wereld.id || wereldIsAf(w.id, voortgang)).length} van de {WERELDEN.length} af
+                {nieuweWereld && (
+                  <>
+                    {' · '}nu open: <WereldWapen id={nieuweWereld.id} maat={24} /> <strong>{nieuweWereld.naam}</strong>
+                  </>
+                )}
               </p>
             </div>
           )}
