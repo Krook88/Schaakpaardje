@@ -820,6 +820,8 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
   return (
     <div
       className={`row ${styles.faseBalk}`}
+      // role="group": een aria-label op een kale div telt niet (Lighthouse aria-prohibited-attr).
+      role="group"
       style={{ justifyContent: 'center', gap: 10, marginBottom: 8, flexWrap: 'nowrap' }}
       aria-label={`Stap ${hier + 1} van 4: ${FASE_NAAM[nu]}`}
     >
