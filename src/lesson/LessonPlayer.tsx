@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Icoon, WereldWapen, pipLos, type IcoonNaam } from '@/ui/beelden'
+import { Icoon, WereldWapen, kaartBeeld, pipLos, type IcoonNaam } from '@/ui/beelden'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Kop } from '@/ui/Kop'
@@ -704,7 +704,10 @@ export function LessonPlayer({
                 i === opgaveIndex ? styles.stipNu : ''
               }`}
               aria-hidden="true"
-            />
+            >
+              {/* Een gehaalde opgave wordt een sterretje dat even opspringt (wow-plan traject 4). */}
+              {i < opgaveIndex && <Icoon naam="ster-vol" maat={18} />}
+            </span>
           ))}
         </div>
         )}
@@ -883,7 +886,9 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
 /** Waar ben ik? Het wapen en de kleur van de wereld, boven elke les. */
 function WereldBand({ wereld }: { wereld: World }) {
   return (
-    <div className={styles.wereldband} style={{ '--toon': wereld.toon } as React.CSSProperties}>
+    // De getekende strook van de kaart erachter: de les ligt in de wereld, niet onder een
+    // gekleurde balk (wow-plan traject 4).
+    <div className={styles.wereldband} style={{ '--toon': wereld.toon, '--strook': `url(${kaartBeeld(wereld.id)})`, '--strook-donker': `url(${kaartBeeld(wereld.id, true)})` } as React.CSSProperties}>
       <span aria-hidden="true" style={{ fontSize: 22 }}>
         <WereldWapen id={wereld.id} maat={26} />
       </span>
