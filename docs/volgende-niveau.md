@@ -3,6 +3,7 @@
 Geheugen van de `/loop`. Elke ronde: lees dit, pak het hoogste rode punt, bouw, bewijs, review, werk bij.
 
 ## Open vragen voor Kaj
+- **Traject 2 live zetten?** Rondes 36–48 staan op `volgende-niveau` (bots met gezichten, geslagen stukken, korte telefoons, vijf nieuwe Pip-zinnen die bij publiceren worden ingesproken). De wow-cijfers schommelen weer rond 5–8 per reviewer; de voorstellen herhalen zich. Loop gepauzeerd.
 - **Doorgaan of afronden?** Na 35 rondes schommelen de wow-cijfers per meting (eerste les: layout 8, conversie 5 op hetzelfde scherm). Laatste meting staand/dwars: start 7/8, les 5–8, wereld af 8/7, kaart 7/5, spel 6–7. De ideeën die nog openstaan zijn groter (bots met reacties per zet, de kaart dwars naast het pad). Loop gepauzeerd tot je besluit.
 
 ## Besluiten van Kaj
@@ -117,3 +118,4 @@ Schermafbeeldingen: `docs/volgende-niveau/voor-*.png`.
 - Ronde 46: 61e review verwerkt (Pip klein in beeld in plaats van weg; 320 breed zonder tegenstander).
 - Ronde 47: 62e review (codebase traject 2) verwerkt: Game.geslagen in de engine met test, verrast reset, schermlezertekst.
 - Ronde 48: Pip-maat via --pip-maat in plaats van !important van buitenaf.
+- Wow-meting na ronde 48 (375/844): start 7/8, les 5–6, kaart 7/6, spel 5/6, wereld af niet gezien. Loop gepauzeerd voor Kaj.
