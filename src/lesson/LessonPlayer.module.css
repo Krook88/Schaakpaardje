@@ -62,7 +62,7 @@
    stonden ze op 820px zo'n 600px uit elkaar met het bord smal in het midden. */
 .bord { max-width: min(100%, 70vh, 620px); width: 100%; margin: 0 auto; }
 .kolom { max-width: min(100%, 70vh, 620px); width: 100%; margin: 0 auto; }
-.voortgang { display: flex; gap: 8px; justify-content: center; }
+.voortgang { display: flex; gap: 8px; justify-content: center; align-items: center; min-height: 18px; }
 .stip {
   width: 12px; height: 12px; border-radius: 50%;
   background: var(--line); transition: background 0.2s ease, transform 0.2s ease;

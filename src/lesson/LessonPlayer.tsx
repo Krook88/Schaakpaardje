@@ -703,10 +703,15 @@ export function LessonPlayer({
           <Pip zegt={zin} stemming={stemming} klein={!ruimNaast} />
         </div>
 
-        {/* Bij één opgave zei die ene losse stip niets; dan laten we hem weg. */}
-        {opgaven.length > 1 && (
-        <div className={`${styles.voortgang} ${styles.vakVoortgang}`} aria-label={`Opgave ${opgaveIndex + 1} van ${opgaven.length}`}>
-          {opgaven.map((_, i) => (
+        {/* Bij één opgave zei die ene losse stip niets; dan laten we hem weg, maar de rij houdt
+            zijn plek. Anders sprong het bord 28 px omlaag bij de overgang naar een fase met
+            meer opgaven (wow-meting traject 4). */}
+        <div
+          className={`${styles.voortgang} ${styles.vakVoortgang}`}
+          aria-label={opgaven.length > 1 ? `Opgave ${opgaveIndex + 1} van ${opgaven.length}` : undefined}
+          aria-hidden={opgaven.length > 1 ? undefined : true}
+        >
+          {opgaven.length > 1 && opgaven.map((_, i) => (
             <span
               key={i}
               className={`${styles.stip} ${i < opgaveIndex ? styles.stipAf : ''} ${
@@ -719,7 +724,6 @@ export function LessonPlayer({
             </span>
           ))}
         </div>
-        )}
 
         {opgave.kind === 'quiz' ? (
           <div className={`${styles.quiz} ${styles.vakBord}`}>

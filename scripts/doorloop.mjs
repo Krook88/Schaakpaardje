@@ -1288,6 +1288,28 @@ for (const [w, h] of [[320, 640], [375, 667]]) {
   await ctx.close()
 }
 
+// Bij de fasewissel van samen naar zelf sprong het bord 28 px omlaag: in de samen-fase
+// stond er geen rij voortgangsbolletjes boven het bord, in de zelf-fase wel (wow-meting
+// traject 4). De rij houdt nu altijd zijn plek.
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/les/weide-1/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(500)
+  const top = () => p.evaluate(() => Math.round(document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect().top ?? -1))
+  for (let i = 0; i < 2; i++) { await p.getByRole('button', { name: /Verder/ }).first().click(); await p.waitForTimeout(300) }
+  await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
+  await p.waitForTimeout(500)
+  const samen = await top()
+  for (const v of ['a1', 'c1', 'e1', 'g1']) { await p.locator(`[data-square="${v}"]`).click(); await p.waitForTimeout(120) }
+  // Wachten tot de volgende opgave er staat (na het feest).
+  await p.waitForFunction(() => !document.querySelector('[class*="eersteFeest"]'), null, { timeout: 8000 }).catch(() => {})
+  await p.waitForTimeout(2800)
+  const daarna = await top()
+  meld('eerste les 390×844: het bord springt niet bij de volgende opgave', samen > 0 && Math.abs(daarna - samen) <= 2, `${samen} → ${daarna}`)
+  await ctx.close()
+}
+
 // Raakvlakken: 64 px op de schermen van het kind, 48 px voor de ouder. De kopknoppen
 // waren 56, de luisterknop van Pip 46 (32e review). Links in lopende tekst tellen
 // niet mee. Zie ook scripts/raakvlakken.mjs voor de volledige lijst.
