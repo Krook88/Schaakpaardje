@@ -13,6 +13,7 @@ export const wereld12: World = {
   emoji: '✏️',
   toon: 220,
   belofte: 'Hier leer je zetten opschrijven en teruglezen.',
+  kunnen: 'zetten opschrijven',
   minLeeftijd: 8,
   minispel: 'schrijf-de-zet',
   diploma: 'zilver',

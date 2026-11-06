@@ -18,6 +18,7 @@ export const wereld10: World = {
   emoji: '🏁',
   toon: 260,
   belofte: 'Schaakmat! Hier win je de partij.',
+  kunnen: 'mat zetten',
   minLeeftijd: 8,
   minispel: 'mat-in-1-regen',
   lessen: [

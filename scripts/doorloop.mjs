@@ -1221,11 +1221,13 @@ for (const [w, h] of [[375, 667], [390, 844]]) {
   const m = await p.evaluate(() => {
     const pa = [...document.querySelectorAll('[data-square]')].find((x) => /paard/.test(x.getAttribute('aria-label') || ''))?.getBoundingClientRect()
     const k = [...document.querySelectorAll('a')].find((a) => /eerste les/.test(a.textContent))?.getBoundingClientRect()
-    return pa && k ? { paardOnder: Math.round(pa.bottom), knop: Math.round(k.bottom) } : null
+    const bord = document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect()
+    return pa && k && bord ? { paardOnder: Math.round(pa.bottom), knop: Math.round(k.bottom), bordOnder: Math.round(bord.bottom) } : null
   })
   // Het hele veld van het paard: met alleen de bovenkant gemeten zag je op 375×667 maar
   // zijn oren (59e review).
-  meld(`startpagina ${w}×${h}: paard en knop boven de vouw`, Boolean(m) && m.paardOnder <= h && m.knop <= h, JSON.stringify(m))
+  // Op 390×844 ook het hele bord: een afgesneden bord stuurt niemand door (wow-meting traject 4).
+  meld(`startpagina ${w}×${h}: paard en knop boven de vouw${h >= 800 ? ', hele bord in beeld' : ''}`, Boolean(m) && m.paardOnder <= h && m.knop <= h && (h < 800 || m.bordOnder <= h), JSON.stringify(m))
   await ctx.close()
 }
 

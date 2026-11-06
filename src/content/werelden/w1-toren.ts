@@ -13,6 +13,7 @@ export const wereld1: World = {
   emoji: '🏰',
   toon: 12,
   belofte: 'Hier woont de toren. Die loopt kaarsrecht.',
+  kunnen: 'de toren',
   minLeeftijd: 3,
   minispel: 'torenjacht',
   lessen: [

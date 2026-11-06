@@ -19,6 +19,7 @@ export const wereld9: World = {
   emoji: '⚡',
   toon: 55,
   belofte: 'Pas op de koning! Hier leer je schaak.',
+  kunnen: 'schaak geven',
   minLeeftijd: 7,
   minispel: 'schaak-alarm',
   lessen: [

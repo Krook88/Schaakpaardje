@@ -174,7 +174,7 @@ export default function Kaart() {
               {gewonnen.map((w) => (
                 <li key={w.id} className={styles.plankWapen} title={w.naam}>
                   <WereldWapen id={w.id} maat={72} />
-                  <span>{w.naam}</span>
+                  <span>{w.kunnen}</span>
                 </li>
               ))}
               {hoefijzers.map((d) => (

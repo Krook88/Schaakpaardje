@@ -191,3 +191,20 @@
 .heldPip .heldPipGezicht { animation: pipHop 520ms ease-out; }
 @keyframes pipHop { 0% { transform: scale(0.8); } 45% { transform: translateY(-10px) scale(1.15); } 100% { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .heldPip .heldPipGezicht { animation: none; } }
+/* Staande telefoons: het hele proefbord met Pip in het eerste beeld, ook op 390×844 (de
+   onderste rij viel er 62 px af; wow-meting traject 4). Het bord zelf niet kleiner: dan
+   zakken de velden onder 44 px. Dus de bovenregel weg (Pip staat er groot naast het bord),
+   iets kleinere alinea en minder lucht. */
+@media (max-width: 499px) and (orientation: portrait) {
+  .heldTekst > p:first-child { display: none; }
+  .heldTekst > p:not(:first-child) { font-size: 0.9rem; line-height: 1.35; margin: 0; }
+  .held { gap: 4px; }
+  .heldPip { margin: 0; }
+}
+@media (max-width: 499px) and (orientation: portrait) {
+  .beloftes { gap: 4px; }
+  .beloftes li { padding: 3px 8px; font-size: 0.8rem; }
+}
+@media (max-width: 499px) and (orientation: portrait) {
+  .heldTekst > .kop { font-size: clamp(1.4rem, 6.6vw, 1.7rem); }
+}
