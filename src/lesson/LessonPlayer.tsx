@@ -188,7 +188,7 @@ export function LessonPlayer({
    */
   const doorschakeling = useRef(0)
   const naHetPraten = useCallback(
-    (doe: () => void) => {
+    (doe: () => void, pauze = 1300) => {
       const mijn = ++doorschakeling.current
       later(() => {
         void wachtTotUitgesproken().then(() => {
@@ -196,7 +196,7 @@ export function LessonPlayer({
         })
         // 1300 en niet 700: het eerste succes (vinkjes, glinsters) was weg voor iemand het
         // zag (wow-meting traject 4). Een stilte na een goed antwoord mag even duren.
-      }, 1300)
+      }, pauze)
     },
     [later],
   )
@@ -321,7 +321,8 @@ export function LessonPlayer({
         setStemming('juicht')
         tipAfbreken()
         setZin(kies(klaar ? zinnen.PRIJS_LAATSTE : zinnen.PRIJS, 'prijs'))
-        if (klaar) naHetPraten(volgendeOpgave)
+        // Het eerste succes van de les krijgt zijn feest (grote juichende Pip): 2,2 s.
+        if (klaar) naHetPraten(volgendeOpgave, fase === 'meedoen' && opgaveIndex === 0 ? 2200 : 1300)
       } else {
         if (instellingen.effecten) sfx.fout()
         setStemming('moedigt')
@@ -468,7 +469,8 @@ export function LessonPlayer({
         <div className={`stack ${styles.vertelStack} ${les.vertelFen ? styles.speelvlak : ''}`}>
           <div className={styles.vakPip}>
             <Pip
-              groot={vertelIndex === 0}
+              // De hele kijkfase dezelfde maat: groot-dan-klein sprong zichtbaar (wow-meting).
+              groot
               zegt={dezeZin ? vertelTekst(dezeZin) : ''}
               stemming={vertelIndex === 0 ? 'blij' : 'denkt'}
             />
@@ -692,14 +694,7 @@ export function LessonPlayer({
         }}
       />
 
-      <div className={`stack ${styles.speelvlak}`}>
-        {/* De allereerste goede opgave van de les: Pip springt groot in beeld en juicht.
-            Een vinkje en een vonkje waren te klein voor het moment waarop een kind voor het
-            eerst iets zelf doet (wow-meting traject 4). Kort, en niet bij minder beweging. */}
-        {stand?.klaar && fase === 'meedoen' && opgaveIndex === 0 && (
-          // eslint-disable-next-line @next/next/no-img-element -- statische export, SVG
-          <img src={pipLos('juicht')} alt="" aria-hidden="true" className={styles.eersteFeest} draggable={false} />
-        )}
+      <div className={`stack ${styles.speelvlak} ${stand?.klaar && fase === 'meedoen' && opgaveIndex === 0 ? styles.feest : ''}`}>
         <div className={styles.vakPip}>
           {/* Klein waar de hoogte krap is (staand: boven het bord). Liggend staat Pip in
               een eigen kolom met ruimte over; daar was hij een rondje van 52 px naast
@@ -758,6 +753,13 @@ export function LessonPlayer({
           </div>
         ) : (
           <div className={`${styles.bord} ${styles.vakBord}`}>
+            {/* De allereerste goede opgave van de les: Pip springt groot in beeld en juicht.
+                Een vinkje en een vonkje waren te klein voor het moment waarop een kind voor het
+                eerst iets zelf doet (wow-meting traject 4). Kort, en niet bij minder beweging. */}
+            {stand?.klaar && fase === 'meedoen' && opgaveIndex === 0 && (
+              // eslint-disable-next-line @next/next/no-img-element -- statische export, SVG
+              <img src={pipLos('juicht')} alt="" aria-hidden="true" className={styles.eersteFeest} draggable={false} />
+            )}
             <Board
               position={stand.board}
               selected={stand.geselecteerd}

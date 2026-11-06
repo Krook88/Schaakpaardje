@@ -402,19 +402,28 @@
 
 /* Eerste goede opgave: Pip springt groot midden in beeld en verdwijnt weer. */
 .eersteFeest {
-  position: fixed; left: 50%; top: 45%; width: min(48vw, 220px); height: auto; z-index: 20;
+  position: absolute; left: 50%; top: 50%; width: min(56%, 240px); height: auto; z-index: 20;
   pointer-events: none; transform: translate(-50%, -50%);
-  animation: eersteFeest 1250ms ease-out both;
+  animation: eersteFeest 2100ms ease-out both;
   filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.25));
 }
 @keyframes eersteFeest {
   0% { opacity: 0; transform: translate(-50%, -30%) scale(0.4); }
-  25% { opacity: 1; transform: translate(-50%, -55%) scale(1.08); }
-  45% { transform: translate(-50%, -50%) scale(1); }
-  80% { opacity: 1; }
+  15% { opacity: 1; transform: translate(-50%, -55%) scale(1.08); }
+  28% { transform: translate(-50%, -50%) scale(1); }
+  85% { opacity: 1; }
   100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
 }
-@media (prefers-reduced-motion: reduce) { .eersteFeest { display: none; } }
+/* Minder beweging: Pip staat er stil, zonder sprong (eerst kreeg dit kind niets). */
+@media (prefers-reduced-motion: reduce) { .eersteFeest { animation: none; } }
 /* Wereld af staand: één Pip. Het gezicht bij de ballon wijkt voor de grote juichende Pip
    in de kaart; de ballon met luisterknop blijft (wow-meting traject 4). */
-@media (orientation: portrait) { .feestPip [data-pip-gezicht] { display: none; } }
+@media (orientation: portrait) {
+  .feestPip [data-pip-gezicht] { display: none; }
+  /* Zonder gezicht wijst het staartje van de ballon nergens heen (wow-meting). */
+  .feestPip p[aria-live]::before { display: none; }
+}
+/* Tijdens het eerste feest: geen tweede (kleine) Pip en geen hulpknoppen; die horen bij
+   hulp nodig hebben, niet bij gelukt (wow-meting traject 4). */
+.feest .vakPip [data-pip-gezicht], .feest .vakKnoppen { visibility: hidden; }
+.vakBord { position: relative; }
