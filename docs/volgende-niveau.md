@@ -8,6 +8,7 @@ Geheugen van de `/loop`. Elke ronde: lees dit, pak het hoogste rode punt, bouw, 
 - **Doorgaan of afronden?** Na 35 rondes schommelen de wow-cijfers per meting (eerste les: layout 8, conversie 5 op hetzelfde scherm). Laatste meting staand/dwars: start 7/8, les 5–8, wereld af 8/7, kaart 7/5, spel 6–7. De ideeën die nog openstaan zijn groter (bots met reacties per zet, de kaart dwars naast het pad). Loop gepauzeerd tot je besluit.
 
 ## Besluiten van Kaj
+- 6 nov: dwars (telefoon liggend) is minder belangrijk; de wow-toets meet staand.
 - Beide opnamezinnen aangepast (w9 "schaak zeggen mag", weide-1 "daar sta ik op het bord"). De opname gebeurt bij de merge via ElevenLabs (4 nov).
 - 4 nov 2026: **proef beeldtaal goedgekeurd** (Pip in profiel met voetstuk, platte warme stijl; zie docs/volgende-niveau/proef-beeldtaal.png). Nu: de hele set en inbouwen.
 - 4 nov 2026: **beeldtaal 1b**. Er komen eigen SVG's, gemaakt door een illustrator-agent. Eerst een proef (Pip en één wereld) ter beoordeling, daarna de uitrol.
