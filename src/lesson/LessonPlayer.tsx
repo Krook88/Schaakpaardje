@@ -693,6 +693,13 @@ export function LessonPlayer({
       />
 
       <div className={`stack ${styles.speelvlak}`}>
+        {/* De allereerste goede opgave van de les: Pip springt groot in beeld en juicht.
+            Een vinkje en een vonkje waren te klein voor het moment waarop een kind voor het
+            eerst iets zelf doet (wow-meting traject 4). Kort, en niet bij minder beweging. */}
+        {stand?.klaar && fase === 'meedoen' && opgaveIndex === 0 && (
+          // eslint-disable-next-line @next/next/no-img-element -- statische export, SVG
+          <img src={pipLos('juicht')} alt="" aria-hidden="true" className={styles.eersteFeest} draggable={false} />
+        )}
         <div className={styles.vakPip}>
           {/* Klein waar de hoogte krap is (staand: boven het bord). Liggend staat Pip in
               een eigen kolom met ruimte over; daar was hij een rondje van 52 px naast

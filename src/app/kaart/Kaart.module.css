@@ -207,7 +207,8 @@
    op een schap (wow-plan traject 4: "een kaartje met getallen, geen plank"). Alleen
    staand: dwars is de plank een smalle strook. */
 @media not ((orientation: landscape) and (max-height: 500px)) {
-  .plank { scroll-margin-top: 14px; }
+  /* Groot genoeg dat de rand van de kaart erboven niet in beeld steekt. */
+  .plank { scroll-margin-top: 4px; }
   .plankRij { position: relative; }
   /* Direct onder de wapens (72 px), de namen staan eronder op de rand. */
   .plankRij::after {
@@ -218,7 +219,7 @@
       linear-gradient(180deg, #d39b62 0, #b97b43 55%, #8e5a2c 100%);
     box-shadow: 0 5px 8px rgba(60, 35, 15, 0.3), inset 0 1px 0 rgba(255, 230, 190, 0.6);
   }
-  .plankWapen { position: relative; z-index: 1; gap: 18px; width: 88px; }
+  .plankWapen { position: relative; z-index: 1; gap: 24px; width: 88px; }
   .plankRij { column-gap: 8px; }
   /* Twee regels in plaats van een regel tot tegen de randen. */
   .plankTel { flex-direction: column; align-items: center; }

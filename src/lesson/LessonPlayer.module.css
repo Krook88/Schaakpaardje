@@ -399,3 +399,22 @@
 @media (max-width: 340px) and (orientation: portrait) and (max-height: 760px) {
   .vertelStack > .vakBord { max-width: min(100%, calc(100svh - 380px)) !important; }
 }
+
+/* Eerste goede opgave: Pip springt groot midden in beeld en verdwijnt weer. */
+.eersteFeest {
+  position: fixed; left: 50%; top: 45%; width: min(48vw, 220px); height: auto; z-index: 20;
+  pointer-events: none; transform: translate(-50%, -50%);
+  animation: eersteFeest 1250ms ease-out both;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.25));
+}
+@keyframes eersteFeest {
+  0% { opacity: 0; transform: translate(-50%, -30%) scale(0.4); }
+  25% { opacity: 1; transform: translate(-50%, -55%) scale(1.08); }
+  45% { transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) { .eersteFeest { display: none; } }
+/* Wereld af staand: één Pip. Het gezicht bij de ballon wijkt voor de grote juichende Pip
+   in de kaart; de ballon met luisterknop blijft (wow-meting traject 4). */
+@media (orientation: portrait) { .feestPip [data-pip-gezicht] { display: none; } }

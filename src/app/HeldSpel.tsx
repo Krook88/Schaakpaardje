@@ -72,7 +72,7 @@ export function HeldSpel({ eersteLes }: { eersteLes: string }) {
       <p className={styles.heldPip} aria-live="polite">
         <span aria-hidden="true" className={`${styles.heldPipGezicht} ${styles.pip}`} key={`pip-${sprongen}`}>
           {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
-          <img src={pipLos(sprongen >= 3 ? 'juicht' : sprongen > 0 ? 'blij' : 'moedigt')} alt="" width={64} height={64} />
+          <img src={pipLos(sprongen > 0 ? 'juicht' : 'moedigt')} alt="" width={64} height={64} />
         </span>
         {/* Eigen voorvoegsels: met kale getallen kregen gezicht en ballon na een tik dezelfde
             sleutel, en bleef het oude gezicht naast het nieuwe staan (wow-meting). */}
