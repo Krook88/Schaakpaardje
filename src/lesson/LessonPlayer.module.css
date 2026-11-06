@@ -427,3 +427,10 @@
    hulp nodig hebben, niet bij gelukt (wow-meting traject 4). */
 .feest .vakPip [data-pip-gezicht], .feest .vakKnoppen { visibility: hidden; }
 .vakBord { position: relative; }
+/* De ballonzone in de kijkfase houdt een vaste hoogte, zodat het bord niet op en neer
+   springt tussen zinnen van één, twee of drie regels (wow-meting). */
+@media (min-height: 761px) { .vertelStack > .vakPip { min-height: 96px; align-items: center; display: flex; } }
+/* Tijdens het feest geen staartje naar de weggehaalde kleine Pip. */
+.feest .vakPip p[aria-live]::before { display: none; }
+/* Iets kleinere letter in de uitlegballon: zin 2 (vijf regels) stond op 390×844 tot 1 px op de rand. */
+.vertelStack .vakPip p[aria-live] { font-size: 0.96rem; }

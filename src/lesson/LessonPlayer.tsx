@@ -13,7 +13,8 @@ import { Teller } from '@/ui/Teller'
 import { gebruikTip } from '@/ui/gebruikTip'
 import { sfx } from '@/audio/sfx'
 import { kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
-import { HINT_GEGEVEN, OPNIEUW_PROBEREN, pipZinnen } from '@/content/voice'
+import {
+  EERSTE_GOED, HINT_GEGEVEN, OPNIEUW_PROBEREN, pipZinnen } from '@/content/voice'
 import { WERELDEN, volgendeLes, wereldMet, type Lesson, type World } from '@/content'
 import { vertelTekst, vertelWijzers } from '@/content/types'
 import { type Square } from '@/engine/board'
@@ -320,7 +321,7 @@ export function LessonPlayer({
         // er niets gebeurt, dus een goed antwoord veranderde visueel helemaal niets.
         setStemming('juicht')
         tipAfbreken()
-        setZin(kies(klaar ? zinnen.PRIJS_LAATSTE : zinnen.PRIJS, 'prijs'))
+        setZin(klaar && fase === 'meedoen' && opgaveIndex === 0 ? EERSTE_GOED : kies(klaar ? zinnen.PRIJS_LAATSTE : zinnen.PRIJS, 'prijs'))
         // Het eerste succes van de les krijgt zijn feest (grote juichende Pip): 2,2 s.
         if (klaar) naHetPraten(volgendeOpgave, fase === 'meedoen' && opgaveIndex === 0 ? 2200 : 1300)
       } else {
@@ -469,8 +470,8 @@ export function LessonPlayer({
         <div className={`stack ${styles.vertelStack} ${les.vertelFen ? styles.speelvlak : ''}`}>
           <div className={styles.vakPip}>
             <Pip
-              // De hele kijkfase dezelfde maat: groot-dan-klein sprong zichtbaar (wow-meting).
-              groot
+              // Geen 'groot' meer: groot-dan-klein sprong zichtbaar, en heel de kijkfase groot
+              // duwde 'Verder' bij zin 2 op 390×844 onder de vouw (wow-meting traject 4).
               zegt={dezeZin ? vertelTekst(dezeZin) : ''}
               stemming={vertelIndex === 0 ? 'blij' : 'denkt'}
             />

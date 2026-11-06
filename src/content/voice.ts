@@ -16,6 +16,9 @@ export const PRIJS = [
   'Yes! Volgende.',
 ] as const
 
+/** De allereerste goede opgave van een les: een eigen zin, "Netjes!" was te lauw voor
+ *  dat moment (wow-meting traject 4). */
+export const EERSTE_GOED = 'Gelukt! Dat heb je helemaal zelf gedaan.'
 export const PRIJS_LAATSTE = [
   'Top! Je hebt ze allemaal.',
   'Klaar! En alles goed.',

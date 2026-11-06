@@ -1232,18 +1232,24 @@ for (const [w, h] of [[375, 667], [390, 844]]) {
 // Eerste les op korte telefoons: het hele bord in beeld, bij elke zin en bij de eerste
 // opgave. De tweede zin laat de onderste rij oplichten, en de opgave vraagt om de
 // donkere velden helemaal onderaan; die vielen eerst onder de vouw (60e review).
-for (const [w, h] of [[375, 667], [320, 640], [360, 740]]) {
+for (const [w, h] of [[375, 667], [320, 640], [360, 740], [390, 844]]) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h } })
   const p = await ctx.newPage()
   await p.goto(URL + '/les/weide-1/', { waitUntil: 'networkidle' })
   await p.waitForTimeout(800)
   const onder = () => p.evaluate(() => Math.round(document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect().bottom ?? 1e4))
+  // Ook de knop verder (Verder of Ik ga het proberen) bij elke zin: bij zin 2 viel hij op
+  // 390×844 onder de vouw toen Pip in de hele kijkfase groot was (wow-meting traject 4).
+  const knop = () => p.evaluate(() => Math.round([...document.querySelectorAll('button')].find((b) => /Verder|proberen/.test(b.textContent))?.getBoundingClientRect().bottom ?? 1e4))
   const stappen = [await onder()]
+  const knoppen = [await knop()]
   for (let i = 0; i < 2; i++) {
     await p.getByRole('button', { name: /Verder/ }).first().click()
     await p.waitForTimeout(400)
     stappen.push(await onder())
+    knoppen.push(await knop())
   }
+  meld(`eerste les ${w}×${h}: de knop verder in beeld bij elke zin`, knoppen.every((o) => o <= h), knoppen.join(', '))
   await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
   await p.waitForTimeout(500)
   stappen.push(await onder())
