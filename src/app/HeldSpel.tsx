@@ -70,17 +70,21 @@ export function HeldSpel({ eersteLes }: { eersteLes: string }) {
   return (
     <div className="stack" style={{ gap: 10 }}>
       <p className={styles.heldPip} aria-live="polite">
-        <span aria-hidden="true" className={`${styles.heldPipGezicht} ${styles.pip}`} key={sprongen}>
+        <span aria-hidden="true" className={`${styles.heldPipGezicht} ${styles.pip}`} key={`pip-${sprongen}`}>
           {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
-          <img src={pipLos(sprongen >= 3 ? 'juicht' : sprongen > 0 ? 'blij' : 'moedigt')} alt="" width={64} height={64} />
+          <img src={pipLos(sprongen > 0 ? 'juicht' : 'moedigt')} alt="" width={64} height={64} />
         </span>
-        <span className={styles.heldBallon} key={tikken}>{bericht}</span>
+        {/* Eigen voorvoegsels: met kale getallen kregen gezicht en ballon na een tik dezelfde
+            sleutel, en bleef het oude gezicht naast het nieuwe staan (wow-meting). */}
+        <span className={styles.heldBallon} key={`ballon-${tikken}`}>{bericht}</span>
       </p>
       <Board
         position={bord}
         marks={{ targets: doelen, last: vorige }}
         onSquare={tik}
         shake={schud}
+        // Het paard is Pip, net als in de eerste les: wat de ouder hier ziet, ziet het kind straks.
+        pipAlsPaard
         label="Probeer het zelf: tik waar het paard heen mag"
       />
       {/* Secundair, niet nog een oranje hoofdknop naast "Probeer de eerste les": twee

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Icoon, WereldWapen, pipLos, type IcoonNaam } from '@/ui/beelden'
+import { Icoon, WereldWapen, kaartBeeld, pipLos, type IcoonNaam } from '@/ui/beelden'
 import Link from 'next/link'
 import { Board, type BoardMarks } from '@/board/Board'
 import { Kop } from '@/ui/Kop'
@@ -13,7 +13,8 @@ import { Teller } from '@/ui/Teller'
 import { gebruikTip } from '@/ui/gebruikTip'
 import { sfx } from '@/audio/sfx'
 import { kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
-import { HINT_GEGEVEN, OPNIEUW_PROBEREN, pipZinnen } from '@/content/voice'
+import {
+  EERSTE_GOED, HINT_GEGEVEN, OPNIEUW_PROBEREN, pipZinnen } from '@/content/voice'
 import { WERELDEN, volgendeLes, wereldMet, type Lesson, type World } from '@/content'
 import { vertelTekst, vertelWijzers } from '@/content/types'
 import { type Square } from '@/engine/board'
@@ -188,13 +189,15 @@ export function LessonPlayer({
    */
   const doorschakeling = useRef(0)
   const naHetPraten = useCallback(
-    (doe: () => void) => {
+    (doe: () => void, pauze = 1300) => {
       const mijn = ++doorschakeling.current
       later(() => {
         void wachtTotUitgesproken().then(() => {
           if (mijn === doorschakeling.current) doe()
         })
-      }, 700)
+        // 1300 en niet 700: het eerste succes (vinkjes, glinsters) was weg voor iemand het
+        // zag (wow-meting traject 4). Een stilte na een goed antwoord mag even duren.
+      }, pauze)
     },
     [later],
   )
@@ -318,8 +321,9 @@ export function LessonPlayer({
         // er niets gebeurt, dus een goed antwoord veranderde visueel helemaal niets.
         setStemming('juicht')
         tipAfbreken()
-        setZin(kies(klaar ? zinnen.PRIJS_LAATSTE : zinnen.PRIJS, 'prijs'))
-        if (klaar) naHetPraten(volgendeOpgave)
+        setZin(klaar && fase === 'meedoen' && opgaveIndex === 0 ? EERSTE_GOED : kies(klaar ? zinnen.PRIJS_LAATSTE : zinnen.PRIJS, 'prijs'))
+        // Het eerste succes van de les krijgt zijn feest (grote juichende Pip): 2,2 s.
+        if (klaar) naHetPraten(volgendeOpgave, fase === 'meedoen' && opgaveIndex === 0 ? 2200 : 1300)
       } else {
         if (instellingen.effecten) sfx.fout()
         setStemming('moedigt')
@@ -466,7 +470,8 @@ export function LessonPlayer({
         <div className={`stack ${styles.vertelStack} ${les.vertelFen ? styles.speelvlak : ''}`}>
           <div className={styles.vakPip}>
             <Pip
-              groot={vertelIndex === 0}
+              // Geen 'groot' meer: groot-dan-klein sprong zichtbaar, en heel de kijkfase groot
+              // duwde 'Verder' bij zin 2 op 390×844 onder de vouw (wow-meting traject 4).
               zegt={dezeZin ? vertelTekst(dezeZin) : ''}
               stemming={vertelIndex === 0 ? 'blij' : 'denkt'}
             />
@@ -567,9 +572,12 @@ export function LessonPlayer({
                   return (
                     <span
                       key={w.id}
-                      className={`${styles.wapenKlein} ${af ? styles.wapenAf : ''} ${w.id === wereld.id ? styles.wapenNu : ''}`}
-                      title={af ? w.naam : 'nog niet'}
-                      aria-label={af ? `${w.naam}, af` : 'nog niet af'}
+                      className={`${styles.wapenKlein} ${af ? styles.wapenAf : ''} ${w.id === wereld.id ? styles.wapenNu : ''} ${!af && w.id === nieuweWereld?.id ? styles.wapenVolgende : ''}`}
+                      // Elk wapen in zijn eigen wereldkleur: grijs las als "nog 14 te gaan",
+                      // gekleurd als nog 14 avonturen (wow-plan traject 4).
+                      style={{ '--toon': w.toon } as React.CSSProperties}
+                      title={af ? w.naam : w.id === nieuweWereld?.id ? `${w.naam}, gaat nu open` : 'nog niet'}
+                      aria-label={af ? `${w.naam}, af` : w.id === nieuweWereld?.id ? `${w.naam}, gaat nu open` : 'nog niet af'}
                     >
                       <WereldWapen id={w.id} maat={30} />
                     </span>
@@ -578,8 +586,20 @@ export function LessonPlayer({
               </div>
               {/* Waar je staat, zonder druk: een telling, geen opdracht. Verborgen op lage
                   schermen, anders zakt "Volgende les" onder de vouw (doorloop, 320×640). */}
-              <p className={styles.wereldAfTel}>
-                {WERELDEN.filter((w) => w.id === wereld.id || wereldIsAf(w.id, voortgang)).length} van de {WERELDEN.length} werelden af
+              {/* Eén regel: de telling, en welke wereld nu opengaat (die haak stond pas
+                  onderaan, wow-plan traject 4). Verborgen op lage schermen, anders zakt
+                  "Volgende les" onder de vouw (doorloop). */}
+              <p className={`${styles.wereldAfTel} ${styles.wereldAfOpen}`}>
+                {WERELDEN.filter((w) => w.id === wereld.id || wereldIsAf(w.id, voortgang)).length} van de {WERELDEN.length} af
+                {nieuweWereld && (
+                  <>
+                    {' · '}
+                    {/* Als één geheel: anders brak "nu" en "open:" over twee regels (wow-meting). */}
+                    <span style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      nu open: <WereldWapen id={nieuweWereld.id} maat={24} /> <strong>{nieuweWereld.naam}</strong>
+                    </span>
+                  </>
+                )}
               </p>
             </div>
           )}
@@ -675,7 +695,7 @@ export function LessonPlayer({
         }}
       />
 
-      <div className={`stack ${styles.speelvlak}`}>
+      <div className={`stack ${styles.speelvlak} ${stand?.klaar && fase === 'meedoen' && opgaveIndex === 0 ? styles.feest : ''}`}>
         <div className={styles.vakPip}>
           {/* Klein waar de hoogte krap is (staand: boven het bord). Liggend staat Pip in
               een eigen kolom met ruimte over; daar was hij een rondje van 52 px naast
@@ -683,20 +703,27 @@ export function LessonPlayer({
           <Pip zegt={zin} stemming={stemming} klein={!ruimNaast} />
         </div>
 
-        {/* Bij één opgave zei die ene losse stip niets; dan laten we hem weg. */}
-        {opgaven.length > 1 && (
-        <div className={`${styles.voortgang} ${styles.vakVoortgang}`} aria-label={`Opgave ${opgaveIndex + 1} van ${opgaven.length}`}>
-          {opgaven.map((_, i) => (
+        {/* Bij één opgave zei die ene losse stip niets; dan laten we hem weg, maar de rij houdt
+            zijn plek. Anders sprong het bord 28 px omlaag bij de overgang naar een fase met
+            meer opgaven (wow-meting traject 4). */}
+        <div
+          className={`${styles.voortgang} ${styles.vakVoortgang}`}
+          aria-label={opgaven.length > 1 ? `Opgave ${opgaveIndex + 1} van ${opgaven.length}` : undefined}
+          aria-hidden={opgaven.length > 1 ? undefined : true}
+        >
+          {opgaven.length > 1 && opgaven.map((_, i) => (
             <span
               key={i}
               className={`${styles.stip} ${i < opgaveIndex ? styles.stipAf : ''} ${
                 i === opgaveIndex ? styles.stipNu : ''
               }`}
               aria-hidden="true"
-            />
+            >
+              {/* Een gehaalde opgave wordt een sterretje dat even opspringt (wow-plan traject 4). */}
+              {i < opgaveIndex && <Icoon naam="ster-vol" maat={18} />}
+            </span>
           ))}
         </div>
-        )}
 
         {opgave.kind === 'quiz' ? (
           <div className={`${styles.quiz} ${styles.vakBord}`}>
@@ -731,6 +758,13 @@ export function LessonPlayer({
           </div>
         ) : (
           <div className={`${styles.bord} ${styles.vakBord}`}>
+            {/* De allereerste goede opgave van de les: Pip springt groot in beeld en juicht.
+                Een vinkje en een vonkje waren te klein voor het moment waarop een kind voor het
+                eerst iets zelf doet (wow-meting traject 4). Kort, en niet bij minder beweging. */}
+            {stand?.klaar && fase === 'meedoen' && opgaveIndex === 0 && (
+              // eslint-disable-next-line @next/next/no-img-element -- statische export, SVG
+              <img src={pipLos('juicht')} alt="" aria-hidden="true" className={styles.eersteFeest} draggable={false} />
+            )}
             <Board
               position={stand.board}
               selected={stand.geselecteerd}
@@ -820,6 +854,8 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
   return (
     <div
       className={`row ${styles.faseBalk}`}
+      // role="group": een aria-label op een kale div telt niet (Lighthouse aria-prohibited-attr).
+      role="group"
       style={{ justifyContent: 'center', gap: 10, marginBottom: 8, flexWrap: 'nowrap' }}
       aria-label={`Stap ${hier + 1} van 4: ${FASE_NAAM[nu]}`}
     >
@@ -835,7 +871,7 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
               aria-label="Laat de uitleg nog eens zien"
               title="Laat de uitleg nog eens zien"
             >
-              <Icoon naam={FASE_BEELD[f]} maat={30} />
+              <Icoon naam={FASE_BEELD[f]} maat={24} />
             </button>
           )
         }
@@ -852,7 +888,9 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
             display: 'grid',
             placeItems: 'center',
             background: i === hier ? 'var(--accent-soft)' : 'transparent',
-            border: i === hier ? '2px solid var(--accent)' : '2px solid transparent',
+            // Gedane fasen krijgen dezelfde groene ring als het oogje: anders zag je niet dat
+            // het kind ook "meedoen" al gehaald had (wow-meting traject 4).
+            border: i === hier ? '2px solid var(--accent)' : i < hier ? '2px solid var(--grass)' : '2px solid transparent',
             filter: i <= hier ? 'none' : 'grayscale(1)',
             // 0,6 en niet 0,45: in donker werden de komende fasen schimmen (38e review).
             opacity: i <= hier ? 1 : 0.6,
@@ -870,7 +908,9 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
 /** Waar ben ik? Het wapen en de kleur van de wereld, boven elke les. */
 function WereldBand({ wereld }: { wereld: World }) {
   return (
-    <div className={styles.wereldband} style={{ '--toon': wereld.toon } as React.CSSProperties}>
+    // De getekende strook van de kaart erachter: de les ligt in de wereld, niet onder een
+    // gekleurde balk (wow-plan traject 4).
+    <div className={styles.wereldband} style={{ '--toon': wereld.toon, '--strook': `url(${kaartBeeld(wereld.id)})`, '--strook-donker': `url(${kaartBeeld(wereld.id, true)})` } as React.CSSProperties}>
       <span aria-hidden="true" style={{ fontSize: 22 }}>
         <WereldWapen id={wereld.id} maat={26} />
       </span>

@@ -17,6 +17,7 @@ export const wereld11: World = {
   emoji: '🏯',
   toon: 25,
   belofte: 'Breng je koning veilig achter een muurtje.',
+  kunnen: 'rokeren',
   minLeeftijd: 8,
   minispel: 'breng-de-koning-veilig',
   lessen: [

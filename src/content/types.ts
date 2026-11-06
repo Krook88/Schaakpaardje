@@ -200,6 +200,12 @@ export type World = {
   /** Ondertitel op de kaart, wordt ingesproken. */
   belofte: string
   /**
+   * Wat een kind na deze wereld kan, in een paar woorden ("de toren", "schaak geven").
+   * Staat onder het wapen op de trofeeënplank: "Wat Noor al kan" met alleen wereldnamen
+   * eronder beloofde iets wat er niet stond (wow-meting traject 4). Niet ingesproken.
+   */
+  kunnen: string
+  /**
    * De kleurtoon van deze wereld, als graden op de kleurencirkel (0-360).
    *
    * Vijftien werelden met namen als Torenburcht en Loperbos zagen er alle vijftien

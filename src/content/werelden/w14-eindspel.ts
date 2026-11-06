@@ -13,6 +13,7 @@ export const wereld14: World = {
   emoji: '🏜️',
   toon: 38,
   belofte: 'Bijna niets meer op het bord. Nu moet je het afmaken.',
+  kunnen: 'het eindspel',
   minLeeftijd: 9,
   minispel: 'laatste-pion',
   diploma: 'goud',

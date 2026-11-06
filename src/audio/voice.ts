@@ -302,6 +302,16 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
 
   if (mijnBeurt !== beurt) return
   if (!('speechSynthesis' in window)) return
+  // Nog niet getikt: de browser zou de zin toch weigeren (en Chrome keurt het af als
+  // afgeschafte API, Lighthouse). Dan meteen klaarzetten voor de eerste aanraking, in
+  // plaats van eerst te proberen en na een stilte pas te merken dat het niets werd.
+  const activatie = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation
+  if (activatie && !activatie.hasBeenActive) {
+    geblokkeerdeZin = tekst
+    geblokkeerdeBeurt = mijnBeurt
+    wachtOpEersteTik()
+    return
+  }
   if (!stemmenGeladen) {
     // Safari en Chrome leveren de stemmenlijst pas asynchroon aan.
     stemmenGeladen = true

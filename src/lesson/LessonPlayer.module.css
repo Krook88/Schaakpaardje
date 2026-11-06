@@ -33,19 +33,25 @@
   padding: 8px 14px;
   margin-bottom: 4px;
   border-radius: var(--radius-sm);
-  background: hsl(var(--toon) 58% 92%);
+  background: hsl(var(--toon) 58% 92%) var(--strook, none) center 80% / cover no-repeat;
   border: 1px solid hsl(var(--toon) 35% 80%);
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 800;
+  min-height: 48px;
+  text-shadow: 0 0 6px #fff, 0 0 2px #fff;
 }
 @media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .wereldband { background-image: var(--strook-donker, none); text-shadow: 0 0 6px #000, 0 0 2px #000; }
+}
+:root[data-theme='dark'] .wereldband { background-image: var(--strook-donker, none); text-shadow: 0 0 6px #000, 0 0 2px #000; }
+@media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .wereldband {
-    background: hsl(var(--toon) 26% 20%);
+    background-color: hsl(var(--toon) 26% 20%);
     border-color: hsl(var(--toon) 22% 32%);
   }
 }
 :root[data-theme='dark'] .wereldband {
-  background: hsl(var(--toon) 26% 20%);
+  background-color: hsl(var(--toon) 26% 20%);
   border-color: hsl(var(--toon) 22% 32%);
 }
 
@@ -56,12 +62,15 @@
    stonden ze op 820px zo'n 600px uit elkaar met het bord smal in het midden. */
 .bord { max-width: min(100%, 70vh, 620px); width: 100%; margin: 0 auto; }
 .kolom { max-width: min(100%, 70vh, 620px); width: 100%; margin: 0 auto; }
-.voortgang { display: flex; gap: 8px; justify-content: center; }
+.voortgang { display: flex; gap: 8px; justify-content: center; align-items: center; min-height: 18px; }
 .stip {
   width: 12px; height: 12px; border-radius: 50%;
   background: var(--line); transition: background 0.2s ease, transform 0.2s ease;
 }
-.stipAf { background: var(--grass); }
+.stip { display: grid; place-items: center; }
+.stipAf { background: transparent; width: 18px; height: 18px; animation: sterOp 420ms ease-out; }
+@keyframes sterOp { 0% { transform: scale(0.3); } 70% { transform: scale(1.25); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .stipAf { animation: none; } }
 .stipNu { background: var(--accent); transform: scale(1.35); }
 .quiz { display: grid; gap: 12px; max-width: min(100%, 70vh, 620px); margin: 0 auto; width: 100%; }
 .quizKnop {
@@ -161,13 +170,12 @@
   font-size: 22px;
   padding: 0;
   cursor: pointer;
-  /* Een gewone knop met een groen randje: de kijkfase is klaar en je mag terug. Gestippeld
-     las als "nog niet gedaan", en stippellijn betekent sinds ronde 30 "kan nu niet" (60e review). */
-  background: var(--grass-soft);
-  border: 2px solid var(--grass);
-  /* Even groot als de andere fasen: groter las als "hier ben je" (61e review). Het tikvlak
-     blijft 64 px door de binnenmarge. */
-  box-shadow: var(--shadow);
+  /* Groen: de kijkfase is klaar en je mag terug (gestippeld las als "nog niet gedaan", 60e
+     review). Zichtbaar een klein rondje (40 px) met een vinkje-kleur, het tikvlak blijft 64 px: groot
+     las als "hier ben je" terwijl de huidige fase kleiner was (wow-meting). */
+  background: radial-gradient(circle, var(--grass-soft) 19px, var(--grass) 20px, var(--grass) 21px, transparent 22px);
+  border: 0;
+  box-shadow: none;
   color: inherit;
 }
 .nogEens:active { transform: scale(0.94); }
@@ -268,15 +276,19 @@
 /* 8 + 7 in plaats van 7 + 7 + 1: één los wapen onderaan oogde als een fout (37e review). */
 .wapenKlein {
   display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
-  font-size: 20px; background: color-mix(in srgb, var(--ink) 6%, transparent);
-  filter: grayscale(0.7); opacity: 0.5;
+  font-size: 20px; background: hsl(var(--toon, 40) 35% 90%);
+  filter: grayscale(0.25); opacity: 0.55;
 }
+/* De wereld die nu opengaat: in kleur, met een stippelring, als belofte. */
+.wapenVolgende { filter: none; opacity: 1; outline: 2px dashed hsl(var(--toon) 45% 50%); outline-offset: 1px; }
 .wapenAf { filter: none; opacity: 1; background: hsl(var(--toon) 50% 88%); }
 .wapenNu { outline: 3px solid hsl(var(--toon) 45% 50%); outline-offset: 1px; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .wapenAf { background: hsl(var(--toon) 25% 25%); }
+  :root:not([data-theme='light']) .wapenKlein:not(.wapenAf) { background: hsl(var(--toon, 40) 18% 20%); }
 }
 :root[data-theme='dark'] .wapenAf { background: hsl(var(--toon) 25% 25%); }
+:root[data-theme='dark'] .wapenKlein:not(.wapenAf) { background: hsl(var(--toon, 40) 18% 20%); }
 .lesKort { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px; }
 
 /* Op een liggend scherm van 768 hoog viel "Volgende les" onder de vouw (38e review). */
@@ -314,6 +326,7 @@
 /* De getinte achtergrond loopt door tot onder de knoppen (39e review: naad door "Volgende les"). */
 .wereldpagina { min-height: 100dvh; }
 .wereldAfTel { margin: 0; font-weight: 700; }
+.wereldAfOpen { margin: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; row-gap: 2px; justify-content: center; font-weight: 600; }
 @media (max-height: 720px) and (max-width: 600px) { .wereldAfTel { display: none; } }
 
 /* Wereld af dwars (rondes 23–24, 47e–49e review). Links de feestkaart, rechts Pip met zijn
@@ -385,4 +398,48 @@
    380 = 325 + die regel + marge; gemeten op 320×640, bewaakt in de doorloop. */
 @media (max-width: 340px) and (orientation: portrait) and (max-height: 760px) {
   .vertelStack > .vakBord { max-width: min(100%, calc(100svh - 380px)) !important; }
+}
+
+/* Eerste goede opgave: Pip springt groot midden in beeld en verdwijnt weer. */
+.eersteFeest {
+  position: absolute; left: 50%; top: 50%; width: min(56%, 240px); height: auto; z-index: 20;
+  pointer-events: none; transform: translate(-50%, -50%);
+  animation: eersteFeest 2100ms ease-out both;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.25));
+}
+@keyframes eersteFeest {
+  0% { opacity: 0; transform: translate(-50%, -30%) scale(0.4); }
+  15% { opacity: 1; transform: translate(-50%, -55%) scale(1.08); }
+  28% { transform: translate(-50%, -50%) scale(1); }
+  85% { transform: translate(-50%, -50%) scale(1); }
+  /* Weg door krimpen, niet door doorzichtig worden: half doorzichtig zag je de velden door
+     Pip heen, met een naad (wow-meting). */
+  100% { transform: translate(-50%, -50%) scale(0); }
+}
+/* Minder beweging: Pip staat er stil, zonder sprong (eerst kreeg dit kind niets). */
+@media (prefers-reduced-motion: reduce) { .eersteFeest { animation: none; } }
+/* Wereld af staand: één Pip. Het gezicht bij de ballon wijkt voor de grote juichende Pip
+   in de kaart; de ballon met luisterknop blijft (wow-meting traject 4). */
+@media (orientation: portrait) {
+  .feestPip [data-pip-gezicht] { display: none; }
+  /* Zonder gezicht wijst het staartje van de ballon nergens heen (wow-meting). */
+  .feestPip p[aria-live]::before { display: none; }
+}
+/* Tijdens het eerste feest: geen tweede (kleine) Pip en geen hulpknoppen; die horen bij
+   hulp nodig hebben, niet bij gelukt (wow-meting traject 4). */
+.feest .vakPip [data-pip-gezicht], .feest .vakKnoppen { visibility: hidden; }
+.vakBord { position: relative; }
+/* De ballonzone in de kijkfase houdt een vaste hoogte, zodat het bord niet op en neer
+   springt tussen zinnen van één, twee of drie regels (wow-meting). */
+@media (min-height: 761px) { .vertelStack > .vakPip { min-height: 122px; align-items: center; display: flex; } }
+/* Tijdens het feest geen staartje naar de weggehaalde kleine Pip. */
+.feest .vakPip p[aria-live]::before { display: none; }
+/* Iets kleinere letter in de uitlegballon: zin 2 (vijf regels) stond op 390×844 tot 1 px op de rand. */
+.vertelStack .vakPip p[aria-live] { font-size: 0.96rem; }
+/* In de opgaven géén vaste ballonhoogte: die duwde "Help me even" half onder de vouw
+   (wow-meting). Een bord dat 22 px zakt bij een fouttip is het kleinere kwaad. */
+/* Wereld af: de feestkaart zegt al "nu open: Torenburcht"; de losse poortkaart eronder
+   was dubbel (wow-meting). Alleen waar die regel ook zichtbaar is. */
+@media (orientation: portrait) and (min-height: 721px), (orientation: portrait) and (min-width: 601px) {
+  .wereldpagina:has(.wereldAf) .poort { display: none; }
 }

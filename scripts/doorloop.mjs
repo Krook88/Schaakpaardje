@@ -1221,29 +1221,40 @@ for (const [w, h] of [[375, 667], [390, 844]]) {
   const m = await p.evaluate(() => {
     const pa = [...document.querySelectorAll('[data-square]')].find((x) => /paard/.test(x.getAttribute('aria-label') || ''))?.getBoundingClientRect()
     const k = [...document.querySelectorAll('a')].find((a) => /eerste les/.test(a.textContent))?.getBoundingClientRect()
-    return pa && k ? { paardOnder: Math.round(pa.bottom), knop: Math.round(k.bottom) } : null
+    const bord = document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect()
+    return pa && k && bord ? { paardOnder: Math.round(pa.bottom), knop: Math.round(k.bottom), bordOnder: Math.round(bord.bottom) } : null
   })
   // Het hele veld van het paard: met alleen de bovenkant gemeten zag je op 375×667 maar
   // zijn oren (59e review).
-  meld(`startpagina ${w}×${h}: paard en knop boven de vouw`, Boolean(m) && m.paardOnder <= h && m.knop <= h, JSON.stringify(m))
+  // Op 390×844 ook het hele bord: een afgesneden bord stuurt niemand door (wow-meting traject 4).
+  meld(`startpagina ${w}×${h}: paard en knop boven de vouw${h >= 800 ? ', hele bord in beeld' : ''}`, Boolean(m) && m.paardOnder <= h && m.knop <= h && (h < 800 || m.bordOnder <= h), JSON.stringify(m))
   await ctx.close()
 }
 
 // Eerste les op korte telefoons: het hele bord in beeld, bij elke zin en bij de eerste
 // opgave. De tweede zin laat de onderste rij oplichten, en de opgave vraagt om de
 // donkere velden helemaal onderaan; die vielen eerst onder de vouw (60e review).
-for (const [w, h] of [[375, 667], [320, 640], [360, 740]]) {
+for (const [w, h] of [[375, 667], [320, 640], [360, 740], [390, 844]]) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h } })
   const p = await ctx.newPage()
   await p.goto(URL + '/les/weide-1/', { waitUntil: 'networkidle' })
   await p.waitForTimeout(800)
   const onder = () => p.evaluate(() => Math.round(document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect().bottom ?? 1e4))
+  // Ook de knop verder (Verder of Ik ga het proberen) bij elke zin: bij zin 2 viel hij op
+  // 390×844 onder de vouw toen Pip in de hele kijkfase groot was (wow-meting traject 4).
+  const knop = () => p.evaluate(() => Math.round([...document.querySelectorAll('button')].find((b) => /Verder|proberen/.test(b.textContent))?.getBoundingClientRect().bottom ?? 1e4))
   const stappen = [await onder()]
+  const knoppen = [await knop()]
   for (let i = 0; i < 2; i++) {
     await p.getByRole('button', { name: /Verder/ }).first().click()
     await p.waitForTimeout(400)
     stappen.push(await onder())
+    knoppen.push(await knop())
   }
+  meld(`eerste les ${w}×${h}: de knop verder in beeld bij elke zin`, knoppen.every((o) => o <= h), knoppen.join(', '))
+  // Het bord blijft staan tussen de zinnen: met een ballon van één of vier regels sprong het
+  // 24 px op en neer (wow-meting traject 4). Alleen waar de vaste ballonhoogte geldt.
+  if (h > 760) meld(`eerste les ${w}×${h}: het bord springt niet tussen de zinnen`, Math.max(...stappen.slice(0, 3)) - Math.min(...stappen.slice(0, 3)) <= 2, stappen.slice(0, 3).join(', '))
   await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
   await p.waitForTimeout(500)
   stappen.push(await onder())
@@ -1259,6 +1270,43 @@ for (const [w, h] of [[320, 640], [375, 667]]) {
   await p.waitForTimeout(400)
   const onder = await p.evaluate(() => Math.round(document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect().bottom ?? 1e4))
   meld(`speelscherm ${w}×${h}: het hele bord in beeld`, onder <= h, `onderkant ${onder}`)
+  await ctx.close()
+}
+
+// Startpagina: na een tik op het proefbord staat er één Pip-gezicht naast de ballon. Met
+// gelijke sleutels bleef het oude gezicht staan: drie Pips in beeld (wow-meting traject 4).
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const stip = await p.evaluate(() => [...document.querySelectorAll('[data-square]')].find((x) => /heen/.test(x.getAttribute('aria-label') || ''))?.dataset.square)
+  await p.locator(`[data-square="${stip}"]`).click()
+  await p.waitForTimeout(400)
+  const n = await p.evaluate(() => [...document.querySelectorAll('img')].filter((i) => /pip-los-/.test(i.src) && !i.closest('[data-square]') && i.getBoundingClientRect().width > 0).length)
+  meld('startpagina: na een tik één Pip-gezicht bij de ballon', n === 1, `${n} gezichten`)
+  await ctx.close()
+}
+
+// Bij de fasewissel van samen naar zelf sprong het bord 28 px omlaag: in de samen-fase
+// stond er geen rij voortgangsbolletjes boven het bord, in de zelf-fase wel (wow-meting
+// traject 4). De rij houdt nu altijd zijn plek.
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
+  const p = await ctx.newPage()
+  await p.goto(URL + '/les/weide-1/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(500)
+  const top = () => p.evaluate(() => Math.round(document.querySelector('[class*="Board_frame"]')?.getBoundingClientRect().top ?? -1))
+  for (let i = 0; i < 2; i++) { await p.getByRole('button', { name: /Verder/ }).first().click(); await p.waitForTimeout(300) }
+  await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
+  await p.waitForTimeout(500)
+  const samen = await top()
+  for (const v of ['a1', 'c1', 'e1', 'g1']) { await p.locator(`[data-square="${v}"]`).click(); await p.waitForTimeout(120) }
+  // Wachten tot de volgende opgave er staat (na het feest).
+  await p.waitForFunction(() => !document.querySelector('[class*="eersteFeest"]'), null, { timeout: 8000 }).catch(() => {})
+  await p.waitForTimeout(2800)
+  const daarna = await top()
+  meld('eerste les 390×844: het bord springt niet bij de volgende opgave', samen > 0 && Math.abs(daarna - samen) <= 2, `${samen} → ${daarna}`)
   await ctx.close()
 }
 
