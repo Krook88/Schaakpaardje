@@ -884,7 +884,9 @@ function FaseBalk({ nu, opNogEensKijken }: { nu: Fase; opNogEensKijken?: () => v
             display: 'grid',
             placeItems: 'center',
             background: i === hier ? 'var(--accent-soft)' : 'transparent',
-            border: i === hier ? '2px solid var(--accent)' : '2px solid transparent',
+            // Gedane fasen krijgen dezelfde groene ring als het oogje: anders zag je niet dat
+            // het kind ook "meedoen" al gehaald had (wow-meting traject 4).
+            border: i === hier ? '2px solid var(--accent)' : i < hier ? '2px solid var(--grass)' : '2px solid transparent',
             filter: i <= hier ? 'none' : 'grayscale(1)',
             // 0,6 en niet 0,45: in donker werden de komende fasen schimmen (38e review).
             opacity: i <= hier ? 1 : 0.6,

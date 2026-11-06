@@ -411,8 +411,10 @@
   0% { opacity: 0; transform: translate(-50%, -30%) scale(0.4); }
   15% { opacity: 1; transform: translate(-50%, -55%) scale(1.08); }
   28% { transform: translate(-50%, -50%) scale(1); }
-  85% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+  85% { transform: translate(-50%, -50%) scale(1); }
+  /* Weg door krimpen, niet door doorzichtig worden: half doorzichtig zag je de velden door
+     Pip heen, met een naad (wow-meting). */
+  100% { transform: translate(-50%, -50%) scale(0); }
 }
 /* Minder beweging: Pip staat er stil, zonder sprong (eerst kreeg dit kind niets). */
 @media (prefers-reduced-motion: reduce) { .eersteFeest { animation: none; } }
@@ -429,8 +431,15 @@
 .vakBord { position: relative; }
 /* De ballonzone in de kijkfase houdt een vaste hoogte, zodat het bord niet op en neer
    springt tussen zinnen van één, twee of drie regels (wow-meting). */
-@media (min-height: 761px) { .vertelStack > .vakPip { min-height: 96px; align-items: center; display: flex; } }
+@media (min-height: 761px) { .vertelStack > .vakPip { min-height: 122px; align-items: center; display: flex; } }
 /* Tijdens het feest geen staartje naar de weggehaalde kleine Pip. */
 .feest .vakPip p[aria-live]::before { display: none; }
 /* Iets kleinere letter in de uitlegballon: zin 2 (vijf regels) stond op 390×844 tot 1 px op de rand. */
 .vertelStack .vakPip p[aria-live] { font-size: 0.96rem; }
+/* Ook in de opgaven een vaste ballonhoogte: bij een fouttip zakte het bord 22 px. */
+@media (min-height: 761px) { .speelvlak:not(.vertelStack) > .vakPip { min-height: 96px; align-items: center; display: flex; } }
+/* Wereld af: de feestkaart zegt al "nu open: Torenburcht"; de losse poortkaart eronder
+   was dubbel (wow-meting). Alleen waar die regel ook zichtbaar is. */
+@media (orientation: portrait) and (min-height: 721px), (orientation: portrait) and (min-width: 601px) {
+  .wereldpagina:has(.wereldAf) .poort { display: none; }
+}

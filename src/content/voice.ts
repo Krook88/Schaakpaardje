@@ -58,7 +58,7 @@ export const STER2 = ['Twee sterren! De volgende les staat open.'] as const
 export const STER3 = ['Drie sterren! Je krijgt er een sticker bij.'] as const
 
 export const WERELD_AF = [
-  'Deze hele wereld is uit! Wat ben jij goed bezig.',
+  'Deze hele wereld is af! Wat ben jij goed bezig.',
   // Hier stond ook "Klaar met deze wereld. Hoefijzer verdiend!", maar een hoefijzer
   // krijg je pas na wereld 6, 12 en 14. Na De Weide zocht een kind er een dat er niet
   // was (28e review). Een nieuwe zin vraagt een nieuwe opname; tot dan deze ene.

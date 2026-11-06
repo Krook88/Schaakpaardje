@@ -1252,6 +1252,9 @@ for (const [w, h] of [[375, 667], [320, 640], [360, 740], [390, 844]]) {
     knoppen.push(await knop())
   }
   meld(`eerste les ${w}×${h}: de knop verder in beeld bij elke zin`, knoppen.every((o) => o <= h), knoppen.join(', '))
+  // Het bord blijft staan tussen de zinnen: met een ballon van één of vier regels sprong het
+  // 24 px op en neer (wow-meting traject 4). Alleen waar de vaste ballonhoogte geldt.
+  if (h > 760) meld(`eerste les ${w}×${h}: het bord springt niet tussen de zinnen`, Math.max(...stappen.slice(0, 3)) - Math.min(...stappen.slice(0, 3)) <= 2, stappen.slice(0, 3).join(', '))
   await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
   await p.waitForTimeout(500)
   stappen.push(await onder())
