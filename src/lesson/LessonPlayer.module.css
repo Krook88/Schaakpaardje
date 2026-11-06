@@ -436,8 +436,8 @@
 .feest .vakPip p[aria-live]::before { display: none; }
 /* Iets kleinere letter in de uitlegballon: zin 2 (vijf regels) stond op 390×844 tot 1 px op de rand. */
 .vertelStack .vakPip p[aria-live] { font-size: 0.96rem; }
-/* Ook in de opgaven een vaste ballonhoogte: bij een fouttip zakte het bord 22 px. */
-@media (min-height: 761px) { .speelvlak:not(.vertelStack) > .vakPip { min-height: 96px; align-items: center; display: flex; } }
+/* In de opgaven géén vaste ballonhoogte: die duwde "Help me even" half onder de vouw
+   (wow-meting). Een bord dat 22 px zakt bij een fouttip is het kleinere kwaad. */
 /* Wereld af: de feestkaart zegt al "nu open: Torenburcht"; de losse poortkaart eronder
    was dubbel (wow-meting). Alleen waar die regel ook zichtbaar is. */
 @media (orientation: portrait) and (min-height: 721px), (orientation: portrait) and (min-width: 601px) {
