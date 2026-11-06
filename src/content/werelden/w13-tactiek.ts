@@ -17,7 +17,7 @@ export const wereld13: World = {
   emoji: '🔱',
   toon: 320,
   belofte: 'Twee vliegen in één klap.',
-  kunnen: 'twee dingen tegelijk',
+  kunnen: 'vork en penning',
   minLeeftijd: 9,
   minispel: 'tactiekduel',
   lessen: [

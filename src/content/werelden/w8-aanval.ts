@@ -17,7 +17,7 @@ export const wereld8: World = {
   emoji: '⚔️',
   toon: 5,
   belofte: 'Hier leer je zien wanneer je stuk gevaar loopt.',
-  kunnen: 'gevaar zien',
+  kunnen: 'stukken redden',
   minLeeftijd: 7,
   minispel: 'red-je-stuk',
   lessen: [
