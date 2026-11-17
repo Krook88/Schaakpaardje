@@ -155,9 +155,13 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect(open).toContain('Opgaven: waar lopen kinderen vast?')
     expect(open).toContain('<td>zelf 1</td>')
     expect(open).toContain('Van binnenkomst naar profiel')
-    expect(open).toContain('Speelde')
+    expect(open).toContain('Gespeeld')
     expect(open).toContain('meteen (nog geen les)')
     expect(open).toContain('Waar verbeteren?')
+    // De pagina in vijf hoofdstukken, met de kerncijfers bovenaan.
+    expect(open).toContain('In het kort')
+    for (const id of ['doen', 'gaat', 'afhaken', 'spelen', 'berichten']) expect(open).toContain(`id="${id}"`)
+    expect(open).toMatch(/nog niets om mee te vergelijken|[↑↓→] \d+/)
     expect(open).toContain('Pips stem')
     expect(open).toContain('stem van het apparaat')
 

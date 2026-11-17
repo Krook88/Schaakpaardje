@@ -76,6 +76,19 @@ function pagina(string $titel, string $inhoud): void
         . 'ol.bevindingen{margin:0;padding-left:1.4em}ol.bevindingen li{margin:0 0 12px;line-height:1.45;max-width:75ch}'
         . '.label{display:inline-block;font-size:.8rem;font-weight:700;padding:1px 8px;border-radius:8px;background:var(--rand);border:1px solid var(--zacht);margin-right:4px}'
         . '.schuif{overflow-x:auto;max-width:100%}td.breek{white-space:normal;overflow-wrap:anywhere;min-width:7em}h3.klein{font-size:.95rem;margin:14px 0 6px}'
+        . '.kernen{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}'
+        . '.kern{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid var(--rand);border-radius:12px}'
+        . '.kern b{font-size:1.8rem;line-height:1.1}.kern-label{font-weight:600}.kern-uitleg{font-size:.85rem;margin-top:4px}'
+        . '.pijl{font-size:.85rem;font-weight:600;color:var(--zacht)}.pijl.beter{color:var(--groen)}.pijl.slechter{color:var(--accent)}'
+        . '.inhoud{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 8px}.inhoud a{color:var(--tekst);text-decoration:none;border:1px solid var(--rand);border-radius:20px;padding:6px 12px;font-size:.9rem}'
+        . '.inhoud a:hover,.inhoud a:focus-visible{border-color:var(--accent)}'
+        . '.hoofdstuk{margin:26px 0 10px;padding:0 4px}.hoofdstuk h2{font-size:1.3rem;margin:0 0 2px}.hoofdstuk p{margin:0}'
+        . 'section.klap summary{cursor:pointer;list-style-position:inside}section.klap summary h2{display:inline;font-size:1.05rem}'
+        . 'section.klap details{margin:0}section.klap details[open] summary{margin-bottom:10px}'
+        . '.legenda{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.9rem;margin:8px 0 12px}.legenda dt{font-weight:600}.legenda dd{margin:0;color:var(--zacht)}'
+        . 'td.goed{color:var(--groen);font-weight:700}td.matig{font-weight:700}td.slecht{color:var(--accent);font-weight:700}'
+        . 'td.heet1{background:color-mix(in srgb,var(--accent) 12%,transparent)}td.heet2{background:color-mix(in srgb,var(--accent) 26%,transparent)}'
+        . 'td.heet3{background:color-mix(in srgb,var(--accent) 42%,transparent);font-weight:700}'
         . '.bericht{border-top:1px solid var(--rand);padding:10px 0}.bericht a{color:var(--accent)}'
         . '</style></head><body><main>' . $inhoud . '</main></body></html>';
 }
@@ -135,10 +148,31 @@ $geluid = [];
 $dagen = [];
 $leeg = ['bezoek' => 0, 'terug' => 0, 'begonnen' => 0, 'speelde' => 0, 'af' => 0, 'afGemeten' => 0, 'partij' => 0, 'rondje' => 0, 'stukken' => 0, 'lang' => 0];
 
-loopDagen($periode, function (string $dag, ?array $r) use (
+/**
+ * De periode ervóór, even lang, voor de pijltjes in "In het kort". Alleen een paar losse
+ * aantallen; de rest van het dashboard gaat over de gekozen periode.
+ */
+$start = gmdate('Y-m-d', time() - ($periode - 1) * 86400);
+$vorig = ['bezoek' => 0, 'terug' => 0, 'af' => 0, 'speelde' => 0, 'afGemeten' => 0];
+
+loopDagen($periode * 2, function (string $dag, ?array $r) use (
     &$totaal, &$lessen, &$duur, &$geoefend, &$partijen, &$spellen, &$lastig, &$binnenkomst, &$profielNa, &$schermen, &$verwijzers, &$uren,
-    &$dagen, $leeg, &$stemBron, &$uitleg, &$geluid
+    &$dagen, $leeg, &$stemBron, &$uitleg, &$geluid, $start, &$vorig
 ) {
+    if ($dag < $start) {
+        if ($r === null || $dag < SCHOON_VANAF) return;
+        $n = $r['n'] ?? '';
+        if ($n === 'Bezoek') {
+            $vorig['bezoek']++;
+            if (!in_array($r['e']['geoefend'] ?? '?', ['nog niet', '1 dag', '?'], true)) $vorig['terug']++;
+        } elseif ($n === 'Les af') {
+            $vorig['af']++;
+            if ($dag >= SPEELDE_VANAF) $vorig['afGemeten']++;
+        } elseif ($n === 'Eerste opgave') {
+            $vorig['speelde']++;
+        }
+        return;
+    }
     if ($r === null) {
         $dagen[$dag] = $leeg;
         return;
@@ -602,6 +636,22 @@ function bevindingen(array $lessen, array $titels, array $lesInfo, array $volgor
     return $uit;
 }
 
+/** Een hoofdstukkop: de pagina in vijf delen, met een anker voor de inhoudsopgave. */
+function hoofdstuk(string $id, string $titel, string $uitleg): string
+{
+    return '<div class="hoofdstuk" id="' . e($id) . '"><h2>' . e($titel) . '</h2><p class="zacht">' . e($uitleg) . '</p></div>';
+}
+
+/** Een sectie ingeklapt: de kop blijft zichtbaar, de inhoud komt bij een klik. */
+function inklap(string $sectie): string
+{
+    $i = strpos($sectie, '<section><h2>');
+    $j = strpos($sectie, '</h2>');
+    if ($i !== 0 || $j === false || substr($sectie, -10) !== '</section>') return $sectie;
+    return '<section class="klap"><details><summary><h2>' . substr($sectie, 13, $j - 13) . '</h2></summary>'
+        . substr($sectie, $j + 5, -10) . '</details></section>';
+}
+
 /* ---------- tonen ---------- */
 
 $h = '<h1>Teller van Schaakmaatje</h1>';
@@ -611,7 +661,45 @@ foreach ([7 => '7 dagen', 30 => '30 dagen', 90 => '90 dagen'] as $d => $label) {
 }
 $h .= '</form>';
 
-$h .= '<section><div class="cijfers">';
+/** Een kerncijfer met de verandering tegenover de periode ervóór. */
+function kerncijfer(string $waarde, string $label, string $uitleg, ?float $nu, ?float $toen, bool $procent): string
+{
+    $pijl = '';
+    if ($nu !== null && $toen !== null && $toen > 0) {
+        $verschil = $procent ? round($nu - $toen) : round(($nu - $toen) / $toen * 100);
+        $teken = $verschil > 0 ? '↑' : ($verschil < 0 ? '↓' : '→');
+        $klasse = $verschil > 0 ? 'beter' : ($verschil < 0 ? 'slechter' : '');
+        $pijl = '<span class="pijl ' . $klasse . '">' . $teken . ' ' . abs((int) $verschil) . ($procent ? ' punt' : '%') . '</span>';
+    } else {
+        $pijl = '<span class="pijl">nog niets om mee te vergelijken</span>';
+    }
+    return '<div class="kern"><b>' . e($waarde) . '</b><span class="kern-label">' . e($label) . '</span>' . $pijl
+        . '<span class="zacht kern-uitleg">' . e($uitleg) . '</span></div>';
+}
+
+$speeldeNu = array_sum(array_map(function ($d) { return $d['speelde']; }, $dagen));
+$afGemetenNu = array_sum(array_map(function ($d) { return $d['afGemeten']; }, $dagen));
+$terugNu = array_sum(array_map(function ($d) { return $d['terug']; }, $dagen));
+$pAf = pct($afGemetenNu, $speeldeNu);
+$pAfToen = pct($vorig['afGemeten'], $vorig['speelde']);
+$pTerug = pct($terugNu, $totaal['Bezoek']);
+$pTerugToen = pct($vorig['terug'], $vorig['bezoek']);
+$berichten = laatsteBerichten(30);
+$nieuweBerichten = count(array_filter($berichten, function ($b) use ($start) { return empty($b['r']) && substr((string) ($b['t'] ?? ''), 0, 10) >= $start; }));
+
+$h .= '<section><h2>In het kort</h2><p class="zacht">De laatste ' . $periode . ' dagen. Pijltjes vergelijken met de '
+    . $periode . ' dagen daarvóór.</p><div class="kernen">'
+    . kerncijfer((string) $totaal['Bezoek'], 'bezoeken', 'Keer dat de app werd geopend. Zonder ID\'s: geen unieke bezoekers.', $totaal['Bezoek'], $vorig['bezoek'] ?: null, false)
+    . kerncijfer((string) $totaal['Les af'], 'lessen afgemaakt', 'Tot en met de beloning.', $totaal['Les af'], $vorig['af'] ?: null, false)
+    . kerncijfer($pAf === null ? '–' : min(100, $pAf) . '%', 'maakt de les af', 'Van wie een les begon te spelen (eerste tik op een opgave).', $pAf, $pAfToen, true)
+    . kerncijfer($pTerug === null ? '–' : $pTerug . '%', 'komt terug', 'Bezoeken van een apparaat waarop al op 2 of meer dagen geoefend is.', $pTerug, $pTerugToen, true)
+    . '</div>';
+if ($nieuweBerichten) {
+    $h .= '<p style="margin:12px 0 0"><a href="#berichten">' . $nieuweBerichten . ' ' . ($nieuweBerichten === 1 ? 'nieuw bericht' : 'nieuwe berichten') . ' van ouders</a></p>';
+}
+$h .= '<nav class="inhoud" aria-label="Inhoud"><a href="#doen">1 · Wat nu doen?</a><a href="#gaat">2 · Hoe gaat het?</a>'
+    . '<a href="#afhaken">3 · Waar haken ze af?</a><a href="#spelen">4 · Wat doen ze verder?</a><a href="#berichten">5 · Berichten en herkomst</a></nav>';
+$h .= '<details><summary class="zacht">Alle aantallen</summary><div class="cijfers" style="margin-top:10px">';
 foreach ([
     ['Bezoek', 'keer de app geopend'],
     ['pageview', 'schermen bekeken'],
@@ -623,14 +711,14 @@ foreach ([
 ] as [$k, $label]) {
     $h .= '<div class="cijfer"><b>' . $totaal[$k] . '</b><span>' . e($label) . '</span></div>';
 }
-$h .= '</div><p class="zacht" style="margin:10px 0 0">Er zijn geen ID\'s, dus "unieke bezoekers" bestaan hier niet: '
-    . 'een bezoek is één keer de app openen. Tijden in UTC. Alleen vanaf ' . e(SCHOON_VANAF) . ': daarvóór telde '
-    . 'Googlebot mee, die elke les uit de sitemap één keer opende. Zoekmachines tellen nu niet meer mee.</p></section>';
+$h .= '</div><p class="zacht" style="margin:10px 0 0">Tijden in UTC. Alleen vanaf ' . e(SCHOON_VANAF) . ': daarvóór telde '
+    . 'Googlebot mee, die elke les uit de sitemap één keer opende. Zoekmachines tellen nu niet meer mee.</p></details></section>';
 
 $somUitleg = somUitleg($uitleg);
 $nieuwApparaat = $geoefend['nog niet'] ?? 0;
 $lijstBevindingen = bevindingen($lessen, $titels, $lesInfo, $volgorde, $lastig, $stemBron, $uitleg, $somUitleg, $geluid, $nieuwApparaat, $binnenkomst, $totaal['Bezoek']);
 $soortNaam = ['uitleg' => 'Uitleg', 'les' => 'Les', 'opgave' => 'Opgave', 'stem' => 'Stem', 'binnenkomst' => 'Binnenkomst'];
+$h .= hoofdstuk('doen', '1 · Wat nu doen?', 'De grootste knelpunten, uitgerekend uit alles hieronder.');
 $h .= '<section><h2>Waar verbeteren?</h2><p class="zacht">Uitgerekend uit de tellingen hieronder, wat het vaakst voorkwam eerst. '
     . 'Elke regel noemt zijn getallen; bij weinig metingen is het een aanwijzing, geen bewijs. Het zijn vragen om na te lopen, '
     . 'geen opdrachten: verander nooit een regel of uitzondering in een les alleen omdat een getal dat zegt.</p>';
@@ -649,6 +737,7 @@ $h .= '</section>';
 $kolom = function (string $k) use ($dagen) {
     return array_map(function ($d) use ($k) { return $d[$k]; }, $dagen);
 };
+$h .= hoofdstuk('gaat', '2 · Hoe gaat het?', 'Groeit het gebruik, en wordt de app beter? Kijk vooral naar de percentages: die worden niet vanzelf hoger in een drukke week.');
 $h .= '<section><h2>Verloop per dag</h2><div class="raster">'
     . staven('Bezoeken', $kolom('bezoek'))
     . staven('Lessen afgemaakt', $kolom('af'))
@@ -670,23 +759,7 @@ $h .= '<section><h2>Wordt het beter? (' . $per . ')</h2><p class="zacht">Percent
     . lijn('Speelt 5 minuten of langer', perStuk($dagen, $periode, 'lang', 'stukken'), 'Van de speelstukken, hoeveel 5 minuten of langer duurden.')
     . '</div></section>';
 
-$berichten = laatsteBerichten(30);
-$h .= '<section><h2>Berichten van ouders</h2><p class="zacht">Via het formulier op /contact/. Ze gaan ook '
-    . 'naar info@schaakmaatje.nl; hier staan ze voor als een mail niet aankwam. Na een jaar worden ze gewist. '
-    . 'Staat er vaak "niet gemaild", dan verstuurt de hosting geen mail.</p>';
-if ($berichten) {
-    foreach ($berichten as $b) {
-        $h .= '<div class="bericht"><p class="zacht" style="margin:0">' . e($b['t'] ?? '') . ' UTC · ' . e($b['s'] ?? '')
-            . (!empty($b['r']) ? ' · <strong>waarschijnlijk een robot</strong>' : '')
-            . (empty($b['r']) && isset($b['m']) && !$b['m'] ? ' · <strong>niet gemaild</strong>' : '')
-            . (isset($b['e']) ? ' · <a href="mailto:' . e(rawurlencode((string) $b['e'])) . '">' . e($b['e']) . '</a>' : ' · geen adres')
-            . '</p><p style="margin:4px 0 0;white-space:pre-wrap">' . e($b['b'] ?? '') . '</p></div>';
-    }
-} else {
-    $h .= '<p class="zacht">Nog geen berichten.</p>';
-}
-$h .= '</section>';
-
+$h .= hoofdstuk('afhaken', '3 · Waar haken ze af?', 'Van binnenkomst tot de laatste opgave: waar gaan kinderen weg, en waar lopen ze vast?');
 // De trechter: van een nieuw apparaat naar de eerste les, af, en een profiel. Zonder ID's
 // zijn het losse aantallen naast elkaar, geen gevolgde paden.
 $eerste = $volgorde ? (string) array_search(0, $volgorde, true) : '';
@@ -730,16 +803,20 @@ if ($binnenkomst) {
 $h .= '</section>';
 
 $fases = ['kijken', 'meedoen', 'zelf', 'toets'];
-$h .= '<section><h2>Lessen: waar haken kinderen af?</h2><p class="zacht">Gestopt = weggegaan vóór het eind, '
-    . 'ook door de tab te sluiten of de tablet op slot te doen. Eén keer per keer dat de les open was, '
-    . 'in de fase van de eerste keer weggaan. Wie later terugkomt en de les afmaakt, telt ook bij af. '
-    . 'Opende = de les geopend. Speelde = de eerste tik op een opgave. Af % = van wie speelde (vanaf ' . e(SPEELDE_VANAF) . ').</p>';
+$h .= '<section><h2>Lessen: waar haken kinderen af?</h2>'
+    . '<p class="zacht">Elke les heeft vier stappen. Zie je in een kolom "Gestopt in" een donker vakje, dan gaan daar veel kinderen weg.</p>'
+    . '<dl class="legenda"><dt>kijken</dt><dd>Pip legt uit, het kind tikt op Verder.</dd>'
+    . '<dt>meedoen</dt><dd>Eerste opgaven, met Pip die helpt.</dd>'
+    . '<dt>zelf</dt><dd>Opgaven zonder hulp.</dd>'
+    . '<dt>toets</dt><dd>De laatste opgaven, voor de sterren.</dd>'
+    . '<dt>Geopend</dt><dd>Keer dat de les begon (niet verder gegaan waar het kind was gebleven).</dd>'
+    . '<dt>Gespeeld</dt><dd>Daarvan: de eerste tik op een opgave gedaan.</dd>'
+    . '<dt>Af %</dt><dd>Van wie speelde, hoeveel de les afmaakten. <span style="color:var(--groen);font-weight:700">Groen</span> 80% of meer, '
+    . '<span style="color:var(--accent);font-weight:700">oranje</span> onder 60%. Pas gekleurd vanaf 3 keer gespeeld.</dd></dl>';
 if ($lessen) {
-    // Twee koprijen: "Gestopt in" boven vier smalle fasekolommen. Met "Gestopt in kijken"
-    // als losse koppen was de tabel breder dan het scherm.
-    // "Begon" is de pagina openen, "Speelde" de eerste tik op een opgave. Af % gaat over
-    // wie speelde: wie alleen de uitleg las (of een zoekmachine) is niet afgehaakt.
-    $h .= '<table class="lessen"><tr><th rowspan="2">Les</th><th rowspan="2" class="n">Opende</th><th rowspan="2" class="n">Speelde</th><th rowspan="2" class="n">Hervat</th>'
+    $weinig = [];
+    $h .= '<table class="lessen"><tr><th rowspan="2">Les</th><th rowspan="2" class="n">Geopend</th><th rowspan="2" class="n">Gespeeld</th>'
+        . '<th rowspan="2" class="n" title="Verder gegaan waar het kind gebleven was">Hervat</th>'
         . '<th rowspan="2" class="n">Af</th><th rowspan="2" class="n" title="Van wie speelde">Af %</th><th rowspan="2" class="n" title="Gemiddeld aantal sterren">★</th>'
         . '<th colspan="4" class="midden">Gestopt in</th></tr><tr>';
     foreach ($fases as $f) $h .= '<th class="n">' . e($f) . '</th>';
@@ -747,18 +824,31 @@ if ($lessen) {
     foreach ($lessen as $id => $l) {
         $begonnen = $l['nieuw'];
         $speelde = $l['speelde'] ?? 0;
-        $pct = $speelde ? min(100, round($l['afGemeten'] / $speelde * 100)) : null;
+        // Eén keer geopend en niet gespeeld zegt niets: die lessen samen op één regel.
+        if ($begonnen <= 1 && $speelde === 0 && $l['af'] === 0) {
+            $weinig[] = $titels[$id] ?? $id;
+            continue;
+        }
+        $pct = $speelde ? (int) min(100, round($l['afGemeten'] / $speelde * 100)) : null;
+        $kleur = $pct === null || $speelde < 3 ? '' : ($pct >= 80 ? 'goed' : ($pct >= 60 ? 'matig' : 'slecht'));
         $h .= '<tr><td title="' . e($id) . '">' . e($titels[$id] ?? $id) . '</td><td class="n">' . $begonnen
-            . '</td><td class="n">' . $speelde . '</td><td class="n">' . $l['hervat'] . '</td><td class="n">' . $l['af'] . '</td><td class="n">'
+            . '</td><td class="n">' . $speelde . '</td><td class="n">' . ($l['hervat'] ?: '') . '</td><td class="n">' . $l['af'] . '</td><td class="n ' . $kleur . '">'
             . ($pct === null ? '' : $pct . '%') . '</td><td class="n">'
             . ($l['af'] ? number_format($l['sterren'] / $l['af'], 1, ',', '') : '') . '</td>';
         foreach ($fases as $f) {
             $n = $l['gestopt'][$f] ?? 0;
-            $h .= '<td class="n">' . ($n ?: '') . '</td>';
+            $deel = $begonnen ? $n / $begonnen : 0;
+            $heet = !$n ? '' : ($deel >= 0.3 ? ' heet3' : ($deel >= 0.15 ? ' heet2' : ' heet1'));
+            $h .= '<td class="n' . $heet . '" title="' . ($n ? e($n . ' van ' . $begonnen . ' keer geopend') : '') . '">' . ($n ?: '') . '</td>';
         }
         $h .= '</tr>';
     }
     $h .= '</table>';
+    if ($weinig) {
+        $h .= '<p class="zacht">Eén keer geopend, niet gespeeld (zegt nog niets): ' . e(implode(', ', $weinig)) . '.</p>';
+    }
+    $h .= '<p class="zacht">Gestopt = weggegaan vóór het eind, ook door de tab te sluiten of de tablet op slot te doen. '
+        . 'Eén keer per keer dat de les open was. Wie later terugkomt en de les afmaakt, telt ook bij af. Af % vanaf ' . e(SPEELDE_VANAF) . '.</p>';
 } else {
     $h .= '<p class="zacht">Nog geen lessen.</p>';
 }
@@ -834,9 +924,10 @@ $h .= '</section>';
 // Waar lopen kinderen vast: per opgave hoe vaak er om een hint gevraagd of vaak mis
 // getikt werd, als deel van hoe vaak de les begon. Absolute aantallen zetten de lessen
 // uit de eerste werelden altijd bovenaan, alleen omdat daar de meeste kinderen zijn.
-$h .= '<section><h2>Opgaven: waar lopen kinderen vast?</h2><p class="zacht">Per opgave: hoe vaak een kind om een hint '
-    . 'vroeg, en hoe vaak het vaak mis tikte (3 keer, bij een quiz 2 keer). "Vast" is het hoogste van de twee, als deel '
-    . 'van hoe vaak de les begon. De lastigste bovenaan. "zelf 2" is de tweede opgave in de fase zelf.</p>';
+$h .= '<section><h2>Opgaven: waar lopen kinderen vast?</h2><p class="zacht">De lastigste opgaven bovenaan. '
+    . '<strong>Vast</strong> = bij hoeveel van de keren dat de les begon een kind om een hint vroeg of vaak mis tikte '
+    . '(3 keer, bij een quiz 2 keer). "zelf 2" is de tweede opgave in de stap zelf. Bij minder dan 5 keer begonnen is één kind al veel: '
+    . 'die staan grijs.</p>';
 if ($lastig) {
     $rijen = [];
     foreach ($lastig as $sleutel => $o) {
@@ -856,7 +947,8 @@ if ($lastig) {
     foreach (array_slice($rijen, 0, 30) as $r) {
         // "zelf-2" is de plek in de fase; voor het lezen "zelf 2" (kort, past op een telefoon).
         $plek = preg_replace('/^([a-z]+)-(\d+)$/', '$1 $2', $r['opgave']);
-        $h .= '<tr><td title="' . e($r['id']) . '">' . e($titels[$r['id']] ?? $r['id']) . '</td><td class="n">'
+        $grijs = $r['begon'] < 5 ? ' class="zacht"' : '';
+        $h .= '<tr' . $grijs . '><td title="' . e($r['id']) . '">' . e($titels[$r['id']] ?? $r['id']) . '</td><td class="n">'
             . ($r['pct'] === null ? '' : $r['pct'] . '%') . '</td><td>' . e($plek) . '</td><td class="n">' . $r['begon']
             . '</td><td class="n">' . ($r['o']['hint'] ?: '') . '</td><td class="n">' . ($r['o']['missers'] ?: '') . '</td></tr>';
     }
@@ -867,13 +959,15 @@ if ($lastig) {
 }
 $h .= '</section>';
 
-$h .= verdeling('Hoe lang wordt er gespeeld?', $duur,
+$h .= hoofdstuk('spelen', '4 · Wat doen ze verder?', 'Achtergrond. Klik een kop open.');
+$h .= inklap(verdeling('Hoe lang wordt er gespeeld?', $duur,
     ['minder dan 1 min', '1 tot 5 min', '5 tot 15 min', '15 tot 30 min', '30 min of meer'],
-    'Aaneengesloten tijd dat de app in beeld was. Even van tab wisselen begint een nieuw stuk.');
-$h .= verdeling('Komen ze terug?', $geoefend,
+    'Aaneengesloten tijd dat de app in beeld was. Even van tab wisselen begint een nieuw stuk.'));
+$h .= inklap(verdeling('Komen ze terug?', $geoefend,
     ['nog niet', '1 dag', '2 dagen', '3 tot 5 dagen', '6 tot 10 dagen', 'meer dan 10 dagen'],
-    'Bij elk bezoek: op hoeveel verschillende dagen er op dat apparaat al geoefend is.');
+    'Bij elk bezoek: op hoeveel verschillende dagen er op dat apparaat al geoefend is.'));
 
+$p0 = strlen($h);
 $h .= '<section><h2>Partijen</h2>';
 if ($partijen) {
     $h .= '<table><tr><th>Tegen</th><th>Gewonnen</th><th>Verloren</th><th>Remise</th></tr>';
@@ -887,18 +981,39 @@ if ($partijen) {
     $h .= '<p class="zacht">Nog geen partijen.</p>';
 }
 $h .= '</section>';
+$h = substr($h, 0, $p0) . inklap(substr($h, $p0));
 
-$h .= top('Minispellen (gehaalde rondjes)', $spellen, 20, 'Nog geen rondjes.');
-$h .= top('Meest bekeken schermen', $schermen, 20, 'Nog niets.');
+$h .= inklap(top('Minispellen (gehaalde rondjes)', $spellen, 20, 'Nog geen rondjes.'));
+$h .= inklap(top('Meest bekeken schermen', $schermen, 20, 'Nog niets.'));
+
+$h .= hoofdstuk('berichten', '5 · Berichten en herkomst', 'Wat ouders schreven, en waar bezoekers vandaan komen.');
+$h .= '<section id="berichten-lijst"><h2>Berichten van ouders</h2><p class="zacht">Via het formulier op /contact/. Ze gaan ook '
+    . 'naar info@schaakmaatje.nl; hier staan ze voor als een mail niet aankwam. Na een jaar worden ze gewist. '
+    . 'Staat er vaak "niet gemaild", dan verstuurt de hosting geen mail.</p>';
+if ($berichten) {
+    foreach ($berichten as $b) {
+        $h .= '<div class="bericht"><p class="zacht" style="margin:0">' . e($b['t'] ?? '') . ' UTC · ' . e($b['s'] ?? '')
+            . (!empty($b['r']) ? ' · <strong>waarschijnlijk een robot</strong>' : '')
+            . (empty($b['r']) && isset($b['m']) && !$b['m'] ? ' · <strong>niet gemaild</strong>' : '')
+            . (isset($b['e']) ? ' · <a href="mailto:' . e(rawurlencode((string) $b['e'])) . '">' . e($b['e']) . '</a>' : ' · geen adres')
+            . '</p><p style="margin:4px 0 0;white-space:pre-wrap">' . e($b['b'] ?? '') . '</p></div>';
+    }
+} else {
+    $h .= '<p class="zacht">Nog geen berichten.</p>';
+}
+$h .= '</section>';
+
 $h .= top('Waar komen bezoekers vandaan?', $verwijzers, 10, 'Nog geen verwijzingen: bezoekers typten het adres zelf of kwamen via een app.');
 
 $piek = max($uren);
+$p0 = strlen($h);
 $h .= '<section><h2>Hoe laat? (UTC)</h2><table>';
 foreach ($uren as $u => $n) {
     if (!$n) continue;
     $h .= '<tr><td>' . sprintf('%02d:00', $u) . '</td><td class="n">' . $n . '</td><td>' . balk($n, $piek) . '</td></tr>';
 }
 $h .= '</table></section>';
+$h = substr($h, 0, $p0) . inklap(substr($h, $p0));
 
 $h .= '<form method="post"><button name="uit" value="1">Uitloggen</button></form>';
 
