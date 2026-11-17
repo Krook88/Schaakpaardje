@@ -75,6 +75,22 @@ function klaarMetSpreken() {
   uitgesprokenKlaar = null
 }
 
+/** Is Pip op dit moment hoorbaar aan het praten? Voor de telling "tikt een kind door". */
+export function praatNu(): boolean {
+  return uitgesprokenKlaar !== null
+}
+
+/**
+ * Hoe Pip klonk: een ingesproken opname, of de stem van het apparaat (de robot). Meldt
+ * alleen als er echt geluid begon. Voor de anonieme telling "Stem": klinkt Pip bij
+ * veel kinderen als een robot, dan ligt de stem en niet de les aan het afhaken.
+ */
+export type StemBron = 'opname' | 'apparaat'
+let bronListener: ((bron: StemBron) => void) | null = null
+export function onStemBron(fn: ((bron: StemBron) => void) | null) {
+  bronListener = fn
+}
+
 /**
  * Wacht tot Pip is uitgesproken, maar nooit langer dan `maxMs`.
  *
@@ -284,6 +300,7 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
     try {
       beginTeSpreken()
       await audio.play()
+      bronListener?.('opname')
       return
     } catch (e) {
       if (huidigeAudio === audio) huidigeAudio = null
@@ -327,6 +344,7 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
   let begonnen = false
   zin.onstart = () => {
     begonnen = true
+    bronListener?.('apparaat')
   }
   zin.onend = klaarMetSpreken
   zin.onerror = klaarMetSpreken

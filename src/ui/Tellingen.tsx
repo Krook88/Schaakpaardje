@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { useProfielStore, useToestandGeladen } from '@/progress/store'
 import { dagenKlasse, duurKlasse, tel, telScherm } from '@/progress/tellen'
+import { onStemBron } from '@/audio/voice'
 
 /**
  * Telt welke schermen geopend worden, hoe lang er gespeeld wordt en hoe vaak mensen
@@ -31,6 +32,18 @@ export function Tellingen() {
     )
     tel('Bezoek', { geoefend: dagen ? dagenKlasse(dagen) : 'nog niet' })
   }, [geladen])
+
+  // Hoe klinkt Pip op dit apparaat: opname of robotstem? Eén keer per bezoek, bij het
+  // eerste geluid. Zegt iets over het toestel, niets over het kind.
+  useEffect(() => {
+    let gemeld = false
+    onStemBron((bron) => {
+      if (gemeld) return
+      gemeld = true
+      tel('Stem', { bron })
+    })
+    return () => onStemBron(null)
+  }, [])
 
   useEffect(() => {
     if (document.visibilityState === 'visible') zichtbaarSinds.current = Date.now()

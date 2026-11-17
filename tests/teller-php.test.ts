@@ -95,6 +95,12 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     const lastig = { name: 'Opgave lastig', url: '/les/weide-1/', props: { les: 'weide-1', opgave: 'zelf-1', hulp: 'missers' } }
     expect((await stuur(lastig)).status).toBe(204)
     expect((await stuur({ name: 'pageview', url: '/schaakregels/en-passant/' })).status).toBe(204)
+    // Pips stem: hoe hij klonk, hoe de uitleg afliep, en wie het geluid uitzette.
+    expect((await stuur({ name: 'Stem', url: '/les/weide-1/', props: { bron: 'apparaat' } })).status).toBe(204)
+    const uitleg = { les: 'weide-1', einde: 'weg', zin: 2, doorgetikt: 'meestal', stem: 'aan' }
+    expect((await stuur({ name: 'Uitleg', url: '/les/weide-1/', props: uitleg })).status).toBe(204)
+    expect((await stuur({ name: 'Geluid', url: '/les/weide-1/', props: { aan: 'nee', door: 'kind' } })).status).toBe(204)
+    expect((await stuur({ name: 'Geluid', url: '/', props: { aan: 'nee', door: 'kind', naam: 'daan' } })).status).toBe(400)
     const regels = bewaard()
     expect(regels).toContainEqual(expect.objectContaining({ n: 'Profiel gemaakt', p: '/' }))
     expect(regels).toContainEqual(expect.objectContaining({ n: 'Opgave lastig', e: lastig.props }))
@@ -151,6 +157,9 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect(open).toContain('Van binnenkomst naar profiel')
     expect(open).toContain('Speelde')
     expect(open).toContain('meteen (nog geen les)')
+    expect(open).toContain('Waar verbeteren?')
+    expect(open).toContain('Pips stem')
+    expect(open).toContain('robotstem van het apparaat')
 
     // Van vóór de botfilter (SCHOON_VANAF in dashboard.php) telt niets mee.
     writeFileSync(join(dataMap(), 'dag-2026-10-21.ndjson'), JSON.stringify({ u: '01', n: 'Les begonnen', p: '/les/googlebot-1/', e: { les: 'googlebot-1', hervat: 'nee' } }) + '\n')

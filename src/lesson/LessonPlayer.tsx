@@ -12,7 +12,7 @@ import { Sterren } from '@/ui/Sterren'
 import { Teller } from '@/ui/Teller'
 import { gebruikTip } from '@/ui/gebruikTip'
 import { sfx } from '@/audio/sfx'
-import { kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
+import { kies, praatNu, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import {
   EERSTE_GOED, HINT_GEGEVEN, OPNIEUW_PROBEREN, pipZinnen } from '@/content/voice'
 import { WERELDEN, volgendeLes, wereldMet, type Lesson, type World } from '@/content'
@@ -40,7 +40,7 @@ import {
   volgendeOpenLes,
   wereldIsAf,
 } from '@/progress/store'
-import { eenKeer, maakLastigMelder, maakStopMelder } from './lesTellingen'
+import { eenKeer, maakLastigMelder, maakStopMelder, maakUitlegMelder } from './lesTellingen'
 import { tel } from '@/progress/tellen'
 import { useMediaQuery } from '@/ui/useMediaQuery'
 import styles from './LessonPlayer.module.css'
@@ -163,6 +163,35 @@ export function LessonPlayer({
     }
   }, [les.id])
 
+  // De uitleg: luistert een kind Pip uit, tikt het door, of gaat het weg? Zo is te zien
+  // of afhaken in "kijken" aan de stem ligt. Zie `maakUitlegMelder`.
+  const uitlegMelder = useMemo(
+    () =>
+      maakUitlegMelder((einde, zin, doorgetikt, stem) =>
+        tel('Uitleg', { les: les.id, einde, zin, doorgetikt, stem }),
+      ),
+    [les.id],
+  )
+  const inUitleg = useRef(true)
+  inUitleg.current = geladen && fase === 'kijken' && !kijkTerug
+  const uitlegZin = useRef(1)
+  uitlegZin.current = vertelIndex + 1
+  const stemAan = useRef(true)
+  stemAan.current = instellingen.spraak
+  useEffect(() => {
+    const weg = () => {
+      if (inUitleg.current) uitlegMelder.klaar('weg', uitlegZin.current, stemAan.current)
+    }
+    const wissel = () => {
+      if (document.visibilityState === 'hidden') weg()
+    }
+    document.addEventListener('visibilitychange', wissel)
+    return () => {
+      document.removeEventListener('visibilitychange', wissel)
+      weg()
+    }
+  }, [uitlegMelder])
+
   const later = useCallback((fn: () => void, ms: number) => {
     // Afgelopen timers eruit: anders groeit deze lijst een hele les lang door.
     const id = setTimeout(() => {
@@ -259,9 +288,10 @@ export function LessonPlayer({
     hervatGedaan.current = true
     const halfAf = Boolean(hervat && VOLGORDE.includes(hervat as Fase))
     hervatteLes.current = halfAf
+    if (halfAf) uitlegMelder.negeer()
     tel('Les begonnen', { les: les.id, hervat: halfAf ? 'ja' : 'nee' })
     if (halfAf) startFase(hervat as Fase)
-  }, [geladen, hervat, startFase, les.id])
+  }, [geladen, hervat, startFase, les.id, uitlegMelder])
 
   const volgendeFase = useCallback(() => {
     const i = VOLGORDE.indexOf(fase)
@@ -499,6 +529,10 @@ export function LessonPlayer({
               type="button"
               className="btn btn--primary btn--big"
               onClick={() => {
+                if (!kijkTerug) {
+                  uitlegMelder.verder(instellingen.spraak && praatNu())
+                  if (laatste) uitlegMelder.klaar('verder', vertelIndex + 1, instellingen.spraak)
+                }
                 if (!laatste) return setVertelIndex((i) => i + 1)
                 // Kwam het kind hier vanuit een opgave, dan gaat het daar ook weer
                 // heen — met dezelfde opgave op hetzelfde punt. De les opnieuw laten

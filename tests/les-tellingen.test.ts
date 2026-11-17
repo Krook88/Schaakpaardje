@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { eenKeer, maakLastigMelder, maakStopMelder } from '@/lesson/lesTellingen'
+import { doorgetiktKlasse, eenKeer, maakLastigMelder, maakStopMelder, maakUitlegMelder } from '@/lesson/lesTellingen'
 
 /**
  * Wanneer het lesscherm "Opgave lastig" en "Les gestopt" telt. Achttiende review, C1:
@@ -75,5 +75,46 @@ describe('eerste opgave', () => {
     const tik = eenKeer(() => keer++)
     for (let i = 0; i < 5; i++) tik()
     expect(keer).toBe(1)
+  })
+})
+
+/**
+ * De uitleg (fase kijken): of afhaken aan Pips stem ligt. Eén melding per les, en
+ * doortikken telt alleen als Pip echt hoorbaar praatte.
+ */
+describe('uitleg', () => {
+  const opname = () => {
+    const gemeld: string[] = []
+    const m = maakUitlegMelder((e, z, d, s) => gemeld.push(`${e} ${z} ${d} ${s}`))
+    return { m, gemeld }
+  }
+
+  it('uitgeluisterd tot het eind: één melding, ook als het kind daarna weggaat', () => {
+    const { m, gemeld } = opname()
+    m.verder(false)
+    m.verder(false)
+    m.klaar('verder', 3, true)
+    m.klaar('weg', 3, true)
+    expect(gemeld).toEqual(['verder 3 geen aan'])
+  })
+
+  it('weg bij zin 2 nadat het kind Pip onderbrak', () => {
+    const { m, gemeld } = opname()
+    m.verder(true)
+    m.klaar('weg', 2, true)
+    expect(gemeld).toEqual(['weg 2 meestal aan'])
+  })
+
+  it('een hervatte les telt niet: daar zag het kind de uitleg niet', () => {
+    const { m, gemeld } = opname()
+    m.negeer()
+    m.klaar('weg', 1, false)
+    expect(gemeld).toEqual([])
+  })
+
+  it('doortikken in klassen', () => {
+    expect(doorgetiktKlasse(0, 5)).toBe('geen')
+    expect(doorgetiktKlasse(2, 5)).toBe('soms')
+    expect(doorgetiktKlasse(3, 5)).toBe('meestal')
   })
 })

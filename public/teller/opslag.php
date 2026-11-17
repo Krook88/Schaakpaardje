@@ -31,6 +31,9 @@ const TELLINGEN = [
     'Opgave lastig' => ['les', 'opgave', 'hulp'],
     'Gedeeld' => ['hoe', 'waar'],
     'Held naar les' => [],
+    'Stem' => ['bron'],
+    'Uitleg' => ['les', 'einde', 'zin', 'doorgetikt', 'stem'],
+    'Geluid' => ['aan', 'door'],
 ];
 
 /**

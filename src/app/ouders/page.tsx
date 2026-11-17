@@ -10,7 +10,7 @@ import { Kop } from '@/ui/Kop'
 import { Rekenslot } from '@/ui/Rekenslot'
 import { Sterren } from '@/ui/Sterren'
 import { KOFFIE } from '@/seo'
-import { tellenAan, zetTellen } from '@/progress/tellen'
+import { tel, tellenAan, zetTellen } from '@/progress/tellen'
 import { WERELDEN } from '@/content'
 import {
   useGespeeld,
@@ -99,7 +99,11 @@ function OuderPaneel() {
         aria-label={label}
         aria-describedby={uitleg ? `uitleg-${sleutel}` : undefined}
         checked={Boolean(instellingen[sleutel])}
-        onChange={(e) => zetInstelling(sleutel, e.target.checked as never)}
+        onChange={(e) => {
+          zetInstelling(sleutel, e.target.checked as never)
+          // Zet een ouder Pip uit? Zie GeluidKnop: alleen aan of uit, en wie.
+          if (sleutel === 'spraak') tel('Geluid', { aan: e.target.checked ? 'ja' : 'nee', door: 'ouder' })
+        }}
         style={{ width: 44, height: 44, flexShrink: 0 }}
       />
     </label>
@@ -406,7 +410,9 @@ function TellenSchakel() {
           Zodat de maker ziet hoeveel er gespeeld wordt en bij welke les kinderen stoppen.
           Alleen losse tellingen: welk scherm, welke les begonnen, af (met sterren) of
           gestopt, de uitslag van een partij, en speelduur en geoefende dagen in grove
-          klassen. Geen naam, geen leeftijd, geen cookie.
+          klassen. En over Pips stem: of hij ingesproken of als robot klonk, of de uitleg
+          werd uitgeluisterd, en of het geluid aan of uit werd gezet. Geen naam, geen
+          leeftijd, geen cookie.
         </small>
       </span>
       <input

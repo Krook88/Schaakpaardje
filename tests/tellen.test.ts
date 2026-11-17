@@ -130,6 +130,12 @@ describe('wat er geteld wordt, ligt vast', () => {
     Gedeeld: ['hoe', 'waar'],
     // Alleen óf het paard op de startpagina iemand naar de les brengt.
     'Held naar les': [],
+    // Hoe Pip klonk op dit apparaat: opname of de robotstem van het toestel.
+    Stem: ['bron'],
+    // De uitleg: uitgeluisterd, doorgetikt of weggegaan, bij welke zin, stem aan of uit.
+    Uitleg: ['les', 'einde', 'zin', 'doorgetikt', 'stem'],
+    // Geluid aan of uit gezet, door een kind (bel) of een ouder (ouderscherm).
+    Geluid: ['aan', 'door'],
   }
   const bestanden = (map: string): string[] =>
     readdirSync(map).flatMap((n) => {
