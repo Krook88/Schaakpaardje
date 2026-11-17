@@ -131,11 +131,12 @@ function bewaar(array $regel): bool
  * (dag, regel). Niet eerst alles inlezen: met volle dagbestanden liep het geheugen vol
  * en gaf het dashboard een witte pagina.
  */
-function loopDagen(int $dagen, callable $doe): void
+function loopDagen(int $dagen, callable $doe, ?int $nu = null): void
 {
     $map = dataMap();
+    $nu = $nu ?? time();
     for ($i = $dagen - 1; $i >= 0; $i--) {
-        $dag = gmdate('Y-m-d', time() - $i * 86400);
+        $dag = gmdate('Y-m-d', $nu - $i * 86400);
         $doe($dag, null);
         if ($map === null) continue;
         $bestand = $map . '/dag-' . $dag . '.ndjson';

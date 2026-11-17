@@ -161,7 +161,7 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     // De pagina in vijf hoofdstukken, met de kerncijfers bovenaan.
     expect(open).toContain('In het kort')
     for (const id of ['doen', 'gaat', 'afhaken', 'spelen', 'berichten']) expect(open).toContain(`id="${id}"`)
-    expect(open).toMatch(/nog niets om mee te vergelijken|[↑↓→] \d+/)
+    expect(open).toMatch(/Nog geen volledige vorige periode|[↑↓→] \d+/)
     expect(open).toContain('Pips stem')
     expect(open).toContain('stem van het apparaat')
 
@@ -233,10 +233,52 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect(lijstHtml).not.toMatch(/spreektempo standaard/i)
   })
 
+  it('de vorige periode telt alleen voor de pijltjes, en een les met één keer openen gaat op één regel', async () => {
+    const inloggen = await fetch(`${BASIS}/teller/dashboard.php`, {
+      method: 'POST',
+      body: new URLSearchParams({ wachtwoord: 'proef-wachtwoord' }),
+      redirect: 'manual',
+    })
+    const koekje = (inloggen.headers.get('set-cookie') ?? '').split(';')[0]
+    const kijk = async () => (await fetch(`${BASIS}/teller/dashboard.php?dagen=7`, { headers: { cookie: koekje } })).text()
+    const bezoeken = (html: string) => html.match(/Bezoeken <span class="zacht">(\d+) in totaal/)?.[1]
+    const voor = await kijk()
+
+    // 8 en 13 dagen geleden: de vorige periode bij 7 dagen.
+    const bezoek = JSON.stringify({ u: '10', n: 'Bezoek', p: '/', e: { geoefend: 'nog niet' } })
+    for (const terug of [8, 13]) {
+      const dag = new Date(Date.now() - terug * 86400000).toISOString().slice(0, 10)
+      writeFileSync(join(dataMap(), `dag-${dag}.ndjson`), (bezoek + '\n').repeat(5))
+    }
+    // Vandaag: fold-a één keer geopend en verder niets; fold-b werd hervat.
+    const vandaag = new Date().toISOString().slice(0, 10)
+    const regels = [
+      { n: 'Les begonnen', e: { les: 'fold-a', hervat: 'nee' } },
+      { n: 'Les begonnen', e: { les: 'fold-b', hervat: 'ja' } },
+      { n: 'Les begonnen', e: { les: 'fold-b', hervat: 'ja' } },
+    ].map((r) => JSON.stringify({ u: '10', p: '/les/x/', ...r })).join('\n')
+    writeFileSync(join(dataMap(), `dag-${vandaag}.ndjson`), regels + '\n', { flag: 'a' })
+
+    const na = await kijk()
+    expect(na).not.toMatch(/Warning|Notice|Deprecated|Fatal/)
+    // De oude bezoeken tellen niet mee in de periode zelf...
+    expect(bezoeken(na)).toBe(bezoeken(voor))
+    // ...maar wel in de vergelijking: er staat een pijltje bij de bezoeken.
+    expect(na).toMatch(/bezoeken<\/span><span class="pijl[^"]*">[↑↓→] \d+%/)
+    const eenRegel = na.match(/Eén keer geopend, niet gespeeld[^<]*/)?.[0] ?? ''
+    expect(eenRegel).toContain('fold-a')
+    expect(eenRegel).not.toContain('fold-b')
+    expect(na).toContain('<td title="fold-b">')
+    // Hoofdstukken zijn h2, de secties eronder h3.
+    expect(na).toContain('<h2 class="hfd">3 · Waar haken ze af?</h2>')
+    expect(na).toContain('<h3 class="kop">Lessen: waar haken kinderen af?</h3>')
+  })
+
   it('het dashboard werkt ook als iemand de dagbestanden heeft volgeschreven', async () => {
     const regel = JSON.stringify({ u: '08', n: 'Bezoek', p: '/', e: { geoefend: '1 dag' } }) + '\n'
     const vol = regel.repeat(Math.ceil((1024 * 1024) / regel.length))
-    for (let i = 0; i < 30; i++) {
+    // 180 dagen: bij 90 dagen leest het dashboard ook de 90 dagen daarvóór (de pijltjes).
+    for (let i = 0; i < 180; i++) {
       const dag = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10)
       writeFileSync(join(dataMap(), `dag-${dag}.ndjson`), vol)
     }
@@ -246,12 +288,12 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
       redirect: 'manual',
     })
     const koekje = (inloggen.headers.get('set-cookie') ?? '').split(';')[0]
-    const r = await fetch(`${BASIS}/teller/dashboard.php?dagen=30`, { headers: { cookie: koekje } })
+    const r = await fetch(`${BASIS}/teller/dashboard.php?dagen=90`, { headers: { cookie: koekje } })
     expect(r.status).toBe(200)
     expect(await r.text()).toContain('Verloop per dag')
     // En een vol dagbestand neemt niets meer aan.
     expect((await stuur({ name: 'Bezoek', url: '/', props: { geoefend: '1 dag' } })).status).toBe(507)
-  }, 30000)
+  }, 60000)
 
   describe('het contactformulier', () => {
     const bericht = (body: unknown) =>
