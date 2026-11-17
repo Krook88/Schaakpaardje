@@ -159,7 +159,7 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect(open).toContain('meteen (nog geen les)')
     expect(open).toContain('Waar verbeteren?')
     expect(open).toContain('Pips stem')
-    expect(open).toContain('robotstem van het apparaat')
+    expect(open).toContain('stem van het apparaat')
 
     // Van vóór de botfilter (SCHOON_VANAF in dashboard.php) telt niets mee.
     writeFileSync(join(dataMap(), 'dag-2026-10-21.ndjson'), JSON.stringify({ u: '01', n: 'Les begonnen', p: '/les/googlebot-1/', e: { les: 'googlebot-1', hervat: 'nee' } }) + '\n')
@@ -177,6 +177,56 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     })
     expect(await r.text()).toContain('Te veel mislukte pogingen')
     rmSync(pogingen)
+  })
+
+  it('"Waar verbeteren?" rekent goed, en duwt niet blind naar korter en sneller', async () => {
+    const regels: unknown[] = []
+    const voeg = (n: number, naam: string, les: string, e?: Record<string, unknown>) => {
+      for (let i = 0; i < n; i++) regels.push({ u: '10', n: naam, p: `/les/${les}/`, ...(e ? { e } : {}) })
+    }
+    // proef-1: 10 keer geopend, 3 keer weg in kijken (precies 30%): 3 bij zin 1, niemand later.
+    voeg(10, 'Les begonnen', 'proef-1', { les: 'proef-1', hervat: 'nee' })
+    voeg(3, 'Les gestopt', 'proef-1', { les: 'proef-1', fase: 'kijken' })
+    voeg(3, 'Uitleg', 'proef-1', { les: 'proef-1', einde: 'weg', zin: 1, doorgetikt: 'geen', stem: 'aan' })
+    // proef-2: weg later in de uitleg, zonder vastlopen: het advies mag niets laten schrappen.
+    voeg(10, 'Les begonnen', 'proef-2', { les: 'proef-2', hervat: 'nee' })
+    voeg(4, 'Les gestopt', 'proef-2', { les: 'proef-2', fase: 'kijken' })
+    voeg(4, 'Uitleg', 'proef-2', { les: 'proef-2', einde: 'weg', zin: 3, doorgetikt: 'geen', stem: 'aan' })
+    // proef-3: wereld 9, daar is afhaken in de uitleg normaal.
+    voeg(10, 'Les begonnen', 'proef-3', { les: 'proef-3', hervat: 'nee' })
+    voeg(5, 'Les gestopt', 'proef-3', { les: 'proef-3', fase: 'kijken' })
+    // proef-4: net onder de grens (29%): geen bevinding.
+    voeg(14, 'Les begonnen', 'proef-4', { les: 'proef-4', hervat: 'nee' })
+    voeg(4, 'Les gestopt', 'proef-4', { les: 'proef-4', fase: 'kijken' })
+    // Doortikken: 3 van 6 uitgespeelde uitleggen "meestal" (50%); een weggegane telt niet mee.
+    voeg(3, 'Uitleg', 'proef-5', { les: 'proef-5', einde: 'verder', zin: 3, doorgetikt: 'meestal', stem: 'aan' })
+    voeg(3, 'Uitleg', 'proef-5', { les: 'proef-5', einde: 'verder', zin: 3, doorgetikt: 'geen', stem: 'aan' })
+    const gisteren = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+    writeFileSync(join(dataMap(), `dag-${gisteren}.ndjson`), regels.map((r) => JSON.stringify(r)).join('\n') + '\n')
+    const lijst = [1, 2, 3, 4, 5].map((i) => ({ id: `proef-${i}`, titel: `Proef ${i}`, wereld: 'Proefland', nr: i === 3 ? 9 : 2, leeftijd: 5 }))
+    writeFileSync(join(www(), 'teller', 'lessen.json'), JSON.stringify(lijst))
+
+    const inloggen = await fetch(`${BASIS}/teller/dashboard.php`, {
+      method: 'POST',
+      body: new URLSearchParams({ wachtwoord: 'proef-wachtwoord' }),
+      redirect: 'manual',
+    })
+    const koekje = (inloggen.headers.get('set-cookie') ?? '').split(';')[0]
+    const html = await (await fetch(`${BASIS}/teller/dashboard.php`, { headers: { cookie: koekje } })).text()
+    rmSync(join(www(), 'teller', 'lessen.json'))
+    const lijstHtml = html.slice(html.indexOf('Waar verbeteren?'), html.indexOf('</ol>'))
+    const bevinding = (titel: string) => lijstHtml.split('<li>').find((b) => b.includes(titel)) ?? ''
+
+    expect(html).not.toMatch(/Warning|Notice|Deprecated|Fatal/)
+    expect(bevinding('Proef 1')).toContain('3 keer (30%)')
+    expect(bevinding('Proef 1')).toContain('vóór ze één keer tikten')
+    expect(bevinding('Proef 2')).toContain('Schrap geen regel of uitzondering')
+    expect(bevinding('Proef 3')).toContain('Vanaf wereld 9')
+    expect(lijstHtml).not.toContain('Proef 4')
+    const door = lijstHtml.split('<li>').find((b) => b.includes('tikte het in')) ?? ''
+    expect(door).toContain('50%')
+    expect(door).toContain('Niet het tempo voor iedereen omhoog')
+    expect(lijstHtml).not.toMatch(/spreektempo standaard/i)
   })
 
   it('het dashboard werkt ook als iemand de dagbestanden heeft volgeschreven', async () => {

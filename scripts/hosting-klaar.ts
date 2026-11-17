@@ -271,7 +271,11 @@ function laatOpnamesMetRust() {
 function lessenVoorDeTeller() {
   const map = join(UIT, 'teller')
   if (!existsSync(map)) return
-  const lessen = WERELDEN.flatMap((w) => w.lessen.map((l) => ({ id: l.id, titel: l.titel, wereld: w.naam })))
+  // nr en leeftijd: zodat het dashboard weet dat afhaken in de uitleg vanaf wereld 9
+  // (schaak, mat, rokade) normaal is, en voor welke leeftijd een les bedoeld is.
+  const lessen = WERELDEN.flatMap((w, nr) =>
+    w.lessen.map((l) => ({ id: l.id, titel: l.titel, wereld: w.naam, nr, leeftijd: w.minLeeftijd })),
+  )
   writeFileSync(join(map, 'lessen.json'), JSON.stringify(lessen))
   console.log(`Hosting-klaar: ${lessen.length} lessen klaargezet voor het dashboard van de teller.`)
 }

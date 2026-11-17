@@ -87,8 +87,8 @@ export type UitlegEinde = 'verder' | 'weg'
 
 /**
  * De uitleg (fase kijken): luistert een kind Pip uit, tikt het door terwijl hij nog
- * praat, of gaat het weg? Eén keer per keer dat de les open is, alleen de eerste
- * uitleg (niet "nog eens kijken" vanuit een opgave), en alleen bij een nieuwe les.
+ * praat, of gaat het weg? Eén keer per keer dat de les open is. Welke uitleg telt (niet
+ * "nog eens kijken", niet een hervatte of al afgemaakte les) beslist het lesscherm.
  *
  * `zin` is de zin waar de uitleg eindigde (1 = de eerste). `doorgetikt` telt alleen
  * zinnen waarbij Pip echt hoorbaar praatte, zodat "stem uit" niet als ongeduld telt.
@@ -107,10 +107,6 @@ export function maakUitlegMelder(
       if (gemeld) return
       gemeld = true
       stuur(einde, zin, doorgetiktKlasse(doorgetikt, zin), stemAan ? 'aan' : 'uit')
-    },
-    /** Deze uitleg telt niet mee (een hervatte les): niets meer melden. */
-    negeer() {
-      gemeld = true
     },
   }
 }

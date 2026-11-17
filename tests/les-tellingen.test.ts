@@ -105,13 +105,6 @@ describe('uitleg', () => {
     expect(gemeld).toEqual(['weg 2 meestal aan'])
   })
 
-  it('een hervatte les telt niet: daar zag het kind de uitleg niet', () => {
-    const { m, gemeld } = opname()
-    m.negeer()
-    m.klaar('weg', 1, false)
-    expect(gemeld).toEqual([])
-  })
-
   it('doortikken in klassen', () => {
     expect(doorgetiktKlasse(0, 5)).toBe('geen')
     expect(doorgetiktKlasse(2, 5)).toBe('soms')

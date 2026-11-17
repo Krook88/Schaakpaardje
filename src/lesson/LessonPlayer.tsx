@@ -150,9 +150,15 @@ export function LessonPlayer({
   // fase is die van de eerste keer weggaan. Een nieuwe les krijgt een nieuwe melder.
   const faseNu = useRef<Fase>(fase)
   faseNu.current = kijkTerug ?? fase
+  // Pas na het laden: daarvóór staat de fase op "kijken" zonder dat er iets te zien was,
+  // en een les die nog laadde telde dan als "gestopt in kijken" (vierenzestigste review).
+  const lesGeladen = useRef(false)
+  lesGeladen.current = geladen
   useEffect(() => {
     const meld = maakStopMelder((f) => tel('Les gestopt', { les: les.id, fase: f }))
-    const meldGestopt = () => meld(faseNu.current)
+    const meldGestopt = () => {
+      if (lesGeladen.current) meld(faseNu.current)
+    }
     const wissel = () => {
       if (document.visibilityState === 'hidden') meldGestopt()
     }
@@ -165,22 +171,30 @@ export function LessonPlayer({
 
   // De uitleg: luistert een kind Pip uit, tikt het door, of gaat het weg? Zo is te zien
   // of afhaken in "kijken" aan de stem ligt. Zie `maakUitlegMelder`.
-  const uitlegMelder = useMemo(
-    () =>
-      maakUitlegMelder((einde, zin, doorgetikt, stem) =>
-        tel('Uitleg', { les: les.id, einde, zin, doorgetikt, stem }),
-      ),
-    [les.id],
-  )
-  const inUitleg = useRef(true)
+  //
+  // Alleen de eerste uitleg van een les die het kind nog niet af had: bij een hervatte
+  // les zag het de uitleg niet, en bij een les die al af was kent het hem al, en is
+  // doortikken terecht (vierenzestigste review). Dat beslist het hervat-effect hieronder;
+  // tot dan (null) telt er niets. De stand van de stem is die van het begin: zet een kind
+  // halverwege het geluid uit, dan was het een uitleg mét stem.
+  const uitlegTelt = useRef<boolean | null>(null)
+  const stemBijStart = useRef(true)
+  const uitlegMelder = useRef<ReturnType<typeof maakUitlegMelder> | null>(null)
+  const inUitleg = useRef(false)
   inUitleg.current = geladen && fase === 'kijken' && !kijkTerug
   const uitlegZin = useRef(1)
   uitlegZin.current = vertelIndex + 1
-  const stemAan = useRef(true)
-  stemAan.current = instellingen.spraak
   useEffect(() => {
+    // In het effect zelf, niet in een useMemo: zo krijgt een tweede mount (StrictMode)
+    // een verse melder, zoals bij `maakStopMelder`.
+    const melder = maakUitlegMelder((einde, zin, doorgetikt, stem) =>
+      tel('Uitleg', { les: les.id, einde, zin, doorgetikt, stem }),
+    )
+    uitlegMelder.current = melder
     const weg = () => {
-      if (inUitleg.current) uitlegMelder.klaar('weg', uitlegZin.current, stemAan.current)
+      // uitlegTelt hier lezen en niet in inUitleg: wie zonder één tik weggaat, gaf geen
+      // nieuwe render na het hervat-effect.
+      if (inUitleg.current && uitlegTelt.current) melder.klaar('weg', uitlegZin.current, stemBijStart.current)
     }
     const wissel = () => {
       if (document.visibilityState === 'hidden') weg()
@@ -190,7 +204,7 @@ export function LessonPlayer({
       document.removeEventListener('visibilitychange', wissel)
       weg()
     }
-  }, [uitlegMelder])
+  }, [les.id])
 
   const later = useCallback((fn: () => void, ms: number) => {
     // Afgelopen timers eruit: anders groeit deze lijst een hele les lang door.
@@ -288,10 +302,14 @@ export function LessonPlayer({
     hervatGedaan.current = true
     const halfAf = Boolean(hervat && VOLGORDE.includes(hervat as Fase))
     hervatteLes.current = halfAf
-    if (halfAf) uitlegMelder.negeer()
+    uitlegTelt.current = !halfAf && !(voortgang[les.id]?.sterren ?? 0)
+    stemBijStart.current = instellingen.spraak
     tel('Les begonnen', { les: les.id, hervat: halfAf ? 'ja' : 'nee' })
     if (halfAf) startFase(hervat as Fase)
-  }, [geladen, hervat, startFase, les.id, uitlegMelder])
+    // Alleen bij het laden, één keer: voortgang en instellingen veranderen daarna, en
+    // dat mag de beslissing niet meer raken.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geladen, hervat, startFase, les.id])
 
   const volgendeFase = useCallback(() => {
     const i = VOLGORDE.indexOf(fase)
@@ -529,9 +547,11 @@ export function LessonPlayer({
               type="button"
               className="btn btn--primary btn--big"
               onClick={() => {
-                if (!kijkTerug) {
-                  uitlegMelder.verder(instellingen.spraak && praatNu())
-                  if (laatste) uitlegMelder.klaar('verder', vertelIndex + 1, instellingen.spraak)
+                if (!kijkTerug && uitlegTelt.current) {
+                  // Minstens 800 ms hoorbaar: de tik die Pip pas laat beginnen (een direct
+                  // geopende les wacht op de eerste aanraking) is geen ongeduld.
+                  uitlegMelder.current?.verder(stemBijStart.current && praatNu(800))
+                  if (laatste) uitlegMelder.current?.klaar('verder', vertelIndex + 1, stemBijStart.current)
                 }
                 if (!laatste) return setVertelIndex((i) => i + 1)
                 // Kwam het kind hier vanuit een opgave, dan gaat het daar ook weer

@@ -73,8 +73,9 @@ function pagina(string $titel, string $inhoud): void
         . '.s-lijn{fill:none;stroke:var(--groen);stroke-width:2;stroke-linejoin:round}'
         . '.s-stip{fill:var(--groen);stroke:var(--kaart);stroke-width:2}.s-dag:hover .s-stip{fill:var(--accent)}'
         . 'details{margin-top:12px}summary{cursor:pointer}'
-        . 'ol.bevindingen{margin:0;padding-left:1.4em}ol.bevindingen li{margin:0 0 12px;line-height:1.45}'
-        . '.label{display:inline-block;font-size:.75rem;font-weight:700;padding:1px 8px;border-radius:8px;background:var(--rand);margin-right:4px}'
+        . 'ol.bevindingen{margin:0;padding-left:1.4em}ol.bevindingen li{margin:0 0 12px;line-height:1.45;max-width:75ch}'
+        . '.label{display:inline-block;font-size:.8rem;font-weight:700;padding:1px 8px;border-radius:8px;background:var(--rand);border:1px solid var(--zacht);margin-right:4px}'
+        . '.schuif{overflow-x:auto;max-width:100%}td.breek{white-space:normal;overflow-wrap:anywhere;min-width:7em}h3.klein{font-size:.95rem;margin:14px 0 6px}'
         . '.bericht{border-top:1px solid var(--rand);padding:10px 0}.bericht a{color:var(--accent)}'
         . '</style></head><body><main>' . $inhoud . '</main></body></html>';
 }
@@ -107,6 +108,9 @@ const SCHOON_VANAF = '2026-10-23';
  * "af" van vanaf deze dag, anders deelt hij oude "af" door nieuwe "speelde" en komt hij te hoog uit.
  */
 const SPEELDE_VANAF = '2026-10-24';
+
+/** Vanaf deze dag stuurt de app 'Stem', 'Uitleg' en 'Geluid'. Daarvóór zijn die tellingen leeg, niet nul. */
+const STEM_VANAF = '2026-11-17';
 
 $periode = isset($_GET['dagen']) ? (int) $_GET['dagen'] : 30;
 if (!in_array($periode, [7, 30, 90], true)) $periode = 30;
@@ -220,15 +224,18 @@ loopDagen($periode, function (string $dag, ?array $r) use (
                 'door' => ['geen' => 0, 'soms' => 0, 'meestal' => 0], 'wegZin' => []];
             $einde = ($e['einde'] ?? '') === 'weg' ? 'weg' : 'verder';
             $stem = ($e['stem'] ?? '') === 'uit' ? 'uit' : 'aan';
+            $z = (int) ($e['zin'] ?? 0);
             $u[$einde]++;
-            $u[$stem][$einde]++;
-            // Doortikken zegt alleen iets als Pip hoorbaar praatte.
-            if ($stem === 'aan') {
+            // Weg bij zin 1 = nooit op Verder getikt: vaak kijkers, en Pip was vaak nog niet
+            // te horen (geluid wacht op de eerste tik). Buiten de vergelijking aan/uit.
+            if ($einde === 'verder' || $z >= 2) $u[$stem][$einde]++;
+            // Doortikken alleen bij een uitgespeelde uitleg, en alleen als Pip hoorbaar praatte:
+            // wie bij zin 1 weggaat, tikte nooit en hoort niet onder "luisterde uit".
+            if ($stem === 'aan' && $einde === 'verder') {
                 $d = $e['doorgetikt'] ?? 'geen';
                 if (isset($u['door'][$d])) $u['door'][$d]++;
             }
             if ($einde === 'weg') {
-                $z = (int) ($e['zin'] ?? 0);
                 $u['wegZin'][$z] = ($u['wegZin'][$z] ?? 0) + 1;
             }
             $uitleg[$id] = $u;
@@ -252,12 +259,15 @@ loopDagen($periode, function (string $dag, ?array $r) use (
 /** Lessen in de volgorde van de app, als lessen.json er is (gemaakt bij het bouwen). */
 $volgorde = [];
 $titels = [];
+/** Per les het wereldnummer en de leeftijd van de doelgroep (sinds 2026-11-17 in lessen.json). */
+$lesInfo = [];
 $lijst = @json_decode((string) @file_get_contents(__DIR__ . '/lessen.json'), true);
 if (is_array($lijst)) {
     foreach ($lijst as $i => $les) {
         if (!isset($les['id'])) continue;
         $volgorde[$les['id']] = $i;
         $titels[$les['id']] = ($les['wereld'] ?? '') . ' · ' . ($les['titel'] ?? '');
+        $lesInfo[$les['id']] = ['nr' => isset($les['nr']) ? (int) $les['nr'] : null, 'leeftijd' => isset($les['leeftijd']) ? (int) $les['leeftijd'] : null];
     }
 }
 uksort($lessen, function ($a, $b) use ($volgorde) {
@@ -266,8 +276,9 @@ uksort($lessen, function ($a, $b) use ($volgorde) {
 
 function balk(int $n, int $max, bool $rood = false): string
 {
-    $w = $max > 0 ? max(1, (int) round($n / $max * 160)) : 0;
-    return '<div class="balk' . ($rood ? ' rood' : '') . '" style="width:' . $w . 'px"></div>';
+    // Een deel van min(160px, 22vw): op een telefoon liep een balk van 160 px de kaart uit.
+    $f = $max > 0 ? max(0.01, round($n / $max, 3)) : 0;
+    return '<div class="balk' . ($rood ? ' rood' : '') . '" style="width:calc(min(160px, 22vw) * ' . $f . ')"></div>';
 }
 
 function verdeling(string $titel, array $tellen, array $volgorde, string $uitleg): string
@@ -418,41 +429,85 @@ function zeker(int $n): string
     return $n >= 20 ? '' : ($n >= 10 ? ' (nog weinig metingen)' : ' (heel weinig metingen: een aanwijzing)');
 }
 
+/** De uitleg-tellingen van alle lessen opgeteld. Eén keer, voor de bevindingen én de sectie Pips stem. */
+function somUitleg(array $uitleg): array
+{
+    $som = ['aan' => ['verder' => 0, 'weg' => 0], 'uit' => ['verder' => 0, 'weg' => 0],
+        'door' => ['geen' => 0, 'soms' => 0, 'meestal' => 0], 'voorTik' => 0, 'later' => 0];
+    foreach ($uitleg as $u) {
+        foreach (['aan', 'uit'] as $st) foreach (['verder', 'weg'] as $ei) $som[$st][$ei] += $u[$st][$ei];
+        foreach ($som['door'] as $k => $_) $som['door'][$k] += $u['door'][$k];
+        foreach ($u['wegZin'] as $z => $n) $som[$z <= 1 ? 'voorTik' : 'later'] += $n;
+    }
+    return $som;
+}
+
+/** Vastlopen in de eerste opgave van meedoen of zelf, als deel van hoe vaak de les begon. */
+function vastInBegin(string $id, array $lessen, array $lastig): ?int
+{
+    $begon = isset($lessen[$id]) ? $lessen[$id]['nieuw'] + $lessen[$id]['hervat'] : 0;
+    if ($begon < 4) return null;
+    $vast = 0;
+    foreach (['meedoen-1', 'zelf-1'] as $o) {
+        if (isset($lastig[$id . '|' . $o])) $vast = max($vast, $lastig[$id . '|' . $o]['hint'], $lastig[$id . '|' . $o]['missers']);
+    }
+    return pct($vast, $begon);
+}
+
+/** Dit staat onder elk advies dat iets aan de uitleg verandert (schaakmeester, 64e review). */
+const NIET_SCHRAPPEN = 'Schrap geen regel of uitzondering: de laatste zin draagt vaak de grens van de regel ("Maar nooit schuin."). '
+    . 'Kort alleen begroeting en overgangszinnen in, of verplaats een zin naar meedoen, waar het kind het ziet gebeuren. '
+    . 'Controleer daarna of het vastlopen in deze les niet stijgt.';
+
 /**
  * De conclusies bovenaan: wat valt op, en wat zou je eraan kunnen doen. Regels, geen
  * magie: elke bevinding noemt de getallen waar ze op rust, zodat je zelf kunt wegen.
- * Gewicht = ongeveer hoeveel kinderen het raakt, zodat het grootste lek bovenaan staat.
+ *
+ * Prioriteit = hoe vaak het voorkwam (keer weg, keer vastgelopen, keer robotstem), zonder
+ * vermenigvuldigers: een grove volgorde, geen telling van kinderen. De adviezen duwen met
+ * opzet niet alleen naar korter en sneller (vierenzestigste review): uitleg schrappen kan
+ * een regel laten verdwijnen, en een hoger tempo raakt de kleuters.
  *
  * @return array<int, array{gewicht:int, soort:string, wat:string, doe:string}>
  */
-function bevindingen(array $lessen, array $titels, array $volgorde, array $lastig, array $stemBron, array $uitleg, array $geluid, int $nieuwApparaat): array
+function bevindingen(array $lessen, array $titels, array $lesInfo, array $volgorde, array $lastig, array $stemBron,
+    array $uitleg, array $somUitleg, array $geluid, int $zonderDag, array $binnenkomst, int $bezoeken): array
 {
     $uit = [];
     $naam = function (string $id) use ($titels) { return $titels[$id] ?? $id; };
 
-    // 1. Opent de les wel, speelt niet: weg in de uitleg, vóór het eerste tikje.
+    // 1. Opent de les wel, speelt niet: weg in de uitleg, vóór de eerste opgave.
     foreach ($lessen as $id => $l) {
         $open = $l['nieuw'];
         $speelde = $l['speelde'] ?? 0;
         $kijken = $l['gestopt']['kijken'] ?? 0;
         if ($open < 5 || $kijken < 3) continue;
-        $p = pct($kijken, $open);
+        $p = (int) pct($kijken, $open);
         if ($p < 30) continue;
         $u = $uitleg[$id] ?? null;
-        $extra = '';
-        if ($u && $u['weg'] > 0) {
-            ksort($u['wegZin']);
-            $zinnen = [];
-            foreach ($u['wegZin'] as $z => $n) $zinnen[] = 'zin ' . $z . ': ' . $n;
-            $extra = ' Weg bij ' . implode(', ', $zinnen) . '.';
-        }
+        $voorTik = $u['wegZin'][1] ?? 0;
+        $later = $u ? array_sum($u['wegZin']) - $voorTik : 0;
+        $extra = $u && ($voorTik + $later) > 0
+            ? ' Van wie wegging tijdens de uitleg: ' . $voorTik . ' zonder één tik (bij zin 1), ' . $later . ' later (zin 2 of verder).'
+            : '';
         $eerste = ($volgorde[$id] ?? 99) === 0;
-        $uit[] = ['gewicht' => $kijken * 3, 'soort' => 'uitleg',
-            'wat' => $naam($id) . ': van de ' . $open . ' keer dat de les openging, ging een kind ' . $kijken . ' keer ('
-                . $p . '%) weg tijdens de uitleg van Pip, vóór de eerste opgave. ' . $speelde . ' keer werd er echt gespeeld.' . $extra . zeker($open),
-            'doe' => $eerste
-                ? 'Dit is de allereerste les: hier val je af vóór je de app kent. Probeer een kortere uitleg (1 of 2 zinnen) en het kind eerder zelf iets te laten aantikken.'
-                : 'Uitleg inkorten of eerder een tik laten doen. Komen deze bezoekers via Google (zie "Waar komt een nieuw apparaat binnen?"), dan zijn het misschien kijkers en geen afhakers.'];
+        $nr = $lesInfo[$id]['nr'] ?? null;
+        $beginVast = vastInBegin($id, $lessen, $lastig);
+        if ($nr !== null && $nr >= 9) {
+            $doe = 'Vanaf wereld 9 (schaak, mat, rokade) is de uitleg zwaarder en is afhaken daar normaal. Pas niets aan zolang het niet opvallend hoger is dan bij de lessen ervoor.';
+        } elseif ($beginVast !== null && $beginVast >= 30) {
+            $doe = 'In de eerste opgave loopt ook ' . $beginVast . '% vast: de uitleg mist misschien iets, niet te lang. Niet inkorten; kijk of de opdracht aansluit op wat Pip vertelde.';
+        } elseif ($u && $voorTik > $later) {
+            $doe = 'De meesten gaan weg vóór ze één keer tikten. Dat zijn vaak ouders of bezoekers die even kijken'
+                . ($eerste ? ' (alle knoppen voor ouders gaan naar deze les)' : '')
+                . ', en Pip was vaak nog niet te horen. Inkorten helpt daar weinig; kijk of het eerste scherm meteen laat zien wat het kind gaat doen.';
+        } else {
+            $doe = ($u ? 'Kinderen gaan weg tijdens de uitleg zelf. ' : 'Nog geen gegevens per zin (komen binnen sinds ' . STEM_VANAF . '). ') . NIET_SCHRAPPEN;
+        }
+        $uit[] = ['gewicht' => $kijken, 'soort' => 'uitleg',
+            'wat' => $naam($id) . ': van de ' . $open . ' keer dat de les openging, ging een kind ' . $kijken . ' keer (' . $p
+                . '%) weg tijdens de uitleg van Pip, vóór de eerste opgave. ' . $speelde . ' keer werd er echt gespeeld.' . $extra . zeker($open),
+            'doe' => $doe];
     }
 
     // 2. Begint te spelen, maar maakt de les niet af.
@@ -465,9 +520,11 @@ function bevindingen(array $lessen, array $titels, array $volgorde, array $lasti
         unset($fasen['kijken']);
         arsort($fasen);
         $waar = $fasen ? ' Meeste stops in "' . array_key_first($fasen) . '".' : '';
-        $uit[] = ['gewicht' => ($speelde - $l['afGemeten']) * 2, 'soort' => 'les',
+        $leeftijd = $lesInfo[$id]['leeftijd'] ?? null;
+        $uit[] = ['gewicht' => max(0, $speelde - $l['afGemeten']), 'soort' => 'les',
             'wat' => $naam($id) . ': ' . $p . '% maakt de les af van wie begon te spelen (' . $l['afGemeten'] . ' van ' . $speelde . ').' . $waar . zeker($speelde),
-            'doe' => 'Kijk in "Opgaven: waar lopen kinderen vast?" welke opgave in deze les eruit springt, en speel hem zelf als kind van 5.'];
+            'doe' => 'Kijk in "Opgaven: waar lopen kinderen vast?" welke opgave in deze les eruit springt, en speel hem zelf als een kind '
+                . ($leeftijd ? 'van ' . $leeftijd . ' jaar (de jongste doelgroep van deze wereld).' : 'uit de doelgroep van deze wereld.')];
     }
 
     // 3. Opgaven waar een op de drie vastloopt.
@@ -478,62 +535,67 @@ function bevindingen(array $lessen, array $titels, array $volgorde, array $lasti
         if ($begon < 4 || $vast < 2) continue;
         $p = min(100, (int) pct($vast, $begon));
         if ($p < 30) continue;
-        $uit[] = ['gewicht' => $vast * 2, 'soort' => 'opgave',
+        $uit[] = ['gewicht' => $vast, 'soort' => 'opgave',
             'wat' => $naam($id) . ', opgave "' . preg_replace('/^([a-z]+)-(\d+)$/', '$1 $2', $opgave) . '": ' . $p . '% loopt vast ('
                 . $vast . ' van ' . $begon . ', ' . ($o['missers'] >= $o['hint'] ? 'vaak mis getikt' : 'om een hint gevraagd') . ').' . zeker($begon),
-            'doe' => 'Te moeilijk, of onduidelijk wat er gevraagd wordt? Luister naar de opdracht van Pip zonder naar het scherm te kijken: snap je dan wat je moet doen?'];
+            'doe' => 'Maak hem niet makkelijker door het leerpunt eruit te halen: soms is dit precies het struikelpunt dat de les wil oefenen. '
+                . 'Kijk eerder of er twee begrippen tegelijk gevraagd worden, of dat de opdrachtzin iets noemt wat nog niet is uitgelegd.'];
     }
 
     // 4. Pips stem.
     $bronTotaal = array_sum($stemBron);
     $robot = $stemBron['apparaat'] ?? 0;
     if ($bronTotaal >= 5 && pct($robot, $bronTotaal) >= 15) {
-        $uit[] = ['gewicht' => $robot * 2, 'soort' => 'stem',
-            'wat' => 'Bij ' . pct($robot, $bronTotaal) . '% van de bezoeken klonk Pip als de robotstem van het apparaat in plaats van de ingesproken stem (' . $robot . ' van ' . $bronTotaal . ').' . zeker($bronTotaal),
+        $uit[] = ['gewicht' => $robot, 'soort' => 'stem',
+            'wat' => 'Bij ' . pct($robot, $bronTotaal) . '% van de bezoeken klonk Pip als de stem van het apparaat in plaats van de ingesproken stem (' . $robot . ' van ' . $bronTotaal . ').' . zeker($bronTotaal),
             'doe' => 'Er ontbreken opnames, of ze laden niet. Draai npm run audio:render voor nieuwe zinnen en controleer of /audio/ op de site goed geladen wordt.'];
     }
-    $door = ['geen' => 0, 'soms' => 0, 'meestal' => 0];
-    $aanVerder = $aanWeg = $uitVerder = $uitWeg = 0;
-    foreach ($uitleg as $u) {
-        foreach ($door as $k => $_) $door[$k] += $u['door'][$k];
-        $aanVerder += $u['aan']['verder'];
-        $aanWeg += $u['aan']['weg'];
-        $uitVerder += $u['uit']['verder'];
-        $uitWeg += $u['uit']['weg'];
-    }
+    $door = $somUitleg['door'];
     $doorTotaal = array_sum($door);
     if ($doorTotaal >= 5 && pct($door['meestal'], $doorTotaal) >= 30) {
-        $uit[] = ['gewicht' => $door['meestal'] * 2, 'soort' => 'stem',
-            'wat' => 'In ' . pct($door['meestal'], $doorTotaal) . '% van de uitleggen tikte een kind bij de meeste zinnen al op Verder terwijl Pip nog praatte (' . $door['meestal'] . ' van ' . $doorTotaal . ').' . zeker($doorTotaal),
-            'doe' => 'Kinderen wachten Pip niet af: zinnen korter maken, of het spreektempo standaard iets hoger zetten.'];
+        $uit[] = ['gewicht' => $door['meestal'], 'soort' => 'stem',
+            'wat' => 'Van de uitleggen die een kind uitspeelde, tikte het in ' . pct($door['meestal'], $doorTotaal) . '% bij de meeste zinnen al op Verder terwijl Pip nog praatte ('
+                . $door['meestal'] . ' van ' . $doorTotaal . ').' . zeker($doorTotaal),
+            'doe' => 'Zinnen korter maken zonder een regel te schrappen, en kijken of de wijs-animatie bij de zin af is voordat het kind doortikt. '
+                . 'Niet het tempo voor iedereen omhoog: kleuters (pip-modus) krijgen bewust 0,8. Oudere kinderen lezen vaak gewoon sneller dan Pip praat.'];
     }
-    $aan = $aanVerder + $aanWeg;
-    $stil = $uitVerder + $uitWeg;
+    $aan = $somUitleg['aan']['verder'] + $somUitleg['aan']['weg'];
+    $stil = $somUitleg['uit']['verder'] + $somUitleg['uit']['weg'];
     if ($aan >= 10 && $stil >= 5) {
-        $pAan = pct($aanWeg, $aan);
-        $pUit = pct($uitWeg, $stil);
+        $pAan = (int) pct($somUitleg['aan']['weg'], $aan);
+        $pUit = (int) pct($somUitleg['uit']['weg'], $stil);
         if ($pAan - $pUit >= 15) {
-            $uit[] = ['gewicht' => $aanWeg, 'soort' => 'stem',
-                'wat' => 'Met de stem aan gaat ' . $pAan . '% weg tijdens de uitleg, met de stem uit maar ' . $pUit . '% (' . $aan . ' en ' . $stil . ' uitleggen).' . zeker(min($aan, $stil)),
-                'doe' => 'Dat wijst op de stem zelf: te traag, te lang, of niet de toon die kinderen leuk vinden. Laat een paar kinderen luisteren en vraag het.'];
+            $uit[] = ['gewicht' => $somUitleg['aan']['weg'], 'soort' => 'stem',
+                'wat' => 'Na de eerste tik gaat met de stem aan ' . $pAan . '% weg tijdens de uitleg, met de stem uit ' . $pUit . '% (' . $aan . ' en ' . $stil
+                    . ' uitleggen; wie bij zin 1 al wegging telt hier niet mee).' . zeker(min($aan, $stil)),
+                'doe' => 'Dat kán op de stem wijzen: te traag, te lang, of niet de toon die kinderen leuk vinden. Maar wie de stem uit heeft, '
+                    . 'is vaak ouder of heeft een ouder ernaast: een andere groep. Laat een paar kinderen luisteren en vraag het.'];
         }
     }
-    $kindUit = $geluid['kind']['uit'] ?? 0;
-    $ouderUit = $geluid['ouder']['uit'] ?? 0;
-    if ($kindUit + $ouderUit >= 3) {
-        $uit[] = ['gewicht' => ($kindUit + $ouderUit) * 2, 'soort' => 'stem',
-            'wat' => 'Het geluid werd ' . ($kindUit + $ouderUit) . ' keer uitgezet (' . $kindUit . ' keer door een kind met de bel, ' . $ouderUit . ' keer door een ouder) en '
-                . (($geluid['kind']['aan'] ?? 0) + ($geluid['ouder']['aan'] ?? 0)) . ' keer weer aangezet.',
-            'doe' => 'Zie "Pips stem" voor op welk scherm. Gebeurt het vooral in de les, dan stoort de stem daar.'];
+    // Netto uit: een kind dat met de bel speelt (uit, aan, uit) telt zo maar één keer.
+    $nettoUit = max(0, ($geluid['kind']['uit'] ?? 0) - ($geluid['kind']['aan'] ?? 0)) + max(0, ($geluid['ouder']['uit'] ?? 0) - ($geluid['ouder']['aan'] ?? 0));
+    if ($nettoUit >= 3 && $bezoeken > 0 && pct($nettoUit, $bezoeken) >= 5) {
+        $uit[] = ['gewicht' => $nettoUit, 'soort' => 'stem',
+            'wat' => 'Het geluid werd ' . $nettoUit . ' keer vaker uit- dan aangezet (' . pct($nettoUit, $bezoeken) . '% van de bezoeken). Kind met de bel: '
+                . ($geluid['kind']['uit'] ?? 0) . ' uit, ' . ($geluid['kind']['aan'] ?? 0) . ' aan. Ouder: ' . ($geluid['ouder']['uit'] ?? 0) . ' uit, ' . ($geluid['ouder']['aan'] ?? 0) . ' aan.',
+            'doe' => 'Zie "Pips stem" voor op welk scherm. Gebeurt het vooral in de les, dan stoort de stem daar misschien; bij ouders kan het ook de trein of de wachtkamer zijn.'];
     }
 
-    // 5. Nieuwe bezoekers die geen les openen.
-    $eerste = $volgorde ? (string) array_search(0, $volgorde, true) : '';
-    $eersteOpen = $lessen[$eerste]['nieuw'] ?? 0;
-    if ($nieuwApparaat >= 10 && pct($eersteOpen, $nieuwApparaat) < 40) {
-        $uit[] = ['gewicht' => $nieuwApparaat - $eersteOpen, 'soort' => 'binnenkomst',
-            'wat' => 'Van de ' . $nieuwApparaat . ' nieuwe apparaten opende maar ' . pct($eersteOpen, $nieuwApparaat) . '% de eerste les (' . $eersteOpen . ').',
-            'doe' => 'De grootste groep haakt af vóór de eerste les. Kijk of de startknop op de startpagina meteen in beeld staat op een telefoon, en waar ze binnenkomen.'];
+    // 5. Bezoeken zonder geoefende dag die geen enkele les openen. Bezoeken, geen apparaten:
+    // wie terugkomt zonder ooit te oefenen, telt elke keer mee. Alle lessen, niet alleen de
+    // eerste: wie via een schaakregelpagina in /les/paard-1/ belandt, haakte niet af.
+    $geopend = 0;
+    foreach ($lessen as $l) $geopend += $l['nieuw'];
+    if ($volgorde && $zonderDag >= 10 && pct($geopend, $zonderDag) < 40) {
+        arsort($binnenkomst);
+        $grootste = (string) array_key_first($binnenkomst);
+        $uit[] = ['gewicht' => $zonderDag - $geopend, 'soort' => 'binnenkomst',
+            'wat' => 'Er waren ' . $zonderDag . ' bezoeken van een apparaat waarop nog nooit geoefend was, en in dezelfde periode werd ' . $geopend
+                . ' keer een les nieuw geopend (' . pct($geopend, $zonderDag) . '%). Losse aantallen, geen gevolgde bezoekers.',
+            'doe' => $grootste === 'startpagina'
+                ? 'De meesten komen binnen op de startpagina: kijk of de startknop daar op een telefoon meteen in beeld staat.'
+                : 'De meesten komen binnen via ' . ($grootste === 'les' ? 'een les' : ($grootste !== '' ? '/' . $grootste . '/' : 'een andere pagina'))
+                    . ' (zie "Waar komt een bezoek zonder geoefende dag binnen?"): kijk of daar een duidelijke knop naar een les staat.'];
     }
 
     usort($uit, function ($a, $b) { return $b['gewicht'] <=> $a['gewicht']; });
@@ -565,10 +627,13 @@ $h .= '</div><p class="zacht" style="margin:10px 0 0">Er zijn geen ID\'s, dus "u
     . 'een bezoek is één keer de app openen. Tijden in UTC. Alleen vanaf ' . e(SCHOON_VANAF) . ': daarvóór telde '
     . 'Googlebot mee, die elke les uit de sitemap één keer opende. Zoekmachines tellen nu niet meer mee.</p></section>';
 
-$lijstBevindingen = bevindingen($lessen, $titels, $volgorde, $lastig, $stemBron, $uitleg, $geluid, $geoefend['nog niet'] ?? 0);
+$somUitleg = somUitleg($uitleg);
+$nieuwApparaat = $geoefend['nog niet'] ?? 0;
+$lijstBevindingen = bevindingen($lessen, $titels, $lesInfo, $volgorde, $lastig, $stemBron, $uitleg, $somUitleg, $geluid, $nieuwApparaat, $binnenkomst, $totaal['Bezoek']);
 $soortNaam = ['uitleg' => 'Uitleg', 'les' => 'Les', 'opgave' => 'Opgave', 'stem' => 'Stem', 'binnenkomst' => 'Binnenkomst'];
-$h .= '<section><h2>Waar verbeteren?</h2><p class="zacht">Uitgerekend uit de tellingen hieronder, de grootste eerst '
-    . '(ongeveer: hoeveel kinderen het raakt). Elke regel noemt zijn getallen; bij weinig metingen is het een aanwijzing, geen bewijs.</p>';
+$h .= '<section><h2>Waar verbeteren?</h2><p class="zacht">Uitgerekend uit de tellingen hieronder, wat het vaakst voorkwam eerst. '
+    . 'Elke regel noemt zijn getallen; bij weinig metingen is het een aanwijzing, geen bewijs. Het zijn vragen om na te lopen, '
+    . 'geen opdrachten: verander nooit een regel of uitzondering in een les alleen omdat een getal dat zegt.</p>';
 if ($lijstBevindingen) {
     $h .= '<ol class="bevindingen">';
     foreach (array_slice($lijstBevindingen, 0, 8) as $b) {
@@ -625,9 +690,8 @@ $h .= '</section>';
 // De trechter: van een nieuw apparaat naar de eerste les, af, en een profiel. Zonder ID's
 // zijn het losse aantallen naast elkaar, geen gevolgde paden.
 $eerste = $volgorde ? (string) array_search(0, $volgorde, true) : '';
-$nieuwApparaat = $geoefend['nog niet'] ?? 0;
 $stappen = [
-    ['Nieuw apparaat opende de app', $nieuwApparaat],
+    ['Bezoek op een apparaat zonder geoefende dag', $nieuwApparaat],
     ['Eerste les geopend' . ($eerste !== '' ? ' (' . ($titels[$eerste] ?? $eerste) . ')' : ''), $lessen[$eerste]['nieuw'] ?? 0],
     ['Eerste les gespeeld (eerste tik op een opgave)', $lessen[$eerste]['speelde'] ?? 0],
     ['Eerste les af', $lessen[$eerste]['af'] ?? 0],
@@ -656,7 +720,7 @@ if ($profielNa) {
 }
 if ($binnenkomst) {
     arsort($binnenkomst);
-    $h .= '<h3 style="font-size:.95rem;margin:14px 0 6px">Waar komt een nieuw apparaat binnen?</h3><table>';
+    $h .= '<h3 style="font-size:.95rem;margin:14px 0 6px">Waar komt een bezoek zonder geoefende dag binnen?</h3><table>';
     foreach ($binnenkomst as $g => $n) {
         $h .= '<tr><td>' . e($g === 'les' ? 'een les' : ($g === 'startpagina' || $g === 'overig' ? $g : '/' . $g . '/')) . '</td><td class="n">' . $n . '</td><td>'
             . balk($n, max($binnenkomst)) . '</td></tr>';
@@ -701,12 +765,13 @@ if ($lessen) {
 $h .= '</section>';
 
 // Pips stem: ligt afhaken in de uitleg aan de stem? Zie de telling "Uitleg" in het lesscherm.
-$h .= '<section><h2>Pips stem</h2><p class="zacht">Telt sinds deze versie. "Uitleg" is de fase kijken, alleen bij een nieuwe les. '
-    . 'Doorgetikt = op Verder getikt terwijl Pip nog praatte (alleen met stem aan).</p>';
+$h .= '<section><h2>Pips stem</h2><p class="zacht">Telt sinds ' . e(STEM_VANAF) . '. "Uitleg" is de fase kijken, alleen de eerste keer '
+    . 'bij een les die nog niet af was. "Weg" is ook de tab sluiten of de tablet op slot doen, net als bij "Les gestopt": wie even '
+    . 'weg was en terugkwam, telt toch als weg. Doorgetikt = op Verder getikt terwijl Pip al even hoorbaar praatte.</p>';
 $bronTotaal = array_sum($stemBron);
 if ($bronTotaal) {
-    $h .= '<h3 style="font-size:.95rem;margin:10px 0 6px">Hoe klonk Pip? (één keer per bezoek)</h3><table>';
-    foreach (['opname' => 'ingesproken stem', 'apparaat' => 'robotstem van het apparaat'] as $k => $label) {
+    $h .= '<h3 class="klein">Hoe klonk Pip? (één keer per bezoek)</h3><table><tr><th>Klonk als</th><th class="n">Aantal</th><th class="n">%</th><th></th></tr>';
+    foreach (['opname' => 'ingesproken stem', 'apparaat' => 'stem van het apparaat'] as $k => $label) {
         $n = $stemBron[$k] ?? 0;
         $h .= '<tr><td>' . e($label) . '</td><td class="n">' . $n . '</td><td class="n">' . pct($n, $bronTotaal) . '%</td><td>'
             . balk($n, $bronTotaal, $k === 'apparaat') . '</td></tr>';
@@ -714,22 +779,20 @@ if ($bronTotaal) {
     $h .= '</table>';
 }
 if ($uitleg) {
-    $som = ['aan' => ['verder' => 0, 'weg' => 0], 'uit' => ['verder' => 0, 'weg' => 0], 'door' => ['geen' => 0, 'soms' => 0, 'meestal' => 0]];
-    foreach ($uitleg as $u) {
-        foreach (['aan', 'uit'] as $st) foreach (['verder', 'weg'] as $ei) $som[$st][$ei] += $u[$st][$ei];
-        foreach ($som['door'] as $k => $_) $som['door'][$k] += $u['door'][$k];
-    }
-    $h .= '<h3 style="font-size:.95rem;margin:14px 0 6px">Weg tijdens de uitleg, met en zonder stem</h3><table>'
+    $som = $somUitleg;
+    $h .= '<h3 class="klein">Weg tijdens de uitleg, met en zonder stem</h3>'
+        . '<p class="zacht">' . $som['voorTik'] . ' keer ging een kind weg bij zin 1, zonder één tik: vaak kijkers, en Pip was dan vaak nog niet te horen '
+        . '(geluid wacht op de eerste tik). Die tellen hieronder niet mee.</p><table>'
         . '<tr><th>Stem</th><th class="n">Uitleggen</th><th class="n">Weg</th><th class="n">Weg %</th></tr>';
-    foreach (['aan', 'uit'] as $st) {
+    foreach (['aan' => 'Stem aan', 'uit' => 'Stem uit'] as $st => $label) {
         $n = $som[$st]['verder'] + $som[$st]['weg'];
         $p = pct($som[$st]['weg'], $n);
-        $h .= '<tr><td>' . $st . '</td><td class="n">' . $n . '</td><td class="n">' . $som[$st]['weg'] . '</td><td class="n">' . ($p === null ? '' : $p . '%') . '</td></tr>';
+        $h .= '<tr><td>' . $label . '</td><td class="n">' . $n . '</td><td class="n">' . $som[$st]['weg'] . '</td><td class="n">' . ($p === null ? '' : $p . '%') . '</td></tr>';
     }
-    $h .= '</table>';
+    $h .= '</table><p class="zacht">Wie de stem uit heeft, is vaak ouder of heeft een ouder ernaast: een verschil wijst niet vanzelf op de stem.</p>';
     $doorTotaal = array_sum($som['door']);
     if ($doorTotaal) {
-        $h .= '<h3 style="font-size:.95rem;margin:14px 0 6px">Wacht een kind Pip af?</h3><table>';
+        $h .= '<h3 class="klein">Wacht een kind Pip af? (uitgespeelde uitleggen, stem aan)</h3><table><tr><th>Kind</th><th class="n">Aantal</th><th class="n">%</th><th></th></tr>';
         foreach (['geen' => 'luisterde elke zin uit', 'soms' => 'tikte soms door', 'meestal' => 'tikte meestal door'] as $k => $label) {
             $n = $som['door'][$k];
             $h .= '<tr><td>' . e($label) . '</td><td class="n">' . $n . '</td><td class="n">' . pct($n, $doorTotaal) . '%</td><td>'
@@ -737,35 +800,35 @@ if ($uitleg) {
         }
         $h .= '</table>';
     }
-    $h .= '<h3 style="font-size:.95rem;margin:14px 0 6px">Per les</h3><table class="lessen"><tr><th>Les</th><th class="n">Uitleg</th>'
-        . '<th class="n">Weg</th><th>Weg bij zin</th><th class="n">Doorgetikt</th></tr>';
+    $h .= '<h3 class="klein">Per les</h3><table class="lessen"><tr><th>Les</th><th class="n">Uitleg</th>'
+        . '<th class="n" title="Weg bij zin 1, zonder één tik">Weg bij 1</th><th>Later weg (zin)</th><th class="n" title="Soms of meestal doorgetikt">Door</th></tr>';
     $ids = array_keys($uitleg);
     usort($ids, function ($a, $b) use ($volgorde) { return ($volgorde[$a] ?? 9999) <=> ($volgorde[$b] ?? 9999) ?: strcmp($a, $b); });
     foreach ($ids as $id) {
         $u = $uitleg[$id];
         ksort($u['wegZin']);
         $zinnen = [];
-        foreach ($u['wegZin'] as $z => $n) $zinnen[] = $z . ($n > 1 ? ' (' . $n . '×)' : '');
+        foreach ($u['wegZin'] as $z => $n) if ($z >= 2) $zinnen[] = $z . ($n > 1 ? ' (' . $n . '×)' : '');
         $h .= '<tr><td title="' . e($id) . '">' . e($titels[$id] ?? $id) . '</td><td class="n">' . ($u['verder'] + $u['weg'])
-            . '</td><td class="n">' . ($u['weg'] ?: '') . '</td><td>' . e(implode(', ', $zinnen)) . '</td><td class="n">'
+            . '</td><td class="n">' . (($u['wegZin'][1] ?? 0) ?: '') . '</td><td class="breek">' . e(implode(', ', $zinnen)) . '</td><td class="n">'
             . (($u['door']['soms'] + $u['door']['meestal']) ?: '') . '</td></tr>';
     }
     $h .= '</table>';
 }
 if ($geluid) {
-    $h .= '<h3 style="font-size:.95rem;margin:14px 0 6px">Geluid aan- of uitgezet</h3><table><tr><th>Door</th><th class="n">Uit</th><th class="n">Aan</th><th>Waar (uit en aan)</th></tr>';
-    foreach (['kind' => 'kind (bel)', 'ouder' => 'ouder (ouderscherm)'] as $k => $label) {
+    $h .= '<h3 class="klein">Geluid aan- of uitgezet</h3><table><tr><th>Door</th><th class="n">Uit</th><th class="n">Aan</th><th>Waar</th></tr>';
+    foreach (['kind' => 'kind (bel)', 'ouder' => 'ouder'] as $k => $label) {
         if (!isset($geluid[$k])) continue;
         $paden = $geluid[$k]['pad'] ?? [];
         arsort($paden);
         $waar = [];
-        foreach (array_slice($paden, 0, 4, true) as $p => $n) $waar[] = $p . ' ' . $n . '×';
+        foreach (array_slice($paden, 0, 4, true) as $p => $n) $waar[] = e($p) . ' ' . $n . '×';
         $h .= '<tr><td>' . e($label) . '</td><td class="n">' . ($geluid[$k]['uit'] ?? 0) . '</td><td class="n">' . ($geluid[$k]['aan'] ?? 0)
-            . '</td><td style="white-space:normal">' . e(implode(', ', $waar)) . '</td></tr>';
+            . '</td><td class="breek">' . implode('<br>', $waar) . '</td></tr>';
     }
     $h .= '</table>';
 }
-if (!$bronTotaal && !$uitleg && !$geluid) $h .= '<p class="zacht">Nog geen metingen: deze tellingen zijn net toegevoegd.</p>';
+if (!$bronTotaal && !$uitleg && !$geluid) $h .= '<p class="zacht">Nog geen metingen: deze tellingen bestaan sinds ' . e(STEM_VANAF) . '.</p>';
 $h .= '</section>';
 
 // Waar lopen kinderen vast: per opgave hoe vaak er om een hint gevraagd of vaak mis
@@ -838,5 +901,9 @@ foreach ($uren as $u => $n) {
 $h .= '</table></section>';
 
 $h .= '<form method="post"><button name="uit" value="1">Uitloggen</button></form>';
+
+// Elke tabel in een eigen schuifvak: zo schuift alleen de tabel opzij, niet de kop en de
+// uitleg van de sectie mee (layout, vierenzestigste review).
+$h = str_replace(['<table', '</table>'], ['<div class="schuif"><table', '</table></div>'], $h);
 
 pagina('Teller van Schaakmaatje', $h);

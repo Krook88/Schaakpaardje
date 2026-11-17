@@ -407,12 +407,14 @@ function TellenSchakel() {
         Anoniem meetellen
         <br />
         <small className="muted" id="uitleg-tellen">
-          Zodat de maker ziet hoeveel er gespeeld wordt en bij welke les kinderen stoppen.
-          Alleen losse tellingen: welk scherm, welke les begonnen, af (met sterren) of
-          gestopt, de uitslag van een partij, en speelduur en geoefende dagen in grove
-          klassen. En over Pips stem: of hij ingesproken of als robot klonk, of de uitleg
-          werd uitgeluisterd, en of het geluid aan of uit werd gezet. Geen naam, geen
-          leeftijd, geen cookie.
+          <strong>Niets over je kind:</strong> geen naam, leeftijd, cookie of ID. Elke telling
+          staat los, zodat de maker ziet bij welke les kinderen stoppen.
+          <br />
+          Geteld wordt: welk scherm, welke les begonnen, af (met sterren) of gestopt, waar
+          een opgave lastig was, de uitslag van een partij, en speelduur en geoefende dagen in
+          grove klassen. En over Pip: of hij met de ingesproken stem of die van het apparaat
+          klonk, of kinderen zijn uitleg uitluisteren (niet per kind), en of het geluid aan of
+          uit werd gezet.
         </small>
       </span>
       <input

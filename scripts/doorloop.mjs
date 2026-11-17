@@ -895,6 +895,59 @@ async function gastHoudtZijnSterren() {
 console.log(`Doorloop tegen ${URL}\n`)
 // DOORLOOP_ALLEEN=live npm run doorloop: alleen de regels waarvan de naam erop past,
 // om één wisselvallige regel een paar keer achter elkaar te draaien.
+/**
+ * De telling "Uitleg" (vierenzestigste review). Twee meetfouten zagen de controles niet:
+ * de tik die bij een direct geopende les het geluid ontgrendelt, telde als "doorgetikt
+ * terwijl Pip praatte", en niets legde vast dat "nog eens kijken" vanuit een opgave
+ * geen tweede uitleg meldt. Tellingen gaan alleen weg op schaakmaatje.nl en niet vanuit
+ * een geautomatiseerde browser; hier wijst schaakmaatje.nl naar de doorloopserver, doet
+ * de browser zich gewoon voor, en vangen we /teller/ af. Er gaat niets naar internet.
+ */
+async function uitlegTeltEenKeer() {
+  const poort = new globalThis.URL(URL).port || '80'
+  const b = await chromium.launch({ executablePath: CHROMIUM, args: ['--host-resolver-rules=MAP schaakmaatje.nl 127.0.0.1'] })
+  // Een gewone telefoon: "HeadlessChrome" staat op de botlijst en telt dus niet mee.
+  const ctx = await b.newContext({
+    viewport: { width: 420, height: 950 },
+    userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36',
+  })
+  await ctx.addInitScript(() => Object.defineProperty(Navigator.prototype, 'webdriver', { get: () => false }))
+  const tellingen = []
+  await ctx.route('**/teller/index.php', (r) => {
+    try {
+      tellingen.push(JSON.parse(r.request().postData() ?? '{}'))
+    } catch {}
+    return r.fulfill({ status: 204 })
+  })
+  const p = await ctx.newPage()
+  await p.goto(`http://schaakmaatje.nl:${poort}/les/weide-1/`, { waitUntil: 'networkidle' })
+  // Rustig, zoals een kind dat luistert: na elke zin even wachten.
+  for (let i = 0; i < 10 && !(await p.getByRole('button', { name: /Ik ga het proberen/ }).count()); i++) {
+    await p.getByRole('button', { name: /Verder/ }).first().click()
+    await p.waitForTimeout(1500)
+  }
+  await p.getByRole('button', { name: /Ik ga het proberen/ }).click()
+  await p.waitForTimeout(600)
+  // Vanuit de opgave nog eens kijken, en weer terug.
+  await p.getByRole('button', { name: 'Laat de uitleg nog eens zien' }).click()
+  await p.waitForTimeout(400)
+  for (let i = 0; i < 10 && !(await p.getByRole('button', { name: /Terug naar de opgave/ }).count()); i++) {
+    await p.getByRole('button', { name: /Verder/ }).first().click()
+    await p.waitForTimeout(200)
+  }
+  await p.getByRole('button', { name: /Terug naar de opgave/ }).click()
+  await p.waitForTimeout(400)
+  await p.goto('about:blank')
+  await p.waitForTimeout(400)
+  const uitleg = tellingen.filter((t) => t.name === 'Uitleg')
+  meld(
+    'uitleg: één telling, ook na "nog eens kijken", en rustig tikken is niet doorgetikt',
+    uitleg.length === 1 && uitleg[0].props?.einde === 'verder' && uitleg[0].props?.doorgetikt === 'geen',
+    JSON.stringify(uitleg.map((t) => t.props)),
+  )
+  await b.close()
+}
+
 const ALLEEN = process.env.DOORLOOP_ALLEEN ? new RegExp(process.env.DOORLOOP_ALLEEN, 'i') : null
 // nieuwProfiel draait altijd mee: de regels erna gaan uit van dat profiel.
 let gedraaid = 0
@@ -916,6 +969,7 @@ for (const regel of [
   altijdEenUitweg,
   tweedeKind,
   gastHoudtZijnSterren,
+  uitlegTeltEenKeer,
 ]) {
   if (!ALLEEN || ALLEEN.test(regel.name) || regel === nieuwProfiel) {
     if (regel !== nieuwProfiel || ALLEEN?.test(regel.name)) gedraaid++
