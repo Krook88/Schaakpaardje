@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Icoon, lesIcoon } from '@/ui/beelden'
 import { notFound } from 'next/navigation'
-import { ALLE_LESSEN, lesMet } from '@/content'
+import { ALLE_LESSEN, lesMet, wereldMet } from '@/content'
 import { SCHAAKREGELS, onderwerpMet } from '@/content/schaakregels'
 import { SITE, VOOR_KINDEREN, deelkaart, kruimels } from '@/seo'
 import { Gegevens } from '@/ui/Gegevens'
@@ -49,7 +49,19 @@ export default async function Onderwerp({ params }: { params: Promise<{ onderwer
   const url = `${SITE}/schaakregels/${o.slug}/`
   const lessen = o.lessen.flatMap((id) => lesMet(id) ?? [])
   const i = SCHAAKREGELS.indexOf(o)
-  const volgende = SCHAAKREGELS[(i + 1) % SCHAAKREGELS.length]
+  // Na het laatste onderwerp niet terug naar het opzetten van het bord, maar naar het overzicht.
+  const volgende = SCHAAKREGELS[i + 1]
+  const oefen = lesMet(o.oefenEerst ?? o.lessen[0])
+  // Een les uit een wereld voor oudere kinderen (vork, penning, notatie): wie via Google
+  // met een kind van vijf komt, kreeg daar een opgave die het paard al kent. Dan ook de
+  // weg naar het begin (zevenenzestigste review, conversie B1).
+  const voorGevorderden = (wereldMet(oefen?.wereldId ?? '')?.minLeeftijd ?? 0) >= 8
+  const beginBijHetBegin = voorGevorderden && (
+    <p className={s.beginNog}>
+      Voor kinderen die de stukken al kennen. Nog nooit geschaakt?{' '}
+      <Link href={`/les/${ALLE_LESSEN[0].id}/`}>Begin bij de eerste les</Link>
+    </p>
+  )
 
   const gegevens = {
     '@context': 'https://schema.org',
@@ -101,6 +113,7 @@ export default async function Onderwerp({ params }: { params: Promise<{ onderwer
               <span aria-hidden="true">▶︎</span> Oefen dit met Pip, gratis
             </Link>
           )}
+          {beginBijHetBegin}
         </div>
       </header>
 
@@ -165,15 +178,22 @@ export default async function Onderwerp({ params }: { params: Promise<{ onderwer
         </ul>
         <p>
           <Link href={`/les/${o.oefenEerst ?? (lessen[0] ?? ALLE_LESSEN[0]).id}/`} className="btn btn--primary btn--big">
-            Begin met Schaakmaatje →
+            {voorGevorderden ? 'Oefen dit met Pip →' : 'Begin met Schaakmaatje →'}
           </Link>
         </p>
+        {beginBijHetBegin}
       </section>
 
       <section className={s.deel}>
-        <h2>Meer schaakregels</h2>
+        <h2>Meer over schaken</h2>
         <p>
-          Hierna: <Link href={`/schaakregels/${volgende.slug}/`}>{volgende.vraag}</Link>
+          {volgende ? (
+            <>
+              Hierna: <Link href={`/schaakregels/${volgende.slug}/`}>{volgende.vraag}</Link>
+            </>
+          ) : (
+            <Link href="/schaakregels/">Alle schaakregels op een rij</Link>
+          )}
         </p>
         <ul className={s.chips}>
           {SCHAAKREGELS.filter((x) => x !== o).map((x) => (

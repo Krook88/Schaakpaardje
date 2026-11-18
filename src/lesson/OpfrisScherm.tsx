@@ -180,7 +180,13 @@ export function OpfrisScherm() {
     return m
   }, [stand, hintVelden])
 
-  if (!geladen || !ronde) return <main className="page" />
+  // Tot het laden alvast de bovenbalk: dan heeft ook de geëxporteerde HTML een h1.
+  if (!geladen || !ronde)
+    return (
+      <main className="page">
+        <Kop titel="Opfrissen" terug="/" />
+      </main>
+    )
 
   if (!ronde.length || klaar) {
     return (

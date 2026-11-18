@@ -783,7 +783,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
   },
   {
     slug: 'schaaknotatie',
-    vraag: 'Hoe schrijf je schaakzetten op?',
+    vraag: 'Schaaknotatie: hoe schrijf je zetten op?',
     zoektitel: 'Schaaknotatie: zo schrijf je schaakzetten op',
     omschrijving:
       'Elk veld heeft een naam, zoals e4, en elk stuk een letter: K, D, T, L en P. Zo lees en schrijf je schaakzetten, uitgelegd met een bewegend bord.',
@@ -814,6 +814,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
         tekst: [
           'Slaat een stuk iets, dan komt er een x tussen: Lxf7 betekent dat de loper op f7 slaat. Slaat een pion, dan schrijf je de lijn waar hij vandaan komt: exd5.',
           'Staat de koning na de zet schaak, dan komt er een + achter. Is het mat, dan een #. De korte rokade schrijf je als 0-0, de lange als 0-0-0. En promoveert een pion, dan schrijf je erachter wat hij wordt: e8D.',
+          'Kunnen twee gelijke stukken naar hetzelfde veld, dan zet je erbij welke: Tad1 is de toren van de a-lijn naar d1, Pbd2 het paard van de b-lijn.',
           'Een partij schrijf je op met een nummer per zettenpaar: 1. e4 e5 2. Pf3 Pc6. Eerst de zet van wit, dan die van zwart.',
         ],
       },
@@ -824,7 +825,8 @@ export const SCHAAKREGELS: Onderwerp[] = [
       ['Waarom staat er in Engelse boeken N in plaats van P?', 'Elke taal heeft eigen letters. In het Engels is het paard N (knight), de loper B, de toren R en de dame Q. De velden heten overal hetzelfde.'],
       ['Moet een kind dit kennen voor de schaakclub?', 'Bij wedstrijden schrijf je je zetten op, dus vroeg of laat wel. In de app komt het in wereld 12, als een kind alle regels kent.'],
     ],
-    lessen: ['notatie-1', 'notatie-2', 'notatie-3'],
+    // notatie-3 gaat over het begin van een partij, niet over opschrijven (zevenenzestigste review).
+    lessen: ['notatie-1', 'notatie-2'],
   },
   {
     slug: 'vork',
@@ -842,12 +844,12 @@ export const SCHAAKREGELS: Onderwerp[] = [
         kop: 'Twee aanvallen met één zet',
         tekst: [
           'Je tegenstander mag per beurt maar één zet doen. Val je twee stukken tegelijk aan, dan kan hij er dus maar één in veiligheid brengen. Dat is het hele idee van de vork.',
-          'Het sterkst is een vork met schaak erin. Een koning die schaak staat, moet eerst zelf weg, en het andere stuk blijft onbeschermd achter.',
+          'Het sterkst is een vork met schaak erin. Een koning die schaak staat, moet eerst uit het schaak. Dan is er geen tijd om het andere stuk te redden.',
         ],
         animatie: {
           id: 'vork-paard',
           titel: 'Een paardenvork',
-          beschrijving: 'Een wit paard springt naar c7 en valt de zwarte koning op e8 en de toren op a8 tegelijk aan. De koning moet weg, en het paard slaat de toren.',
+          beschrijving: 'Een wit paard springt naar c7 en valt de zwarte koning op e8 en de toren op a8 tegelijk aan. De koning moet uit het schaak, en het paard slaat de toren.',
           fen: 'r3k3/8/N7/8/8/8/8/7K w - - 0 1',
           regels: 'echt',
           stappen: [
@@ -883,23 +885,23 @@ export const SCHAAKREGELS: Onderwerp[] = [
     kort: 'Een stuk zit vast, omdat er iets duurders achter staat.',
     stuk: 'b',
     antwoord:
-      'Een penning is een aanval op een stuk waar iets waardevollers achter staat, op dezelfde lijn. Staat de koning erachter, dan zit het voorste stuk vast. Schakers zeggen: het is gepend. Het mag niet weg, want dan zou de eigen koning schaak komen te staan.',
+      'Een penning is een aanval op een stuk waar iets waardevollers achter staat, op één rechte lijn: een rij, een lijn of een diagonaal. Staat de koning erachter, dan zit het voorste stuk vast. Schakers zeggen: het is gepend. Het mag niet opzij, want dan zou de eigen koning schaak komen te staan.',
     delen: [
       {
         kop: 'Vastgezet door de koning erachter',
         tekst: [
-          'Een toren, loper of dame valt over een lange lijn aan. Staan daar twee stukken van de tegenstander achter elkaar, dan zit het voorste in de knel. Gaat het opzij, dan raakt de aanval het stuk erachter.',
-          'Staat de koning erachter, dan is het streng: het voorste stuk mag dan helemaal niet weg, want je mag je eigen koning nooit schaak zetten.',
+          'Een toren, loper of dame valt ver aan, over een rij, een lijn of een diagonaal. Staan daar twee stukken van de tegenstander achter elkaar, dan zit het voorste in de knel. Gaat het opzij, dan raakt de aanval het stuk erachter.',
+          'Staat de koning erachter, dan is het streng: het voorste stuk mag dan niet van die lijn af, want je mag je eigen koning nooit schaak zetten. Kan het gepende stuk zelf over die lijn lopen, zoals een loper op een diagonaal of een toren op een rij, dan mag het wel langs de lijn schuiven, en de aanvaller slaan. Een paard kan dat nooit: dat zit echt vast.',
         ],
         animatie: {
           id: 'penning-loper',
           titel: 'Het paard zit vast',
-          beschrijving: 'Een witte loper gaat naar b5. Achter het zwarte paard op c6 staat de zwarte koning op e8, op dezelfde schuine lijn. Het paard kan geen enkele zet meer doen.',
+          beschrijving: 'Een witte loper gaat naar b5. Achter het zwarte paard op c6 staat de zwarte koning op e8, op dezelfde diagonaal. Het paard kan geen enkele zet meer doen.',
           fen: '4k3/8/B1n5/8/8/8/8/7K w - - 0 1',
           regels: 'echt',
           stappen: [
-            { tekst: 'Het zwarte paard en de zwarte koning staan op dezelfde schuine lijn.', markeer: ['c6', 'e8'] },
-            { tekst: 'De loper gaat op die lijn staan, op b5.', zet: 'a6-b5' },
+            { tekst: 'Het zwarte paard en de zwarte koning staan op dezelfde diagonaal.', markeer: ['c6', 'e8'] },
+            { tekst: 'De loper gaat op die diagonaal staan, op b5.', zet: 'a6-b5' },
             // Geen `bereik`: het paard heeft nul velden, en dat is juist de les.
             // tests/schaakregels.test.ts rekent na dat het vóór b5 wel kon springen en daarna niet.
             {
@@ -912,15 +914,15 @@ export const SCHAAKREGELS: Onderwerp[] = [
       {
         kop: 'En dan?',
         tekst: [
-          'Een gepend stuk is een makkelijk doelwit. Het kan niet vluchten, dus val het nog een keer aan, bijvoorbeeld met een pion. Je tegenstander moet het dan verdedigen of de penning opheffen, vaak door de koning opzij te zetten.',
+          'Een gepend stuk is een makkelijk doelwit. Het kan niet zomaar vluchten, dus val het nog een keer aan, bijvoorbeeld met een pion. Je tegenstander moet het dan verdedigen of de penning opheffen: de koning opzij zetten, iets ertussen zetten of de aanvaller slaan.',
           'Staat er geen koning maar een ander stuk achter, zoals de dame, dan mag het voorste stuk wel weg. Alleen kost dat dan vaak de dame.',
         ],
       },
     ],
     thuis:
-      'Zet op een leeg bord je koning en een paard op één lijn, en geef je kind een loper of toren. Vraag: waar zet je hem neer zodat het paard niet meer weg kan? Laat je kind daarna proberen met het paard te springen, en kijk samen waarom dat niet mag.',
+      'Zet op een leeg bord je koning en een paard op één rechte lijn of diagonaal, en geef je kind een loper of toren. Vraag: waar zet je hem neer zodat het paard niet meer weg kan? Laat je kind daarna proberen met het paard te springen, en kijk samen waarom dat niet mag.',
     vragen: [
-      ['Welke stukken kunnen pennen?', 'Alleen de stukken die over een lange lijn gaan: de toren, de loper en de dame. Een paard, pion of koning kan geen penning geven.'],
+      ['Welke stukken kunnen pennen?', 'Alleen de stukken die ver over een rij, lijn of diagonaal gaan: de toren, de loper en de dame. Een paard, pion of koning kan geen penning geven.'],
       ['Wanneer leert mijn kind de penning in de app?', 'In wereld 13, de Tactiekgrot, direct na de vork.'],
     ],
     lessen: ['tactiek-2'],

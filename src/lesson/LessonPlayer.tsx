@@ -505,7 +505,8 @@ export function LessonPlayer({
   if (!geladen) {
     return (
       <div className={`page ${styles.wereldpagina}`} style={{ '--toon': wereld.toon } as React.CSSProperties}>
-        <Kop titel={les.titel} terug="/kaart/" />
+        {/* De tekstversie heeft zelf de h1; twee was er één te veel (zevenenzestigste review). */}
+        <Kop titel={les.titel} terug="/kaart/" kop="p" />
         {/* Dit is wat er in de geëxporteerde HTML staat, en dus wat een zoekmachine
             en een gedeelde link te zien krijgen: de les in gewone tekst. Een kind ziet
             het hooguit een fractie van een seconde, tot de opgeslagen voortgang

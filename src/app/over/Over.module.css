@@ -18,7 +18,8 @@
 .lead { font-size: 1.15rem; margin-top: 14px; max-width: 34ch; }
 .knoppen { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; margin-top: 22px; }
 /* Een losse link naast de grote knop: 27 px hoog was te klein voor een duim. */
-.tekstknop { display: inline-flex; align-items: center; min-height: 44px; }
+.tekstknop { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 6px; margin-inline: -6px; border-radius: 10px; }
+.tekstknop:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .feiten { list-style: none; padding: 0; margin: 22px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .feiten li { background: var(--grass-soft); color: var(--ink); border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 0.95rem; }
 .feiten li::before { content: '✓\FE0E'; color: var(--grass); margin-right: 6px; }

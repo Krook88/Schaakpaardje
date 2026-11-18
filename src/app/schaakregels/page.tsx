@@ -59,6 +59,10 @@ export default function Schaakregels() {
             Alle regels van het schaken, elk op een bord dat het voordoet. Voor ouders die het
             zelf even willen opfrissen, en om samen met je kind naar te kijken.
           </p>
+          {/* De weg naar de app stond pas onderaan (zevenenzestigste review, conversie K3). */}
+          <Link href={`/les/${ALLE_LESSEN[0].id}/`} className="btn btn--primary" style={{ marginTop: 12 }}>
+            <span aria-hidden="true">▶︎</span> Probeer de eerste les, gratis
+          </Link>
         </div>
       </header>
 

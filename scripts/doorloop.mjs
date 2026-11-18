@@ -27,6 +27,7 @@ import { spawn, spawnSync } from 'node:child_process'
 import { mkdtempSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { createServer } from 'node:net'
 
 const URL = process.env.DOORLOOP_URL ?? 'http://localhost:4173'
 const CHROMIUM = process.env.CHROMIUM_PAD ?? '/opt/pw-browsers/chromium'
@@ -599,11 +600,24 @@ async function contactformulierIsEerlijk() {
  * start de doorloop zelf PHP's eigen webserver op de gebouwde app. Zonder PHP op de
  * machine wordt dit stuk overgeslagen, en dat staat er dan ook.
  * ------------------------------------------------------------------ */
+/** Vraag het systeem om een vrije poort, en geef hem meteen weer vrij. */
+const vrijePoort = () =>
+  new Promise((ok, fout) => {
+    const srv = createServer()
+    srv.once('error', fout)
+    srv.listen(0, '127.0.0.1', () => {
+      const { port } = srv.address()
+      srv.close(() => ok(port))
+    })
+  })
+
 async function liveMetEenVriendje() {
   const naam = 'live: link via het rekenslot, zetten komen over, verversen, meekijken, nog een keer'
   if (spawnSync('php', ['-v']).status !== 0) return console.log(`  - ${naam} — overgeslagen, geen PHP`)
   const data = mkdtempSync(join(tmpdir(), 'live-doorloop-'))
-  const poort = 4176
+  // Een vrije poort, geen vaste: met 4176 vast faalde deze regel zodra een tweede
+  // doorloop of een `npx serve` die poort al had (zevenenzestigste review, codebase 3).
+  const poort = await vrijePoort()
   const BASIS = `http://127.0.0.1:${poort}`
   // Meer werkers: elk scherm houdt een kijkverzoek open (long polling), en intussen moet
   // er een zet door kunnen. Zonder dit handelt PHP's eigen server één verzoek tegelijk af.

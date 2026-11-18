@@ -240,8 +240,11 @@ describe('wat de tekst over het bord zegt', () => {
   it('vork: het paard op c7 valt koning én toren aan', () => {
     const beelden = bouwBeelden(animatie('vork-paard'))
     expect(beelden[1].schaak).toEqual(['e8'])
-    // De toren valt pas na de koningszet, met hetzelfde paard: dat bewijst dat c7 hem raakte.
-    expect(bord(beelden[3]).a8).toEqual({ type: 'n', color: 'w' })
+    // Rechtstreeks: vanaf c7 kan het paard naar a8 (zevenenzestigste review, codebase 4).
+    const spel = new Game(animatie('vork-paard').fen)
+    spel.move('a6', 'c7')
+    spel.move('e8', 'd7')
+    expect(spel.destinations('c7')).toContain('a8')
   })
 
   it('het duurste stuk pakken: de toren levert meer op dan de pion', () => {
