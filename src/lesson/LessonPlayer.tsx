@@ -12,7 +12,7 @@ import { Sterren } from '@/ui/Sterren'
 import { Teller } from '@/ui/Teller'
 import { gebruikTip } from '@/ui/gebruikTip'
 import { sfx } from '@/audio/sfx'
-import { kies, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
+import { kies, praatNu, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
 import {
   EERSTE_GOED, HINT_GEGEVEN, OPNIEUW_PROBEREN, pipZinnen } from '@/content/voice'
 import { WERELDEN, volgendeLes, wereldMet, type Lesson, type World } from '@/content'
@@ -40,8 +40,8 @@ import {
   volgendeOpenLes,
   wereldIsAf,
 } from '@/progress/store'
-import { eenKeer, maakLastigMelder, maakStopMelder } from './lesTellingen'
-import { tel } from '@/progress/tellen'
+import { eenKeer, maakLastigMelder, maakStopMelder, maakUitlegMelder } from './lesTellingen'
+import { apparaatKlasse, hoogsteOefendagen, isBinnenkomst, tel } from '@/progress/tellen'
 import { useMediaQuery } from '@/ui/useMediaQuery'
 import styles from './LessonPlayer.module.css'
 
@@ -150,9 +150,15 @@ export function LessonPlayer({
   // fase is die van de eerste keer weggaan. Een nieuwe les krijgt een nieuwe melder.
   const faseNu = useRef<Fase>(fase)
   faseNu.current = kijkTerug ?? fase
+  // Pas na het laden: daarvóór staat de fase op "kijken" zonder dat er iets te zien was,
+  // en een les die nog laadde telde dan als "gestopt in kijken" (vierenzestigste review).
+  const lesGeladen = useRef(false)
+  lesGeladen.current = geladen
   useEffect(() => {
     const meld = maakStopMelder((f) => tel('Les gestopt', { les: les.id, fase: f }))
-    const meldGestopt = () => meld(faseNu.current)
+    const meldGestopt = () => {
+      if (lesGeladen.current) meld(faseNu.current)
+    }
     const wissel = () => {
       if (document.visibilityState === 'hidden') meldGestopt()
     }
@@ -160,6 +166,43 @@ export function LessonPlayer({
     return () => {
       document.removeEventListener('visibilitychange', wissel)
       meldGestopt()
+    }
+  }, [les.id])
+
+  // De uitleg: luistert een kind Pip uit, tikt het door, of gaat het weg? Zo is te zien
+  // of afhaken in "kijken" aan de stem ligt. Zie `maakUitlegMelder`.
+  //
+  // Alleen de eerste uitleg van een les die het kind nog niet af had: bij een hervatte
+  // les zag het de uitleg niet, en bij een les die al af was kent het hem al, en is
+  // doortikken terecht (vierenzestigste review). Dat beslist het hervat-effect hieronder;
+  // tot dan (null) telt er niets. De stand van de stem is die van het begin: zet een kind
+  // halverwege het geluid uit, dan was het een uitleg mét stem.
+  const uitlegTelt = useRef<boolean | null>(null)
+  const stemBijStart = useRef(true)
+  const uitlegMelder = useRef<ReturnType<typeof maakUitlegMelder> | null>(null)
+  const inUitleg = useRef(false)
+  inUitleg.current = geladen && fase === 'kijken' && !kijkTerug
+  const uitlegZin = useRef(1)
+  uitlegZin.current = vertelIndex + 1
+  useEffect(() => {
+    // In het effect zelf, niet in een useMemo: zo krijgt een tweede mount (StrictMode)
+    // een verse melder, zoals bij `maakStopMelder`.
+    const melder = maakUitlegMelder((einde, zin, doorgetikt, stem) =>
+      tel('Uitleg', { les: les.id, einde, zin, doorgetikt, stem }),
+    )
+    uitlegMelder.current = melder
+    const weg = () => {
+      // uitlegTelt hier lezen en niet in inUitleg: wie zonder één tik weggaat, gaf geen
+      // nieuwe render na het hervat-effect.
+      if (inUitleg.current && uitlegTelt.current) melder.klaar('weg', uitlegZin.current, stemBijStart.current)
+    }
+    const wissel = () => {
+      if (document.visibilityState === 'hidden') weg()
+    }
+    document.addEventListener('visibilitychange', wissel)
+    return () => {
+      document.removeEventListener('visibilitychange', wissel)
+      weg()
     }
   }, [les.id])
 
@@ -259,8 +302,22 @@ export function LessonPlayer({
     hervatGedaan.current = true
     const halfAf = Boolean(hervat && VOLGORDE.includes(hervat as Fase))
     hervatteLes.current = halfAf
-    tel('Les begonnen', { les: les.id, hervat: halfAf ? 'ja' : 'nee' })
+    uitlegTelt.current = !halfAf && !(voortgang[les.id]?.sterren ?? 0)
+    stemBijStart.current = instellingen.spraak
+    // Nieuw of bekend apparaat, en of de les het eerste scherm van dit bezoek was: zo is te
+    // zien hoeveel nieuwe bezoekers echt bij een les komen, en wie direct via een link of
+    // Google op een les binnenkwam (vierenzestigste review, besloten door Kaj).
+    const dagen = hoogsteOefendagen(useProfielStore.getState().oefendagen)
+    tel('Les begonnen', {
+      les: les.id,
+      hervat: halfAf ? 'ja' : 'nee',
+      apparaat: apparaatKlasse(dagen),
+      binnen: isBinnenkomst(window.location.pathname) ? 'ja' : 'nee',
+    })
     if (halfAf) startFase(hervat as Fase)
+    // Alleen bij het laden, één keer: voortgang en instellingen veranderen daarna, en
+    // dat mag de beslissing niet meer raken.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geladen, hervat, startFase, les.id])
 
   const volgendeFase = useCallback(() => {
@@ -499,6 +556,12 @@ export function LessonPlayer({
               type="button"
               className="btn btn--primary btn--big"
               onClick={() => {
+                if (!kijkTerug && uitlegTelt.current) {
+                  // Minstens 800 ms hoorbaar: de tik die Pip pas laat beginnen (een direct
+                  // geopende les wacht op de eerste aanraking) is geen ongeduld.
+                  uitlegMelder.current?.verder(stemBijStart.current && praatNu(800))
+                  if (laatste) uitlegMelder.current?.klaar('verder', vertelIndex + 1, stemBijStart.current)
+                }
                 if (!laatste) return setVertelIndex((i) => i + 1)
                 // Kwam het kind hier vanuit een opgave, dan gaat het daar ook weer
                 // heen — met dezelfde opgave op hetzelfde punt. De les opnieuw laten

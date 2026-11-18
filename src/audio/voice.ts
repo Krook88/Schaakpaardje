@@ -71,8 +71,40 @@ function beginTeSpreken() {
 }
 
 function klaarMetSpreken() {
+  klinktSinds = null
   uitgesprokenKlaar?.()
   uitgesprokenKlaar = null
+}
+
+/**
+ * Sinds wanneer Pip hoorbaar praat (ms), of null. Pas als het geluid echt klinkt: niet al
+ * tijdens het laden van de mp3 (vierenzestigste review, B2).
+ */
+let klinktSinds: number | null = null
+
+/**
+ * Praat Pip nu hoorbaar, en al minstens `minMs`? Voor de telling "tikt een kind door".
+ *
+ * De drempel is er voor de tik die het geluid ontgrendelt: bij een direct geopende les
+ * wacht Pip op de eerste aanraking, en die tik op Verder startte Pip en telde dan zelf
+ * als "doorgetikt terwijl Pip praatte" (vierenzestigste review). Op toestellen waar de
+ * apparaatstem nooit "klaar" meldt, vragen we de browser zelf of hij nog spreekt.
+ */
+export function praatNu(minMs = 0): boolean {
+  if (klinktSinds === null || Date.now() - klinktSinds < minMs) return false
+  if (huidigeAudio) return !huidigeAudio.paused && !huidigeAudio.ended
+  return typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.speaking
+}
+
+/**
+ * Hoe Pip klonk: een ingesproken opname, of de stem van het apparaat (de robot). Meldt
+ * alleen als er echt geluid begon. Voor de anonieme telling "Stem": klinkt Pip bij
+ * veel kinderen als een robot, dan ligt de stem en niet de les aan het afhaken.
+ */
+export type StemBron = 'opname' | 'apparaat'
+let bronListener: ((bron: StemBron) => void) | null = null
+export function onStemBron(fn: ((bron: StemBron) => void) | null) {
+  bronListener = fn
 }
 
 /**
@@ -279,17 +311,25 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
     const audio = new Audio(`${BASIS}/audio/${sleutel}.mp3`)
     audio.playbackRate = config.tempo
     huidigeAudio = audio
+    audio.addEventListener('playing', () => {
+      if (huidigeAudio === audio) klinktSinds = Date.now()
+    })
     audio.addEventListener('ended', klaarMetSpreken, { once: true })
     audio.addEventListener('error', klaarMetSpreken, { once: true })
     try {
       beginTeSpreken()
       await audio.play()
+      bronListener?.('opname')
       return
     } catch (e) {
       if (huidigeAudio === audio) huidigeAudio = null
       // Geweigerd omdat er nog niet getikt is? Dan niet de robot erin gooien, maar
       // wachten tot het kind iets aanraakt en dan alsnog Pip laten praten.
       klaarMetSpreken()
+      // Afgebroken omdat Pip moest stoppen (terug getikt terwijl de mp3 nog laadde): dan
+      // niets meer zeggen. Hier viel hij door naar de robotstem, die de oude zin alsnog op
+      // het volgende scherm uitsprak (vierenzestigste review, B1).
+      if ((e as DOMException)?.name === 'AbortError') return
       if ((e as DOMException)?.name === 'NotAllowedError') {
         geblokkeerdeZin = tekst
         geblokkeerdeBeurt = mijnBeurt
@@ -327,6 +367,8 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
   let begonnen = false
   zin.onstart = () => {
     begonnen = true
+    klinktSinds = Date.now()
+    bronListener?.('apparaat')
   }
   zin.onend = klaarMetSpreken
   zin.onerror = klaarMetSpreken

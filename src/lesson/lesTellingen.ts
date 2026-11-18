@@ -76,3 +76,37 @@ export function eenKeer(doe: () => void): () => void {
     doe()
   }
 }
+
+/** Hoe vaak een kind op Verder tikte terwijl Pip nog praatte, in grove klassen. */
+export function doorgetiktKlasse(doorgetikt: number, zinnen: number): string {
+  if (doorgetikt <= 0 || zinnen <= 0) return 'geen'
+  return doorgetikt * 2 >= zinnen ? 'meestal' : 'soms'
+}
+
+export type UitlegEinde = 'verder' | 'weg'
+
+/**
+ * De uitleg (fase kijken): luistert een kind Pip uit, tikt het door terwijl hij nog
+ * praat, of gaat het weg? Eén keer per keer dat de les open is. Welke uitleg telt (niet
+ * "nog eens kijken", niet een hervatte of al afgemaakte les) beslist het lesscherm.
+ *
+ * `zin` is de zin waar de uitleg eindigde (1 = de eerste). `doorgetikt` telt alleen
+ * zinnen waarbij Pip echt hoorbaar praatte, zodat "stem uit" niet als ongeduld telt.
+ */
+export function maakUitlegMelder(
+  stuur: (einde: UitlegEinde, zin: number, doorgetikt: string, stem: 'aan' | 'uit') => void,
+) {
+  let gemeld = false
+  let doorgetikt = 0
+  return {
+    /** Het kind tikte Verder bij een zin; `praatte` = Pip was nog aan het woord. */
+    verder(praatte: boolean) {
+      if (praatte) doorgetikt++
+    },
+    klaar(einde: UitlegEinde, zin: number, stemAan: boolean) {
+      if (gemeld) return
+      gemeld = true
+      stuur(einde, zin, doorgetiktKlasse(doorgetikt, zin), stemAan ? 'aan' : 'uit')
+    },
+  }
+}

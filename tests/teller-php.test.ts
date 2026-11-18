@@ -92,9 +92,22 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     // Een tabblad met de vorige versie stuurt hem nog zonder 'na': die telt gewoon mee.
     expect((await stuur({ name: 'Profiel gemaakt', url: '/' })).status).toBe(204)
     expect((await stuur({ name: 'Eerste opgave', url: '/les/weide-1/', props: { les: 'weide-1' } })).status).toBe(204)
+    // 'Les begonnen' met apparaat en binnen, en de vorige vorm (zonder) tijdens de overgang.
+    const nieuweVorm = { les: 'weide-1', hervat: 'nee', apparaat: 'nieuw', binnen: 'ja' }
+    expect((await stuur({ name: 'Les begonnen', url: '/les/weide-1/', props: nieuweVorm })).status).toBe(204)
+    expect((await stuur({ name: 'Les begonnen', url: '/les/weide-1/', props: { les: 'weide-1', hervat: 'nee' } })).status).toBe(204)
+    expect((await stuur({ name: 'Les begonnen', url: '/les/weide-1/', props: { les: 'weide-1', hervat: 'nee', apparaat: 'nieuw' } })).status).toBe(400)
+    // Een vaste eigenschap met een andere waarde wordt geweigerd.
+    expect((await stuur({ name: 'Les begonnen', url: '/les/weide-1/', props: { ...nieuweVorm, apparaat: 'xyz' } })).status).toBe(400)
     const lastig = { name: 'Opgave lastig', url: '/les/weide-1/', props: { les: 'weide-1', opgave: 'zelf-1', hulp: 'missers' } }
     expect((await stuur(lastig)).status).toBe(204)
     expect((await stuur({ name: 'pageview', url: '/schaakregels/en-passant/' })).status).toBe(204)
+    // Pips stem: hoe hij klonk, hoe de uitleg afliep, en wie het geluid uitzette.
+    expect((await stuur({ name: 'Stem', url: '/les/weide-1/', props: { bron: 'apparaat' } })).status).toBe(204)
+    const uitleg = { les: 'weide-1', einde: 'weg', zin: 2, doorgetikt: 'meestal', stem: 'aan' }
+    expect((await stuur({ name: 'Uitleg', url: '/les/weide-1/', props: uitleg })).status).toBe(204)
+    expect((await stuur({ name: 'Geluid', url: '/les/weide-1/', props: { aan: 'nee', door: 'kind' } })).status).toBe(204)
+    expect((await stuur({ name: 'Geluid', url: '/', props: { aan: 'nee', door: 'kind', naam: 'daan' } })).status).toBe(400)
     const regels = bewaard()
     expect(regels).toContainEqual(expect.objectContaining({ n: 'Profiel gemaakt', p: '/' }))
     expect(regels).toContainEqual(expect.objectContaining({ n: 'Opgave lastig', e: lastig.props }))
@@ -149,8 +162,15 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect(open).toContain('Opgaven: waar lopen kinderen vast?')
     expect(open).toContain('<td>zelf 1</td>')
     expect(open).toContain('Van binnenkomst naar profiel')
-    expect(open).toContain('Speelde')
+    expect(open).toContain('Gespeeld')
     expect(open).toContain('meteen (nog geen les)')
+    expect(open).toContain('Waar verbeteren?')
+    // De pagina in vijf hoofdstukken, met de kerncijfers bovenaan.
+    expect(open).toContain('In het kort')
+    for (const id of ['doen', 'gaat', 'afhaken', 'spelen', 'berichten']) expect(open).toContain(`id="${id}"`)
+    expect(open).toMatch(/Nog geen volledige vorige periode|[↑↓→] \d+/)
+    expect(open).toContain('Pips stem')
+    expect(open).toContain('stem van het apparaat')
 
     // Van vóór de botfilter (SCHOON_VANAF in dashboard.php) telt niets mee.
     writeFileSync(join(dataMap(), 'dag-2026-10-21.ndjson'), JSON.stringify({ u: '01', n: 'Les begonnen', p: '/les/googlebot-1/', e: { les: 'googlebot-1', hervat: 'nee' } }) + '\n')
@@ -170,10 +190,102 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     rmSync(pogingen)
   })
 
+  it('"Waar verbeteren?" rekent goed, en duwt niet blind naar korter en sneller', async () => {
+    const regels: unknown[] = []
+    const voeg = (n: number, naam: string, les: string, e?: Record<string, unknown>) => {
+      for (let i = 0; i < n; i++) regels.push({ u: '10', n: naam, p: `/les/${les}/`, ...(e ? { e } : {}) })
+    }
+    // proef-1: 10 keer geopend, 3 keer weg in kijken (precies 30%): 3 bij zin 1, niemand later.
+    voeg(10, 'Les begonnen', 'proef-1', { les: 'proef-1', hervat: 'nee' })
+    voeg(3, 'Les gestopt', 'proef-1', { les: 'proef-1', fase: 'kijken' })
+    voeg(3, 'Uitleg', 'proef-1', { les: 'proef-1', einde: 'weg', zin: 1, doorgetikt: 'geen', stem: 'aan' })
+    // proef-2: weg later in de uitleg, zonder vastlopen: het advies mag niets laten schrappen.
+    voeg(10, 'Les begonnen', 'proef-2', { les: 'proef-2', hervat: 'nee' })
+    voeg(4, 'Les gestopt', 'proef-2', { les: 'proef-2', fase: 'kijken' })
+    voeg(4, 'Uitleg', 'proef-2', { les: 'proef-2', einde: 'weg', zin: 3, doorgetikt: 'geen', stem: 'aan' })
+    // proef-3: wereld 9, daar is afhaken in de uitleg normaal.
+    voeg(10, 'Les begonnen', 'proef-3', { les: 'proef-3', hervat: 'nee' })
+    voeg(5, 'Les gestopt', 'proef-3', { les: 'proef-3', fase: 'kijken' })
+    // proef-4: net onder de grens (29%): geen bevinding.
+    voeg(14, 'Les begonnen', 'proef-4', { les: 'proef-4', hervat: 'nee' })
+    voeg(4, 'Les gestopt', 'proef-4', { les: 'proef-4', fase: 'kijken' })
+    // Doortikken: 3 van 6 uitgespeelde uitleggen "meestal" (50%); een weggegane telt niet mee.
+    voeg(3, 'Uitleg', 'proef-5', { les: 'proef-5', einde: 'verder', zin: 3, doorgetikt: 'meestal', stem: 'aan' })
+    voeg(3, 'Uitleg', 'proef-5', { les: 'proef-5', einde: 'verder', zin: 3, doorgetikt: 'geen', stem: 'aan' })
+    const gisteren = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+    writeFileSync(join(dataMap(), `dag-${gisteren}.ndjson`), regels.map((r) => JSON.stringify(r)).join('\n') + '\n')
+    const lijst = [1, 2, 3, 4, 5].map((i) => ({ id: `proef-${i}`, titel: `Proef ${i}`, wereld: 'Proefland', nr: i === 3 ? 9 : 2, leeftijd: 5 }))
+    writeFileSync(join(www(), 'teller', 'lessen.json'), JSON.stringify(lijst))
+
+    const inloggen = await fetch(`${BASIS}/teller/dashboard.php`, {
+      method: 'POST',
+      body: new URLSearchParams({ wachtwoord: 'proef-wachtwoord' }),
+      redirect: 'manual',
+    })
+    const koekje = (inloggen.headers.get('set-cookie') ?? '').split(';')[0]
+    const html = await (await fetch(`${BASIS}/teller/dashboard.php`, { headers: { cookie: koekje } })).text()
+    rmSync(join(www(), 'teller', 'lessen.json'))
+    const lijstHtml = html.slice(html.indexOf('Waar verbeteren?'), html.indexOf('</ol>'))
+    const bevinding = (titel: string) => lijstHtml.split('<li>').find((b) => b.includes(titel)) ?? ''
+
+    expect(html).not.toMatch(/Warning|Notice|Deprecated|Fatal/)
+    expect(bevinding('Proef 1')).toContain('3 keer (30%)')
+    expect(bevinding('Proef 1')).toContain('vóór ze één keer tikten')
+    expect(bevinding('Proef 2')).toContain('Schrap geen regel of uitzondering')
+    expect(bevinding('Proef 3')).toContain('Vanaf wereld 9')
+    expect(lijstHtml).not.toContain('Proef 4')
+    const door = lijstHtml.split('<li>').find((b) => b.includes('tikte het in')) ?? ''
+    expect(door).toContain('50%')
+    expect(door).toContain('Niet het tempo voor iedereen omhoog')
+    expect(lijstHtml).not.toMatch(/spreektempo standaard/i)
+  })
+
+  it('de vorige periode telt alleen voor de pijltjes, en een les met één keer openen gaat op één regel', async () => {
+    const inloggen = await fetch(`${BASIS}/teller/dashboard.php`, {
+      method: 'POST',
+      body: new URLSearchParams({ wachtwoord: 'proef-wachtwoord' }),
+      redirect: 'manual',
+    })
+    const koekje = (inloggen.headers.get('set-cookie') ?? '').split(';')[0]
+    const kijk = async () => (await fetch(`${BASIS}/teller/dashboard.php?dagen=7`, { headers: { cookie: koekje } })).text()
+    const bezoeken = (html: string) => html.match(/Bezoeken <span class="zacht">(\d+) in totaal/)?.[1]
+    const voor = await kijk()
+
+    // 8 en 13 dagen geleden: de vorige periode bij 7 dagen.
+    const bezoek = JSON.stringify({ u: '10', n: 'Bezoek', p: '/', e: { geoefend: 'nog niet' } })
+    for (const terug of [8, 13]) {
+      const dag = new Date(Date.now() - terug * 86400000).toISOString().slice(0, 10)
+      writeFileSync(join(dataMap(), `dag-${dag}.ndjson`), (bezoek + '\n').repeat(5))
+    }
+    // Vandaag: fold-a één keer geopend en verder niets; fold-b werd hervat.
+    const vandaag = new Date().toISOString().slice(0, 10)
+    const regels = [
+      { n: 'Les begonnen', e: { les: 'fold-a', hervat: 'nee' } },
+      { n: 'Les begonnen', e: { les: 'fold-b', hervat: 'ja' } },
+      { n: 'Les begonnen', e: { les: 'fold-b', hervat: 'ja' } },
+    ].map((r) => JSON.stringify({ u: '10', p: '/les/x/', ...r })).join('\n')
+    writeFileSync(join(dataMap(), `dag-${vandaag}.ndjson`), regels + '\n', { flag: 'a' })
+
+    const na = await kijk()
+    expect(na).not.toMatch(/Warning|Notice|Deprecated|Fatal/)
+    // De oude bezoeken tellen niet mee in de periode zelf...
+    expect(bezoeken(na)).toBe(bezoeken(voor))
+    // ...maar wel in de vergelijking: er staat een pijltje bij de bezoeken.
+    expect(na).toMatch(/bezoeken<\/span><span class="pijl[^"]*">[↑↓→] \d+%/)
+    const eenRegel = na.match(/Eén keer geopend, niet gespeeld[^<]*/)?.[0] ?? ''
+    expect(eenRegel).toContain('fold-a')
+    expect(eenRegel).not.toContain('fold-b')
+    expect(na).toContain('<td title="fold-b">')
+    // Hoofdstukken zijn h2, de secties eronder h3.
+    expect(na).toContain('<h2 class="hfd">3 · Waar haken ze af?</h2>')
+    expect(na).toContain('<h3 class="kop">Lessen: waar haken kinderen af?</h3>')
+  })
+
   it('het dashboard werkt ook als iemand de dagbestanden heeft volgeschreven', async () => {
     const regel = JSON.stringify({ u: '08', n: 'Bezoek', p: '/', e: { geoefend: '1 dag' } }) + '\n'
     const vol = regel.repeat(Math.ceil((1024 * 1024) / regel.length))
-    for (let i = 0; i < 30; i++) {
+    // 180 dagen: bij 90 dagen leest het dashboard ook de 90 dagen daarvóór (de pijltjes).
+    for (let i = 0; i < 180; i++) {
       const dag = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10)
       writeFileSync(join(dataMap(), `dag-${dag}.ndjson`), vol)
     }
@@ -183,12 +295,12 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
       redirect: 'manual',
     })
     const koekje = (inloggen.headers.get('set-cookie') ?? '').split(';')[0]
-    const r = await fetch(`${BASIS}/teller/dashboard.php?dagen=30`, { headers: { cookie: koekje } })
+    const r = await fetch(`${BASIS}/teller/dashboard.php?dagen=90`, { headers: { cookie: koekje } })
     expect(r.status).toBe(200)
     expect(await r.text()).toContain('Verloop per dag')
     // En een vol dagbestand neemt niets meer aan.
     expect((await stuur({ name: 'Bezoek', url: '/', props: { geoefend: '1 dag' } })).status).toBe(507)
-  }, 30000)
+  }, 60000)
 
   describe('het contactformulier', () => {
     const bericht = (body: unknown) =>

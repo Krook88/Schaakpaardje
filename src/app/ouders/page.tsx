@@ -10,7 +10,7 @@ import { Kop } from '@/ui/Kop'
 import { Rekenslot } from '@/ui/Rekenslot'
 import { Sterren } from '@/ui/Sterren'
 import { KOFFIE } from '@/seo'
-import { tellenAan, zetTellen } from '@/progress/tellen'
+import { tel, tellenAan, zetTellen } from '@/progress/tellen'
 import { WERELDEN } from '@/content'
 import {
   useGespeeld,
@@ -99,7 +99,11 @@ function OuderPaneel() {
         aria-label={label}
         aria-describedby={uitleg ? `uitleg-${sleutel}` : undefined}
         checked={Boolean(instellingen[sleutel])}
-        onChange={(e) => zetInstelling(sleutel, e.target.checked as never)}
+        onChange={(e) => {
+          zetInstelling(sleutel, e.target.checked as never)
+          // Zet een ouder Pip uit? Zie GeluidKnop: alleen aan of uit, en wie.
+          if (sleutel === 'spraak') tel('Geluid', { aan: e.target.checked ? 'ja' : 'nee', door: 'ouder' })
+        }}
         style={{ width: 44, height: 44, flexShrink: 0 }}
       />
     </label>
@@ -403,10 +407,15 @@ function TellenSchakel() {
         Anoniem meetellen
         <br />
         <small className="muted" id="uitleg-tellen">
-          Zodat de maker ziet hoeveel er gespeeld wordt en bij welke les kinderen stoppen.
-          Alleen losse tellingen: welk scherm, welke les begonnen, af (met sterren) of
-          gestopt, de uitslag van een partij, en speelduur en geoefende dagen in grove
-          klassen. Geen naam, geen leeftijd, geen cookie.
+          <strong>Niets over je kind:</strong> geen naam, leeftijd, cookie of ID. Elke telling
+          staat los, zodat de maker ziet bij welke les kinderen stoppen.
+          <br />
+          Geteld wordt: welk scherm, welke les begonnen (en of er op dit apparaat al eens
+          geoefend is, en of de les het eerste scherm was), af (met sterren) of gestopt, waar
+          een opgave lastig was, de uitslag van een partij, en speelduur en geoefende dagen in
+          grove klassen. En over Pip: of hij met de ingesproken stem of die van het apparaat
+          klonk, of kinderen zijn uitleg uitluisteren (niet per kind), en of het geluid aan of
+          uit werd gezet.
         </small>
       </span>
       <input

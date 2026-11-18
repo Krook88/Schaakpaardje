@@ -2,6 +2,7 @@
 
 import { useInstellingen, useProfielStore } from '@/progress/store'
 import { Icoon } from '@/ui/beelden'
+import { tel } from '@/progress/tellen'
 
 /**
  * Geluid aan of uit, voor het kind zelf.
@@ -35,6 +36,8 @@ export function GeluidKnop({ className = '' }: { className?: string }) {
       onClick={() => {
         zetInstelling('spraak', !aan)
         zetInstelling('effecten', !aan)
+        // Zet een kind Pip zelf stil? Dan stoort de stem misschien. Het pad gaat mee.
+        tel('Geluid', { aan: aan ? 'nee' : 'ja', door: 'kind' })
       }}
       style={{ minWidth: 56 }}
     >

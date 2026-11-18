@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { BOT, dagenKlasse, duurKlasse, naKlasse, pad, tel, telScherm, zetTellen } from '@/progress/tellen'
+import { BOT, apparaatKlasse, dagenKlasse, duurKlasse, naKlasse, pad, tel, telScherm, zetTellen } from '@/progress/tellen'
 
 /**
  * Wat er naar buiten gaat, ligt hier vast. De belofte aan ouders is: niets óver een
@@ -102,6 +102,35 @@ describe('anoniem tellen', () => {
     expect(naKlasse(0, true)).toBe('al een profiel')
   })
 
+  it('binnen: alleen het scherm waarop het bezoek binnenkwam, tot het dat verlaat', async () => {
+    vi.resetModules()
+    zetSite('schaakmaatje.nl', '/les/weide-1/')
+    const t = await import('@/progress/tellen')
+    expect(t.isBinnenkomst('/les/weide-1/')).toBe(true)
+    expect(t.isBinnenkomst('/les/toren-1/')).toBe(false)
+    // Een pageview op hetzelfde scherm verandert niets...
+    t.telScherm()
+    expect(t.isBinnenkomst('/les/weide-1/')).toBe(true)
+    // ...maar wie naar de kaart ging en terugkomt, kwam niet meer direct binnen.
+    vi.stubGlobal('window', { location: { hostname: 'schaakmaatje.nl', pathname: '/kaart/', hash: '' } })
+    t.telScherm()
+    expect(t.isBinnenkomst('/les/weide-1/')).toBe(false)
+  })
+
+  it('binnen: een herladen pagina is geen binnenkomst', async () => {
+    vi.resetModules()
+    zetSite('schaakmaatje.nl', '/les/weide-1/')
+    vi.stubGlobal('performance', { getEntriesByType: () => [{ type: 'reload' }] })
+    const t = await import('@/progress/tellen')
+    expect(t.isBinnenkomst('/les/weide-1/')).toBe(false)
+  })
+
+  it('nieuw of bekend apparaat: alleen of er al eens geoefend is', () => {
+    expect(apparaatKlasse(0)).toBe('nieuw')
+    expect(apparaatKlasse(1)).toBe('bekend')
+    expect(apparaatKlasse(40)).toBe('bekend')
+  })
+
   it('geoefende dagen in klassen', () => {
     expect(dagenKlasse(1)).toBe('1 dag')
     expect(dagenKlasse(4)).toBe('3 tot 5 dagen')
@@ -116,7 +145,9 @@ describe('anoniem tellen', () => {
  */
 describe('wat er geteld wordt, ligt vast', () => {
   const TOEGESTAAN: Record<string, string[]> = {
-    'Les begonnen': ['les', 'hervat'],
+    // apparaat: nieuw|bekend (al eens geoefend op dit toestel), binnen: ja|nee (de les was
+    // het eerste scherm van dit bezoek). Besloten door Kaj, november 2026.
+    'Les begonnen': ['les', 'hervat', 'apparaat', 'binnen'],
     'Les af': ['les', 'sterren'],
     'Les gestopt': ['les', 'fase'],
     Partij: ['tegen', 'uitslag'],
@@ -130,6 +161,12 @@ describe('wat er geteld wordt, ligt vast', () => {
     Gedeeld: ['hoe', 'waar'],
     // Alleen óf het paard op de startpagina iemand naar de les brengt.
     'Held naar les': [],
+    // Hoe Pip klonk op dit apparaat: opname of de robotstem van het toestel.
+    Stem: ['bron'],
+    // De uitleg: uitgeluisterd, doorgetikt of weggegaan, bij welke zin, stem aan of uit.
+    Uitleg: ['les', 'einde', 'zin', 'doorgetikt', 'stem'],
+    // Geluid aan of uit gezet, door een kind (bel) of een ouder (ouderscherm).
+    Geluid: ['aan', 'door'],
   }
   const bestanden = (map: string): string[] =>
     readdirSync(map).flatMap((n) => {

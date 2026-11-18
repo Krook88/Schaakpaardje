@@ -19,7 +19,7 @@ if (!defined('TELLER')) {
 /** Dezelfde lijst als in tests/tellen.test.ts. Iets nieuws tellen? Daar ook bijzetten. */
 const TELLINGEN = [
     'pageview' => [],
-    'Les begonnen' => ['les', 'hervat'],
+    'Les begonnen' => ['les', 'hervat', 'apparaat', 'binnen'],
     'Les af' => ['les', 'sterren'],
     'Les gestopt' => ['les', 'fase'],
     'Partij' => ['tegen', 'uitslag'],
@@ -31,6 +31,25 @@ const TELLINGEN = [
     'Opgave lastig' => ['les', 'opgave', 'hulp'],
     'Gedeeld' => ['hoe', 'waar'],
     'Held naar les' => [],
+    'Stem' => ['bron'],
+    'Uitleg' => ['les', 'einde', 'zin', 'doorgetikt', 'stem'],
+    'Geluid' => ['aan', 'door'],
+];
+
+/**
+ * Eigenschappen met een vaste keuze: een andere waarde wordt geweigerd, zodat het dashboard
+ * geen onzin stil als "niet nieuw" telt. Alleen voor de eigenschappen van november 2026;
+ * de oudere krijgen het als ze toch worden aangepast.
+ */
+const VASTE_WAARDEN = [
+    'apparaat' => ['nieuw', 'bekend'],
+    'binnen' => ['ja', 'nee'],
+    'bron' => ['opname', 'apparaat'],
+    'einde' => ['verder', 'weg'],
+    'doorgetikt' => ['geen', 'soms', 'meestal'],
+    'stem' => ['aan', 'uit'],
+    'aan' => ['ja', 'nee'],
+    'door' => ['kind', 'ouder'],
 ];
 
 /**
@@ -70,12 +89,18 @@ function schoonmaken(array $in): ?array
     // Overgang (oktober 2026): 'Profiel gemaakt' kreeg de eigenschap 'na'. Een tabblad dat nog
     // de vorige versie draait, stuurt hem zonder; die telling is nog steeds waar, dus niet weigeren.
     $oudProfiel = $naam === 'Profiel gemaakt' && $sleutels === [];
-    if ($sleutels !== $nodig && !$oudProfiel) return null;
+    // Overgang (november 2026): 'Les begonnen' kreeg 'apparaat' en 'binnen'. Een tabblad met de
+    // vorige versie stuurt alleen les en hervat; die telling is nog steeds waar. Mag weg een maand
+    // nadat de versie met 'apparaat' live staat (net als $oudProfiel, uit oktober).
+    $oudeLes = $naam === 'Les begonnen' && $sleutels === ['hervat', 'les'];
+    if ($sleutels !== $nodig && !$oudProfiel && !$oudeLes) return null;
     if ($gekregen) {
         foreach ($gekregen as $k => $v) {
             if (!in_array($k, TELLINGEN[$naam], true)) return null;
             if (is_int($v) && $v >= 0 && $v <= 1000) {
                 $props[$k] = $v;
+            } elseif (isset(VASTE_WAARDEN[$k]) && !in_array($v, VASTE_WAARDEN[$k], true)) {
+                return null;
             } elseif (is_string($v) && preg_match('/^[a-z0-9 -]{1,40}$/', $v)) {
                 $props[$k] = $v;
             } else {
@@ -128,11 +153,12 @@ function bewaar(array $regel): bool
  * (dag, regel). Niet eerst alles inlezen: met volle dagbestanden liep het geheugen vol
  * en gaf het dashboard een witte pagina.
  */
-function loopDagen(int $dagen, callable $doe): void
+function loopDagen(int $dagen, callable $doe, ?int $nu = null): void
 {
     $map = dataMap();
+    $nu = $nu ?? time();
     for ($i = $dagen - 1; $i >= 0; $i--) {
-        $dag = gmdate('Y-m-d', time() - $i * 86400);
+        $dag = gmdate('Y-m-d', $nu - $i * 86400);
         $doe($dag, null);
         if ($map === null) continue;
         $bestand = $map . '/dag-' . $dag . '.ndjson';
