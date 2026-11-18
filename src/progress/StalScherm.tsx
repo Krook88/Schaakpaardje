@@ -27,7 +27,13 @@ export function StalScherm() {
   const profiel = useProfiel()
   const [uitgelicht, setUitgelicht] = useState<StalVak | null>(null)
 
-  if (!geladen) return <main className="page" />
+  // Tot het laden alvast de bovenbalk: dan heeft ook de geëxporteerde HTML een h1.
+  if (!geladen)
+    return (
+      <main className="page">
+        <Kop titel="Mijn stal" terug="/" />
+      </main>
+    )
 
   const alles = verzameling(voortgang, verslagen)
   const planken = perSoort(alles)

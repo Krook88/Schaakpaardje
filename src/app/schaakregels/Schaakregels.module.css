@@ -18,6 +18,9 @@
   background: var(--dark-sq); color: #fcf8ef; font-size: 30px; font-weight: 800; line-height: 1;
   box-shadow: var(--shadow);
 }
+/* Een teken (e4, ½) kreeg alleen licht op groen: 2,41:1. Met dezelfde donkere rand als
+   de stukken leest het ook in het lichte thema (zevenenzestigste review, layout). */
+.teken { -webkit-text-stroke: 1.5px #33302a; paint-order: stroke fill; filter: drop-shadow(0 1.5px 1px rgba(0, 0, 0, 0.28)); }
 .merkGroot { width: 96px; height: 96px; border-radius: 24px; font-size: 52px; }
 .stuk {
   font-family: 'Schaakstukken', sans-serif; font-variant-emoji: text; font-size: 1.25em;
@@ -27,6 +30,9 @@
 
 .deel { display: flex; flex-direction: column; gap: 16px; }
 .deel h2, .thuis h2 { margin: 0; font-size: clamp(1.35rem, 4vw, 1.7rem); }
+.beginNog { margin: 10px 0 0; font-size: 0.95rem; }
+/* Padding in plaats van min-height: het raakvlak groeit, de regelafstand niet. */
+.beginNog a { padding-block: 12px; }
 .tekst { max-width: 64ch; display: flex; flex-direction: column; gap: 12px; margin: 0; }
 .tekst p { margin: 0; }
 .bordvak { background: var(--surface); border: 2px solid var(--line); border-radius: 24px; padding: clamp(16px, 4vw, 28px); }

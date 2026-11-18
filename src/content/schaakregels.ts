@@ -45,6 +45,8 @@ export type Onderwerp = {
    * kan zijn omdat die voorkennis vraagt die een kind via Google nog niet heeft.
    */
   oefenEerst?: string
+  /** Geen regel maar een truc (vork, penning): het overzicht zet die onder een eigen kop. */
+  tactiek?: true
 }
 
 export const SCHAAKREGELS: Onderwerp[] = [
@@ -778,6 +780,152 @@ export const SCHAAKREGELS: Onderwerp[] = [
     // mat-3 vraagt naar het verschil tussen pat en mat. Een kind dat via deze pagina
     // binnenkomt kent mat misschien nog niet: dan eerst mat-1 (negentiende review, S6).
     oefenEerst: 'mat-1',
+  },
+  {
+    slug: 'schaaknotatie',
+    vraag: 'Schaaknotatie: hoe schrijf je zetten op?',
+    zoektitel: 'Schaaknotatie: zo schrijf je schaakzetten op',
+    omschrijving:
+      'Elk veld heeft een naam, zoals e4, en elk stuk een letter: K, D, T, L en P. Zo lees en schrijf je schaakzetten, uitgelegd met een bewegend bord.',
+    kort: 'Een letter voor het stuk, dan het veld: Pf3, Ld3, e4.',
+    teken: 'e4',
+    antwoord:
+      'Je schrijft een zet als de letter van het stuk met het veld waar het heen gaat, bijvoorbeeld Pf3 voor een paard naar f3. Bij een pion schrijf je alleen het veld: e4. In het Nederlands zijn de letters K (koning), D (dame), T (toren), L (loper) en P (paard).',
+    delen: [
+      {
+        kop: 'Elk veld heeft een naam',
+        tekst: [
+          'De lijnen van links naar rechts heten a tot en met h, gezien vanaf wit. De rijen heten 1 tot en met 8, en rij 1 is de rij van wit. Een veld is een letter en een cijfer: e4 is waar lijn e en rij 4 elkaar kruisen.',
+        ],
+        animatie: {
+          id: 'notatie-zetten',
+          titel: 'e4 en Pf3',
+          beschrijving: 'Een witte pion gaat van e2 naar e4, genoteerd als e4. Een wit paard gaat van g1 naar f3, genoteerd als Pf3.',
+          fen: '8/8/8/8/8/8/4P3/6N1',
+          stappen: [
+            { tekst: 'Dit is veld e4: lijn e, rij 4.', markeer: ['e4'] },
+            { tekst: 'De pion gaat naar e4. Een pion krijgt geen letter, dus je schrijft: e4.', zet: 'e2-e4' },
+            { tekst: 'Het paard gaat naar f3. P voor paard, dan het veld: Pf3.', zet: 'g1-f3' },
+          ],
+        },
+      },
+      {
+        kop: 'Slaan, schaak en de andere tekens',
+        tekst: [
+          'Slaat een stuk iets, dan komt er een x tussen: Lxf7 betekent dat de loper op f7 slaat. Slaat een pion, dan schrijf je de lijn waar hij vandaan komt: exd5.',
+          'Staat de koning na de zet schaak, dan komt er een + achter. Is het mat, dan een #. De korte rokade schrijf je als 0-0, de lange als 0-0-0. En promoveert een pion, dan schrijf je erachter wat hij wordt: e8D.',
+          'Kunnen twee gelijke stukken naar hetzelfde veld, dan zet je erbij welke: Tad1 is de toren van de a-lijn naar d1, Pbd2 het paard van de b-lijn.',
+          'Een partij schrijf je op met een nummer per zettenpaar: 1. e4 e5 2. Pf3 Pc6. Eerst de zet van wit, dan die van zwart.',
+        ],
+      },
+    ],
+    thuis:
+      'Speel een kort partijtje en schrijf samen de eerste vijf zetten op. Zet daarna de stukken terug en speel de partij na vanaf het papiertje. Wie zijn eigen partij kan naspelen, kan er ook van leren.',
+    vragen: [
+      ['Waarom staat er in Engelse boeken N in plaats van P?', 'Elke taal heeft eigen letters. In het Engels is het paard N (knight), de loper B, de toren R en de dame Q. De velden heten overal hetzelfde.'],
+      ['Moet een kind dit kennen voor de schaakclub?', 'Bij wedstrijden schrijf je je zetten op, dus vroeg of laat wel. In de app komt het in wereld 12, als een kind alle regels kent.'],
+    ],
+    // notatie-3 gaat over het begin van een partij, niet over opschrijven (zevenenzestigste review).
+    lessen: ['notatie-1', 'notatie-2'],
+  },
+  {
+    slug: 'vork',
+    tactiek: true,
+    vraag: 'Wat is een vork bij schaken?',
+    zoektitel: 'Wat is een vork bij schaken? De dubbele aanval uitgelegd',
+    omschrijving:
+      'Een vork is één zet die twee stukken tegelijk aanvalt. De ander kan er maar één redden. Bekijk een paardenvork op een bewegend bord.',
+    kort: 'Eén zet, twee stukken aangevallen. Er kan er maar één weg.',
+    stuk: 'n',
+    antwoord:
+      'Een vork, of dubbele aanval, is een zet waarmee één stuk twee stukken van de tegenstander tegelijk aanvalt. Die kan er maar één redden, dus het andere win je.',
+    delen: [
+      {
+        kop: 'Twee aanvallen met één zet',
+        tekst: [
+          'Je tegenstander mag per beurt maar één zet doen. Val je twee stukken tegelijk aan, dan kan hij er dus maar één in veiligheid brengen. Dat is het hele idee van de vork.',
+          'Het sterkst is een vork met schaak erin. Een koning die schaak staat, moet eerst uit het schaak. Dan is er geen tijd om het andere stuk te redden.',
+        ],
+        animatie: {
+          id: 'vork-paard',
+          titel: 'Een paardenvork',
+          beschrijving: 'Een wit paard springt naar c7 en valt de zwarte koning op e8 en de toren op a8 tegelijk aan. De koning moet uit het schaak, en het paard slaat de toren.',
+          fen: 'r3k3/8/N7/8/8/8/8/7K w - - 0 1',
+          regels: 'echt',
+          stappen: [
+            { tekst: 'Zwart heeft een toren op a8 en de koning op e8.', markeer: ['a8', 'e8'] },
+            { tekst: 'Het paard springt naar c7: schaak, en de toren wordt ook aangevallen.', zet: 'a6-c7', verwacht: 'schaak' },
+            { tekst: 'De koning moet eerst uit het schaak.', zet: 'e8-d7' },
+            { tekst: 'Nu pakt het paard de toren.', zet: 'c7-a8' },
+          ],
+        },
+      },
+      {
+        kop: 'Waarom het paard',
+        tekst: [
+          'Elk stuk kan een vork geven, zelfs een pion die schuin twee stukken raakt. Maar het paard is er de kampioen in. Het springt over andere stukken heen, en de stukken die het aanvalt kunnen het paard zelf niet terug aanvallen: een toren, loper of dame raakt nooit het veld van een paard dat hen aanvalt.',
+        ],
+      },
+    ],
+    thuis:
+      'Zet op een leeg bord een paard van je kind neer, en twee stukken van jou, bijvoorbeeld je koning en een toren. Vraag: naar welk veld moet het paard springen om ze allebei te raken? Verplaats daarna je stukken en zoek samen opnieuw.',
+    vragen: [
+      ['Is een vork hetzelfde als een dubbele aanval?', 'Ja. Een vork is de bijnaam, vooral als het een paard of een pion is die twee stukken tegelijk raakt.'],
+      ['Wanneer leert mijn kind de vork in de app?', 'In wereld 13, de Tactiekgrot. Dan kent het alle stukken al, en weet het wat schaak is.'],
+    ],
+    lessen: ['tactiek-1'],
+  },
+  {
+    slug: 'penning',
+    tactiek: true,
+    vraag: 'Wat is een penning bij schaken?',
+    zoektitel: 'Wat is een penning bij schaken? Uitleg met bewegend bord',
+    omschrijving:
+      'Bij een penning kan een stuk niet weg, omdat er iets waardevollers achter staat, zoals de koning. Zo werkt het, op een bewegend bord.',
+    kort: 'Een stuk zit vast, omdat er iets duurders achter staat.',
+    stuk: 'b',
+    antwoord:
+      'Een penning is een aanval op een stuk waar iets waardevollers achter staat, op één rechte lijn: een rij, een lijn of een diagonaal. Staat de koning erachter, dan zit het voorste stuk vast. Schakers zeggen: het is gepend. Het mag niet opzij, want dan zou de eigen koning schaak komen te staan.',
+    delen: [
+      {
+        kop: 'Vastgezet door de koning erachter',
+        tekst: [
+          'Een toren, loper of dame valt ver aan, over een rij, een lijn of een diagonaal. Staan daar twee stukken van de tegenstander achter elkaar, dan zit het voorste in de knel. Gaat het opzij, dan raakt de aanval het stuk erachter.',
+          'Staat de koning erachter, dan is het streng: het voorste stuk mag dan niet van die lijn af, want je mag je eigen koning nooit schaak zetten. Kan het gepende stuk zelf over die lijn lopen, zoals een loper op een diagonaal of een toren op een rij, dan mag het wel langs de lijn schuiven, en de aanvaller slaan. Een paard kan dat nooit: dat zit echt vast.',
+        ],
+        animatie: {
+          id: 'penning-loper',
+          titel: 'Het paard zit vast',
+          beschrijving: 'Een witte loper gaat naar b5. Achter het zwarte paard op c6 staat de zwarte koning op e8, op dezelfde diagonaal. Het paard kan geen enkele zet meer doen.',
+          fen: '4k3/8/B1n5/8/8/8/8/7K w - - 0 1',
+          regels: 'echt',
+          stappen: [
+            { tekst: 'Het zwarte paard en de zwarte koning staan op dezelfde diagonaal.', markeer: ['c6', 'e8'] },
+            { tekst: 'De loper gaat op die diagonaal staan, op b5.', zet: 'a6-b5' },
+            // Geen `bereik`: het paard heeft nul velden, en dat is juist de les.
+            // tests/schaakregels.test.ts rekent na dat het vóór b5 wel kon springen en daarna niet.
+            {
+              tekst: 'Nu kan het paard nergens heen: elke sprong zou de koning schaak zetten. Het paard is gepend: het zit vast.',
+              markeer: ['b5', 'c6', 'd7', 'e8'],
+            },
+          ],
+        },
+      },
+      {
+        kop: 'En dan?',
+        tekst: [
+          'Een gepend stuk is een makkelijk doelwit. Het kan niet zomaar vluchten, dus val het nog een keer aan, bijvoorbeeld met een pion. Je tegenstander moet het dan verdedigen of de penning opheffen: de koning opzij zetten, iets ertussen zetten of de aanvaller slaan.',
+          'Staat er geen koning maar een ander stuk achter, zoals de dame, dan mag het voorste stuk wel weg. Alleen kost dat dan vaak de dame.',
+        ],
+      },
+    ],
+    thuis:
+      'Zet op een leeg bord je koning en een paard op één rechte lijn of diagonaal, en geef je kind een loper of toren. Vraag: waar zet je hem neer zodat het paard niet meer weg kan? Laat je kind daarna proberen met het paard te springen, en kijk samen waarom dat niet mag.',
+    vragen: [
+      ['Welke stukken kunnen pennen?', 'Alleen de stukken die ver over een rij, lijn of diagonaal gaan: de toren, de loper en de dame. Een paard, pion of koning kan geen penning geven.'],
+      ['Wanneer leert mijn kind de penning in de app?', 'In wereld 13, de Tactiekgrot, direct na de vork.'],
+    ],
+    lessen: ['tactiek-2'],
   },
 ]
 

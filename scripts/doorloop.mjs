@@ -27,6 +27,7 @@ import { spawn, spawnSync } from 'node:child_process'
 import { mkdtempSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { createServer } from 'node:net'
 
 const URL = process.env.DOORLOOP_URL ?? 'http://localhost:4173'
 const CHROMIUM = process.env.CHROMIUM_PAD ?? '/opt/pw-browsers/chromium'
@@ -221,15 +222,21 @@ async function quizRekentGoedGoed() {
  * Overal moet minstens één knop of link staan die ergens heen gaat.
  * ------------------------------------------------------------------ */
 async function altijdEenUitweg() {
-  const schermen = ['/', '/kaart/', '/lessen/', '/over/', '/schaakregels/', '/schaakregels/paard/', '/schaakclub/', '/stal/', '/spelen/', '/opfrissen/', '/les/weide-1/']
+  const schermen = ['/', '/kaart/', '/lessen/', '/over/', '/schaakregels/', '/schaakregels/paard/', '/schaakclub/', '/stal/', '/spelen/', '/opfrissen/', '/ouders/', '/les/weide-1/']
   const zonder = []
+  const zonderKop = []
   for (const pad of schermen) {
     await page.goto(URL + pad, { waitUntil: 'networkidle' })
     await page.waitForTimeout(500)
     const knoppen = await page.locator('a[href], button:not([disabled])').count()
     if (knoppen === 0) zonder.push(pad)
+    // Precies één hoofdkop: de bovenbalk had een h2, zodat een schermlezer op de kaart,
+    // de stal of een les geen h1 vond. Hier ook geteld, want het scheelt een rondje laden.
+    const h1 = await page.locator('h1').count()
+    if (h1 !== 1) zonderKop.push(`${pad} (${h1})`)
   }
   meld('elk scherm heeft een uitweg', zonder.length === 0, zonder.join(', '))
+  meld('elk scherm heeft precies één hoofdkop', zonderKop.length === 0, zonderKop.join(', '))
 }
 
 /* ------------------------------------------------------------------ *
@@ -593,11 +600,24 @@ async function contactformulierIsEerlijk() {
  * start de doorloop zelf PHP's eigen webserver op de gebouwde app. Zonder PHP op de
  * machine wordt dit stuk overgeslagen, en dat staat er dan ook.
  * ------------------------------------------------------------------ */
+/** Vraag het systeem om een vrije poort, en geef hem meteen weer vrij. */
+const vrijePoort = () =>
+  new Promise((ok, fout) => {
+    const srv = createServer()
+    srv.once('error', fout)
+    srv.listen(0, '127.0.0.1', () => {
+      const { port } = srv.address()
+      srv.close(() => ok(port))
+    })
+  })
+
 async function liveMetEenVriendje() {
   const naam = 'live: link via het rekenslot, zetten komen over, verversen, meekijken, nog een keer'
   if (spawnSync('php', ['-v']).status !== 0) return console.log(`  - ${naam} — overgeslagen, geen PHP`)
   const data = mkdtempSync(join(tmpdir(), 'live-doorloop-'))
-  const poort = 4176
+  // Een vrije poort, geen vaste: met 4176 vast faalde deze regel zodra een tweede
+  // doorloop of een `npx serve` die poort al had (zevenenzestigste review, codebase 3).
+  const poort = await vrijePoort()
   const BASIS = `http://127.0.0.1:${poort}`
   // Meer werkers: elk scherm houdt een kijkverzoek open (long polling), en intussen moet
   // er een zet door kunnen. Zonder dit handelt PHP's eigen server één verzoek tegelijk af.
@@ -1258,7 +1278,7 @@ for (const [w, h] of [[1440, 900], [1366, 650], [1280, 800]]) {
   await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
   await p.waitForTimeout(400)
   const m = await p.evaluate(() => ({
-    titel: Math.round(document.querySelector('header h2')?.getBoundingClientRect().width ?? 0),
+    titel: Math.round(document.querySelector('header h1')?.getBoundingClientRect().width ?? 0),
     knop: Math.round([...document.querySelectorAll('button')].find((x) => /Nog een keer/.test(x.textContent))?.getBoundingClientRect().bottom ?? 1e4),
   }))
   meld('speelscherm 667×375: kop leesbaar en knoppen in beeld', m.titel >= 60 && m.knop <= 375, JSON.stringify(m))

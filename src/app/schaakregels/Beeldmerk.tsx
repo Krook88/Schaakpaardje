@@ -6,7 +6,7 @@ import s from './Schaakregels.module.css'
 export function Beeldmerk({ onderwerp, groot }: { onderwerp: Onderwerp; groot?: boolean }) {
   return (
     <span aria-hidden="true" className={`${s.merk} ${groot ? s.merkGroot : ''}`}>
-      {onderwerp.stuk ? <span className={s.stuk}>{GLYPH[onderwerp.stuk]}</span> : onderwerp.teken}
+      {onderwerp.stuk ? <span className={s.stuk}>{GLYPH[onderwerp.stuk]}</span> : <span className={s.teken}>{onderwerp.teken}</span>}
     </span>
   )
 }

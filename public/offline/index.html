@@ -25,10 +25,12 @@
   button { border: 0; background: var(--accent); color: var(--accent-ink); font-size: 28px; flex: 0 0 auto; }
   a.knop { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 0 28px; background: var(--accent); color: var(--accent-ink); text-decoration: none; font-size: 1.2rem; }
   p.klein { color: var(--muted); font-size: 0.95rem; margin: 0; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 </head>
 <body>
 <main>
+  <h1 class="sr">Even geen internet</h1>
   <div class="pip" aria-hidden="true">🐴</div>
   <div class="ballon">
     <span id="zin">Deze les heeft internet nodig. Op de kaart staan lessen die je nu wél kunt doen.</span>

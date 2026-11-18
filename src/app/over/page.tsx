@@ -158,7 +158,7 @@ export default function Over() {
             <Link href={`/les/${ALLE_LESSEN[0].id}/`} className="btn btn--primary btn--big">
               <span aria-hidden="true">▶︎</span> Probeer de eerste les
             </Link>
-            <Link href="/lessen/">Bekijk alle {lessen} lessen</Link>
+            <Link href="/lessen/" className={s.tekstknop}>Bekijk alle {lessen} lessen</Link>
           </div>
         </div>
         <figure className={s.scherm} style={{ margin: 0 }}>

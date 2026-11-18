@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ALLE_LESSEN } from '@/content'
-import { SCHAAKREGELS, onderwerpMet } from '@/content/schaakregels'
+import { SCHAAKREGELS, onderwerpMet, type Onderwerp } from '@/content/schaakregels'
 import { SITE, deelkaart, kruimels } from '@/seo'
 import { Gegevens } from '@/ui/Gegevens'
 import { Animatiebord } from '@/uitleg/Animatiebord'
@@ -59,6 +59,10 @@ export default function Schaakregels() {
             Alle regels van het schaken, elk op een bord dat het voordoet. Voor ouders die het
             zelf even willen opfrissen, en om samen met je kind naar te kijken.
           </p>
+          {/* De weg naar de app stond pas onderaan (zevenenzestigste review, conversie K3). */}
+          <Link href={`/les/${ALLE_LESSEN[0].id}/`} className="btn btn--primary" style={{ marginTop: 12 }}>
+            <span aria-hidden="true">▶︎</span> Probeer de eerste les, gratis
+          </Link>
         </div>
       </header>
 
@@ -75,19 +79,13 @@ export default function Schaakregels() {
 
       <section className={s.deel}>
         <h2>Alle regels</h2>
-        <ul className={s.tegels}>
-          {SCHAAKREGELS.map((o) => (
-            <li key={o.slug}>
-              <Link href={`/schaakregels/${o.slug}/`} className={s.tegel}>
-                <Beeldmerk onderwerp={o} />
-                <span>
-                  <strong>{o.vraag}</strong>
-                  <span className={s.doel}>{o.kort}</span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <Tegels onderwerpen={SCHAAKREGELS.filter((o) => !o.tactiek)} />
+      </section>
+
+      <section className={s.deel}>
+        <h2>En dan slim spelen</h2>
+        <p>Geen regels, maar trucs die elke clubspeler kent.</p>
+        <Tegels onderwerpen={SCHAAKREGELS.filter((o) => o.tactiek)} />
       </section>
 
       <section className={s.thuis}>
@@ -112,5 +110,23 @@ export default function Schaakregels() {
         </p>
       </section>
     </main>
+  )
+}
+
+function Tegels({ onderwerpen }: { onderwerpen: Onderwerp[] }) {
+  return (
+    <ul className={s.tegels}>
+      {onderwerpen.map((o) => (
+        <li key={o.slug}>
+          <Link href={`/schaakregels/${o.slug}/`} className={s.tegel}>
+            <Beeldmerk onderwerp={o} />
+            <span>
+              <strong>{o.vraag}</strong>
+              <span className={s.doel}>{o.kort}</span>
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   )
 }

@@ -121,6 +121,7 @@ function main() {
   vooraadOffline()
   controleerDeelplaatjes()
   controleerSitemap()
+  controleerHoofdkoppen()
 }
 
 /**
@@ -179,6 +180,34 @@ function canonicalVan(html: string): string | undefined {
 /** Staat er ergens een robots-meta met noindex, ongeacht de volgorde van de attributen? */
 function staatOpNoindex(html: string): boolean {
   return [...html.matchAll(/<meta\b[^>]*\bname="robots"[^>]*>/g)].some((m) => /noindex/.test(m[0]))
+}
+
+/**
+ * Elke pagina precies één h1, in de HTML zoals Google en een gedeelde link hem zien.
+ *
+ * De doorloop telt pas na het laden, en dan klopte het. Maar in de geëxporteerde HTML
+ * hadden alle 49 lespagina's er twee: de bovenbalk en de tekstversie van de les. En de
+ * stal en opfrissen hadden er nul, omdat ze tot het laden een lege pagina tekenden
+ * (zevenenzestigste review, codebase 1 en 2).
+ */
+export function hoofdkopFouten(uit: string): string[] {
+  const fouten: string[] = []
+  for (const html of alleBestanden(uit).filter((b) => b.endsWith('index.html'))) {
+    const n = (readFileSync(html, 'utf8').match(/<h1[\s>]/g) ?? []).length
+    if (n !== 1) fouten.push(`${html.slice(uit.length)}: ${n} keer een h1`)
+  }
+  return fouten
+}
+
+function controleerHoofdkoppen() {
+  const fouten = hoofdkopFouten(UIT)
+  if (fouten.length) {
+    console.error('Niet elke pagina heeft precies één hoofdkop:')
+    fouten.slice(0, 10).forEach((f) => console.error(`  ${f}`))
+    if (fouten.length > 10) console.error(`  … en ${fouten.length - 10} meer`)
+    process.exit(1)
+  }
+  console.log('Hosting-klaar: elke pagina heeft precies één hoofdkop.')
 }
 
 function controleerSitemap() {

@@ -108,7 +108,7 @@ export function DiplomaScherm({ soort }: { soort: DiplomaSoort }) {
   return (
     <main className="page">
       <div className={styles.verbergBijPrinten}>
-        <Kop titel={diploma.naam} terug="/kaart/" />
+        <Kop titel={diploma.naam} terug="/kaart/" kop="p" />
       </div>
 
       <article className={`${styles.oorkonde} ${styles[soort]}`} style={{ position: 'relative' }}>

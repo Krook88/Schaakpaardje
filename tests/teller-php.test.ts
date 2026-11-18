@@ -1,6 +1,6 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, onTestFinished } from 'vitest'
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process'
-import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -285,10 +285,18 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     const regel = JSON.stringify({ u: '08', n: 'Bezoek', p: '/', e: { geoefend: '1 dag' } }) + '\n'
     const vol = regel.repeat(Math.ceil((1024 * 1024) / regel.length))
     // 180 dagen: bij 90 dagen leest het dashboard ook de 90 dagen daarvóór (de pijltjes).
-    for (let i = 0; i < 180; i++) {
-      const dag = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10)
-      writeFileSync(join(dataMap(), `dag-${dag}.ndjson`), vol)
-    }
+    const bestanden = Array.from({ length: 180 }, (_, i) =>
+      join(dataMap(), `dag-${new Date(Date.now() - i * 86400000).toISOString().slice(0, 10)}.ndjson`),
+    )
+    // Wat er al stond terugzetten na afloop. Zonder dat lieten we 180 MB achter, en elk
+    // dashboardbezoek in de tests hierna las daar tientallen MB van: in een drukke CI
+    // haalde het contactformulier daardoor de 5 seconden niet (zevenenzestigste review, CI).
+    const eerder = new Map(bestanden.filter((b) => existsSync(b)).map((b) => [b, readFileSync(b)]))
+    onTestFinished(() => {
+      for (const b of bestanden) rmSync(b, { force: true })
+      for (const [b, inhoud] of eerder) writeFileSync(b, inhoud)
+    })
+    for (const b of bestanden) writeFileSync(b, vol)
     const inloggen = await fetch(`${BASIS}/teller/dashboard.php`, {
       method: 'POST',
       body: new URLSearchParams({ wachtwoord: 'proef-wachtwoord' }),
