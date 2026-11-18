@@ -226,6 +226,24 @@ describe('wat de tekst over het bord zegt', () => {
     expect(verboden[1].stippen).toContain('c1')
   })
 
+  it('penning: het paard kon springen, en na de loper op b5 niet meer', () => {
+    const a = animatie('penning-loper')
+    const spel = new Game(a.fen)
+    spel.move('a6', 'c4') // een wachtzet van wit, zodat zwart aan zet is zonder penning
+    expect(spel.destinations('c6').length).toBeGreaterThan(0)
+    const gepend = new Game(a.fen)
+    gepend.move('a6', 'b5')
+    expect(gepend.inCheck).toBe(false)
+    expect(gepend.destinations('c6')).toEqual([])
+  })
+
+  it('vork: het paard op c7 valt koning én toren aan', () => {
+    const beelden = bouwBeelden(animatie('vork-paard'))
+    expect(beelden[1].schaak).toEqual(['e8'])
+    // De toren valt pas na de koningszet, met hetzelfde paard: dat bewijst dat c7 hem raakte.
+    expect(bord(beelden[3]).a8).toEqual({ type: 'n', color: 'w' })
+  })
+
   it('het duurste stuk pakken: de toren levert meer op dan de pion', () => {
     const b = bouwBeelden(animatie('waarde-kiezen'))
     const voor = bord(b[0])
