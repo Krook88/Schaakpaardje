@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { BOT, dagenKlasse, duurKlasse, naKlasse, pad, tel, telScherm, zetTellen } from '@/progress/tellen'
+import { BOT, apparaatKlasse, dagenKlasse, duurKlasse, naKlasse, pad, tel, telScherm, zetTellen } from '@/progress/tellen'
 
 /**
  * Wat er naar buiten gaat, ligt hier vast. De belofte aan ouders is: niets óver een
@@ -102,6 +102,12 @@ describe('anoniem tellen', () => {
     expect(naKlasse(0, true)).toBe('al een profiel')
   })
 
+  it('nieuw of bekend apparaat: alleen of er al eens geoefend is', () => {
+    expect(apparaatKlasse(0)).toBe('nieuw')
+    expect(apparaatKlasse(1)).toBe('bekend')
+    expect(apparaatKlasse(40)).toBe('bekend')
+  })
+
   it('geoefende dagen in klassen', () => {
     expect(dagenKlasse(1)).toBe('1 dag')
     expect(dagenKlasse(4)).toBe('3 tot 5 dagen')
@@ -116,7 +122,9 @@ describe('anoniem tellen', () => {
  */
 describe('wat er geteld wordt, ligt vast', () => {
   const TOEGESTAAN: Record<string, string[]> = {
-    'Les begonnen': ['les', 'hervat'],
+    // apparaat: nieuw|bekend (al eens geoefend op dit toestel), binnen: ja|nee (de les was
+    // het eerste scherm van dit bezoek). Besloten door Kaj, november 2026.
+    'Les begonnen': ['les', 'hervat', 'apparaat', 'binnen'],
     'Les af': ['les', 'sterren'],
     'Les gestopt': ['les', 'fase'],
     Partij: ['tegen', 'uitslag'],

@@ -41,7 +41,7 @@ import {
   wereldIsAf,
 } from '@/progress/store'
 import { eenKeer, maakLastigMelder, maakStopMelder, maakUitlegMelder } from './lesTellingen'
-import { tel } from '@/progress/tellen'
+import { apparaatKlasse, isBinnenkomst, tel } from '@/progress/tellen'
 import { useMediaQuery } from '@/ui/useMediaQuery'
 import styles from './LessonPlayer.module.css'
 
@@ -304,7 +304,16 @@ export function LessonPlayer({
     hervatteLes.current = halfAf
     uitlegTelt.current = !halfAf && !(voortgang[les.id]?.sterren ?? 0)
     stemBijStart.current = instellingen.spraak
-    tel('Les begonnen', { les: les.id, hervat: halfAf ? 'ja' : 'nee' })
+    // Nieuw of bekend apparaat, en of de les het eerste scherm van dit bezoek was: zo is te
+    // zien hoeveel nieuwe bezoekers echt bij een les komen, en wie direct via een link of
+    // Google op een les binnenkwam (vierenzestigste review, besloten door Kaj).
+    const dagen = Object.values(useProfielStore.getState().oefendagen ?? {}).reduce((m, d) => Math.max(m, d?.aantal ?? 0), 0)
+    tel('Les begonnen', {
+      les: les.id,
+      hervat: halfAf ? 'ja' : 'nee',
+      apparaat: apparaatKlasse(dagen),
+      binnen: isBinnenkomst(window.location.pathname) ? 'ja' : 'nee',
+    })
     if (halfAf) startFase(hervat as Fase)
     // Alleen bij het laden, één keer: voortgang en instellingen veranderen daarna, en
     // dat mag de beslissing niet meer raken.

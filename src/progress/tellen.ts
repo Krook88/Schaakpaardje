@@ -93,6 +93,27 @@ function stuur(naam: string, props?: Eigenschappen, referrer?: string) {
 let eersteScherm = true
 
 /**
+ * Het pad waarop dit bezoek binnenkwam: het scherm waarmee de pagina geladen werd. Een
+ * module wordt maar één keer ingelezen, dus later navigeren binnen de app verandert dit
+ * niet. Voor de eigenschap `binnen` van "Les begonnen": kwam iemand direct op deze les
+ * binnen (Google, een gedeelde link), of liep hij er vanuit de app naartoe?
+ */
+const binnenPad = typeof window !== 'undefined' ? window.location.pathname : null
+
+/** Is dit pad het scherm waarop dit bezoek binnenkwam? */
+export function isBinnenkomst(pathname: string): boolean {
+  return binnenPad !== null && binnenPad === pathname
+}
+
+/**
+ * Nieuw of bekend apparaat: is er op dit apparaat al eens geoefend? Dezelfde grens als
+ * "nog niet" bij "Bezoek". Zegt iets over het toestel, niets over het kind.
+ */
+export function apparaatKlasse(geoefendeDagen: number): 'nieuw' | 'bekend' {
+  return geoefendeDagen > 0 ? 'bekend' : 'nieuw'
+}
+
+/**
  * Een scherm is geopend. Bij het eerste scherm ook waar de bezoeker vandaan kwam
  * (Google, WhatsApp): dat zegt iets over de site, niets over het kind.
  */

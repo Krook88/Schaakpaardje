@@ -945,6 +945,13 @@ async function uitlegTeltEenKeer() {
     uitleg.length === 1 && uitleg[0].props?.einde === 'verder' && uitleg[0].props?.doorgetikt === 'geen',
     JSON.stringify(uitleg.map((t) => t.props)),
   )
+  // Direct op de les binnengekomen, op een leeg apparaat: binnen ja, apparaat nieuw.
+  const begonnen = tellingen.find((t) => t.name === 'Les begonnen')?.props ?? {}
+  meld(
+    'les begonnen: direct binnengekomen op een nieuw apparaat',
+    begonnen.binnen === 'ja' && begonnen.apparaat === 'nieuw',
+    JSON.stringify(begonnen),
+  )
   await b.close()
 }
 

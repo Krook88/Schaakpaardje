@@ -19,7 +19,7 @@ if (!defined('TELLER')) {
 /** Dezelfde lijst als in tests/tellen.test.ts. Iets nieuws tellen? Daar ook bijzetten. */
 const TELLINGEN = [
     'pageview' => [],
-    'Les begonnen' => ['les', 'hervat'],
+    'Les begonnen' => ['les', 'hervat', 'apparaat', 'binnen'],
     'Les af' => ['les', 'sterren'],
     'Les gestopt' => ['les', 'fase'],
     'Partij' => ['tegen', 'uitslag'],
@@ -73,7 +73,10 @@ function schoonmaken(array $in): ?array
     // Overgang (oktober 2026): 'Profiel gemaakt' kreeg de eigenschap 'na'. Een tabblad dat nog
     // de vorige versie draait, stuurt hem zonder; die telling is nog steeds waar, dus niet weigeren.
     $oudProfiel = $naam === 'Profiel gemaakt' && $sleutels === [];
-    if ($sleutels !== $nodig && !$oudProfiel) return null;
+    // Overgang (november 2026): 'Les begonnen' kreeg 'apparaat' en 'binnen'. Een tabblad met de
+    // vorige versie stuurt alleen les en hervat; die telling is nog steeds waar.
+    $oudeLes = $naam === 'Les begonnen' && $sleutels === ['hervat', 'les'];
+    if ($sleutels !== $nodig && !$oudProfiel && !$oudeLes) return null;
     if ($gekregen) {
         foreach ($gekregen as $k => $v) {
             if (!in_array($k, TELLINGEN[$naam], true)) return null;
