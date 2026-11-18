@@ -883,7 +883,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
     kort: 'Een stuk zit vast, omdat er iets duurders achter staat.',
     stuk: 'b',
     antwoord:
-      'Een penning is een aanval op een stuk waar iets waardevollers achter staat, op dezelfde lijn. Staat de koning erachter, dan mag het gepende stuk niet weg: dan zou de eigen koning schaak komen te staan.',
+      'Een penning is een aanval op een stuk waar iets waardevollers achter staat, op dezelfde lijn. Staat de koning erachter, dan zit het voorste stuk vast. Schakers zeggen: het is gepend. Het mag niet weg, want dan zou de eigen koning schaak komen te staan.',
     delen: [
       {
         kop: 'Vastgezet door de koning erachter',
@@ -903,7 +903,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
             // Geen `bereik`: het paard heeft nul velden, en dat is juist de les.
             // tests/schaakregels.test.ts rekent na dat het vóór b5 wel kon springen en daarna niet.
             {
-              tekst: 'Nu kan het paard nergens heen: elke sprong zou de koning schaak zetten. Het paard is gepend.',
+              tekst: 'Nu kan het paard nergens heen: elke sprong zou de koning schaak zetten. Het paard is gepend: het zit vast.',
               markeer: ['b5', 'c6', 'd7', 'e8'],
             },
           ],
