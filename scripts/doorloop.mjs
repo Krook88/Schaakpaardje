@@ -221,15 +221,21 @@ async function quizRekentGoedGoed() {
  * Overal moet minstens één knop of link staan die ergens heen gaat.
  * ------------------------------------------------------------------ */
 async function altijdEenUitweg() {
-  const schermen = ['/', '/kaart/', '/lessen/', '/over/', '/schaakregels/', '/schaakregels/paard/', '/schaakclub/', '/stal/', '/spelen/', '/opfrissen/', '/les/weide-1/']
+  const schermen = ['/', '/kaart/', '/lessen/', '/over/', '/schaakregels/', '/schaakregels/paard/', '/schaakclub/', '/stal/', '/spelen/', '/opfrissen/', '/ouders/', '/les/weide-1/']
   const zonder = []
+  const zonderKop = []
   for (const pad of schermen) {
     await page.goto(URL + pad, { waitUntil: 'networkidle' })
     await page.waitForTimeout(500)
     const knoppen = await page.locator('a[href], button:not([disabled])').count()
     if (knoppen === 0) zonder.push(pad)
+    // Precies één hoofdkop: de bovenbalk had een h2, zodat een schermlezer op de kaart,
+    // de stal of een les geen h1 vond. Hier ook geteld, want het scheelt een rondje laden.
+    const h1 = await page.locator('h1').count()
+    if (h1 !== 1) zonderKop.push(`${pad} (${h1})`)
   }
   meld('elk scherm heeft een uitweg', zonder.length === 0, zonder.join(', '))
+  meld('elk scherm heeft precies één hoofdkop', zonderKop.length === 0, zonderKop.join(', '))
 }
 
 /* ------------------------------------------------------------------ *
@@ -1258,7 +1264,7 @@ for (const [w, h] of [[1440, 900], [1366, 650], [1280, 800]]) {
   await p.goto(URL + '/spelen/oscar/', { waitUntil: 'networkidle' })
   await p.waitForTimeout(400)
   const m = await p.evaluate(() => ({
-    titel: Math.round(document.querySelector('header h2')?.getBoundingClientRect().width ?? 0),
+    titel: Math.round(document.querySelector('header h1')?.getBoundingClientRect().width ?? 0),
     knop: Math.round([...document.querySelectorAll('button')].find((x) => /Nog een keer/.test(x.textContent))?.getBoundingClientRect().bottom ?? 1e4),
   }))
   meld('speelscherm 667×375: kop leesbaar en knoppen in beeld', m.titel >= 60 && m.knop <= 375, JSON.stringify(m))
