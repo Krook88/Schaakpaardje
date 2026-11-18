@@ -167,6 +167,8 @@ describe('wat er geteld wordt, ligt vast', () => {
     Uitleg: ['les', 'einde', 'zin', 'doorgetikt', 'stem'],
     // Geluid aan of uit gezet, door een kind (bel) of een ouder (ouderscherm).
     Geluid: ['aan', 'door'],
+    // Of een kind na een partij op "Wat zag Pip?" tikt, en welk soort moment het zag.
+    Terugblik: ['soort'],
   }
   const bestanden = (map: string): string[] =>
     readdirSync(map).flatMap((n) => {
