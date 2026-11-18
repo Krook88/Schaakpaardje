@@ -128,6 +128,13 @@ const SCHOON_VANAF = '2026-10-23';
  */
 const SPEELDE_VANAF = '2026-10-24';
 
+/**
+ * Vanaf deze dag stuurt 'Les begonnen' ook 'apparaat' en 'binnen'. Pas als de hele periode
+ * daarna valt, gebruiken trechter en bevindingen ze: anders staan een paar gemeten dagen
+ * tegenover een hele periode bezoeken (conversie, 66e review).
+ */
+const APPARAAT_VANAF = '2026-11-18';
+
 /** Vanaf deze dag stuurt de app 'Stem', 'Uitleg' en 'Geluid'. Daarvóór zijn die tellingen leeg, niet nul. */
 const STEM_VANAF = '2026-11-17';
 
@@ -231,7 +238,7 @@ loopDagen($periode * 2, function (string $dag, ?array $r) use (
             // nieuwApp/binnen: sinds november 2026 stuurt 'Les begonnen' of het apparaat nieuw was en
             // of de les het eerste scherm van het bezoek was. 'gemeten' telt hoeveel starts dat al meesturen.
             $l = $lessen[$id] ?? ['nieuw' => 0, 'hervat' => 0, 'speelde' => 0, 'af' => 0, 'afGemeten' => 0, 'sterren' => 0, 'gestopt' => [],
-                'gemeten' => 0, 'nieuwApp' => 0, 'binnen' => 0];
+                'gemeten' => 0, 'nieuwApp' => 0, 'binnenNieuw' => 0];
             if ($n === 'Eerste opgave') {
                 $l['speelde']++;
                 $dagen[$dag]['speelde']++;
@@ -241,7 +248,9 @@ loopDagen($periode * 2, function (string $dag, ?array $r) use (
                 if ($nieuw && isset($e['apparaat'])) {
                     $l['gemeten']++;
                     if ($e['apparaat'] === 'nieuw') $l['nieuwApp']++;
-                    if (($e['binnen'] ?? '') === 'ja') $l['binnen']++;
+                    // Direct binnen op een nieuw apparaat: vaak een kijker. Op een bekend apparaat is
+                    // "direct binnen" meestal een tabblad dat opnieuw laadde, geen kijker.
+                    if (($e['binnen'] ?? '') === 'ja' && $e['apparaat'] === 'nieuw') $l['binnenNieuw']++;
                 }
                 if ($nieuw) $dagen[$dag]['begonnen']++;
             } elseif ($n === 'Les af') {
@@ -526,7 +535,7 @@ const NIET_SCHRAPPEN = 'Schrap geen regel of uitzondering: de laatste zin draagt
  * @return array<int, array{gewicht:int, soort:string, wat:string, doe:string}>
  */
 function bevindingen(array $lessen, array $titels, array $lesInfo, array $volgorde, array $lastig, array $stemBron,
-    array $uitleg, array $somUitleg, array $geluid, int $zonderDag, array $binnenkomst, int $bezoeken): array
+    array $uitleg, array $somUitleg, array $geluid, int $zonderDag, array $binnenkomst, int $bezoeken, bool $apparaatMeet = false): array
 {
     $uit = [];
     $naam = function (string $id) use ($titels) { return $titels[$id] ?? $id; };
@@ -546,16 +555,20 @@ function bevindingen(array $lessen, array $titels, array $lesInfo, array $volgor
             ? ' Van wie wegging tijdens de uitleg: ' . $voorTik . ' zonder één tik (bij zin 1), ' . $later . ' later (zin 2 of verder).'
             : '';
         $eerste = ($volgorde[$id] ?? 99) === 0;
-        // Direct op deze les binnengekomen (Google, een link): vaak kijkers, geen afhakers.
-        $direct = $l['binnen'] ?? 0;
-        if ($direct > 0) $extra .= ' ' . $direct . ' van de ' . $open . ' keer kwam iemand direct op deze les binnen (zonder eerst de app te zien).';
+        // Direct op deze les binnengekomen op een nieuw apparaat (Google, een link): vaak kijkers.
+        // Alleen een vermelding: zonder ID is niet te zien of juist zij in de uitleg stopten.
+        $direct = $l['binnenNieuw'] ?? 0;
+        if ($direct > 0) {
+            $extra .= ' ' . $direct . ' van de ' . $l['gemeten'] . ' gemeten starts kwamen direct op deze les binnen, op een nieuw apparaat: '
+                . 'vaak kijkers. Of juist zij in de uitleg stopten, is zonder ID niet te zien.';
+        }
         $nr = $lesInfo[$id]['nr'] ?? null;
         $beginVast = vastInBegin($id, $lessen, $lastig);
         if ($nr !== null && $nr >= 9) {
             $doe = 'Vanaf wereld 9 (schaak, mat, rokade) is de uitleg zwaarder en is afhaken daar normaal. Pas niets aan zolang het niet opvallend hoger is dan bij de lessen ervoor.';
         } elseif ($beginVast !== null && $beginVast >= 30) {
             $doe = 'In de eerste opgave loopt ook ' . $beginVast . '% vast: de uitleg mist misschien iets, niet te lang. Niet inkorten; kijk of de opdracht aansluit op wat Pip vertelde.';
-        } elseif (($u && $voorTik > $later) || $direct * 2 >= $kijken) {
+        } elseif ($u && $voorTik > $later) {
             $doe = 'De meesten gaan weg vóór ze één keer tikten. Dat zijn vaak ouders of bezoekers die even kijken'
                 . ($eerste ? ' (alle knoppen voor ouders gaan naar deze les)' : '')
                 . ', en Pip was vaak nog niet te horen. Inkorten helpt daar weinig; kijk of het eerste scherm meteen laat zien wat het kind gaat doen.';
@@ -644,9 +657,9 @@ function bevindingen(array $lessen, array $titels, array $lesInfo, array $volgor
     // eerste: wie via een schaakregelpagina in /les/paard-1/ belandt, haakte niet af.
     // Sinds 'Les begonnen' meestuurt of het apparaat nieuw was, tellen alleen die starts:
     // een kind dat al oefende en een nieuwe les opent, is geen nieuwe bezoeker die bij een les kwam.
-    $gemeten = 0;
+    // Starts, geen bezoeken: één bezoek kan meer lessen openen.
+    $gemeten = $apparaatMeet;
     $geopend = 0;
-    foreach ($lessen as $l) $gemeten += $l['gemeten'] ?? 0;
     foreach ($lessen as $l) $geopend += $gemeten ? ($l['nieuwApp'] ?? 0) : $l['nieuw'];
     if ($volgorde && $zonderDag >= 10 && pct($geopend, $zonderDag) < 40) {
         arsort($binnenkomst);
@@ -750,7 +763,8 @@ $h .= '</div><p class="zacht" style="margin:10px 0 0">Tijden in UTC. Alleen vana
 
 $somUitleg = somUitleg($uitleg);
 $nieuwApparaat = $geoefend['nog niet'] ?? 0;
-$lijstBevindingen = bevindingen($lessen, $titels, $lesInfo, $volgorde, $lastig, $stemBron, $uitleg, $somUitleg, $geluid, $nieuwApparaat, $binnenkomst, $totaal['Bezoek']);
+$apparaatMeet = $start >= APPARAAT_VANAF;
+$lijstBevindingen = bevindingen($lessen, $titels, $lesInfo, $volgorde, $lastig, $stemBron, $uitleg, $somUitleg, $geluid, $nieuwApparaat, $binnenkomst, $totaal['Bezoek'], $apparaatMeet);
 $soortNaam = ['uitleg' => 'Uitleg', 'les' => 'Les', 'opgave' => 'Opgave', 'stem' => 'Stem', 'binnenkomst' => 'Binnenkomst'];
 $h .= hoofdstuk('doen', '1 · Wat nu doen?', 'De grootste knelpunten, uitgerekend uit alles hieronder.');
 $h .= '<section><h2>Waar verbeteren?</h2><p class="zacht">Uitgerekend uit de tellingen hieronder, wat het vaakst voorkwam eerst. '
@@ -799,7 +813,9 @@ $h .= hoofdstuk('afhaken', '3 · Waar haken ze af?', 'Van binnenkomst tot de laa
 $eerste = $volgorde ? (string) array_search(0, $volgorde, true) : '';
 $stappen = [
     ['Bezoek op een apparaat zonder geoefende dag', $nieuwApparaat],
-    ['Eerste les geopend' . ($eerste !== '' ? ' (' . ($titels[$eerste] ?? $eerste) . ')' : ''), $lessen[$eerste]['nieuw'] ?? 0],
+    // Zodra gemeten: alleen op nieuwe apparaten, net als de rij erboven. Anders wordt de trechter breder.
+    ['Eerste les geopend' . ($eerste !== '' ? ' (' . ($titels[$eerste] ?? $eerste) . ')' : '') . ($apparaatMeet ? ' op zo\'n apparaat' : ''),
+        $apparaatMeet ? ($lessen[$eerste]['nieuwApp'] ?? 0) : ($lessen[$eerste]['nieuw'] ?? 0)],
     ['Eerste les gespeeld (eerste tik op een opgave)', $lessen[$eerste]['speelde'] ?? 0],
     ['Eerste les af', $lessen[$eerste]['af'] ?? 0],
     // Zonder broertjes en zusjes: die maken geen ouder die net binnenkwam.
@@ -807,11 +823,13 @@ $stappen = [
 ];
 // Elke les, niet alleen de eerste: wie via een schaakregelpagina in /les/paard-1/ belandt,
 // kwam ook bij een les. Alleen als 'Les begonnen' het al meestuurt (sinds november 2026).
-if (array_sum(array_map(function ($l) { return $l['gemeten'] ?? 0; }, $lessen))) {
-    array_splice($stappen, 1, 0, [['Een les geopend op zo\'n apparaat (elke les)', array_sum(array_map(function ($l) { return $l['nieuwApp'] ?? 0; }, $lessen))]]);
+if ($apparaatMeet) {
+    array_splice($stappen, 1, 0, [['Keer een les geopend op zo\'n apparaat (elke les)', array_sum(array_map(function ($l) { return $l['nieuwApp'] ?? 0; }, $lessen))]]);
 }
 $h .= '<section><h2>Van binnenkomst naar profiel</h2><p class="zacht">Losse aantallen in dezelfde periode, geen gevolgde '
-    . 'bezoekers: er zijn geen ID\'s. Een kind kan ook zonder profiel spelen; de sterren gaan mee als er later een komt.</p><table>';
+    . 'bezoekers: er zijn geen ID\'s. Een kind kan ook zonder profiel spelen; de sterren gaan mee als er later een komt.'
+    . ($apparaatMeet ? ' De rijen over lessen tellen keren, geen bezoeken: één bezoek kan meer lessen openen.'
+        : ' Vanaf ' . e(APPARAAT_VANAF) . ' telt de trechter alleen nieuwe apparaten, zodra de hele periode daarna valt.') . '</p><table>';
 foreach ($stappen as [$label, $n]) {
     $h .= '<tr><td>' . e($label) . '</td><td class="n">' . $n . '</td><td>' . balk((int) $n, max(1, $nieuwApparaat)) . '</td></tr>';
 }
@@ -849,7 +867,7 @@ $h .= '<section><h2>Lessen: waar haken kinderen af?</h2>'
     . '<dt>meedoen</dt><dd>Eerste opgaven, met Pip die helpt.</dd>'
     . '<dt>zelf</dt><dd>Opgaven zonder hulp.</dd>'
     . '<dt>toets</dt><dd>De laatste opgaven, voor de sterren.</dd>'
-    . '<dt>Geopend</dt><dd>Keer dat de les begon (niet verder gegaan waar het kind was gebleven).</dd>'
+    . '<dt>Geopend</dt><dd>Keer dat de les begon (niet verder gegaan waar het kind was gebleven). "3 direct": zo vaak kwam iemand op een nieuw apparaat meteen op deze les binnen, vaak om even te kijken.</dd>'
     . '<dt>Gespeeld</dt><dd>Keer dat een kind in een nieuwe les de eerste opgave aantikte.</dd>'
     . '<dt>Af %</dt><dd>Van wie speelde, hoeveel de les afmaakten. <span style="color:var(--groen);font-weight:700">Groen</span> 80% of meer, '
     . '<span style="color:var(--accent);font-weight:700">oranje</span> onder 60%. Pas gekleurd vanaf 3 keer gespeeld.</dd>'
@@ -877,8 +895,9 @@ if ($lessen) {
         $pct = $speelde ? (int) min(100, round($l['afGemeten'] / $speelde * 100)) : null;
         $kleur = $pct === null || $speelde < 3 ? '' : ($pct >= 80 ? 'goed' : ($pct >= 60 ? 'matig' : 'slecht'));
         $h .= '<tr><td title="' . e($id) . '">' . e($titels[$id] ?? $id) . '</td><td class="n ' . $kleur . '">'
-            . ($pct === null ? '' : $pct . '%') . '</td><td class="n" title="'
-            . e(($l['gemeten'] ?? 0) ? ($l['binnen'] . ' keer direct binnengekomen, ' . $l['nieuwApp'] . ' keer op een nieuw apparaat') : '') . '">' . $begonnen
+            . ($pct === null ? '' : $pct . '%') . '</td><td class="n">' . $begonnen
+            // Zichtbaar en niet als tooltip: die verschijnt niet op een telefoon.
+            . (($l['binnenNieuw'] ?? 0) ? '<br><small class="zacht">' . $l['binnenNieuw'] . ' direct</small>' : '')
             . '</td><td class="n">' . $speelde . '</td><td class="n mob-weg">' . ($l['hervat'] ?: '') . '</td><td class="n">' . $l['af']
             . '</td><td class="n mob-weg">' . ($l['af'] ? number_format($l['sterren'] / $l['af'], 1, ',', '') : '') . '</td>';
         // Noemer: alle keren dat de les open was, ook hervat. Kleur pas vanaf 3.
