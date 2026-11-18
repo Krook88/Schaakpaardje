@@ -952,6 +952,13 @@ async function uitlegTeltEenKeer() {
     begonnen.binnen === 'ja' && begonnen.apparaat === 'nieuw',
     JSON.stringify(begonnen),
   )
+  // Via de app naar de les, en na de kaart terug: dan is het geen binnenkomst (66e review).
+  tellingen.length = 0
+  await p.goto(`http://schaakmaatje.nl:${poort}/`, { waitUntil: 'networkidle' })
+  await p.locator('a[href*="/les/weide-1"]').first().click()
+  await p.waitForTimeout(1500)
+  const viaApp = tellingen.find((t) => t.name === 'Les begonnen')?.props ?? {}
+  meld('les begonnen: via de app is niet "direct binnen"', viaApp.binnen === 'nee', JSON.stringify(viaApp))
   await b.close()
 }
 

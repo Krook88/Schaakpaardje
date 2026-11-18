@@ -128,13 +128,6 @@ const SCHOON_VANAF = '2026-10-23';
  */
 const SPEELDE_VANAF = '2026-10-24';
 
-/**
- * Vanaf deze dag stuurt 'Les begonnen' ook 'apparaat' en 'binnen'. Pas als de hele periode
- * daarna valt, gebruiken trechter en bevindingen ze: anders staan een paar gemeten dagen
- * tegenover een hele periode bezoeken (conversie, 66e review).
- */
-const APPARAAT_VANAF = '2026-11-18';
-
 /** Vanaf deze dag stuurt de app 'Stem', 'Uitleg' en 'Geluid'. Daarvóór zijn die tellingen leeg, niet nul. */
 const STEM_VANAF = '2026-11-17';
 
@@ -173,7 +166,7 @@ $start = gmdate('Y-m-d', $nu - ($periode - 1) * 86400);
  * maar een paar dagen mee en staat er "↑ 650%" (codebase, 65e review).
  */
 $vergelijkbaar = gmdate('Y-m-d', $nu - (2 * $periode - 1) * 86400) >= max(SCHOON_VANAF, SPEELDE_VANAF);
-$vorig = ['bezoek' => 0, 'terug' => 0, 'af' => 0, 'speelde' => 0, 'afGemeten' => 0];
+$vorig = ['bezoek' => 0, 'terug' => 0, 'af' => 0, 'speelde' => 0, 'afGemeten' => 0, 'apparaat' => false];
 
 loopDagen($periode * 2, function (string $dag, ?array $r) use (
     &$totaal, &$lessen, &$duur, &$geoefend, &$partijen, &$spellen, &$lastig, &$binnenkomst, &$profielNa, &$schermen, &$verwijzers, &$uren,
@@ -190,6 +183,9 @@ loopDagen($periode * 2, function (string $dag, ?array $r) use (
             if ($dag >= SPEELDE_VANAF) $vorig['afGemeten']++;
         } elseif ($n === 'Eerste opgave') {
             $vorig['speelde']++;
+        } elseif ($n === 'Les begonnen' && isset($r['e']['apparaat'])) {
+            // In de vorige periode al 'apparaat': dan stond de nieuwe versie live vóór deze periode.
+            $vorig['apparaat'] = true;
         }
         return;
     }
@@ -763,7 +759,13 @@ $h .= '</div><p class="zacht" style="margin:10px 0 0">Tijden in UTC. Alleen vana
 
 $somUitleg = somUitleg($uitleg);
 $nieuwApparaat = $geoefend['nog niet'] ?? 0;
-$apparaatMeet = $start >= APPARAAT_VANAF;
+/**
+ * 'Les begonnen' stuurt sinds november 2026 'apparaat' en 'binnen'. Trechter en bevindingen
+ * gebruiken ze pas als de hele periode na de publicatie valt (dan zat het al in de periode
+ * ervóór): anders staan een paar gemeten dagen tegenover een hele periode bezoeken
+ * (conversie, 66e review). Uit de gegevens, niet uit een datum: publiceren gaat met de hand.
+ */
+$apparaatMeet = $vorig['apparaat'];
 $lijstBevindingen = bevindingen($lessen, $titels, $lesInfo, $volgorde, $lastig, $stemBron, $uitleg, $somUitleg, $geluid, $nieuwApparaat, $binnenkomst, $totaal['Bezoek'], $apparaatMeet);
 $soortNaam = ['uitleg' => 'Uitleg', 'les' => 'Les', 'opgave' => 'Opgave', 'stem' => 'Stem', 'binnenkomst' => 'Binnenkomst'];
 $h .= hoofdstuk('doen', '1 · Wat nu doen?', 'De grootste knelpunten, uitgerekend uit alles hieronder.');
@@ -829,7 +831,7 @@ if ($apparaatMeet) {
 $h .= '<section><h2>Van binnenkomst naar profiel</h2><p class="zacht">Losse aantallen in dezelfde periode, geen gevolgde '
     . 'bezoekers: er zijn geen ID\'s. Een kind kan ook zonder profiel spelen; de sterren gaan mee als er later een komt.'
     . ($apparaatMeet ? ' De rijen over lessen tellen keren, geen bezoeken: één bezoek kan meer lessen openen.'
-        : ' Vanaf ' . e(APPARAAT_VANAF) . ' telt de trechter alleen nieuwe apparaten, zodra de hele periode daarna valt.') . '</p><table>';
+        : ' Zodra een hele periode met de nieuwe meting bestaat, telt de trechter alleen nieuwe apparaten.') . '</p><table>';
 foreach ($stappen as [$label, $n]) {
     $h .= '<tr><td>' . e($label) . '</td><td class="n">' . $n . '</td><td>' . balk((int) $n, max(1, $nieuwApparaat)) . '</td></tr>';
 }

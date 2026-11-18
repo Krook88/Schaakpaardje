@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { useProfielStore, useToestandGeladen } from '@/progress/store'
-import { dagenKlasse, duurKlasse, tel, telScherm } from '@/progress/tellen'
+import { dagenKlasse, duurKlasse, hoogsteOefendagen, tel, telScherm } from '@/progress/tellen'
 import { onStemBron } from '@/audio/voice'
 
 /**
@@ -26,10 +26,7 @@ export function Tellingen() {
 
   useEffect(() => {
     if (!geladen) return
-    const dagen = Object.values(useProfielStore.getState().oefendagen ?? {}).reduce(
-      (max, d) => Math.max(max, d?.aantal ?? 0),
-      0,
-    )
+    const dagen = hoogsteOefendagen(useProfielStore.getState().oefendagen)
     tel('Bezoek', { geoefend: dagen ? dagenKlasse(dagen) : 'nog niet' })
   }, [geladen])
 

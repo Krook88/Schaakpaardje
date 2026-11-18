@@ -97,12 +97,42 @@ let eersteScherm = true
  * module wordt maar één keer ingelezen, dus later navigeren binnen de app verandert dit
  * niet. Voor de eigenschap `binnen` van "Les begonnen": kwam iemand direct op deze les
  * binnen (Google, een gedeelde link), of liep hij er vanuit de app naartoe?
+ *
+ * Bij het inlezen en niet in de eerste `telScherm()`: het lesscherm kan tellen vóór de
+ * layout zijn pageview telt, en dan kreeg de eerste les ten onrechte "nee". Dit werkt
+ * omdat tellen.ts statisch vanuit de layout (Tellingen) geladen wordt; wordt dat ooit
+ * lazy, dan moet dit mee (66e review).
  */
 const binnenPad = typeof window !== 'undefined' ? window.location.pathname : null
 
-/** Is dit pad het scherm waarop dit bezoek binnenkwam? */
+/**
+ * Is de pagina opnieuw geladen (vernieuwen, een tabblad dat Safari de volgende dag weer
+ * laadt)? Dan is de les geen binnenkomst: het kind zat er al.
+ */
+const herladen = (() => {
+  try {
+    const n = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+    return n?.type === 'reload'
+  } catch {
+    return false
+  }
+})()
+
+/**
+ * Heeft dit bezoek het binnenkomstscherm al eens verlaten? Wie via Google op een les
+ * binnenkomt, naar de kaart gaat en dezelfde les opnieuw opent, is daar niet meer
+ * "direct binnen" (codebase, 66e review). `telScherm()` zet dit bij elk ander scherm.
+ */
+let verlaten = false
+
+/** Is dit pad het scherm waarop dit bezoek binnenkwam, en is het daar nooit weggegaan? */
 export function isBinnenkomst(pathname: string): boolean {
-  return binnenPad !== null && binnenPad === pathname
+  return binnenPad !== null && !herladen && !verlaten && binnenPad === pathname
+}
+
+/** Het hoogste aantal geoefende dagen over de profielen op dit apparaat. Eén plek, voor Bezoek en Les begonnen. */
+export function hoogsteOefendagen(oefendagen: Record<string, { aantal: number } | undefined> | undefined): number {
+  return Object.values(oefendagen ?? {}).reduce((m, d) => Math.max(m, d?.aantal ?? 0), 0)
 }
 
 /**
@@ -118,6 +148,7 @@ export function apparaatKlasse(geoefendeDagen: number): 'nieuw' | 'bekend' {
  * (Google, WhatsApp): dat zegt iets over de site, niets over het kind.
  */
 export function telScherm() {
+  if (typeof window !== 'undefined' && window.location.pathname !== binnenPad) verlaten = true
   const van = eersteScherm && typeof document !== 'undefined' ? document.referrer || undefined : undefined
   eersteScherm = false
   stuur('pageview', undefined, van)

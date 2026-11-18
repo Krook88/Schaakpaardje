@@ -97,6 +97,8 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect((await stuur({ name: 'Les begonnen', url: '/les/weide-1/', props: nieuweVorm })).status).toBe(204)
     expect((await stuur({ name: 'Les begonnen', url: '/les/weide-1/', props: { les: 'weide-1', hervat: 'nee' } })).status).toBe(204)
     expect((await stuur({ name: 'Les begonnen', url: '/les/weide-1/', props: { les: 'weide-1', hervat: 'nee', apparaat: 'nieuw' } })).status).toBe(400)
+    // Een vaste eigenschap met een andere waarde wordt geweigerd.
+    expect((await stuur({ name: 'Les begonnen', url: '/les/weide-1/', props: { ...nieuweVorm, apparaat: 'xyz' } })).status).toBe(400)
     const lastig = { name: 'Opgave lastig', url: '/les/weide-1/', props: { les: 'weide-1', opgave: 'zelf-1', hulp: 'missers' } }
     expect((await stuur(lastig)).status).toBe(204)
     expect((await stuur({ name: 'pageview', url: '/schaakregels/en-passant/' })).status).toBe(204)

@@ -102,6 +102,29 @@ describe('anoniem tellen', () => {
     expect(naKlasse(0, true)).toBe('al een profiel')
   })
 
+  it('binnen: alleen het scherm waarop het bezoek binnenkwam, tot het dat verlaat', async () => {
+    vi.resetModules()
+    zetSite('schaakmaatje.nl', '/les/weide-1/')
+    const t = await import('@/progress/tellen')
+    expect(t.isBinnenkomst('/les/weide-1/')).toBe(true)
+    expect(t.isBinnenkomst('/les/toren-1/')).toBe(false)
+    // Een pageview op hetzelfde scherm verandert niets...
+    t.telScherm()
+    expect(t.isBinnenkomst('/les/weide-1/')).toBe(true)
+    // ...maar wie naar de kaart ging en terugkomt, kwam niet meer direct binnen.
+    vi.stubGlobal('window', { location: { hostname: 'schaakmaatje.nl', pathname: '/kaart/', hash: '' } })
+    t.telScherm()
+    expect(t.isBinnenkomst('/les/weide-1/')).toBe(false)
+  })
+
+  it('binnen: een herladen pagina is geen binnenkomst', async () => {
+    vi.resetModules()
+    zetSite('schaakmaatje.nl', '/les/weide-1/')
+    vi.stubGlobal('performance', { getEntriesByType: () => [{ type: 'reload' }] })
+    const t = await import('@/progress/tellen')
+    expect(t.isBinnenkomst('/les/weide-1/')).toBe(false)
+  })
+
   it('nieuw of bekend apparaat: alleen of er al eens geoefend is', () => {
     expect(apparaatKlasse(0)).toBe('nieuw')
     expect(apparaatKlasse(1)).toBe('bekend')

@@ -37,6 +37,22 @@ const TELLINGEN = [
 ];
 
 /**
+ * Eigenschappen met een vaste keuze: een andere waarde wordt geweigerd, zodat het dashboard
+ * geen onzin stil als "niet nieuw" telt. Alleen voor de eigenschappen van november 2026;
+ * de oudere krijgen het als ze toch worden aangepast.
+ */
+const VASTE_WAARDEN = [
+    'apparaat' => ['nieuw', 'bekend'],
+    'binnen' => ['ja', 'nee'],
+    'bron' => ['opname', 'apparaat'],
+    'einde' => ['verder', 'weg'],
+    'doorgetikt' => ['geen', 'soms', 'meestal'],
+    'stem' => ['aan', 'uit'],
+    'aan' => ['ja', 'nee'],
+    'door' => ['kind', 'ouder'],
+];
+
+/**
  * Zoekmachines en meetprogramma's: dezelfde lijst als `BOT` in src/progress/tellen.ts.
  * De User-Agent wordt alleen gelezen om te weigeren, en nooit bewaard.
  */
@@ -74,7 +90,8 @@ function schoonmaken(array $in): ?array
     // de vorige versie draait, stuurt hem zonder; die telling is nog steeds waar, dus niet weigeren.
     $oudProfiel = $naam === 'Profiel gemaakt' && $sleutels === [];
     // Overgang (november 2026): 'Les begonnen' kreeg 'apparaat' en 'binnen'. Een tabblad met de
-    // vorige versie stuurt alleen les en hervat; die telling is nog steeds waar.
+    // vorige versie stuurt alleen les en hervat; die telling is nog steeds waar. Mag weg een maand
+    // nadat de versie met 'apparaat' live staat (net als $oudProfiel, uit oktober).
     $oudeLes = $naam === 'Les begonnen' && $sleutels === ['hervat', 'les'];
     if ($sleutels !== $nodig && !$oudProfiel && !$oudeLes) return null;
     if ($gekregen) {
@@ -82,6 +99,8 @@ function schoonmaken(array $in): ?array
             if (!in_array($k, TELLINGEN[$naam], true)) return null;
             if (is_int($v) && $v >= 0 && $v <= 1000) {
                 $props[$k] = $v;
+            } elseif (isset(VASTE_WAARDEN[$k]) && !in_array($v, VASTE_WAARDEN[$k], true)) {
+                return null;
             } elseif (is_string($v) && preg_match('/^[a-z0-9 -]{1,40}$/', $v)) {
                 $props[$k] = $v;
             } else {

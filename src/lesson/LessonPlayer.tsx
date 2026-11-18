@@ -41,7 +41,7 @@ import {
   wereldIsAf,
 } from '@/progress/store'
 import { eenKeer, maakLastigMelder, maakStopMelder, maakUitlegMelder } from './lesTellingen'
-import { apparaatKlasse, isBinnenkomst, tel } from '@/progress/tellen'
+import { apparaatKlasse, hoogsteOefendagen, isBinnenkomst, tel } from '@/progress/tellen'
 import { useMediaQuery } from '@/ui/useMediaQuery'
 import styles from './LessonPlayer.module.css'
 
@@ -307,7 +307,7 @@ export function LessonPlayer({
     // Nieuw of bekend apparaat, en of de les het eerste scherm van dit bezoek was: zo is te
     // zien hoeveel nieuwe bezoekers echt bij een les komen, en wie direct via een link of
     // Google op een les binnenkwam (vierenzestigste review, besloten door Kaj).
-    const dagen = Object.values(useProfielStore.getState().oefendagen ?? {}).reduce((m, d) => Math.max(m, d?.aantal ?? 0), 0)
+    const dagen = hoogsteOefendagen(useProfielStore.getState().oefendagen)
     tel('Les begonnen', {
       les: les.id,
       hervat: halfAf ? 'ja' : 'nee',
