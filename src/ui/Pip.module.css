@@ -96,11 +96,15 @@
 
 /* Zolang Pip aan het woord is wiebelt hij zachtjes mee. Dat is niet alleen leuk: het
    is het enige teken waaraan een kind dat niet leest ziet dat het even moet luisteren,
-   en waaraan het ziet dat het daarna weer zelf aan de beurt is. */
-.pratend { animation: praten 0.62s ease-in-out infinite; }
+   en waaraan het ziet dat het daarna weer zelf aan de beurt is.
+   Sinds november 2026 beweegt ook zijn mond (de praatvariant van de tekening, zie
+   Pip.tsx), en sindsdien staat pratend ook echt aan zolang hij praat: daarvóór ging het
+   binnen een tik weer uit. Mond en wiebel samen werden te druk naast een opgave, dus
+   de wiebel is kleiner en trager dan hij was (±2°, 3 px, 1,035, 0,62 s). */
+.pratend { animation: praten 0.8s ease-in-out infinite; }
 @keyframes praten {
-  0%, 100% { transform: translateY(0) rotate(-2deg) scale(1); }
-  50% { transform: translateY(-3px) rotate(2deg) scale(1.035); }
+  0%, 100% { transform: translateY(0) rotate(-1.2deg) scale(1); }
+  50% { transform: translateY(-2px) rotate(1.2deg) scale(1.02); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -112,9 +116,11 @@
   50% { transform: translateY(-4px) rotate(2deg); }
 }
 
-/* De tekening vult de ronde knop. */
-.tekening { display: block; width: 100%; height: 100%; }
-.gezicht:has(.tekening) { width: 100%; height: 100%; font-size: 0; }
+/* De tekening vult de ronde knop. De gewone en de praatvariant liggen op elkaar (zie
+   Pip.tsx); de ene die niet aan de beurt is, is onzichtbaar maar blijft geladen. */
+.tekening { display: block; width: 100%; height: 100%; grid-area: 1 / 1; }
+.weg { opacity: 0; }
+.gezicht:has(.tekening) { width: 100%; height: 100%; font-size: 0; display: grid; }
 .pip:has(.tekening) { overflow: hidden; }
 
 .luisterIcoon { display: block; filter: brightness(0) invert(1); }

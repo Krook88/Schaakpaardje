@@ -12,6 +12,8 @@ const BASIS = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
 export const pipBeeld = (stemming: PipStemming, knop = false) =>
   `${BASIS}/illustraties/pip/pip-${knop ? 'knop-' : ''}${stemming}.svg`
+/** De knop-Pip met een mond die beweegt: Pip.tsx toont hem zolang Pip aan het woord is. */
+export const pipPraat = (stemming: PipStemming) => `${BASIS}/illustraties/pip/pip-knop-${stemming}-praat.svg`
 /** Pip zonder plankje, met een zachte schaduw: op de kaarthalte en in de held. */
 export const pipLos = (stemming: PipStemming) => `${BASIS}/illustraties/pip/pip-los-${stemming}.svg`
 /** Pip met zijn hele lijf (scripts/pip-tekenen.py): wijst naar rechtsonder, juicht, of wacht met een vlaggetje. */
