@@ -33,6 +33,7 @@ export function Animatiebord({
   beschrijving,
   beelden,
   kort,
+  kind,
   kopNiveau = 3,
   beginStap = 0,
 }: {
@@ -53,10 +54,21 @@ export function Animatiebord({
    * waar het bord een voorproefje is en het aanmeldformulier niet ver weg mag raken.
    */
   kort?: boolean
+  /**
+   * In de app voor het kind (de terugblik na een partij): knoppen van 64 px, en dwars op
+   * een telefoon een kleiner bord, zodat het in het scrolvak past (achtenzestigste review).
+   */
+  kind?: boolean
 }) {
   const [stap, setStap] = useState(beginStap)
   const [speelt, setSpeelt] = useState(false)
   const [inBeeld, setInBeeld] = useState(false)
+  /**
+   * Wie zelf op ▶ tikt, wil het zien, ook als het bord maar half in beeld is. Dwars op
+   * een telefoon kwam het terugblikbord nooit voor 60% in beeld en bleef het op stap 1
+   * staan, ook na ▶ (achtenzestigste review, layout 1).
+   */
+  const [zelfGestart, setZelfGestart] = useState(false)
   /** Bij het terugspringen naar het begin glijden de stukken niet terug, ze staan er gewoon. */
   const [direct, setDirect] = useState(false)
   /** Wat een schermlezer hoort. Alleen bij zelf bladeren: tijdens het afspelen zou het door alles heen praten. */
@@ -98,7 +110,7 @@ export function Animatiebord({
   }
 
   useEffect(() => {
-    if (!speelt || !inBeeld) return
+    if (!speelt || (!inBeeld && !zelfGestart)) return
     const laatste = stap === beelden.length - 1
     const t = window.setTimeout(
       () => {
@@ -111,7 +123,7 @@ export function Animatiebord({
       duur(beelden[stap].tekst) + (laatste ? 1800 : 0),
     )
     return () => window.clearTimeout(t)
-  }, [speelt, inBeeld, stap, beelden])
+  }, [speelt, inBeeld, zelfGestart, stap, beelden])
 
   useEffect(() => {
     if (!direct) return
@@ -150,6 +162,8 @@ export function Animatiebord({
   )
 
   const beeld = beelden[stap]
+  /** Speelt het bord nu echt? Niet als het vanzelf zou spelen maar nog niet in beeld is. */
+  const loopt = speelt && (inBeeld || zelfGestart)
   const klasse = (v: Square) => {
     const k = [s.veld, isLightSquare(v) ? s.licht : s.donker]
     if (beeld.zet.includes(v)) k.push(s.zet)
@@ -168,7 +182,7 @@ export function Animatiebord({
 
   const Kop = kopNiveau === 2 ? 'h2' : 'h3'
   return (
-    <figure className={s.figuur} id={id} aria-labelledby={`${id}-kop`}>
+    <figure className={`${s.figuur} ${kind ? s.kind : ''}`} id={id} aria-labelledby={`${id}-kop`} tabIndex={kind ? -1 : undefined}>
       <Kop id={`${id}-kop`} className={s.kop}>
         {titel}
       </Kop>
@@ -228,12 +242,17 @@ export function Animatiebord({
               type="button"
               className={`${s.knop} ${s.speel}`}
               onClick={() => {
-                if (!speelt && stap === beelden.length - 1) naarBegin()
-                setSpeelt(!speelt)
+                if (loopt) {
+                  setSpeelt(false)
+                  return
+                }
+                if (stap === beelden.length - 1) naarBegin()
+                setZelfGestart(true)
+                setSpeelt(true)
               }}
-              aria-label={speelt ? 'Pauze' : 'Afspelen'}
+              aria-label={loopt ? 'Pauze' : 'Afspelen'}
             >
-              {speelt ? '❚❚' : '▶'}
+              {loopt ? '❚❚' : '▶'}
             </button>
             <button
               type="button"

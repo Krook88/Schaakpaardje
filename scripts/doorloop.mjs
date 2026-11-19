@@ -278,6 +278,41 @@ async function uitlegbordSpeelt() {
 }
 
 /* ------------------------------------------------------------------ *
+ * 4c. Half in beeld: ▶ zegt de waarheid, en een tik erop speelt af.
+ *
+ * Het bord speelt vanzelf pas als het voor 60% in beeld is. Dwars op een telefoon kwam
+ * het terugblikbord na een partij daar nooit aan: het bleef op stap 1 staan, de knop
+ * stond intussen op ❚❚, en een tik daarop zette hem juist op pauze (achtenzestigste
+ * review, layout 1). Hier nagebootst met een uitlegbord dat maar half in beeld staat.
+ * ------------------------------------------------------------------ */
+async function uitlegbordHalfInBeeld() {
+  const naam = 'uitlegbord half in beeld: knop toont ▶ en een tik speelt af'
+  const ctx = await browser.newContext({ viewport: { width: 844, height: 390 } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/schaakregels/rokade/`, { waitUntil: 'networkidle' })
+  const bord = p.locator('#rokade-kort-lang')
+  // Het bord zo neerzetten dat de bovenkant net onder de helft van het scherm begint.
+  await bord.locator('[role="img"]').evaluate((el) => {
+    const r = el.getBoundingClientRect()
+    window.scrollBy(0, r.top - window.innerHeight * 0.55)
+  })
+  await p.waitForTimeout(600)
+  const knop = bord.getByRole('button', { name: /Afspelen|Pauze/ })
+  const label = await knop.getAttribute('aria-label')
+  if (label !== 'Afspelen') {
+    await ctx.close()
+    return meld(naam, false, `stilstaand bord toonde "${label}"`)
+  }
+  const stap = () => bord.locator('li[aria-current="step"]').innerText()
+  const eerst = await stap()
+  await knop.click()
+  await p.waitForTimeout(4500)
+  const later = await stap()
+  await ctx.close()
+  meld(naam, eerst !== later, eerst !== later ? '' : 'na ▶ nog steeds de eerste stap')
+}
+
+/* ------------------------------------------------------------------ *
  * 0. Een nieuwe bezoeker schrikt niet van een pratend paardje.
  *
  * Op de welkomstpagina begon Pip vanzelf te praten. Omdat de browser geluid
@@ -1000,6 +1035,7 @@ for (const regel of [
   promotieMetKeuze,
   contactformulierIsEerlijk,
   uitlegbordSpeelt,
+  uitlegbordHalfInBeeld,
   altijdEenUitweg,
   tweedeKind,
   gastHoudtZijnSterren,

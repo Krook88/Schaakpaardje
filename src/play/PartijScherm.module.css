@@ -87,3 +87,6 @@
 /* 320 breed: naast Pip en de ballon past de tegenstander niet zonder dat de ballon een
    toren wordt; de naam staat in de kop. */
 @media (max-width: 340px) and (orientation: portrait) and (max-height: 700px) { .tegenstander { display: none; } }
+
+/* Zolang de terugblik open is: het grote bord wijkt terug (achtenzestigste review, layout 5). */
+.terug { opacity: 0.55; transition: opacity 0.3s; }

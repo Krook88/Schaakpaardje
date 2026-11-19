@@ -190,6 +190,16 @@ describe('wat er geteld wordt, ligt vast', () => {
     expect(gevonden.length).toBeGreaterThanOrEqual(Object.keys(TOEGESTAAN).length)
   })
 
+  // Een telling die wel bewaard maar nergens getoond wordt, is een verzoek naar de teller
+  // waar niemand iets aan heeft. 'Gedeeld', 'Held naar les' en 'Terugblik' stonden zo
+  // weken in de dagbestanden (achtenzestigste review, conversie 1).
+  it('elke telling staat ook op het dashboard', () => {
+    const dashboard = readFileSync('public/teller/dashboard.php', 'utf8')
+    for (const naam of Object.keys(TOEGESTAAN)) {
+      expect(dashboard, `"${naam}" wordt bewaard maar niet getoond`).toContain(`'${naam}'`)
+    }
+  })
+
   it('de app en de server herkennen dezelfde zoekmachines', () => {
     const php = readFileSync('public/teller/opslag.php', 'utf8').match(/const BOT = '#(.+)#i';/)?.[1]
     expect(php).toBe(BOT.source)

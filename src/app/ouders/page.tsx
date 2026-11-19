@@ -412,7 +412,7 @@ function TellenSchakel() {
           <br />
           Geteld wordt: welk scherm, welke les begonnen (en of er op dit apparaat al eens
           geoefend is, en of de les het eerste scherm was), af (met sterren) of gestopt, waar
-          een opgave lastig was, de uitslag van een partij (en of je kind daarna keek wat Pip zag), en speelduur en geoefende dagen in
+          een opgave lastig was, de uitslag van een partij (en of er daarna op &lsquo;Wat zag Pip?&rsquo; getikt werd), en speelduur en geoefende dagen in
           grove klassen. En over Pip: of hij met de ingesproken stem of die van het apparaat
           klonk, of kinderen zijn uitleg uitluisteren (niet per kind), en of het geluid aan of
           uit werd gezet.
