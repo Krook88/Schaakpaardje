@@ -71,9 +71,29 @@ function beginTeSpreken() {
 }
 
 function klaarMetSpreken() {
-  klinktSinds = null
+  zetKlinkt(null)
   uitgesprokenKlaar?.()
   uitgesprokenKlaar = null
+}
+
+/**
+ * Wie wil weten óf Pip nu hoorbaar praat (de praatmond in Pip.tsx). Hier, waar het
+ * zeker is: bij elke route, ook "nog eens horen" en de zin die op de eerste tik
+ * wachtte. Pip leidde het eerst zelf af van zijn eigen speak(), en dan bleef zijn mond
+ * dicht bij een herhaling (negenenzestigste review, codebase B1).
+ */
+const klinktLuisteraars = new Set<() => void>()
+function zetKlinkt(sinds: number | null) {
+  const was = klinktSinds !== null
+  klinktSinds = sinds
+  if (was !== (sinds !== null)) klinktLuisteraars.forEach((fn) => fn())
+}
+export function luisterOfPipKlinkt(fn: () => void): () => void {
+  klinktLuisteraars.add(fn)
+  return () => klinktLuisteraars.delete(fn)
+}
+export function pipKlinkt(): boolean {
+  return klinktSinds !== null
 }
 
 /**
@@ -312,7 +332,7 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
     audio.playbackRate = config.tempo
     huidigeAudio = audio
     audio.addEventListener('playing', () => {
-      if (huidigeAudio === audio) klinktSinds = Date.now()
+      if (huidigeAudio === audio) zetKlinkt(Date.now())
     })
     audio.addEventListener('ended', klaarMetSpreken, { once: true })
     audio.addEventListener('error', klaarMetSpreken, { once: true })
@@ -367,7 +387,15 @@ export async function speak(tekst: string, opVerzoek = false): Promise<void> {
   let begonnen = false
   zin.onstart = () => {
     begonnen = true
-    klinktSinds = Date.now()
+    zetKlinkt(Date.now())
+    // Sommige toestellen melden nooit dat de apparaatstem klaar is. Dan zou de mond
+    // blijven bewegen; daarom kijken we zelf af en toe of hij nog spreekt.
+    const kijk = setInterval(() => {
+      if (mijnBeurt !== beurt || !window.speechSynthesis.speaking) {
+        clearInterval(kijk)
+        if (mijnBeurt === beurt && klinktSinds !== null) klaarMetSpreken()
+      }
+    }, 500)
     bronListener?.('apparaat')
   }
   zin.onend = klaarMetSpreken

@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { onSubtitle, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
+import { useEffect, useState, useSyncExternalStore } from 'react'
+import { luisterOfPipKlinkt, onSubtitle, pipKlinkt, speak, stopSpeaking } from '@/audio/voice'
 import styles from './Pip.module.css'
 import { icoonBeeld, pipBeeld, pipPraat } from './beelden'
 
@@ -35,16 +35,18 @@ const BEWEGING: Record<PipStemming, string> = {
  * (een ingebedde <style>), en staat stil voor wie minder beweging wil.
  */
 // Alle stemmingen één keer vooraf ophalen: anders was de cirkel bij de eerste keer
-// "juicht" heel even leeg terwijl het plaatje binnenkwam (37e review). Ook de
-// praatvarianten, want die komen bij elke nieuwe zin in beeld.
+// "juicht" heel even leeg terwijl het plaatje binnenkwam (37e review). De
+// praatvarianten pas als de browser niets te doen heeft: op de startpagina praat Pip
+// niet vanzelf, en daar telt elke byte bij het eerste bezoek (69e review, codebase K4).
 let vooraf = false
 function haalPipsOp() {
   if (vooraf || typeof window === 'undefined') return
   vooraf = true
-  for (const s of ['blij', 'juicht', 'verrast', 'denkt', 'moedigt', 'trots', 'slaapt'] as PipStemming[]) {
-    new Image().src = pipBeeld(s, true)
-    new Image().src = pipPraat(s)
-  }
+  const stemmingen = ['blij', 'juicht', 'verrast', 'denkt', 'moedigt', 'trots', 'slaapt'] as PipStemming[]
+  for (const s of stemmingen) new Image().src = pipBeeld(s, true)
+  const praat = () => stemmingen.forEach((s) => (new Image().src = pipPraat(s)))
+  if ('requestIdleCallback' in window) window.requestIdleCallback(praat, { timeout: 3000 })
+  else setTimeout(praat, 1500)
 }
 
 export function Pip({
@@ -71,7 +73,12 @@ export function Pip({
   onKlaar?: () => void
 }) {
   const [ondertitel, setOndertitel] = useState<string | null>(null)
-  const [pratend, setPratend] = useState(false)
+  /**
+   * Praat Pip nu hoorbaar? Dat weet de stem zelf (audio/voice.ts): pas als het geluid
+   * echt klinkt, niet al tijdens het laden, en bij elke route, ook "nog eens horen".
+   * Op de server en bij het eerste tekenen: nee.
+   */
+  const pratend = useSyncExternalStore(luisterOfPipKlinkt, pipKlinkt, () => false)
   /**
    * Een teller die bij elke nieuwe zin of stemming omhoog gaat, als sleutel op het
    * gezicht. Zonder dat blijft een CSS-animatie staan waar hij stond: twee goede
@@ -93,22 +100,8 @@ export function Pip({
 
   useEffect(() => {
     if (!zegt || !vanzelf) return
-    let actueel = true
-    setPratend(true)
-    // Pas na speak() vragen wanneer hij klaar is. speak() wacht eerst op het manifest
-    // en begint dan pas aan de zin; wie meteen vroeg, kreeg de belofte van de vorige
-    // zin (die stopSpeaking() net had afgesloten), en dan stond pratend binnen een tik
-    // alweer uit: geen wiebel en geen praatmond, terwijl Pip hoorbaar praatte.
     void speak(zegt)
-      .then(() => wachtTotUitgesproken(), () => undefined)
-      .then(() => {
-        if (actueel) setPratend(false)
-      })
-    return () => {
-      actueel = false
-      setPratend(false)
-      stopSpeaking()
-    }
+    return () => stopSpeaking()
   }, [zegt, vanzelf])
 
   const tekst = ondertitel ?? zegt ?? null

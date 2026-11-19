@@ -118,10 +118,13 @@
 
 /* De tekening vult de ronde knop. De gewone en de praatvariant liggen op elkaar (zie
    Pip.tsx); de ene die niet aan de beurt is, is onzichtbaar maar blijft geladen. */
-.tekening { display: block; width: 100%; height: 100%; grid-area: 1 / 1; }
+/* De twee tekeningen (gewoon en praten) liggen op elkaar. Met position in plaats van
+   alleen :has(), zodat ze in een browser zonder :has() niet onder elkaar komen te staan
+   (negenenzestigste review, codebase K3). */
+.gezicht { position: relative; width: 100%; height: 100%; font-size: 0; }
+.tekening { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 .weg { opacity: 0; }
-.gezicht:has(.tekening) { width: 100%; height: 100%; font-size: 0; display: grid; }
-.pip:has(.tekening) { overflow: hidden; }
+.pip { overflow: hidden; }
 
 .luisterIcoon { display: block; filter: brightness(0) invert(1); }
 @media (prefers-color-scheme: dark) {

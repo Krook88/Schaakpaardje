@@ -1602,10 +1602,13 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
       gewoon: imgs.filter((i) => !i.hasAttribute('data-pip-praat') && i.complete && i.naturalWidth > 0).length,
       praat: imgs.filter((i) => i.hasAttribute('data-pip-praat') && i.complete && i.naturalWidth > 0).length,
       zichtbaar: imgs.filter((i) => getComputedStyle(i).opacity !== '0').length,
+      // Niet alleen tellen: zolang hij zwijgt, moet het de gewone tekening zijn die je
+      // ziet, niet de praattekening (69e review, codebase K6).
+      praatZichtbaar: imgs.filter((i) => i.hasAttribute('data-pip-praat') && getComputedStyle(i).opacity !== '0').length,
     }
   })
   meld('les: Pips knop heeft zijn gewone en zijn praattekening geladen, één tegelijk zichtbaar',
-    knop.gewoon >= 1 && knop.praat >= 1 && knop.zichtbaar === knop.gewoon, JSON.stringify(knop))
+    knop.gewoon >= 1 && knop.praat >= 1 && knop.zichtbaar === knop.gewoon && knop.praatZichtbaar === 0, JSON.stringify(knop))
   await ctx.close()
 
   // En de praatmond staat er zolang Pip praat, en daarna niet meer. Pip.tsx vroeg te
@@ -1617,6 +1620,8 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
     const s = window.speechSynthesis
     if (!s) return
     let huidig = null
+    // De stem kijkt zelf of het apparaat nog spreekt (sommige melden nooit "klaar").
+    Object.defineProperty(s, 'speaking', { get: () => huidig !== null })
     s.speak = (u) => {
       huidig = u
       setTimeout(() => u.onstart?.(), 20)
@@ -1637,6 +1642,15 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
   await q.waitForTimeout(2200)
   const daarna = await praatZichtbaar()
   meld('les: Pips mond beweegt terwijl hij praat, en houdt daarna op', tijdens && !daarna, `tijdens ${tijdens}, daarna ${daarna}`)
+  // "Zeg het nog eens": ook dan beweegt de mond. Eerst deed hij dat alleen bij de zin
+  // die Pip vanzelf zei (69e review, codebase B1), en de luidspreker is er juist voor
+  // het kind dat niet leest.
+  await q.getByRole('button', { name: 'Zeg het nog eens' }).first().click()
+  await q.waitForTimeout(500)
+  const herhaling = await praatZichtbaar()
+  await q.waitForTimeout(2200)
+  const naHerhaling = await praatZichtbaar()
+  meld('les: ook bij "zeg het nog eens" beweegt Pips mond, en daarna niet meer', herhaling && !naHerhaling, `tijdens ${herhaling}, daarna ${naHerhaling}`)
   await praatCtx.close()
 }
 
