@@ -1535,6 +1535,75 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
   await rustig.close()
 }
 
+// Pip knippert, flapt met zijn oren en beweegt zijn mond binnen zijn eigen SVG. Die
+// animaties zitten in een <img> en zijn dus onzichtbaar voor document.getAnimations()
+// hierboven. Daarom elke Pip los openen: met minder beweging staat alles stil, zonder
+// beweegt er wel iets (anders bewijst "stil" niets). En in een les moeten beide
+// tekeningen van de knop (gewoon en pratend) echt laden, anders flitst er bij elke zin
+// een leeg rondje.
+{
+  const pips = readdirSync(join('public', 'illustraties', 'pip')).filter((f) => f.endsWith('.svg'))
+  const fout = []
+  for (const beweging of ['reduce', 'no-preference']) {
+    const ctx = await browser.newContext({ viewport: { width: 200, height: 200 }, reducedMotion: beweging })
+    const p = await ctx.newPage()
+    for (const f of pips) {
+      await p.goto(`${URL}/illustraties/pip/${f}`)
+      const n = await p.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').length)
+      if (beweging === 'reduce' ? n > 0 : n === 0) fout.push(`${f} ${beweging}: ${n} animaties`)
+    }
+    await ctx.close()
+  }
+  meld(`Pip in zijn tekening: stil bij minder beweging, anders levend (${pips.length} bestanden)`, fout.length === 0, fout.slice(0, 4).join(' | '))
+
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const knop = await p.evaluate(() => {
+    const imgs = [...document.querySelectorAll('[data-pip-gezicht] img')]
+    return {
+      gewoon: imgs.filter((i) => !i.hasAttribute('data-pip-praat') && i.complete && i.naturalWidth > 0).length,
+      praat: imgs.filter((i) => i.hasAttribute('data-pip-praat') && i.complete && i.naturalWidth > 0).length,
+      zichtbaar: imgs.filter((i) => getComputedStyle(i).opacity !== '0').length,
+    }
+  })
+  meld('les: Pips knop heeft zijn gewone en zijn praattekening geladen, één tegelijk zichtbaar',
+    knop.gewoon >= 1 && knop.praat >= 1 && knop.zichtbaar === knop.gewoon, JSON.stringify(knop))
+  await ctx.close()
+
+  // En de praatmond staat er zolang Pip praat, en daarna niet meer. Pip.tsx vroeg te
+  // vroeg wanneer de zin klaar was (vóór speak() eraan begonnen was) en kreeg dan het
+  // antwoord van de vorige zin: pratend stond binnen een tik weer uit, en geen kind heeft
+  // de praatwiebel ooit gezien. De apparaatstem is hier nep: hij "praat" 1,5 s.
+  const praatCtx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  await praatCtx.addInitScript(() => {
+    const s = window.speechSynthesis
+    if (!s) return
+    let huidig = null
+    s.speak = (u) => {
+      huidig = u
+      setTimeout(() => u.onstart?.(), 20)
+      setTimeout(() => { if (huidig === u) { huidig = null; u.onend?.() } }, 1500)
+    }
+    s.cancel = () => { const u = huidig; huidig = null; u?.onend?.() }
+  })
+  const q = await praatCtx.newPage()
+  await q.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  await q.waitForTimeout(400)
+  await q.getByRole('button', { name: /Verder/ }).first().click()
+  const praatZichtbaar = () => q.evaluate(() => {
+    const i = document.querySelector('[data-pip-gezicht] img[data-pip-praat]')
+    return Boolean(i) && getComputedStyle(i).opacity !== '0'
+  })
+  await q.waitForTimeout(500)
+  const tijdens = await praatZichtbaar()
+  await q.waitForTimeout(2200)
+  const daarna = await praatZichtbaar()
+  meld('les: Pips mond beweegt terwijl hij praat, en houdt daarna op', tijdens && !daarna, `tijdens ${tijdens}, daarna ${daarna}`)
+  await praatCtx.close()
+}
+
 // Het paard in de held: een stip aantikken laat het springen, een veld zonder stip
 // niet, en na drie sprongen staat er een weg naar de eerste les (36e review).
 {
