@@ -379,8 +379,13 @@ export function PartijScherm({ botId }: { botId: string }) {
     if (!terugblikOpen) return
     const id = requestAnimationFrame(() => {
       const rustig = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      document.getElementById('terugblik')?.focus({ preventScroll: true })
-      uitslagKaart.current?.scrollIntoView({ block: 'end', behavior: rustig ? 'auto' : 'smooth' })
+      const bord = document.getElementById('terugblik')
+      bord?.focus({ preventScroll: true })
+      const gedrag = rustig ? 'auto' : 'smooth'
+      // Dwars op een telefoon is het scrolvak te laag voor bord én knop: dan het bord.
+      // Anders de onderkant van de kaart, zodat "Nog een partijtje" ook in beeld staat.
+      if (window.innerHeight < 500) bord?.scrollIntoView({ block: 'start', behavior: gedrag })
+      else uitslagKaart.current?.scrollIntoView({ block: 'end', behavior: gedrag })
     })
     return () => cancelAnimationFrame(id)
   }, [terugblikOpen])
