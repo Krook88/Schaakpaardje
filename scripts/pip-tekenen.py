@@ -109,6 +109,10 @@ def voet(d):
 
 def stijl(naam, body, oog, e1, e2, praat=None):
     """De <style> voor één bestand; alleen regels voor onderdelen die erin staan."""
+    # De gewone en de praatvariant van één stemming liggen op elkaar en wisselen bij elke
+    # zin. Met verschillende tempo's sprong het oog open of het oor terug bij de wissel
+    # (69e review, layout K2); dus dezelfde duur voor allebei.
+    naam = naam.removesuffix('-praat')
     css = []
     if 'class="og"' in body:
         css.append(f'.og{{transform-origin:{oog[0]}px {oog[1]}px;animation:k {tempo(naam, 10, 1.6)}s infinite}}{KNIP}')

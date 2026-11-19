@@ -1611,6 +1611,24 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
     knop.gewoon >= 1 && knop.praat >= 1 && knop.zichtbaar === knop.gewoon && knop.praatZichtbaar === 0, JSON.stringify(knop))
   await ctx.close()
 
+  // Minder beweging zoals een echte gebruiker het instelt. De emulatie van Playwright
+  // (reducedMotion: 'reduce') bereikt een SVG in een <img> niet: dan knippert Pip nog
+  // en lijkt het stuk, terwijl het bij een echte instelling stilstaat (69e review,
+  // layout K4). Dus een eigen browser met de echte vlag, zonder emulatie.
+  {
+    const rustigeBrowser = await chromium.launch({ executablePath: CHROMIUM, args: ['--force-prefers-reduced-motion'] })
+    const r = await (await rustigeBrowser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: null })).newPage()
+    await r.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+    await r.waitForTimeout(600)
+    const beelden = new Set()
+    for (let i = 0; i < 8; i++) {
+      beelden.add((await r.locator('[data-pip-gezicht]').first().screenshot()).toString('base64'))
+      await r.waitForTimeout(800)
+    }
+    await rustigeBrowser.close()
+    meld('minder beweging (echte instelling): Pips knop in de les staat stil', beelden.size === 1, `${beelden.size} verschillende beelden in 6 s`)
+  }
+
   // En de praatmond staat er zolang Pip praat, en daarna niet meer. Pip.tsx vroeg te
   // vroeg wanneer de zin klaar was (vóór speak() eraan begonnen was) en kreeg dan het
   // antwoord van de vorige zin: pratend stond binnen een tik weer uit, en geen kind heeft

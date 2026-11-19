@@ -110,7 +110,7 @@ export function Pip({
     <div className={`${styles.wrap} ${klein ? styles.klein : ''} ${groot ? styles.groot : ''}`}>
       <button
         type="button"
-        className={`${styles.pip} ${pratend ? styles.pratend : ''}`}
+        className={styles.pip}
         // Vast haakje voor schermen die het gezicht willen verbergen en de ballon houden
         // (wereld af dwars: daar juicht Pip al groot naast het wapen).
         data-pip-gezicht=""
@@ -122,6 +122,7 @@ export function Pip({
       >
         {/* De getekende Pip (public/illustraties/pip/) in plaats van één emoji met een
             speldje ernaast: de stemming zit nu in zijn gezicht. De beweging blijft. */}
+        <span className={`${styles.wiebel} ${pratend ? styles.pratend : ''}`} aria-hidden="true">
         <span key={puls} className={`${styles.gezicht} ${BEWEGING[stemming]}`} aria-hidden="true">
           {/* Twee tekeningen op elkaar: de gewone en die met de bewegende mond
               (scripts/pip-tekenen.py). Zolang Pip praat staat de praatvariant zichtbaar.
@@ -133,6 +134,7 @@ export function Pip({
           <img src={pipBeeld(stemming, true)} alt="" className={`${styles.tekening} ${pratend ? styles.weg : ''}`} draggable={false} />
           {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
           <img src={pipPraat(stemming)} alt="" data-pip-praat="" className={`${styles.tekening} ${pratend ? '' : styles.weg}`} draggable={false} />
+        </span>
         </span>
       </button>
       {tekst && (
