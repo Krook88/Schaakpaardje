@@ -30,6 +30,8 @@ import {
   pipZinnen,
   BOT_HEEFT_GEZET,
   BOT_SLOEG,
+  TERUGBLIK_GEMIST,
+  TERUGBLIK_MOOI,
 } from '@/content/voice'
 import { PIECE_NAME, type PieceType, type Square } from '@/engine/board'
 import { Game, blunderVerlies, isPromotie, materialBalance } from '@/engine/game'
@@ -39,6 +41,10 @@ import { OPSTELLING } from './opstellingen'
 import { SamenKiezer, type Speler } from './SamenKiezer'
 import { PromotieKiezer } from './PromotieKiezer'
 import { tel } from '@/progress/tellen'
+import { nabespreking, type Moment } from '@/engine/nabespreking'
+import { terugblikStappen } from './terugblik'
+import { Animatiebord } from '@/uitleg/Animatiebord'
+import { bouwBeelden } from '@/uitleg/beelden'
 
 type Uitslag = 'gewonnen' | 'verloren' | 'remise' | null
 
@@ -76,6 +82,10 @@ export function PartijScherm({ botId }: { botId: string }) {
   const [twijfel, setTwijfel] = useState<{ van: Square; naar: Square; verlies: number; promotie: PieceType } | null>(null)
   const [zetten, setZetten] = useState(0)
   const [samenWinnaar, setSamenWinnaar] = useState<'w' | 'b' | null>(null)
+  /** Wat Pip terugzag in de partij: berekend na de uitslag, getoond op een tik. */
+  const [terugblik, setTerugblik] = useState<Moment | null>(null)
+  const [terugblikOpen, setTerugblikOpen] = useState(false)
+  const uitslagKaart = useRef<HTMLDivElement>(null)
 
   // Nieuwe KidBot per partij: het genadebudget hoort bij één partij, niet bij de sessie.
   const [partijNr, setPartijNr] = useState(0)
@@ -248,7 +258,14 @@ export function PartijScherm({ botId }: { botId: string }) {
         return
       }
       if (controleerEinde(game)) return
-      if (!samen) botAanZet()
+      if (!samen) {
+        // Terwijl de bot "nadenkt": alvast de nabespreking rekenen voor deze zet. De
+        // motor onthoudt het, zodat er bij de uitslag niets meer te rekenen valt.
+        const rekenen = () => nabespreking(game.verloop, 'w')
+        if ('requestIdleCallback' in window) window.requestIdleCallback(rekenen, { timeout: 400 })
+        else setTimeout(rekenen, 0)
+        botAanZet()
+      }
       else {
         // Even laten zien wat er gebeurde, dan pas draaien. Ondertussen op slot.
         setBeurtWissel(true)
@@ -342,6 +359,51 @@ export function PartijScherm({ botId }: { botId: string }) {
     setBotVerrast(false)
     setStemming(uitslag ? 'blij' : 'moedigt')
   }, [samen, stopDenken, uitslag])
+
+  // Na de uitslag even laten rekenen, zodat de uitslag eerst in beeld is. Alleen tegen
+  // een bot: bij samen spelen zijn het twee kinderen, en wiens fout zou Pip aanwijzen?
+  useEffect(() => {
+    setTerugblikOpen(false)
+    if (!uitslag || samen) {
+      setTerugblik(null)
+      return
+    }
+    const t = setTimeout(() => setTerugblik(nabespreking(gameRef.current.verloop, 'w')), 60)
+    return () => clearTimeout(t)
+  }, [uitslag, samen])
+
+  // Na de tik: het bord in beeld, met "Nog een partijtje" eronder ook in beeld, en de
+  // focus op het bord (de knop waar hij stond is weg). Zonder dit schoof de volgende stap
+  // op een staande telefoon onder de rand (achtenzestigste review, layout 2 en 6).
+  useEffect(() => {
+    if (!terugblikOpen) return
+    const id = requestAnimationFrame(() => {
+      const rustig = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const bord = document.getElementById('terugblik')
+      bord?.focus({ preventScroll: true })
+      const gedrag = rustig ? 'auto' : 'smooth'
+      // Dwars op een telefoon is het scrolvak te laag voor bord én knop: dan het bord.
+      // Anders de onderkant van de kaart, zodat "Nog een partijtje" ook in beeld staat.
+      if (window.innerHeight < 500) bord?.scrollIntoView({ block: 'start', behavior: gedrag })
+      else uitslagKaart.current?.scrollIntoView({ block: 'end', behavior: gedrag })
+    })
+    return () => cancelAnimationFrame(id)
+  }, [terugblikOpen])
+
+  const terugblikBeelden = useMemo(
+    () =>
+      terugblik
+        ? bouwBeelden({
+            id: 'terugblik',
+            titel: 'Wat Pip zag',
+            beschrijving: '',
+            fen: terugblik.fen,
+            regels: 'echt',
+            stappen: terugblikStappen(terugblik, bot?.roepnaam),
+          })
+        : [],
+    [terugblik, bot?.roepnaam],
+  )
 
   const opnieuw = useCallback(() => {
     // Zonder dit bleef de oude denk-timer lopen: die deed daarna een zet op de nieuwe
@@ -443,7 +505,9 @@ export function PartijScherm({ botId }: { botId: string }) {
           </div>
         )}
         </div>
-        <div className={styles.bord}>
+        {/* Het grote bord met de eindstand wijkt terug zolang Pip een ander moment laat zien:
+            twee borden in dezelfde kleuren lijken anders bij elkaar te horen. */}
+        <div className={`${styles.bord} ${terugblikOpen ? styles.terug : ''}`}>
           <Board
             position={fen}
             // Bij samen spelen draait het bord naar wie er aan zet is, zodat elk kind
@@ -582,13 +646,37 @@ export function PartijScherm({ botId }: { botId: string }) {
         )}
 
         {uitslag && !samen && (
-          <div className="card stack center">
+          <div className="card stack center" ref={uitslagKaart}>
             {/* De tegenstander geeft je een hand: bij elke uitslag, nooit uitlachen. */}
             {bot && <img src={botBeeld(bot.id)} alt="" width={64} height={64} aria-hidden="true" draggable={false} className={styles.uitslagBot} />}
             <h2>{uitslag === 'gewonnen' ? 'Gewonnen! 🏆' : uitslag === 'verloren' ? 'Deze ging verloren' : 'Gelijkspel'}</h2>
             <p className="muted">
               Je deed {zetten} zetten. {laatsteZet && `De laatste ging naar ${laatsteZet[1]}.`}
             </p>
+            {terugblik && !terugblikOpen && (
+              <button
+                type="button"
+                className="btn btn--big"
+                onClick={() => {
+                  setTerugblikOpen(true)
+                  setZin(terugblik.soort === 'gemist' ? TERUGBLIK_GEMIST : TERUGBLIK_MOOI)
+                  setStemming(terugblik.soort === 'gemist' ? 'moedigt' : 'blij')
+                  tel('Terugblik', { soort: terugblik.soort })
+                }}
+              >
+                <span aria-hidden="true">👀</span> Wat zag Pip?
+              </button>
+            )}
+            {terugblik && terugblikOpen && (
+              <Animatiebord
+                id="terugblik"
+                kort
+                kind
+                titel="Wat Pip zag"
+                beschrijving={terugblikStappen(terugblik, bot?.roepnaam).map((st) => st.tekst).join(' ')}
+                beelden={terugblikBeelden}
+              />
+            )}
             <div className="row" style={{ justifyContent: 'center' }}>
               <button type="button" className="btn btn--primary btn--big" onClick={opnieuw}>
                 Nog een partijtje

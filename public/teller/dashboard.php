@@ -131,6 +131,9 @@ const SPEELDE_VANAF = '2026-10-24';
 /** Vanaf deze dag stuurt de app 'Stem', 'Uitleg' en 'Geluid'. Daarvóór zijn die tellingen leeg, niet nul. */
 const STEM_VANAF = '2026-11-17';
 
+/** Vanaf deze dag stuurt de app 'Terugblik' ("Wat zag Pip?" na een partij). Daarvóór leeg, niet nul. */
+const TERUGBLIK_VANAF = '2026-11-19';
+
 $periode = isset($_GET['dagen']) ? (int) $_GET['dagen'] : 30;
 if (!in_array($periode, [7, 30, 90], true)) $periode = 30;
 
@@ -139,6 +142,8 @@ $lessen = [];
 $duur = [];
 $geoefend = [];
 $partijen = [];
+/** Knoppen die iets doen maar geen les zijn: "Wat zag Pip?", delen, het paard op de startpagina. */
+$knoppen = ['Terugblik' => [], 'Gedeeld' => [], 'Held naar les' => 0];
 $spellen = [];
 $lastig = [];
 $binnenkomst = [];
@@ -170,7 +175,7 @@ $vorig = ['bezoek' => 0, 'terug' => 0, 'af' => 0, 'speelde' => 0, 'afGemeten' =>
 
 loopDagen($periode * 2, function (string $dag, ?array $r) use (
     &$totaal, &$lessen, &$duur, &$geoefend, &$partijen, &$spellen, &$lastig, &$binnenkomst, &$profielNa, &$schermen, &$verwijzers, &$uren,
-    &$dagen, $leeg, &$stemBron, &$uitleg, &$geluid, $start, &$vorig
+    &$dagen, $leeg, &$stemBron, &$uitleg, &$geluid, $start, &$vorig, &$knoppen
 ) {
     if ($dag < $start) {
         if ($r === null || $dag < SCHOON_VANAF) return;
@@ -305,6 +310,17 @@ loopDagen($periode * 2, function (string $dag, ?array $r) use (
             $aan = ($e['aan'] ?? '') === 'ja' ? 'aan' : 'uit';
             $geluid[$door][$aan] = ($geluid[$door][$aan] ?? 0) + 1;
             $geluid[$door]['pad'][$r['p'] ?? '?'] = ($geluid[$door]['pad'][$r['p'] ?? '?'] ?? 0) + 1;
+            break;
+        case 'Terugblik':
+            $s = ($e['soort'] ?? '') === 'mooi' ? 'mooi' : 'gemist';
+            $knoppen['Terugblik'][$s] = ($knoppen['Terugblik'][$s] ?? 0) + 1;
+            break;
+        case 'Gedeeld':
+            $w = (string) ($e['waar'] ?? '?') . ' · ' . (string) ($e['hoe'] ?? '?');
+            $knoppen['Gedeeld'][$w] = ($knoppen['Gedeeld'][$w] ?? 0) + 1;
+            break;
+        case 'Held naar les':
+            $knoppen['Held naar les']++;
             break;
         case 'Opgave lastig':
             $sleutel = ($e['les'] ?? '?') . '|' . ($e['opgave'] ?? '?');
@@ -1049,10 +1065,27 @@ if ($partijen) {
 } else {
     $h .= '<p class="zacht">Nog geen partijen.</p>';
 }
-$h .= '</section>';
+// "Wat zag Pip?" verschijnt alleen tegen tegenstanders met stukken: bij Mila en Kiki
+// (pionnenspel) is er nooit een stuk om te pakken. Die tellen dus niet mee als noemer.
+$metStukken = 0;
+foreach ($partijen as $t => $u) {
+    if (in_array($t, ['rens', 'bas', 'fien', 'oscar', 'bram'], true)) $metStukken += array_sum($u);
+}
+$tb = $knoppen['Terugblik'];
+$h .= '<p><strong>Wat zag Pip?</strong> ';
+if (gmdate('Y-m-d', $nu) < TERUGBLIK_VANAF) {
+    $h .= '<span class="zacht">wordt geteld vanaf ' . TERUGBLIK_VANAF . '.</span>';
+} else {
+    $h .= 'bekeken: ' . array_sum($tb) . ' (kans gemist: ' . ($tb['gemist'] ?? 0) . ', zelf gepakt: ' . ($tb['mooi'] ?? 0)
+        . '), bij ' . $metStukken . ' partijen tegen Rens en sterker.';
+}
+$h .= '</p></section>';
 $h = substr($h, 0, $p0) . inklap(substr($h, $p0));
 
 $h .= inklap(top('Minispellen (gehaalde rondjes)', $spellen, 20, 'Nog geen rondjes.'));
+$h .= inklap(top('Gedeeld (waar · hoe)', $knoppen['Gedeeld'], 10, 'Nog niets gedeeld.'));
+$h .= '<p class="zacht">Held naar les (het paard op de startpagina bracht iemand naar de les): '
+    . $knoppen['Held naar les'] . '</p>';
 $h .= inklap(top('Meest bekeken schermen', $schermen, 20, 'Nog niets.'));
 
 $h .= hoofdstuk('berichten', '5 · Berichten en herkomst', 'Wat ouders schreven, en waar bezoekers vandaan komen.');

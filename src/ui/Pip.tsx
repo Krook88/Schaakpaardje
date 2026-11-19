@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { onSubtitle, speak, stopSpeaking, wachtTotUitgesproken } from '@/audio/voice'
+import { useEffect, useState, useSyncExternalStore } from 'react'
+import { luisterOfPipKlinkt, onSubtitle, pipKlinkt, speak, stopSpeaking } from '@/audio/voice'
 import styles from './Pip.module.css'
-import { icoonBeeld, pipBeeld } from './beelden'
+import { icoonBeeld, pipBeeld, pipPraat } from './beelden'
 
 export type PipStemming = 'blij' | 'juicht' | 'verrast' | 'denkt' | 'moedigt' | 'trots' | 'slaapt'
 
@@ -29,16 +29,24 @@ const BEWEGING: Record<PipStemming, string> = {
  * hij nadenkt, springt hij als je het goed hebt, en wiebelt hij zachtjes zolang hij
  * aan het woord is. Dat laatste is het belangrijkste: een kind ziet daaraan dat het
  * even moet luisteren, en ziet even goed wanneer het weer aan de beurt is.
+ *
+ * Binnen de tekening leeft hij ook (november 2026): hij knippert, flapt af en toe met
+ * een oor, en zolang hij praat gaat zijn mond open en dicht. Dat zit in de SVG's zelf
+ * (een ingebedde <style>), en staat stil voor wie minder beweging wil.
  */
 // Alle stemmingen één keer vooraf ophalen: anders was de cirkel bij de eerste keer
-// "juicht" heel even leeg terwijl het plaatje binnenkwam (37e review).
+// "juicht" heel even leeg terwijl het plaatje binnenkwam (37e review). De
+// praatvarianten pas als de browser niets te doen heeft: op de startpagina praat Pip
+// niet vanzelf, en daar telt elke byte bij het eerste bezoek (69e review, codebase K4).
 let vooraf = false
 function haalPipsOp() {
   if (vooraf || typeof window === 'undefined') return
   vooraf = true
-  for (const s of ['blij', 'juicht', 'verrast', 'denkt', 'moedigt', 'trots', 'slaapt'] as PipStemming[]) {
-    new Image().src = pipBeeld(s, true)
-  }
+  const stemmingen = ['blij', 'juicht', 'verrast', 'denkt', 'moedigt', 'trots', 'slaapt'] as PipStemming[]
+  for (const s of stemmingen) new Image().src = pipBeeld(s, true)
+  const praat = () => stemmingen.forEach((s) => (new Image().src = pipPraat(s)))
+  if ('requestIdleCallback' in window) window.requestIdleCallback(praat, { timeout: 3000 })
+  else setTimeout(praat, 1500)
 }
 
 export function Pip({
@@ -65,7 +73,12 @@ export function Pip({
   onKlaar?: () => void
 }) {
   const [ondertitel, setOndertitel] = useState<string | null>(null)
-  const [pratend, setPratend] = useState(false)
+  /**
+   * Praat Pip nu hoorbaar? Dat weet de stem zelf (audio/voice.ts): pas als het geluid
+   * echt klinkt, niet al tijdens het laden, en bij elke route, ook "nog eens horen".
+   * Op de server en bij het eerste tekenen: nee.
+   */
+  const pratend = useSyncExternalStore(luisterOfPipKlinkt, pipKlinkt, () => false)
   /**
    * Een teller die bij elke nieuwe zin of stemming omhoog gaat, als sleutel op het
    * gezicht. Zonder dat blijft een CSS-animatie staan waar hij stond: twee goede
@@ -87,17 +100,8 @@ export function Pip({
 
   useEffect(() => {
     if (!zegt || !vanzelf) return
-    let actueel = true
-    setPratend(true)
     void speak(zegt)
-    void wachtTotUitgesproken().then(() => {
-      if (actueel) setPratend(false)
-    })
-    return () => {
-      actueel = false
-      setPratend(false)
-      stopSpeaking()
-    }
+    return () => stopSpeaking()
   }, [zegt, vanzelf])
 
   const tekst = ondertitel ?? zegt ?? null
@@ -106,7 +110,7 @@ export function Pip({
     <div className={`${styles.wrap} ${klein ? styles.klein : ''} ${groot ? styles.groot : ''}`}>
       <button
         type="button"
-        className={`${styles.pip} ${pratend ? styles.pratend : ''}`}
+        className={styles.pip}
         // Vast haakje voor schermen die het gezicht willen verbergen en de ballon houden
         // (wereld af dwars: daar juicht Pip al groot naast het wapen).
         data-pip-gezicht=""
@@ -118,9 +122,19 @@ export function Pip({
       >
         {/* De getekende Pip (public/illustraties/pip/) in plaats van één emoji met een
             speldje ernaast: de stemming zit nu in zijn gezicht. De beweging blijft. */}
+        <span className={`${styles.wiebel} ${pratend ? styles.pratend : ''}`} aria-hidden="true">
         <span key={puls} className={`${styles.gezicht} ${BEWEGING[stemming]}`} aria-hidden="true">
+          {/* Twee tekeningen op elkaar: de gewone en die met de bewegende mond
+              (scripts/pip-tekenen.py). Zolang Pip praat staat de praatvariant zichtbaar.
+              Allebei steeds geladen en getekend, in plaats van de src te wisselen: dan
+              kan er bij het begin of eind van een zin nooit een leeg rondje flitsen,
+              ook niet als de browser het plaatje uit zijn geheugen had gegooid. Het
+              knipperen en de oren zitten in beide. */}
           {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
-          <img src={pipBeeld(stemming, true)} alt="" className={styles.tekening} draggable={false} />
+          <img src={pipBeeld(stemming, true)} alt="" className={`${styles.tekening} ${pratend ? styles.weg : ''}`} draggable={false} />
+          {/* eslint-disable-next-line @next/next/no-img-element -- statische export, SVG */}
+          <img src={pipPraat(stemming)} alt="" data-pip-praat="" className={`${styles.tekening} ${pratend ? '' : styles.weg}`} draggable={false} />
+        </span>
         </span>
       </button>
       {tekst && (

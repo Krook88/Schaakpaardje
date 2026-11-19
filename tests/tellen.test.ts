@@ -167,6 +167,8 @@ describe('wat er geteld wordt, ligt vast', () => {
     Uitleg: ['les', 'einde', 'zin', 'doorgetikt', 'stem'],
     // Geluid aan of uit gezet, door een kind (bel) of een ouder (ouderscherm).
     Geluid: ['aan', 'door'],
+    // Of een kind na een partij op "Wat zag Pip?" tikt, en welk soort moment het zag.
+    Terugblik: ['soort'],
   }
   const bestanden = (map: string): string[] =>
     readdirSync(map).flatMap((n) => {
@@ -186,6 +188,16 @@ describe('wat er geteld wordt, ligt vast', () => {
       }
     }
     expect(gevonden.length).toBeGreaterThanOrEqual(Object.keys(TOEGESTAAN).length)
+  })
+
+  // Een telling die wel bewaard maar nergens getoond wordt, is een verzoek naar de teller
+  // waar niemand iets aan heeft. 'Gedeeld', 'Held naar les' en 'Terugblik' stonden zo
+  // weken in de dagbestanden (achtenzestigste review, conversie 1).
+  it('elke telling staat ook op het dashboard', () => {
+    const dashboard = readFileSync('public/teller/dashboard.php', 'utf8')
+    for (const naam of Object.keys(TOEGESTAAN)) {
+      expect(dashboard, `"${naam}" wordt bewaard maar niet getoond`).toContain(`'${naam}'`)
+    }
   })
 
   it('de app en de server herkennen dezelfde zoekmachines', () => {

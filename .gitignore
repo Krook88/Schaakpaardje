@@ -40,3 +40,6 @@ public/live/data/*.txt
 # Tijdelijke meetscripts van reviewers
 scripts/.tmp-*
 scripts/_*.mjs
+
+# Werkkopieën van agents (Claude Code); horen niet in de repo.
+.claude/worktrees/

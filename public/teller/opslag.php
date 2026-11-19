@@ -34,6 +34,7 @@ const TELLINGEN = [
     'Stem' => ['bron'],
     'Uitleg' => ['les', 'einde', 'zin', 'doorgetikt', 'stem'],
     'Geluid' => ['aan', 'door'],
+    'Terugblik' => ['soort'],
 ];
 
 /**
@@ -50,6 +51,7 @@ const VASTE_WAARDEN = [
     'stem' => ['aan', 'uit'],
     'aan' => ['ja', 'nee'],
     'door' => ['kind', 'ouder'],
+    'soort' => ['gemist', 'mooi'],
 ];
 
 /**

@@ -278,6 +278,41 @@ async function uitlegbordSpeelt() {
 }
 
 /* ------------------------------------------------------------------ *
+ * 4c. Half in beeld: ▶ zegt de waarheid, en een tik erop speelt af.
+ *
+ * Het bord speelt vanzelf pas als het voor 60% in beeld is. Dwars op een telefoon kwam
+ * het terugblikbord na een partij daar nooit aan: het bleef op stap 1 staan, de knop
+ * stond intussen op ❚❚, en een tik daarop zette hem juist op pauze (achtenzestigste
+ * review, layout 1). Hier nagebootst met een uitlegbord dat maar half in beeld staat.
+ * ------------------------------------------------------------------ */
+async function uitlegbordHalfInBeeld() {
+  const naam = 'uitlegbord half in beeld: knop toont ▶ en een tik speelt af'
+  const ctx = await browser.newContext({ viewport: { width: 844, height: 390 } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/schaakregels/rokade/`, { waitUntil: 'networkidle' })
+  const bord = p.locator('#rokade-kort-lang')
+  // Het bord zo neerzetten dat de bovenkant net onder de helft van het scherm begint.
+  await bord.locator('[role="img"]').evaluate((el) => {
+    const r = el.getBoundingClientRect()
+    window.scrollBy(0, r.top - window.innerHeight * 0.55)
+  })
+  await p.waitForTimeout(600)
+  const knop = bord.getByRole('button', { name: /Afspelen|Pauze/ })
+  const label = await knop.getAttribute('aria-label')
+  if (label !== 'Afspelen') {
+    await ctx.close()
+    return meld(naam, false, `stilstaand bord toonde "${label}"`)
+  }
+  const stap = () => bord.locator('li[aria-current="step"]').innerText()
+  const eerst = await stap()
+  await knop.click()
+  await p.waitForTimeout(4500)
+  const later = await stap()
+  await ctx.close()
+  meld(naam, eerst !== later, eerst !== later ? '' : 'na ▶ nog steeds de eerste stap')
+}
+
+/* ------------------------------------------------------------------ *
  * 0. Een nieuwe bezoeker schrikt niet van een pratend paardje.
  *
  * Op de welkomstpagina begon Pip vanzelf te praten. Omdat de browser geluid
@@ -1000,6 +1035,7 @@ for (const regel of [
   promotieMetKeuze,
   contactformulierIsEerlijk,
   uitlegbordSpeelt,
+  uitlegbordHalfInBeeld,
   altijdEenUitweg,
   tweedeKind,
   gastHoudtZijnSterren,
@@ -1533,6 +1569,107 @@ for (const [pad, lat] of [['/', 48], ['/les/weide-1/', 64], ['/kaart/', 64]]) {
   }
   meld('minder beweging: geen eindeloze animaties', eindeloos.length === 0, eindeloos.slice(0, 4).join(' | '))
   await rustig.close()
+}
+
+// Pip knippert, flapt met zijn oren en beweegt zijn mond binnen zijn eigen SVG. Die
+// animaties zitten in een <img> en zijn dus onzichtbaar voor document.getAnimations()
+// hierboven. Daarom elke Pip los openen: met minder beweging staat alles stil, zonder
+// beweegt er wel iets (anders bewijst "stil" niets). En in een les moeten beide
+// tekeningen van de knop (gewoon en pratend) echt laden, anders flitst er bij elke zin
+// een leeg rondje.
+{
+  const pips = readdirSync(join('public', 'illustraties', 'pip')).filter((f) => f.endsWith('.svg'))
+  const fout = []
+  for (const beweging of ['reduce', 'no-preference']) {
+    const ctx = await browser.newContext({ viewport: { width: 200, height: 200 }, reducedMotion: beweging })
+    const p = await ctx.newPage()
+    for (const f of pips) {
+      await p.goto(`${URL}/illustraties/pip/${f}`)
+      const n = await p.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').length)
+      if (beweging === 'reduce' ? n > 0 : n === 0) fout.push(`${f} ${beweging}: ${n} animaties`)
+    }
+    await ctx.close()
+  }
+  meld(`Pip in zijn tekening: stil bij minder beweging, anders levend (${pips.length} bestanden)`, fout.length === 0, fout.slice(0, 4).join(' | '))
+
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  const p = await ctx.newPage()
+  await p.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  await p.waitForTimeout(400)
+  const knop = await p.evaluate(() => {
+    const imgs = [...document.querySelectorAll('[data-pip-gezicht] img')]
+    return {
+      gewoon: imgs.filter((i) => !i.hasAttribute('data-pip-praat') && i.complete && i.naturalWidth > 0).length,
+      praat: imgs.filter((i) => i.hasAttribute('data-pip-praat') && i.complete && i.naturalWidth > 0).length,
+      zichtbaar: imgs.filter((i) => getComputedStyle(i).opacity !== '0').length,
+      // Niet alleen tellen: zolang hij zwijgt, moet het de gewone tekening zijn die je
+      // ziet, niet de praattekening (69e review, codebase K6).
+      praatZichtbaar: imgs.filter((i) => i.hasAttribute('data-pip-praat') && getComputedStyle(i).opacity !== '0').length,
+    }
+  })
+  meld('les: Pips knop heeft zijn gewone en zijn praattekening geladen, één tegelijk zichtbaar',
+    knop.gewoon >= 1 && knop.praat >= 1 && knop.zichtbaar === knop.gewoon && knop.praatZichtbaar === 0, JSON.stringify(knop))
+  await ctx.close()
+
+  // Minder beweging zoals een echte gebruiker het instelt. De emulatie van Playwright
+  // (reducedMotion: 'reduce') bereikt een SVG in een <img> niet: dan knippert Pip nog
+  // en lijkt het stuk, terwijl het bij een echte instelling stilstaat (69e review,
+  // layout K4). Dus een eigen browser met de echte vlag, zonder emulatie.
+  {
+    const rustigeBrowser = await chromium.launch({ executablePath: CHROMIUM, args: ['--force-prefers-reduced-motion'] })
+    const r = await (await rustigeBrowser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: null })).newPage()
+    await r.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+    await r.waitForTimeout(600)
+    const beelden = new Set()
+    for (let i = 0; i < 8; i++) {
+      beelden.add((await r.locator('[data-pip-gezicht]').first().screenshot()).toString('base64'))
+      await r.waitForTimeout(800)
+    }
+    await rustigeBrowser.close()
+    meld('minder beweging (echte instelling): Pips knop in de les staat stil', beelden.size === 1, `${beelden.size} verschillende beelden in 6 s`)
+  }
+
+  // En de praatmond staat er zolang Pip praat, en daarna niet meer. Pip.tsx vroeg te
+  // vroeg wanneer de zin klaar was (vóór speak() eraan begonnen was) en kreeg dan het
+  // antwoord van de vorige zin: pratend stond binnen een tik weer uit, en geen kind heeft
+  // de praatwiebel ooit gezien. De apparaatstem is hier nep: hij "praat" 1,5 s.
+  const praatCtx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  await praatCtx.addInitScript(() => {
+    const s = window.speechSynthesis
+    if (!s) return
+    let huidig = null
+    // De stem kijkt zelf of het apparaat nog spreekt (sommige melden nooit "klaar").
+    Object.defineProperty(s, 'speaking', { get: () => huidig !== null })
+    s.speak = (u) => {
+      huidig = u
+      setTimeout(() => u.onstart?.(), 20)
+      setTimeout(() => { if (huidig === u) { huidig = null; u.onend?.() } }, 1500)
+    }
+    s.cancel = () => { const u = huidig; huidig = null; u?.onend?.() }
+  })
+  const q = await praatCtx.newPage()
+  await q.goto(`${URL}/les/weide-1/`, { waitUntil: 'networkidle' })
+  await q.waitForTimeout(400)
+  await q.getByRole('button', { name: /Verder/ }).first().click()
+  const praatZichtbaar = () => q.evaluate(() => {
+    const i = document.querySelector('[data-pip-gezicht] img[data-pip-praat]')
+    return Boolean(i) && getComputedStyle(i).opacity !== '0'
+  })
+  await q.waitForTimeout(500)
+  const tijdens = await praatZichtbaar()
+  await q.waitForTimeout(2200)
+  const daarna = await praatZichtbaar()
+  meld('les: Pips mond beweegt terwijl hij praat, en houdt daarna op', tijdens && !daarna, `tijdens ${tijdens}, daarna ${daarna}`)
+  // "Zeg het nog eens": ook dan beweegt de mond. Eerst deed hij dat alleen bij de zin
+  // die Pip vanzelf zei (69e review, codebase B1), en de luidspreker is er juist voor
+  // het kind dat niet leest.
+  await q.getByRole('button', { name: 'Zeg het nog eens' }).first().click()
+  await q.waitForTimeout(500)
+  const herhaling = await praatZichtbaar()
+  await q.waitForTimeout(2200)
+  const naHerhaling = await praatZichtbaar()
+  meld('les: ook bij "zeg het nog eens" beweegt Pips mond, en daarna niet meer', herhaling && !naHerhaling, `tijdens ${herhaling}, daarna ${naHerhaling}`)
+  await praatCtx.close()
 }
 
 // Het paard in de held: een stip aantikken laat het springen, een veld zonder stip

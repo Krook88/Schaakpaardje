@@ -81,6 +81,14 @@ export const PARTIJ_VERLOREN = [
 
 export const PARTIJ_REMISE = ['Gelijkspel! Niemand wint, allebei goed gespeeld.'] as const
 
+/**
+ * Pip kijkt terug na een partij (engine/nabespreking.ts). Vast en dus in te spreken; wát
+ * er op het bord gebeurt, staat eronder en speelt het bord zelf voor. Geen woord over
+ * fouten: het is een kans die er was, of iets wat het kind goed deed.
+ */
+export const TERUGBLIK_GEMIST = 'Kijk eens wat ik zag. Hier kon jij een stuk pakken!'
+export const TERUGBLIK_MOOI = 'Kijk eens wat jij deed. Daar pakte je een stuk. Knap!'
+
 export const BLUNDER_WAARSCHUWING = [
   'Weet je het zeker? Dan staat je stuk te pakken.',
   'Kijk nog eens: kan de ander nu iets van je slaan?',

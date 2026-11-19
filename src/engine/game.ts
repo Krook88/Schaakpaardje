@@ -53,6 +53,20 @@ export class Game {
     for (const k of ['w', 'b'] as const) uit[k].sort((a, c) => volgorde.indexOf(a) - volgorde.indexOf(c))
     return uit
   }
+  /**
+   * De gespeelde zetten met de stelling ervóór, voor de nabespreking. Uit chess.js zelf,
+   * zodat ook een partij die niet bij de beginstelling begon (de opstellingen) klopt.
+   */
+  get verloop(): { voor: string; na: string; from: Square; to: Square; color: Color; promotion?: PieceType }[] {
+    return this.chess.history({ verbose: true }).map((z) => ({
+      voor: z.before,
+      na: z.after,
+      from: z.from as Square,
+      to: z.to as Square,
+      color: z.color as Color,
+      promotion: z.promotion as PieceType | undefined,
+    }))
+  }
   /** Staat de speler die aan zet is schaak? Goedkoper dan de volledige status(). */
   get inCheck(): boolean {
     return this.chess.inCheck()

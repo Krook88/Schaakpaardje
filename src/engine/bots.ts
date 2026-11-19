@@ -17,6 +17,8 @@ export type BotMove = { from: Square; to: Square }
 export type Bot = {
   id: string
   naam: string
+  /** Hoe Pip hem of haar in een zin noemt: "Bas kon wel terugpakken". */
+  roepnaam: string
   emoji: string
   /** Korte omschrijving voor het kind, wordt ingesproken. */
   tagline: string
@@ -83,6 +85,7 @@ export const BOTS: Bot[] = [
   {
     id: 'mila',
     naam: 'Mila de Muis',
+    roepnaam: 'Mila',
     emoji: '🐭',
     tagline: 'Mila doet maar wat. Met haar kun je alles proberen.',
     elo: null,
@@ -92,6 +95,7 @@ export const BOTS: Bot[] = [
   {
     id: 'kiki',
     naam: 'Kip Kiki',
+    roepnaam: 'Kiki',
     emoji: '🐣',
     tagline: 'Kiki pakt alles wat ze gratis kan pakken. Pas op je stukken!',
     elo: 150,
@@ -101,6 +105,7 @@ export const BOTS: Bot[] = [
   {
     id: 'rens',
     naam: 'Rens het Konijn',
+    roepnaam: 'Rens',
     emoji: '🐰',
     tagline: 'Rens kijkt ook of hij zelf niets weggeeft.',
     elo: 350,
@@ -115,6 +120,7 @@ BOTS.push(
   {
     id: 'bas',
     naam: 'Bas de Hond',
+    roepnaam: 'Bas',
     emoji: '🐶',
     tagline: 'Bas kijkt al een zetje vooruit. Pas op je stukken!',
     elo: 600,
@@ -124,6 +130,7 @@ BOTS.push(
   {
     id: 'fien',
     naam: 'Fien de Vos',
+    roepnaam: 'Fien',
     emoji: '🦊',
     tagline: 'Fien is slim en let goed op. Zij geeft niet zomaar iets weg.',
     elo: 900,
@@ -133,6 +140,7 @@ BOTS.push(
   {
     id: 'oscar',
     naam: 'Oscar de Uil',
+    roepnaam: 'Oscar',
     emoji: '🦉',
     tagline: 'Oscar maakt bijna nooit een slordige zet. Neem er rustig de tijd voor.',
     elo: 1200,
@@ -142,6 +150,7 @@ BOTS.push(
   {
     id: 'bram',
     naam: 'Bram de Beer',
+    roepnaam: 'Bram',
     emoji: '🐻',
     tagline: 'Bram denkt het verst vooruit van allemaal.',
     elo: 1500,
