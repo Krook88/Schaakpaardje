@@ -23,6 +23,34 @@ const BASIS = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 let opnames: Record<string, unknown> | null = null
 let manifestGeladen = false
 
+/**
+ * De opnames, vooraf gedecodeerd. Een `new Audio()` per tik haalde het bestand elke
+ * keer opnieuw op en decodeerde het: op een telefoon een paar honderd milliseconden
+ * tussen de tik en het goedkeurende geluid. Een AudioBuffer start meteen.
+ */
+const buffers = new Map<string, { buffer: AudioBuffer; vanaf: number }>()
+
+/**
+ * Waar het geluid echt begint. Gegenereerde geluiden beginnen vaak met een stukje
+ * stilte (en mp3 voegt er zelf nog wat aan toe); dat hoort een kind als vertraging.
+ */
+function beginVanGeluid(buffer: AudioBuffer): number {
+  const drempel = 0.02
+  let eerste = buffer.length
+  for (let k = 0; k < buffer.numberOfChannels; k++) {
+    const data = buffer.getChannelData(k)
+    for (let i = 0; i < Math.min(data.length, eerste); i++) {
+      if (Math.abs(data[i]) > drempel) {
+        eerste = i
+        break
+      }
+    }
+  }
+  if (eerste >= buffer.length) return 0
+  // Een paar milliseconden marge, zodat de aanzet van de tik zelf niet wegvalt.
+  return Math.max(0, eerste / buffer.sampleRate - 0.005)
+}
+
 async function laadOpnames() {
   if (manifestGeladen || typeof window === 'undefined') return
   manifestGeladen = true
@@ -32,6 +60,20 @@ async function laadOpnames() {
   } catch {
     opnames = null // niets opgenomen: de synthese doet het werk
   }
+  const context = audioCtx(false)
+  if (!opnames || !context) return
+  await Promise.all(
+    Object.keys(opnames).map(async (naam) => {
+      try {
+        const res = await fetch(`${BASIS}/sfx/${naam}.mp3`)
+        if (!res.ok) return
+        const buffer = await context.decodeAudioData(await res.arrayBuffer())
+        buffers.set(naam, { buffer, vanaf: beginVanGeluid(buffer) })
+      } catch {
+        // Dit geluid valt terug op <audio> of de synthese.
+      }
+    }),
+  )
 }
 
 /**
@@ -40,6 +82,22 @@ async function laadOpnames() {
  */
 function speelOpname(naam: string): boolean {
   if (!aan || !opnames || !(naam in opnames) || typeof window === 'undefined') return false
+  const klaar = buffers.get(naam)
+  const context = klaar ? audioCtx() : null
+  if (klaar && context) {
+    try {
+      const bron = context.createBufferSource()
+      bron.buffer = klaar.buffer
+      const gain = context.createGain()
+      gain.gain.value = 0.7
+      bron.connect(gain).connect(context.destination)
+      bron.start(0, klaar.vanaf)
+      return true
+    } catch {
+      // door naar <audio>
+    }
+  }
+  // Nog niet gedecodeerd (de eerste seconde na het openen): dan maar de trage weg.
   try {
     const audio = new Audio(`${BASIS}/sfx/${naam}.mp3`)
     audio.volume = 0.7
@@ -55,14 +113,21 @@ export function setSfxEnabled(waarde: boolean) {
   if (waarde) void laadOpnames()
 }
 
-function audioCtx(): AudioContext | null {
+function audioCtx(wekken = true): AudioContext | null {
   if (typeof window === 'undefined') return null
   if (!ctx) {
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
     if (!Ctor) return null
-    ctx = new Ctor()
+    ctx = new Ctor({ latencyHint: 'interactive' })
+    // Wakker maken bij de eerste aanraking, vóór de tik zelf afgehandeld wordt: anders
+    // wacht het eerste geluid op resume() en komt het te laat.
+    const wek = () => {
+      if (ctx?.state === 'suspended') void ctx.resume()
+    }
+    window.addEventListener('pointerdown', wek, { capture: true, passive: true })
+    window.addEventListener('keydown', wek, { capture: true, passive: true })
   }
-  if (ctx.state === 'suspended') void ctx.resume()
+  if (wekken && ctx.state === 'suspended') void ctx.resume()
   return ctx
 }
 
