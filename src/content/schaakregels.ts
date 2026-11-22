@@ -126,7 +126,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
     vraag: 'Hoe loopt de toren?',
     zoektitel: 'Hoe loopt de toren bij schaken? Uitleg voor kinderen',
     omschrijving:
-      'De toren loopt recht: omhoog, omlaag en opzij, zo ver als hij wil. Bekijk het op een bewegend bord en lees hoe je het je kind leert.',
+      'Hoe loopt de toren, waar stopt hij en hoe slaat hij? Bekijk het op een bewegend bord, met tips voor thuis. Gratis oefenen voor je kind.',
     kort: 'Recht vooruit, achteruit en opzij, zo ver als hij wil.',
     stuk: 'r',
     antwoord:
@@ -184,7 +184,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
     vraag: 'Hoe loopt de loper?',
     zoektitel: 'Hoe loopt de loper bij schaken? Uitleg voor kinderen',
     omschrijving:
-      'De loper loopt schuin, zo ver als hij wil, en blijft altijd op dezelfde kleur. Bekijk het op een bewegend bord, met tips voor thuis.',
+      'Hoe loopt de loper, en waarom blijft hij altijd op dezelfde kleur? Bekijk het op een bewegend bord, met tips voor thuis. Gratis oefenen voor je kind.',
     kort: 'Schuin, zo ver als hij wil, en altijd op zijn eigen kleur.',
     stuk: 'b',
     antwoord:
@@ -212,7 +212,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
       {
         kop: 'Altijd op dezelfde kleur',
         tekst: [
-          'Iedere speler heeft twee lopers: één op de lichte velden en één op de donkere. Samen kunnen ze overal komen, maar elk afzonderlijk maar op de helft van het bord.',
+          'Iedere speler heeft twee lopers: één op de lichte velden en één op de donkere. Samen kunnen ze overal komen, maar elk afzonderlijk maar op de helft van het bord. Dat komt doordat een schuine stap altijd naar een veld gaat dat met een hoekje aan het vorige vastzit, en zulke velden hebben dezelfde kleur.',
           'Voor een kind is dit een mooie ontdekking. Laat het zelf proberen een loper naar een veld van de andere kleur te krijgen: het lukt nooit.',
         ],
         animatie: {
@@ -241,7 +241,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
     vraag: 'Hoe loopt de dame?',
     zoektitel: 'Hoe loopt de dame bij schaken? Uitleg voor kinderen',
     omschrijving:
-      'De dame loopt recht én schuin, zo ver als ze wil: ze is de toren en de loper samen. Bekijk het op een bewegend bord.',
+      'Bij schaken loopt de dame als de toren en de loper samen. Waarom staat ze in het begin dan vast? Zie het op een bewegend bord. Gratis oefenen voor je kind.',
     kort: 'Recht én schuin: de toren en de loper in één.',
     stuk: 'q',
     antwoord:
@@ -295,9 +295,9 @@ export const SCHAAKREGELS: Onderwerp[] = [
   {
     slug: 'paard',
     vraag: 'Hoe loopt het paard?',
-    zoektitel: 'Hoe loopt het paard bij schaken? De L-sprong uitgelegd',
+    zoektitel: 'Hoe loopt het paard bij schaken? De paardensprong uitgelegd',
     omschrijving:
-      'Het paard springt in een L: twee velden recht en één opzij, ook over andere stukken heen. Bekijk de paardensprong op een bewegend bord.',
+      'Hoe maakt het paard zijn L-sprong, en waarom staat het liever niet aan de rand? Bekijk de paardensprong op een bewegend bord. Gratis oefenen voor je kind.',
     kort: 'Twee recht en één opzij: de L-sprong, ook over stukken heen.',
     stuk: 'n',
     antwoord:
@@ -373,9 +373,9 @@ export const SCHAAKREGELS: Onderwerp[] = [
   {
     slug: 'koning',
     vraag: 'Hoe loopt de koning?',
-    zoektitel: 'Hoe loopt de koning bij schaken? Uitleg voor kinderen',
+    zoektitel: 'Wat mag de koning bij schaken? Uitleg voor kinderen',
     omschrijving:
-      'De koning zet één stapje per zet, alle kanten op, en twee koningen staan nooit naast elkaar. Bekijk het op een bewegend bord.',
+      'Hoe loopt de koning, en waarom mogen twee koningen nooit naast elkaar staan? Bekijk het op een bewegend bord. Gratis oefenen voor je kind.',
     kort: 'Eén stapje, alle kanten op. Nooit naast de andere koning.',
     stuk: 'k',
     antwoord:
@@ -435,7 +435,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
     vraag: 'Hoe loopt de pion?',
     zoektitel: 'Hoe loopt de pion bij schaken? Lopen, slaan en promoveren',
     omschrijving:
-      'De pion loopt recht vooruit, slaat schuin en promoveert op de overkant: je kiest zelf welk stuk, meestal een dame. Met bewegend bord.',
+      'Hoe loopt de pion, hoe slaat hij, en wat gebeurt er op de overkant? Bekijk het stap voor stap op een bewegend bord. Gratis oefenen voor je kind.',
     kort: 'Recht vooruit, schuin slaan, en op de overkant kies je wat hij wordt.',
     stuk: 'p',
     antwoord:
