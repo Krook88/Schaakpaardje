@@ -46,6 +46,12 @@ describe('de schaakregelpagina’s', () => {
     }
   })
 
+  // De slug gaat mee in de telling 'Regel naar les'. Past hij niet in de waarderegel van
+  // public/teller/opslag.php, dan weigert de teller hem stil en blijft dat onderwerp op nul.
+  it('slugs passen in de teller', () => {
+    for (const o of SCHAAKREGELS) expect(o.slug).toMatch(/^[a-z0-9 -]{1,40}$/)
+  })
+
   it('verwijzen alleen naar lessen die bestaan', () => {
     const lessen = new Set(ALLE_LESSEN.map((l) => l.id))
     for (const o of SCHAAKREGELS) {

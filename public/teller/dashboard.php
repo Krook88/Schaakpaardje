@@ -133,6 +133,8 @@ const STEM_VANAF = '2026-11-17';
 
 /** Vanaf deze dag stuurt de app 'Terugblik' ("Wat zag Pip?" na een partij). Daarvóór leeg, niet nul. */
 const TERUGBLIK_VANAF = '2026-11-19';
+/** Vanaf deze dag stuurt de app 'Regel naar les'. Daarvóór leeg, niet nul. */
+const REGEL_NAAR_LES_VANAF = '2026-11-23';
 
 $periode = isset($_GET['dagen']) ? (int) $_GET['dagen'] : 30;
 if (!in_array($periode, [7, 30, 90], true)) $periode = 30;
@@ -143,7 +145,7 @@ $duur = [];
 $geoefend = [];
 $partijen = [];
 /** Knoppen die iets doen maar geen les zijn: "Wat zag Pip?", delen, het paard op de startpagina. */
-$knoppen = ['Terugblik' => [], 'Gedeeld' => [], 'Held naar les' => 0];
+$knoppen = ['Terugblik' => [], 'Gedeeld' => [], 'Held naar les' => 0, 'Regel naar les' => []];
 $spellen = [];
 $lastig = [];
 $binnenkomst = [];
@@ -321,6 +323,13 @@ loopDagen($periode * 2, function (string $dag, ?array $r) use (
             break;
         case 'Held naar les':
             $knoppen['Held naar les']++;
+            break;
+        case 'Regel naar les':
+            $o = (string) ($e['onderwerp'] ?? '?');
+            $k = $knoppen['Regel naar les'][$o] ?? ['alle' => 0, 'nieuw' => 0];
+            $k['alle']++;
+            if (($e['apparaat'] ?? '') === 'nieuw') $k['nieuw']++;
+            $knoppen['Regel naar les'][$o] = $k;
             break;
         case 'Opgave lastig':
             $sleutel = ($e['les'] ?? '?') . '|' . ($e['opgave'] ?? '?');
@@ -874,6 +883,30 @@ if ($binnenkomst) {
             . balk($n, max($binnenkomst)) . '</td></tr>';
     }
     $h .= '</table>';
+}
+// Klikt wie op een regelpagina staat door naar een les? Naast elkaar: bezoeken van de pagina
+// en klikken naar een les (knop boven, knop onder, of "Begin bij de eerste les").
+$h .= '<h3 style="font-size:.95rem;margin:14px 0 6px">Van een regelpagina naar een les</h3>';
+if (gmdate('Y-m-d', $nu) < REGEL_NAAR_LES_VANAF) {
+    $h .= '<p class="zacht">Wordt geteld vanaf ' . REGEL_NAAR_LES_VANAF . '.</p>';
+} else {
+    $regels = [];
+    foreach ($schermen as $p => $n) {
+        if (preg_match('#^/schaakregels/([a-z0-9-]+)/$#', $p, $m)) $regels[$m[1]] = $n;
+    }
+    foreach ($knoppen['Regel naar les'] as $o => $_) $regels[$o] = $regels[$o] ?? 0;
+    arsort($regels);
+    if (!$regels) {
+        $h .= '<p class="zacht">Nog geen bezoek op een regelpagina.</p>';
+    } else {
+        $h .= '<table><tr><th>Onderwerp</th><th class="n">Bezoeken</th><th class="n">Naar les</th><th class="n">nieuw apparaat</th><th class="n">%</th></tr>';
+        foreach ($regels as $o => $n) {
+            $k = $knoppen['Regel naar les'][$o] ?? ['alle' => 0, 'nieuw' => 0];
+            $h .= '<tr><td>' . e($o) . '</td><td class="n">' . $n . '</td><td class="n">' . $k['alle'] . '</td><td class="n">' . $k['nieuw']
+                . '</td><td class="n">' . ($n ? (int) min(100, round($k['alle'] / $n * 100)) . '%' : '') . '</td></tr>';
+        }
+        $h .= '</table><p class="zacht">Losse aantallen, geen gevolgde bezoekers. Bezoeken telt ook wie de pagina vaker opende, dus het percentage is eerder te laag dan te hoog.</p>';
+    }
 }
 $h .= '</section>';
 

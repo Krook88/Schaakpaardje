@@ -108,7 +108,12 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect((await stuur({ name: 'Uitleg', url: '/les/weide-1/', props: uitleg })).status).toBe(204)
     expect((await stuur({ name: 'Geluid', url: '/les/weide-1/', props: { aan: 'nee', door: 'kind' } })).status).toBe(204)
     expect((await stuur({ name: 'Geluid', url: '/', props: { aan: 'nee', door: 'kind', naam: 'daan' } })).status).toBe(400)
+    const naarLes = { onderwerp: 'waarde-van-de-stukken', plek: 'boven', apparaat: 'nieuw' }
+    expect((await stuur({ name: 'Regel naar les', url: '/schaakregels/waarde-van-de-stukken/', props: naarLes })).status).toBe(204)
+    expect((await stuur({ name: 'Regel naar les', url: '/schaakregels/pat/', props: { onderwerp: 'pat', plek: 'midden', apparaat: 'nieuw' } })).status).toBe(400)
+    expect((await stuur({ name: 'Regel naar les', url: '/schaakregels/pat/', props: { onderwerp: 'pat', plek: 'begin' } })).status).toBe(400)
     const regels = bewaard()
+    expect(regels).toContainEqual(expect.objectContaining({ n: 'Regel naar les', e: naarLes }))
     expect(regels).toContainEqual(expect.objectContaining({ n: 'Profiel gemaakt', p: '/' }))
     expect(regels).toContainEqual(expect.objectContaining({ n: 'Opgave lastig', e: lastig.props }))
     expect(regels).toContainEqual(expect.objectContaining({ n: 'pageview', p: '/schaakregels/en-passant/' }))
@@ -170,6 +175,7 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     for (const id of ['doen', 'gaat', 'afhaken', 'spelen', 'berichten']) expect(open).toContain(`id="${id}"`)
     expect(open).toMatch(/Nog geen volledige vorige periode|[↑↓→] \d+/)
     expect(open).toContain('Pips stem')
+    expect(open).toContain('Van een regelpagina naar een les')
     expect(open).toContain('stem van het apparaat')
 
     // Van vóór de botfilter (SCHOON_VANAF in dashboard.php) telt niets mee.

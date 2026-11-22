@@ -169,6 +169,9 @@ describe('wat er geteld wordt, ligt vast', () => {
     Geluid: ['aan', 'door'],
     // Of een kind na een partij op "Wat zag Pip?" tikt, en welk soort moment het zag.
     Terugblik: ['soort'],
+    // Of een bezoeker van een regelpagina doorklikt naar een les, met welke link, en of
+    // er op het apparaat al eens geoefend is.
+    'Regel naar les': ['onderwerp', 'plek', 'apparaat'],
   }
   const bestanden = (map: string): string[] =>
     readdirSync(map).flatMap((n) => {

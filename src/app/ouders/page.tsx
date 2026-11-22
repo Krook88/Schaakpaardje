@@ -415,7 +415,7 @@ function TellenSchakel() {
           een opgave lastig was, de uitslag van een partij (en of er daarna op &lsquo;Wat zag Pip?&rsquo; getikt werd), en speelduur en geoefende dagen in
           grove klassen. En over Pip: of hij met de ingesproken stem of die van het apparaat
           klonk, of kinderen zijn uitleg uitluisteren (niet per kind), en of het geluid aan of
-          uit werd gezet.
+          uit werd gezet. En of iemand van een pagina met schaakregels doorklikt naar een les.
         </small>
       </span>
       <input
