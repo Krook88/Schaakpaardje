@@ -33,4 +33,18 @@ Niets blokkerends. Schaakkundig klopt alles en er komt geen matbegrip naar het k
 - **Layout:** de velden komen nergens op het scherm. Niets te beoordelen.
 
 ## Afhandeling
-_(in te vullen na verwerking)_
+1. *Opgelost:* de omschrijving zegt nu "De drie uitwegen uitgelegd, met een bewegend bord". Geen nieuwe animatie.
+2. *Opgelost:* "over slim ruilen" is weg. De omschrijving belooft alleen nog een bewegend bord, en dat is er.
+3. *Opgelost:* "waarom het gelijkspel is" is uit de omschrijving gehaald.
+4. *Opgelost:* titel "Welk schaakstuk heeft de minste waarde? Alle punten op een rij". De omschrijving begint met "Welk stuk heeft de minste waarde".
+5. *Opgelost:* titel "Hoe zet je een schaakbord klaar? Stap voor stap uitgelegd". De omschrijving begint met "Schaakbord opzetten:".
+6. *Opgelost:* in alle vier staat "gratis oefenen voor je kind".
+7. *Opgelost:* "bewegend bord" staat nog maar in één titel (schaak-en-mat). Pat heet nu "Wat is pat bij schaken? Uitleg voor kinderen en ouders".
+8. *Opgelost:* het FAQ-antwoord zegt nu ook "De witte dame staat links van de koning, op d1". De omschrijving zegt "Zie het stap voor stap".
+9. *Opgelost:* `oefenEerst: 'weide-3'`.
+10. *Opgelost:* het antwoord begint met "De pion heeft de minste waarde: één punt" en zegt "De koning krijgt geen punten, omdat je hem niet kunt ruilen".
+11. *Opgelost:* de verwijzing "Begin bij de eerste les" staat er nu vanaf minLeeftijd 7 (`page.tsx`), dus ook bij schaak-1.
+12. *Opgelost:* de test gebruikt `MAX_OMSCHRIJVING` (155).
+13. *Niet gedaan:* een aparte pagina voor "dame schaken" valt buiten deze wijziging. De damepagina bestaat al; of die titel beter kan, kijken we bij de volgende ronde zoektitels.
+
+`npm run check` is groen (770 tests).

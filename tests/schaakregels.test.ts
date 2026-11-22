@@ -3,7 +3,7 @@ import { ALLE_LESSEN, START } from '@/content'
 import { SCHAAKREGELS, onderwerpBijLes } from '@/content/schaakregels'
 import { applyMove, isLightSquare, parseBoard, PIECE_VALUE, toPlacement, type BoardMap, type PieceType } from '@/engine/board'
 import { Game } from '@/engine/game'
-import { VOOR_KINDEREN } from '@/seo'
+import { MAX_OMSCHRIJVING, VOOR_KINDEREN } from '@/seo'
 import { bouwBeelden, type Animatie, type Beeld } from '@/uitleg/beelden'
 
 /**
@@ -40,7 +40,7 @@ describe('de schaakregelpagina’s', () => {
 
   it('passen in de zoekresultaten', () => {
     for (const o of SCHAAKREGELS) {
-      expect(o.omschrijving.length, o.slug).toBeLessThanOrEqual(160)
+      expect(o.omschrijving.length, o.slug).toBeLessThanOrEqual(MAX_OMSCHRIJVING)
       // Met " | Schaakmaatje" erachter kapt Google rond de 65 tekens af.
       expect(o.zoektitel.length, o.slug).toBeLessThanOrEqual(65)
     }

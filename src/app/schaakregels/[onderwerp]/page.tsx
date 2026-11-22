@@ -54,8 +54,9 @@ export default async function Onderwerp({ params }: { params: Promise<{ onderwer
   const oefen = lesMet(o.oefenEerst ?? o.lessen[0])
   // Een les uit een wereld voor oudere kinderen (vork, penning, notatie): wie via Google
   // met een kind van vijf komt, kreeg daar een opgave die het paard al kent. Dan ook de
-  // weg naar het begin (zevenenzestigste review, conversie B1).
-  const voorGevorderden = (wereldMet(oefen?.wereldId ?? '')?.minLeeftijd ?? 0) >= 8
+  // weg naar het begin (zevenenzestigste review, conversie B1). Vanaf 7: schaak-1 (wereld 9)
+  // begint met "Weet je nog van de Aanvalsberg?" (zeventigste review).
+  const voorGevorderden = (wereldMet(oefen?.wereldId ?? '')?.minLeeftijd ?? 0) >= 7
   const beginBijHetBegin = voorGevorderden && (
     <p className={s.beginNog}>
       Voor kinderen die de stukken al kennen. Nog nooit geschaakt?{' '}
