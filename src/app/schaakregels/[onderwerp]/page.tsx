@@ -61,7 +61,9 @@ export default async function Onderwerp({ params }: { params: Promise<{ onderwer
   const beginBijHetBegin = voorGevorderden && (
     <p className={s.beginNog}>
       Voor kinderen die de stukken al kennen. Nog nooit geschaakt?{' '}
-      <Link href={`/les/${ALLE_LESSEN[0].id}/`}>Begin bij de eerste les</Link>
+      <OefenKnop href={`/les/${ALLE_LESSEN[0].id}/`} onderwerp={o.slug} plek="begin">
+        Begin bij de eerste les
+      </OefenKnop>
     </p>
   )
 

@@ -35,7 +35,7 @@ const TELLINGEN = [
     'Uitleg' => ['les', 'einde', 'zin', 'doorgetikt', 'stem'],
     'Geluid' => ['aan', 'door'],
     'Terugblik' => ['soort'],
-    'Regel naar les' => ['onderwerp', 'plek'],
+    'Regel naar les' => ['onderwerp', 'plek', 'apparaat'],
 ];
 
 /**
@@ -53,7 +53,7 @@ const VASTE_WAARDEN = [
     'aan' => ['ja', 'nee'],
     'door' => ['kind', 'ouder'],
     'soort' => ['gemist', 'mooi'],
-    'plek' => ['boven', 'onder'],
+    'plek' => ['boven', 'onder', 'begin'],
 ];
 
 /**

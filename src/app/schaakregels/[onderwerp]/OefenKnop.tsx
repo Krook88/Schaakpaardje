@@ -1,13 +1,15 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import Link from 'next/link'
-import { tel } from '@/progress/tellen'
+import { apparaatKlasse, hoogsteOefendagen, tel } from '@/progress/tellen'
+import { useProfielStore } from '@/progress/store'
 
 /**
- * De knop van een regelpagina naar de les. Een derde van de nieuwe bezoekers komt op een
- * regelpagina binnen, maar hoeveel er doorklikken naar een les was niet te zien
- * (november 2026). Alleen het onderwerp en welke knop: niets over het kind.
+ * Een link van een regelpagina naar een les. Een derde van de nieuwe bezoekers komt op een
+ * regelpagina binnen, maar hoeveel er doorklikten naar een les was niet te zien
+ * (november 2026). Alleen het onderwerp, welke link, en of er op dit apparaat al eens
+ * geoefend is: dat zegt iets over het toestel, niets over het kind.
  */
 export function OefenKnop({
   href,
@@ -19,13 +21,24 @@ export function OefenKnop({
 }: {
   href: string
   onderwerp: string
-  plek: 'boven' | 'onder'
-  className: string
-  style?: React.CSSProperties
+  plek: 'boven' | 'onder' | 'begin'
+  className?: string
+  style?: CSSProperties
   children: ReactNode
 }) {
   return (
-    <Link href={href} className={className} style={style} onClick={() => tel('Regel naar les', { onderwerp, plek })}>
+    <Link
+      href={href}
+      className={className}
+      style={style}
+      onClick={() =>
+        tel('Regel naar les', {
+          onderwerp,
+          plek,
+          apparaat: apparaatKlasse(hoogsteOefendagen(useProfielStore.getState().oefendagen)),
+        })
+      }
+    >
       {children}
     </Link>
   )
