@@ -53,9 +53,9 @@ export const SCHAAKREGELS: Onderwerp[] = [
   {
     slug: 'schaakbord-opzetten',
     vraag: 'Hoe zet je een schaakbord op?',
-    zoektitel: 'Schaakbord opzetten: zo staan de stukken goed',
+    zoektitel: 'Schaakbord klaarzetten: stap voor stap op een bewegend bord',
     omschrijving:
-      'Hoe leg je een schaakbord neer en waar staan de stukken? Met een bewegend bord: licht veld rechtsonder, dame op haar eigen kleur.',
+      'Welke hoek moet licht zijn, en staat de dame links of rechts? Zet het bord stap voor stap klaar met een bewegend bord. Daarna gratis oefenen met Pip.',
     kort: 'Licht veld rechtsonder, en waar elk stuk begint.',
     teken: '▦',
     antwoord:
@@ -504,9 +504,9 @@ export const SCHAAKREGELS: Onderwerp[] = [
   {
     slug: 'waarde-van-de-stukken',
     vraag: 'Hoeveel zijn de schaakstukken waard?',
-    zoektitel: 'Waarde van de schaakstukken: pion 1, paard 3, toren 5, dame 9',
+    zoektitel: 'Welk schaakstuk is het minst waard? Punten per stuk en ruilen',
     omschrijving:
-      'Een pion is 1 punt, paard en loper 3, de toren 5 en de dame 9. Zo leer je je kind ruilen, met een bewegend bord.',
+      'Hoeveel punten is elk schaakstuk waard, en waarom telt de koning niet mee? Met een bewegend bord over slim ruilen, en gratis oefenen voor je kind.',
     kort: 'Pion 1, paard en loper 3, toren 5, dame 9.',
     teken: '⚖',
     antwoord:
@@ -660,9 +660,9 @@ export const SCHAAKREGELS: Onderwerp[] = [
   {
     slug: 'schaak-en-mat',
     vraag: 'Wat is schaak en wat is schaakmat?',
-    zoektitel: 'Schaak en schaakmat: het verschil uitgelegd voor kinderen',
+    zoektitel: 'Wat is schaakmat? Het verschil met schaak, op een bewegend bord',
     omschrijving:
-      'Schaak is een aanval op de koning; schaakmat is schaak waar je niet meer uit kunt. Het verschil, de drie uitwegen en een bewegend bord.',
+      'Wanneer staat de koning schaak, wanneer mat, en moet je "schaak" zeggen? De drie uitwegen op een bewegend bord, en gratis oefenen met Pip.',
     kort: 'Schaak is een aanval op de koning, mat is er niet meer uit kunnen.',
     teken: '♚',
     antwoord:
@@ -724,9 +724,9 @@ export const SCHAAKREGELS: Onderwerp[] = [
   {
     slug: 'pat',
     vraag: 'Wat is pat bij schaken?',
-    zoektitel: 'Pat bij schaken: wat het is en hoe je het voorkomt',
+    zoektitel: 'Wat is pat bij schaken? Uitleg met bewegend bord voor kinderen',
     omschrijving:
-      'Pat is gelijkspel: je staat niet schaak, maar je kunt geen enkele zet meer doen. Zo ziet het eruit, en zo voorkom je het. Met bewegend bord.',
+      'Pat is geen winst en geen verlies. Zie op een bewegend bord wanneer het gebeurt, waarom het gelijkspel is en hoe je het voorkomt. Gratis oefenen met Pip.',
     kort: 'Niet schaak, maar geen geldige zet meer: remise.',
     teken: '½',
     antwoord:
