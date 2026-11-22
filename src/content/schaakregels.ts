@@ -126,7 +126,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
     vraag: 'Hoe loopt de toren?',
     zoektitel: 'Hoe loopt de toren bij schaken? Uitleg voor kinderen',
     omschrijving:
-      'De toren loopt recht: omhoog, omlaag en opzij, zo ver als hij wil. Bekijk het op een bewegend bord en lees hoe je het je kind leert.',
+      'Hoe loopt de toren, waar stopt hij en hoe slaat hij? Bekijk het op een bewegend bord en lees hoe je het je kind leert. Gratis oefenen voor je kind.',
     kort: 'Recht vooruit, achteruit en opzij, zo ver als hij wil.',
     stuk: 'r',
     antwoord:
@@ -184,7 +184,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
     vraag: 'Hoe loopt de loper?',
     zoektitel: 'Hoe loopt de loper bij schaken? Uitleg voor kinderen',
     omschrijving:
-      'De loper loopt schuin, zo ver als hij wil, en blijft altijd op dezelfde kleur. Bekijk het op een bewegend bord, met tips voor thuis.',
+      'Hoe loopt de loper, en waarom blijft hij altijd op dezelfde kleur? Bekijk het op een bewegend bord, met tips voor thuis. Gratis oefenen voor je kind.',
     kort: 'Schuin, zo ver als hij wil, en altijd op zijn eigen kleur.',
     stuk: 'b',
     antwoord:
@@ -241,7 +241,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
     vraag: 'Hoe loopt de dame?',
     zoektitel: 'Hoe loopt de dame bij schaken? Uitleg voor kinderen',
     omschrijving:
-      'De dame loopt recht én schuin, zo ver als ze wil: ze is de toren en de loper samen. Bekijk het op een bewegend bord.',
+      'De dame loopt als de toren en de loper samen. Waarom staat ze in het begin dan vast? Bekijk het op een bewegend bord. Gratis oefenen voor je kind.',
     kort: 'Recht én schuin: de toren en de loper in één.',
     stuk: 'q',
     antwoord:
@@ -295,9 +295,9 @@ export const SCHAAKREGELS: Onderwerp[] = [
   {
     slug: 'paard',
     vraag: 'Hoe loopt het paard?',
-    zoektitel: 'Hoe loopt het paard bij schaken? De L-sprong uitgelegd',
+    zoektitel: 'Hoe loopt het paard bij schaken? De paardensprong uitgelegd',
     omschrijving:
-      'Het paard springt in een L: twee velden recht en één opzij, ook over andere stukken heen. Bekijk de paardensprong op een bewegend bord.',
+      'Hoe maakt het paard zijn L-sprong, en waarom staat hij liever niet aan de rand? Bekijk de paardensprong op een bewegend bord. Gratis oefenen voor je kind.',
     kort: 'Twee recht en één opzij: de L-sprong, ook over stukken heen.',
     stuk: 'n',
     antwoord:
@@ -373,9 +373,9 @@ export const SCHAAKREGELS: Onderwerp[] = [
   {
     slug: 'koning',
     vraag: 'Hoe loopt de koning?',
-    zoektitel: 'Hoe loopt de koning bij schaken? Uitleg voor kinderen',
+    zoektitel: 'Wat mag de koning bij schaken? Uitleg voor kinderen',
     omschrijving:
-      'De koning zet één stapje per zet, alle kanten op, en twee koningen staan nooit naast elkaar. Bekijk het op een bewegend bord.',
+      'Hoe loopt de koning, en waarom mogen twee koningen nooit naast elkaar staan? Bekijk het op een bewegend bord. Gratis oefenen voor je kind.',
     kort: 'Eén stapje, alle kanten op. Nooit naast de andere koning.',
     stuk: 'k',
     antwoord:
@@ -435,7 +435,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
     vraag: 'Hoe loopt de pion?',
     zoektitel: 'Hoe loopt de pion bij schaken? Lopen, slaan en promoveren',
     omschrijving:
-      'De pion loopt recht vooruit, slaat schuin en promoveert op de overkant: je kiest zelf welk stuk, meestal een dame. Met bewegend bord.',
+      'Hoe loopt de pion, hoe slaat hij, en wat gebeurt er op de overkant? Bekijk het stap voor stap op een bewegend bord. Gratis oefenen voor je kind.',
     kort: 'Recht vooruit, schuin slaan, en op de overkant kies je wat hij wordt.',
     stuk: 'p',
     antwoord:
