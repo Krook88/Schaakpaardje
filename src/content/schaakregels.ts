@@ -126,7 +126,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
     vraag: 'Hoe loopt de toren?',
     zoektitel: 'Hoe loopt de toren bij schaken? Uitleg voor kinderen',
     omschrijving:
-      'Hoe loopt de toren, waar stopt hij en hoe slaat hij? Bekijk het op een bewegend bord en lees hoe je het je kind leert. Gratis oefenen voor je kind.',
+      'Hoe loopt de toren, waar stopt hij en hoe slaat hij? Bekijk het op een bewegend bord, met tips voor thuis. Gratis oefenen voor je kind.',
     kort: 'Recht vooruit, achteruit en opzij, zo ver als hij wil.',
     stuk: 'r',
     antwoord:
@@ -212,7 +212,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
       {
         kop: 'Altijd op dezelfde kleur',
         tekst: [
-          'Iedere speler heeft twee lopers: één op de lichte velden en één op de donkere. Samen kunnen ze overal komen, maar elk afzonderlijk maar op de helft van het bord.',
+          'Iedere speler heeft twee lopers: één op de lichte velden en één op de donkere. Samen kunnen ze overal komen, maar elk afzonderlijk maar op de helft van het bord. Dat komt doordat een schuine stap altijd naar een veld gaat dat met een hoekje aan het vorige vastzit, en zulke velden hebben dezelfde kleur.',
           'Voor een kind is dit een mooie ontdekking. Laat het zelf proberen een loper naar een veld van de andere kleur te krijgen: het lukt nooit.',
         ],
         animatie: {
@@ -241,7 +241,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
     vraag: 'Hoe loopt de dame?',
     zoektitel: 'Hoe loopt de dame bij schaken? Uitleg voor kinderen',
     omschrijving:
-      'De dame loopt als de toren en de loper samen. Waarom staat ze in het begin dan vast? Bekijk het op een bewegend bord. Gratis oefenen voor je kind.',
+      'Bij schaken loopt de dame als de toren en de loper samen. Waarom staat ze in het begin dan vast? Zie het op een bewegend bord. Gratis oefenen voor je kind.',
     kort: 'Recht én schuin: de toren en de loper in één.',
     stuk: 'q',
     antwoord:
@@ -297,7 +297,7 @@ export const SCHAAKREGELS: Onderwerp[] = [
     vraag: 'Hoe loopt het paard?',
     zoektitel: 'Hoe loopt het paard bij schaken? De paardensprong uitgelegd',
     omschrijving:
-      'Hoe maakt het paard zijn L-sprong, en waarom staat hij liever niet aan de rand? Bekijk de paardensprong op een bewegend bord. Gratis oefenen voor je kind.',
+      'Hoe maakt het paard zijn L-sprong, en waarom staat het liever niet aan de rand? Bekijk de paardensprong op een bewegend bord. Gratis oefenen voor je kind.',
     kort: 'Twee recht en één opzij: de L-sprong, ook over stukken heen.',
     stuk: 'n',
     antwoord:
