@@ -53,9 +53,9 @@ export const SCHAAKREGELS: Onderwerp[] = [
   {
     slug: 'schaakbord-opzetten',
     vraag: 'Hoe zet je een schaakbord op?',
-    zoektitel: 'Schaakbord opzetten: zo staan de stukken goed',
+    zoektitel: 'Hoe zet je een schaakbord klaar? Stap voor stap uitgelegd',
     omschrijving:
-      'Hoe leg je een schaakbord neer en waar staan de stukken? Met een bewegend bord: licht veld rechtsonder, dame op haar eigen kleur.',
+      'Schaakbord opzetten: welke hoek is licht, en staat de dame links of rechts? Zie het stap voor stap op een bewegend bord. Gratis oefenen voor je kind.',
     kort: 'Licht veld rechtsonder, en waar elk stuk begint.',
     teken: '▦',
     antwoord:
@@ -114,10 +114,12 @@ export const SCHAAKREGELS: Onderwerp[] = [
       ['Wie begint bij schaken?', 'Wit doet altijd de eerste zet. Daarna zijn wit en zwart om de beurt.'],
       [
         'Staat de koning links of rechts van de dame?',
-        'Dat volgt vanzelf als de dame op haar eigen kleur staat: de koning krijgt het andere middenveld. Bij wit staat de koning dan rechts van de dame, bij zwart (van zwart uit gezien) links.',
+        'Dat volgt vanzelf als de dame op haar eigen kleur staat: de koning krijgt het andere middenveld. De witte dame staat links van de koning, op d1, en de witte koning rechts, op e1. Bij zwart is het (van zwart uit gezien) andersom.',
       ],
     ],
     lessen: ['weide-1', 'weide-3', 'opstelling'],
+    // "Wit rechtsonder": precies waar deze pagina mee begint (70e review).
+    oefenEerst: 'weide-3',
   },
   {
     slug: 'toren',
@@ -504,13 +506,13 @@ export const SCHAAKREGELS: Onderwerp[] = [
   {
     slug: 'waarde-van-de-stukken',
     vraag: 'Hoeveel zijn de schaakstukken waard?',
-    zoektitel: 'Waarde van de schaakstukken: pion 1, paard 3, toren 5, dame 9',
+    zoektitel: 'Welk schaakstuk heeft de minste waarde? Alle punten op een rij',
     omschrijving:
-      'Een pion is 1 punt, paard en loper 3, de toren 5 en de dame 9. Zo leer je je kind ruilen, met een bewegend bord.',
+      'Welk stuk heeft de minste waarde, welk de meeste, en waarom telt de koning niet mee? Met een bewegend bord en gratis oefenen voor je kind.',
     kort: 'Pion 1, paard en loper 3, toren 5, dame 9.',
     teken: '⚖',
     antwoord:
-      'Als je een pion op één punt zet, is een paard drie punten waard, een loper ook drie, een toren vijf en de dame negen. De koning heeft geen waarde: hem kun je niet ruilen.',
+      'De pion heeft de minste waarde: één punt. Een paard is drie punten waard, een loper ook drie, een toren vijf en de dame negen. De koning krijgt geen punten, omdat je hem niet kunt ruilen.',
     delen: [
       {
         kop: 'Pak wat het meest oplevert',
@@ -660,9 +662,9 @@ export const SCHAAKREGELS: Onderwerp[] = [
   {
     slug: 'schaak-en-mat',
     vraag: 'Wat is schaak en wat is schaakmat?',
-    zoektitel: 'Schaak en schaakmat: het verschil uitgelegd voor kinderen',
+    zoektitel: 'Wat is schaakmat? Het verschil met schaak, op een bewegend bord',
     omschrijving:
-      'Schaak is een aanval op de koning; schaakmat is schaak waar je niet meer uit kunt. Het verschil, de drie uitwegen en een bewegend bord.',
+      'Wanneer staat de koning schaak, wanneer mat, en moet je "schaak" zeggen? De drie uitwegen uitgelegd, met een bewegend bord. Gratis oefenen voor je kind.',
     kort: 'Schaak is een aanval op de koning, mat is er niet meer uit kunnen.',
     teken: '♚',
     antwoord:
@@ -724,9 +726,9 @@ export const SCHAAKREGELS: Onderwerp[] = [
   {
     slug: 'pat',
     vraag: 'Wat is pat bij schaken?',
-    zoektitel: 'Pat bij schaken: wat het is en hoe je het voorkomt',
+    zoektitel: 'Wat is pat bij schaken? Uitleg voor kinderen en ouders',
     omschrijving:
-      'Pat is gelijkspel: je staat niet schaak, maar je kunt geen enkele zet meer doen. Zo ziet het eruit, en zo voorkom je het. Met bewegend bord.',
+      'Pat is geen winst en geen verlies. Zie op een bewegend bord wanneer het gebeurt en hoe je het voorkomt. Gratis oefenen voor je kind.',
     kort: 'Niet schaak, maar geen geldige zet meer: remise.',
     teken: '½',
     antwoord:
