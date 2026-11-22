@@ -108,7 +108,11 @@ describe.skipIf(!heeftPhp)('de teller op de server', () => {
     expect((await stuur({ name: 'Uitleg', url: '/les/weide-1/', props: uitleg })).status).toBe(204)
     expect((await stuur({ name: 'Geluid', url: '/les/weide-1/', props: { aan: 'nee', door: 'kind' } })).status).toBe(204)
     expect((await stuur({ name: 'Geluid', url: '/', props: { aan: 'nee', door: 'kind', naam: 'daan' } })).status).toBe(400)
+    const naarLes = { onderwerp: 'waarde-van-de-stukken', plek: 'boven' }
+    expect((await stuur({ name: 'Regel naar les', url: '/schaakregels/waarde-van-de-stukken/', props: naarLes })).status).toBe(204)
+    expect((await stuur({ name: 'Regel naar les', url: '/schaakregels/pat/', props: { onderwerp: 'pat', plek: 'midden' } })).status).toBe(400)
     const regels = bewaard()
+    expect(regels).toContainEqual(expect.objectContaining({ n: 'Regel naar les', e: naarLes }))
     expect(regels).toContainEqual(expect.objectContaining({ n: 'Profiel gemaakt', p: '/' }))
     expect(regels).toContainEqual(expect.objectContaining({ n: 'Opgave lastig', e: lastig.props }))
     expect(regels).toContainEqual(expect.objectContaining({ n: 'pageview', p: '/schaakregels/en-passant/' }))

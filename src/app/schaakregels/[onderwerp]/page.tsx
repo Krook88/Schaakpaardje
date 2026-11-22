@@ -10,6 +10,7 @@ import { Animatiebord } from '@/uitleg/Animatiebord'
 import { bouwBeelden } from '@/uitleg/beelden'
 import { Beeldmerk } from '../Beeldmerk'
 import s from '../Schaakregels.module.css'
+import { OefenKnop } from './OefenKnop'
 
 /**
  * Eén schaakregel, uitgelegd met een bord dat het voordoet.
@@ -110,9 +111,9 @@ export default async function Onderwerp({ params }: { params: Promise<{ onderwer
               Nu staat hij direct onder het antwoord, en hij gaat rechtstreeks naar de
               les: een les speelt ook zonder profiel. */}
           {lessen[0] && (
-            <Link href={`/les/${o.oefenEerst ?? lessen[0].id}/`} className="btn btn--primary" style={{ marginTop: 12 }}>
+            <OefenKnop href={`/les/${o.oefenEerst ?? lessen[0].id}/`} onderwerp={o.slug} plek="boven" className="btn btn--primary" style={{ marginTop: 12 }}>
               <span aria-hidden="true">▶︎</span> Oefen dit met Pip, gratis
-            </Link>
+            </OefenKnop>
           )}
           {beginBijHetBegin}
         </div>
@@ -178,9 +179,9 @@ export default async function Onderwerp({ params }: { params: Promise<{ onderwer
           ))}
         </ul>
         <p>
-          <Link href={`/les/${o.oefenEerst ?? (lessen[0] ?? ALLE_LESSEN[0]).id}/`} className="btn btn--primary btn--big">
+          <OefenKnop href={`/les/${o.oefenEerst ?? (lessen[0] ?? ALLE_LESSEN[0]).id}/`} onderwerp={o.slug} plek="onder" className="btn btn--primary btn--big">
             {voorGevorderden ? 'Oefen dit met Pip →' : 'Begin met Schaakmaatje →'}
-          </Link>
+          </OefenKnop>
         </p>
         {beginBijHetBegin}
       </section>

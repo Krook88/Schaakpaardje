@@ -143,7 +143,7 @@ $duur = [];
 $geoefend = [];
 $partijen = [];
 /** Knoppen die iets doen maar geen les zijn: "Wat zag Pip?", delen, het paard op de startpagina. */
-$knoppen = ['Terugblik' => [], 'Gedeeld' => [], 'Held naar les' => 0];
+$knoppen = ['Terugblik' => [], 'Gedeeld' => [], 'Held naar les' => 0, 'Regel naar les' => []];
 $spellen = [];
 $lastig = [];
 $binnenkomst = [];
@@ -321,6 +321,10 @@ loopDagen($periode * 2, function (string $dag, ?array $r) use (
             break;
         case 'Held naar les':
             $knoppen['Held naar les']++;
+            break;
+        case 'Regel naar les':
+            $w = (string) ($e['onderwerp'] ?? '?') . ' · ' . (string) ($e['plek'] ?? '?');
+            $knoppen['Regel naar les'][$w] = ($knoppen['Regel naar les'][$w] ?? 0) + 1;
             break;
         case 'Opgave lastig':
             $sleutel = ($e['les'] ?? '?') . '|' . ($e['opgave'] ?? '?');
@@ -1086,6 +1090,8 @@ $h .= inklap(top('Minispellen (gehaalde rondjes)', $spellen, 20, 'Nog geen rondj
 $h .= inklap(top('Gedeeld (waar · hoe)', $knoppen['Gedeeld'], 10, 'Nog niets gedeeld.'));
 $h .= '<p class="zacht">Held naar les (het paard op de startpagina bracht iemand naar de les): '
     . $knoppen['Held naar les'] . '</p>';
+// Vergelijk met de bezoeken van /schaakregels/... onder "Meest bekeken schermen".
+$h .= inklap(top('Van regelpagina naar les (onderwerp · knop)', $knoppen['Regel naar les'], 20, 'Nog niemand doorgeklikt (geteld sinds november 2026).'));
 $h .= inklap(top('Meest bekeken schermen', $schermen, 20, 'Nog niets.'));
 
 $h .= hoofdstuk('berichten', '5 · Berichten en herkomst', 'Wat ouders schreven, en waar bezoekers vandaan komen.');
